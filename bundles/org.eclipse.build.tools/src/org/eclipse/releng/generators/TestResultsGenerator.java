@@ -234,7 +234,6 @@ public class TestResultsGenerator extends Task {
 			return 0;
 		}
 
-		endIndex = endIndex;
 		int startIndex = endIndex;
 		while (startIndex >= 0
 			&& aString.charAt(startIndex) != '('
