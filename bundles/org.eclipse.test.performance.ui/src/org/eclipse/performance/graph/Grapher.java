@@ -42,16 +42,17 @@ public class Grapher {
 
     String testResultDirectory;
     String outputDirectory;
-    //String referenceBuildId= "3.0.0";
+    String referenceBuildId;
     String buildTypeFilter;
     Scenario[] scenarios;
     
     public Grapher() {
         super();
     }
-    public Grapher(Scenario [] scenarios,String output) {
+    public Grapher(Scenario [] scenarios,String output,String reference) {
     	this.scenarios=scenarios;
     	outputDirectory=output;
+    	referenceBuildId=reference;
     	run();
     }
 
@@ -80,8 +81,11 @@ public class Grapher {
 	                for (int j= 0; j < n; j++) {
 	                    String buildID= ts.getLabel(j);
 	                    double value= ts.getValue(j);
-	                    Color c= buildID.indexOf("base") >= 0 ? green : black;
-	                    graph.addItem(buildID, dim.getDisplayValue(value), value, c);
+	                    Color c= buildID.indexOf(referenceBuildId)  >= 0 ? green : black;
+	                    if (c == green || n-2<j)
+	                    	graph.addItem(buildID, dim.getDisplayValue(value), value, c);
+	                    else
+	                    	graph.addItem(buildID, value, c);
 	                }
 	                
 	                drawGraph(graph, outputDirectory + "/" + scenarioName.replace('#', '.').replace(':','_').replace('\\','_') + "_" + dimensionName);
