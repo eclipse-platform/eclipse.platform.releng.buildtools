@@ -115,14 +115,14 @@ public class Main {
 			//generates scenario result pages and line graphs
 			if (genScenarioSummaries || genAll) {
 				System.out.print(config
-						+ ": generating scenario summaries...");
+						+ ": generating scenario results...");
 				new ScenarioResults(scenarios, baseline,dimensionHistoryOutput,config,currentBuildId,cd, pointsOfInterest);
 				System.out.println("done.");
 			}
 
 			//creates and stores fingerprint objects
 			if (genFingerPrints || genAll) {
-				System.out.print(config + ": generating fingerprints...");
+				System.out.print(config + ": generating fingerprints and scenario status tables...");
 				
 				//global
 				FingerPrint global = new FingerPrint(null, config, baseline,

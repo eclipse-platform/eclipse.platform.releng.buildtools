@@ -16,9 +16,6 @@
 	</target>
 
 	<target name="run" depends="init">
-		<echo message="${args}" />
-		<echo message="${dbloc}" />
-		<echo message="${swt.library.path}" />
 		<java classname="org.eclipse.test.performance.ui.Main" fork="true" maxmemory="256m">
 			<arg line="${args}" />
 			<classpath>
