@@ -113,7 +113,6 @@ public class DimensionHistories {
     	            PrintStream os= new PrintStream(new FileOutputStream(output + ".html"));
      	            os.println(Utils.HTML_OPEN);//"<html><body>");
      	            os.println("<body>");
-    	            os.println(Utils.HTML_MAP_MOUSE_OVER_JS);//"<script language=\"JavaScript\">");
     	            os.println("<h3>"+p.fTitle+"</h3>");
     	            os.println("<img src=\"" + scenarioName + ".jpeg\" usemap=\"#" + scenarioName + "\">");
     	            os.println("<map name=\"" + scenarioName + "\">");

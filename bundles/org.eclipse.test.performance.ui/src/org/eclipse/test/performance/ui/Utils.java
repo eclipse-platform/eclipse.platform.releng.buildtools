@@ -43,34 +43,6 @@ public class Utils {
 	"</style>";
 	
 	/**
-	 *  JavaScript used for mouse over events on image maps.
-	 */
-	public static String HTML_MAP_MOUSE_OVER_JS="<script language=\"JavaScript\">\n" +
-    "if (!document.layers&&!document.getElementById)\n"+
-    "event=\"test\"\n"+
-    "function showtip(current,e,text){\n"+
-    "if (document.getElementById){\n" +
-    "thetitle=text.split('<br>')\n" +
-    "if (thetitle.length>1){\n" +
-    "thetitles=''\n" +
-    "for (i=0;i<thetitle.length;i++)\n" +
-    "thetitles+=thetitle[i]\n" +
-    "current.title=thetitles}\n" +
-    "else\n" +
-    "current.title=text}\n" +
-    "else if (document.layers){\n" +
-    "document.tooltip.document.write('<layer bgColor=\"white\" style=\"border:1px solid black;font-size:12px;\">'+text+'</layer>')\n" +
-    "document.tooltip.document.close()\n" +
-    "document.tooltip.left=e.pageX+5\n" +
-    "document.tooltip.top=e.pageY+5\n" +
-    "document.tooltip.visibility=\"show\"}}\n" +
-    "function hidetip(){\n" +
-    "if (document.layers)\n" +
-    "document.tooltip.visibility=\"hidden\"}\n" +
-    "</script>\n" +
-    "<div id=\"tooltip\" style=\"position:absolute;visibility:hidden\"></div>";
-	
-	/**
 	 * An utility object which stores a name, description and url associated for a performance configuration.
 	 */
 	public static class ConfigDescriptor{
