@@ -47,7 +47,6 @@ public class Main {
 			new Worker(config[i]);
 		}
 
-		// print area maps for each fingerprint
 		Enumeration components = fingerPrints.keys();
 
 		// print fingerprint/scenario status pages
