@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.eclipse.performance.graph.Main"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="eclipseInternalBuildTools"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.library.path=D:\workspace\org.eclipse.swt.win32\os\win32\x86&#10;-Dperf_ctrl=dbloc=net://9.4.202.49"/>
+<booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="true"/>
+</launchConfiguration>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="org.eclipse.test.performance.ui"
+   name="org.eclipse.test.performance.ui"
+   version="3.0.0">
+
+   <extension point="org.eclipse.ant.core.extraClasspathEntries">
+      <extraClasspathEntry
+            library="performanceui.jar">
+      </extraClasspathEntry>
+   </extension>
+</plugin>
