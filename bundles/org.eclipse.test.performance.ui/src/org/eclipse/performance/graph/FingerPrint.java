@@ -37,7 +37,7 @@ import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 
 
-public class FingerPrint extends Task {
+public class FingerPrint {
     
     private static final int GRAPH_WIDTH= 800;
 
@@ -58,10 +58,10 @@ public class FingerPrint extends Task {
         main.thisBuildID= "args[1]";
         main.outputDirectory= "args[2]";
        
-        main.execute();
+        main.run();
     }
 
-    public void execute() throws BuildException {
+    public void run() {
 
         new File(outputDirectory).mkdirs();
         
