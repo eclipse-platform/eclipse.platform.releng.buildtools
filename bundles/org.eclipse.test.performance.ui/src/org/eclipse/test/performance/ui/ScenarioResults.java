@@ -219,7 +219,7 @@ public class ScenarioResults {
 			//green
 			String fontColor="";
 			if ((diffPercentage<-10&&!dim.largerIsBetter())||(diffPercentage>10&&dim.largerIsBetter()))
-				fontColor="#00FF00";
+				fontColor="#006600";
 			if ((diffPercentage<-10&&dim.largerIsBetter())||(diffPercentage>10&&!dim.largerIsBetter()))
 				fontColor="#FF0000";
 
@@ -227,7 +227,7 @@ public class ScenarioResults {
 			String percentage=(diffPercentage==0)?"":"<br>"+diffPercentage+" %";
 
 			if (diffPercentage>10 || diffPercentage<-10){
-				diffRow=diffRow.concat("<td><FONT COLOR=\""+fontColor+"\">"+diffDisplayValue+percentage+"</FONT></td>");
+				diffRow=diffRow.concat("<td><FONT COLOR=\""+fontColor+"\"><b>"+diffDisplayValue+percentage+"</b></FONT></td>");
 			} else if(refValueExistance[j]){
 				diffRow=diffRow.concat("<td>"+diffDisplayValue+percentage+"</td>");
 			}else{
@@ -253,7 +253,8 @@ public class ScenarioResults {
 		list.add(9,"Page Faults");
 		list.add(10,"Hard Page Faults");
 		list.add(11,"Soft Page Faults");
-		
+		list.add(11,"Invocation Count");
+			
 		for (int i=0;i<dimensions.length;i++){
 			String dimName=dimensions[i].getName();
 			if (list.contains(dimName))
