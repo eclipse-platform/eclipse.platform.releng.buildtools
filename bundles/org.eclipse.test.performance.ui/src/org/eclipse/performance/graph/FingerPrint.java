@@ -48,6 +48,7 @@ public class FingerPrint {
     String referenceBuildId;
     String thisBuildID;
     String config;
+    String jvm;
     SummaryEntry [] entries;
     ArrayList prefixEntries;
     Variations variations;
@@ -56,16 +57,19 @@ public class FingerPrint {
     public FingerPrint() {
     }
 
-    public FingerPrint(String config, String reference, String thisBuildId, String outputDir, String linkUrl) {
+    public FingerPrint(String config, String jvm, String reference, String thisBuildId, String outputDir, String linkUrl) {
         this();
         referenceBuildId= reference;
         this.config= config;
+        this.jvm=jvm;
         this.thisBuildID= thisBuildId;
         outputDirectory= outputDir;
         this.linkUrl=linkUrl;
         variations= new Variations();
         variations.put(PerformanceTestPlugin.CONFIG, config);
         variations.put(PerformanceTestPlugin.BUILD, thisBuildID);
+        variations.put("jvm", jvm);
+
         // only return summaries for "org.eclipse.jdt.text"; pass a null for all global scenarios
         entries= DB.querySummaries(variations,null);
        	run(entries,"");
@@ -91,7 +95,7 @@ public class FingerPrint {
     }
     
     public static void main(String args[]) {
-        FingerPrint main= new FingerPrint(args[0],args[1],args[2],args[3],args[4]);  
+        FingerPrint main= new FingerPrint(args[0],args[1],args[2],args[3],args[4],args[5]);  
     }
 
     public void run(Object[] entries, String component) {

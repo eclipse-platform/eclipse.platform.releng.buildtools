@@ -33,6 +33,7 @@ public class HtmlView {
         String reference = args[0];
         String resultsFolder = args[1];
         String config = args[2];
+        String jvm=args[3];
         String outFile = null;
         PrintStream ps = null;
         // get all Scenarios
@@ -40,6 +41,7 @@ public class HtmlView {
         Variations variations = new Variations();
         variations.put(PerformanceTestPlugin.CONFIG, config);
         variations.put(PerformanceTestPlugin.BUILD, "%");
+        variations.put("jvm",jvm);
         Scenario[] scenarios = DB.queryScenarios(variations, "org.eclipse%", PerformanceTestPlugin.BUILD, qd);
 
         new Grapher(scenarios,resultsFolder+"/graphs",reference);
@@ -73,7 +75,7 @@ public class HtmlView {
                 }
                 ps.print("</tr>");
                 boolean referencePrinted=false;
-                for (int j = timeSeriesLabels.length - 1; j > 0; j--) {
+                for (int j = timeSeriesLabels.length-1; j > -1; j--) {
                     int underScoreIndex = timeSeriesLabels[j].indexOf('_');
                     timeSeriesLabels[j] = (underScoreIndex == -1) ? timeSeriesLabels[j] : timeSeriesLabels[j].substring(0, underScoreIndex);
                     ps.println("<tr bgcolor=" + bgColors[(j + 3) % 2] + "><td>" + timeSeriesLabels[j] + "</td>");
