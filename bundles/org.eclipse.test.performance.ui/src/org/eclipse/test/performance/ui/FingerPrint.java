@@ -127,6 +127,7 @@ public class FingerPrint {
 	            char buildType=currentBuildId.charAt(0);
 	            
 	            //print the component scenario table beneath the fingerprint
+	            variations.put("config","%");
 	            ScenarioStatusTable sst=new ScenarioStatusTable(variations,component+"%",configDescriptors);
 	            os.println(sst.toString());	            }
 	            

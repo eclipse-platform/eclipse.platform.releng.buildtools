@@ -15,7 +15,6 @@ public class ScenarioStatusTable {
 		configMaps=Utils.getConfigDescriptors(configDescriptors);
 		this.variations=variations;
 		this.scenarioPattern=scenarioPattern;
-		
 	}
 	
 	
@@ -40,13 +39,15 @@ public class ScenarioStatusTable {
 				scenario= scenarios[i];
 				String scenarioName=scenario.getScenarioName();
 				htmlTable=htmlTable.concat("<tr><td>"+scenarioName.substring(scenarioName.indexOf(".",scenarioName.indexOf(".test")+1)+1)+"</td>");
-
+				
+				//returns the config names.  Making assumption that indices  in the configs array map to the indeces of the failure messages.
+				String[] configs=scenario.getTimeSeriesLabels();
 				String[] failureMessages= scenario.getFailureMessages();
 				
 				for (int j= 0; j < failureMessages.length; j++) {
 					String message= failureMessages[j];
 					// show results as red/green with failure messages displayed in a tooltip with hyperlink to html table of all measurements
-					String aUrl=((Utils.ConfigDescriptor)configMaps.get(label)).url;
+					String aUrl=((Utils.ConfigDescriptor)configMaps.get(configs[j])).url;
 					htmlTable=htmlTable.concat(message != null ? 
 							"<td><a title=\""+message+"\" href=\""
 							+aUrl+"/"+scenario.getScenarioName().replace('#', '.').replace(':', '_').replace('\\', '_') 
