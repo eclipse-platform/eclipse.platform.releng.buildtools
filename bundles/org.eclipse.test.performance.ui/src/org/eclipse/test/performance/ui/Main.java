@@ -37,14 +37,13 @@ public class Main {
 	}
 
 	private void run() {
-
+		//TODO make this work occur in parallel
 		for (int i = 0; i < config.length; i++) {
 			Utils.ConfigDescriptor cd = (Utils.ConfigDescriptor) configDescriptors
 					.get(config[i]);
 			dimensionHistoryUrl = cd.url;
 			if (cd.outputDir != null)
 				dimensionHistoryOutput = cd.outputDir;
-			//TODO make this work occur in parallel
 			new Worker(config[i]);
 		}
 
