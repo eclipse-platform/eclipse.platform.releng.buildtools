@@ -105,7 +105,9 @@ public class ErrorTracker {
 					logFiles.put(logFileName, aVector);
 					
 				}
-				aVector.addElement((PlatformStatus) platforms.get(effectedFileID));
+				PlatformStatus ps=(PlatformStatus) platforms.get(effectedFileID);
+				if (ps!=null)
+					aVector.addElement(ps);
 			}
 			
 			// store a list of the test logs expected after testing
