@@ -42,13 +42,13 @@ public class TestResultsGenerator extends Task {
 	static final String elementName = "testsuite";
 	static final String testResultsToken = "%testresults%";
 	static final String compileLogsToken = "%compilelogs%";
-	private Vector dropTokens;
-	private String testResultsWithProblems = "\n";
+	public Vector dropTokens;
+	public String testResultsWithProblems = "\n";
 
 	private DocumentBuilder parser =null;
-	private ErrorTracker anErrorTracker;
-	private String testResultsTemplateString = "";
-	private String dropTemplateString = "";
+	public ErrorTracker anErrorTracker;
+	public String testResultsTemplateString = "";
+	public String dropTemplateString = "";
 	private boolean testsRan = true;
 	//assume tests ran.  If no html files are found, this is set to false
 
@@ -57,41 +57,41 @@ public class TestResultsGenerator extends Task {
 	private boolean isBuildTested;
 
 	// Comma separated list of drop tokens
-	private String dropTokenList;
+	public String dropTokenList;
 
 	// Location of the xml files
-	private String xmlDirectoryName;
+	public String xmlDirectoryName;
 
 	// Location of the html files
-	private String htmlDirectoryName;
+	public String htmlDirectoryName;
 
 	// Location of the resulting index.php file.
-	private String dropDirectoryName;
+	public String dropDirectoryName;
 
 	// Location and name of the template index.php file.
-	private String testResultsTemplateFileName;
+	public String testResultsTemplateFileName;
 
 	// Location and name of the template drop index.php file.
-	private String dropTemplateFileName;
+	public String dropTemplateFileName;
 
 	// Name of the generated index php file.
-	private String testResultsHtmlFileName;
+	public String testResultsHtmlFileName;
 
 	// Name of the generated drop index php file;
-	private String dropHtmlFileName;
+	public String dropHtmlFileName;
 
 	// Arbitrary path used in the index.php page to href the
 	// generated .html files.
-	private String hrefTestResultsTargetPath;
+	public String hrefTestResultsTargetPath;
 
 	// Aritrary path used in the index.php page to reference the compileLogs
-	private String hrefCompileLogsTargetPath;
+	public String hrefCompileLogsTargetPath;
 
 	// Location of compile logs base directory
-	private String compileLogsDirectoryName;
+	public String compileLogsDirectoryName;
 
 	// Location and name of test manifest file
-	private String testManifestFileName;
+	public String testManifestFileName;
 
 	public static void main(String[] args) {
 		TestResultsGenerator test = new TestResultsGenerator();
@@ -210,7 +210,7 @@ public class TestResultsGenerator extends Task {
 
 	}
 
-	private String readFile(String fileName) {
+	public String readFile(String fileName) {
 
 		try {
 			FileInputStream aStream = new FileInputStream(fileName);
@@ -408,7 +408,7 @@ public class TestResultsGenerator extends Task {
 		return result;
 	}
 
-	private void writeTestResultsFile() {
+	public void writeTestResultsFile() {
 
 		String outputFileName =
 			dropDirectoryName + File.separator + testResultsHtmlFileName;
