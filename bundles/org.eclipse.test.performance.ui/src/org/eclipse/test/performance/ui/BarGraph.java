@@ -30,7 +30,7 @@ public class BarGraph {
 	private static final boolean NO_SCALE= true; // 
 
 	// if NO_SCALE is true the following values are used:
-	private static final double RATIO= 0.7; // fraction of width reserved for bar graph; needs tweaking
+	private static final double RATIO= 0.6; // fraction of width reserved for bar graph; needs tweaking
 	private static final int FROM_END= 20; // a break (//) is shown this far from end of bar
 	private static final int SLANT= 8; // slant of break
 	private static final int GAP2= 5; // width of break
