@@ -1,4 +1,4 @@
-package org.eclipse.releng.generators;
+package org.eclipse.releng;
 
 import java.io.File;
 import java.io.FileFilter;
