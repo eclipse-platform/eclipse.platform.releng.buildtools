@@ -77,10 +77,15 @@ public class ScenarioResults {
 			if (this.pointsOfInterest!=null){
 			Iterator iterator = this.pointsOfInterest.iterator();
 				while (iterator.hasNext()) {
-					String match = getMostRecentMatchingBuildID(t, iterator
-							.next().toString());
-					if (match != null)
+					String buildIdPattern=iterator.next().toString();
+				
+					if (buildIdPattern.endsWith("*")){
+						pointsOfInterest.addAll(getAllMatchingBuildIds(t,buildIdPattern.substring(0,buildIdPattern.length()-1)));
+					}else{
+						String match = getMostRecentMatchingBuildID(t, buildIdPattern);
+						if (match != null)
 						pointsOfInterest.add(match);
+					}
 				}
 			}
 			
@@ -223,6 +228,16 @@ public class ScenarioResults {
 				return buildIds[i];
 		}
 		return null;
+	}
+	
+	private ArrayList getAllMatchingBuildIds(Scenario scenario,String buildIdPrefix){
+		ArrayList result=new ArrayList();
+		String [] buildIds = scenario.getTimeSeriesLabels();
+		for (int i=buildIds.length-1;i>-1;i--){
+			if (buildIds[i].startsWith(buildIdPrefix)&&!buildIds[i].equals(reference))
+				result.add(buildIds[i]);
+		}
+		return result;
 	}
 	
 	private String getDiffs(double [][]values,Dim[] dimensions, boolean []refValueExistance){

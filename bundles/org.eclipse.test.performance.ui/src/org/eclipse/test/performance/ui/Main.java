@@ -54,9 +54,12 @@ public class Main {
 
 		Enumeration components = fingerPrints.keys();
 		String pluginImages=System.getProperty("PLUGIN_PATH");
-		Utils.copyFile(new File(pluginImages,"FAIL.gif"),output+"/FAIL.gif");
-		Utils.copyFile(new File(pluginImages,"OK.gif"),output+"/OK.gif");
-
+		
+		if (pluginImages!=null){
+			Utils.copyFile(new File(pluginImages,"FAIL.gif"),output+"/FAIL.gif");
+			Utils.copyFile(new File(pluginImages,"OK.gif"),output+"/OK.gif");
+		}
+		
 		// print fingerprint/scenario status pages
 		while (components.hasMoreElements()) {
 			String component = components.nextElement().toString();
@@ -182,9 +185,9 @@ public class Main {
 				i++;
 				continue;
 			}
-			if (arg.equals("-highlight.latest")) {
+			if (arg.equals("-highlight")||arg.equals("-highlight.latest")) {
 				if (args[i + 1].startsWith("-")) {
-					System.out.println("Missing value for -highlight.latest parameter");
+					System.out.println("Missing value for -highlight parameter");
 					printUsage();
 				}
 				String []ids=args[i + 1].split(",");
@@ -302,7 +305,7 @@ public class Main {
 								+"\n\tThe value should be specified in the following format:"
 								+"\n\tname1,description1,url1 [,outputdir1];name2,description2,url2 [,outputdir2];etc..\n\n"
 
-						+ "[-highlight.latest]"
+						+ "[-highlight]"
 								+"\n\tOptional.  Comma-separated list of build Id prefixes used to find most recent matching for each entry." +
 										"\n\tResult used to highlight points in line graphs.\n\n"
 

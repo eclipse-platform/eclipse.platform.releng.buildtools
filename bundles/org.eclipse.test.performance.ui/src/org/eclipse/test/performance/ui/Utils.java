@@ -343,16 +343,16 @@ public class Utils {
 						c=black;
 					
 					int underscoreIndex = buildID.indexOf('_');
-					buildID = (buildID.indexOf('_') == -1) ? buildID : buildID
+					String label = (buildID.indexOf('_') == -1) ? buildID : buildID
 							.substring(0, underscoreIndex);
-					if (ts.getLabel(j).equals(reference) || ts.getLabel(j).equals(current)){
-						graph.addItem(buildID, dim.getDisplayValue(value),
+					if (buildID.equals(reference) || buildID.equals(current)){
+						graph.addItem(label, dim.getDisplayValue(value),
 								value, c, true);
 					}
-					else if(buildID.startsWith("I")||pointsOfInterest.contains(ts.getLabel(j))||lastSevenNightlyBuildNames(t.getTimeSeriesLabels(),current).contains(buildID))
-						graph.addItem(ts.getLabel(j), dim.getDisplayValue(value),
+					else if(buildID.startsWith("I")||pointsOfInterest.contains(buildID)||lastSevenNightlyBuildNames(t.getTimeSeriesLabels(),current).contains(buildID))
+						graph.addItem(buildID, dim.getDisplayValue(value),
 								value, c);
-					if (ts.getLabel(j).equals(current))
+					if (buildID.equals(current))
 						break;
 				}
 			}
