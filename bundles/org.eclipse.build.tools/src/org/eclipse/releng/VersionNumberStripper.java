@@ -34,6 +34,7 @@ public class VersionNumberStripper extends Task {
 	public String getDirectory(){return directory;}
 
   	public void execute() throws BuildException {
+		directory="D:\\junk\\m6\\eclipse\\plugins";
   		setDirectory(directory);
   		stripVersions();
   	}
@@ -53,13 +54,19 @@ public class VersionNumberStripper extends Task {
 		File [] files = file.listFiles();
 		
 		for (int i=0; i<files.length; i++){
-		
 		int underScorePos = files[i].getAbsolutePath().indexOf("_");
-		
-		if (underScorePos !=-1)
-			files[i].renameTo(new File((files[i].getAbsolutePath()).substring(0,underScorePos)));
-		
+			int jarExtPos = files[i].getAbsolutePath().indexOf(".jar");
+			if (underScorePos != -1) {
+				if (jarExtPos != -1)
+					files[i].renameTo(new File((files[i].getAbsolutePath())
+							.substring(0, underScorePos)
+							+ ".jar"));
+				else
+					files[i].renameTo(new File((files[i].getAbsolutePath())
+							.substring(0, underScorePos)));
+			}
+
 		}
-		
 	}
 }
+
