@@ -88,9 +88,8 @@ public class Grapher {
 	                    buildID=(buildID.indexOf('_')==-1)?buildID:buildID.substring(0,underscoreIndex);
 	                    if (c == green)
 	                    	graph.addItem(buildID, dim.getDisplayValue(value), value, c, true);
-	                    if (!buildID.startsWith("N"))
-	                    	c = display.getSystemColor(SWT.COLOR_DARK_BLUE);
-	                    graph.addItem(buildID, dim.getDisplayValue(value), value, c, (n-2<j) );	
+	                    else
+	                    	graph.addItem(buildID, dim.getDisplayValue(value), value, c, (n-2<j) );	
 	                }
 	                
 	                drawGraph(graph, outputDirectory + "/" + scenarioName.replace('#', '.').replace(':','_').replace('\\','_') + "_" + dimensionName);
