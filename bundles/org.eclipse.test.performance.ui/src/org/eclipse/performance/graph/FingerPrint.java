@@ -106,20 +106,40 @@ public class FingerPrint {
     
     private void add(BarGraph bar, String name, Dim[] dims, String scenarioName) {
         
-        Scenario scenario= DB.queryScenario(config, new String[] { referenceBuildId, thisBuildID }, scenarioName);
+        String refData= "";
+        Variations v= new Variations();
+        v.put(PerformanceTestPlugin.CONFIG, config);
+        Scenario scenario= DB.getScenarioSeries(scenarioName, v, PerformanceTestPlugin.BUILD, referenceBuildId, thisBuildID, dims);
+        String[] timeSeriesLabels= scenario.getTimeSeriesLabels();
+        if (timeSeriesLabels.length == 2) {
+            // we mark the label with a '*' or '†' to indicate that no data was available for the specified builds
+            if (!timeSeriesLabels[0].equals(referenceBuildId)) {
+                name= '*' + name;
+                refData= " (" + timeSeriesLabels[0] + ")";
+            } else if (!timeSeriesLabels[1].equals(thisBuildID)) {
+                name= '†' + name;
+                refData= " (" + timeSeriesLabels[1] + ")";
+            }
+        }
         
         for (int i= 0; i < dims.length; i++) {
-	        TimeSeries timeSeries= scenario.getTimeSeries(dims[i]);
-	        if (timeSeries.getLength() > 1) {
-	            double ref= timeSeries.getValue(0);
-	            double val= timeSeries.getValue(1);
-	            
-	            double percent= 100.0 - ((val / ref) * 100.0);
-	         
-	            bar.addItem(name + " (" + dims[i].getName() + ")", percent,"http://download.eclipse.org/downloads/"+thisBuildID.substring(0,1)+"-scenarios/"+scenarioName.replace('#','.').replace(':','_').replace('\\','_')+".html"); //$NON-NLS-1$ //$NON-NLS-2$
+            TimeSeries timeSeries= scenario.getTimeSeries(dims[i]);
+	        int l= timeSeries.getLength();
+	        if (l >= 1) {
+	            double percent= 0.0;
+	            if (l > 1) {
+	                double ref= timeSeries.getValue(0);
+	                double val= timeSeries.getValue(1);
+	            	percent= 100.0 - ((val / ref) * 100.0);
+	            }
+	            if (Math.abs(percent) < 200) {
+	                String n= name + " (" + dims[i].getName() + ")" + refData;
+	                bar.addItem(n, percent,"http://download.eclipse.org/downloads/"+thisBuildID.substring(0,1)+"-scenarios/"+scenarioName.replace('#','.').replace(':','_').replace('\\','_')+".html"); //$NON-NLS-1$ //$NON-NLS-2$
+	            }
 	        }
         }
         //scenario.dump(System.out);
+	         
     }
 
     private void save(BarGraph bar, String output) {
