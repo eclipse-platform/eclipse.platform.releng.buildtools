@@ -29,7 +29,7 @@ public class DimensionsTables {
 	/**
 	 * An html table representation for a scenario of all dimensions stored in a performance database for all builds.
 	 * @param scenarios The list of scenarios for which to create the tables.
-	 * @param reference The reference build to highlight in the table. (TODO)
+	 * @param reference The reference build to highlight in the table.
 	 * @param resultsFolder The output folder for the html files generated.  The results folder will contain a graphs 
 	 * subdirectory which will contain line graphs of the a specified dimension measurement over time for a specific scenario.
 	 */
