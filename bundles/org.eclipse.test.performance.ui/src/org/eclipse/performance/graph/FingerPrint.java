@@ -205,7 +205,7 @@ public class FingerPrint {
 	            if (Math.abs(percent) < 200) {
 	                String n= name + " (" + dims[i].getName() + ")" + refData;
 	                
-	                bar.addItem(n, percent,linkUrl+"/"+scenarioName.replace('#','.').replace(':','_').replace('\\','_')+".html"); //$NON-NLS-1$ //$NON-NLS-2$
+	                bar.addItem(n, percent,linkUrl+"/"+(scenarioName+"_"+dims[i].getName()).replace('#','.').replace(':','_').replace('\\','_')+".html"); //$NON-NLS-1$ //$NON-NLS-2$
 	            }
 	        }
         }
