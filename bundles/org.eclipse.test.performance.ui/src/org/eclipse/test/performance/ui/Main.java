@@ -53,9 +53,9 @@ public class Main {
 		}
 
 		Enumeration components = fingerPrints.keys();
-
-		Utils.copyFile(Utils.class.getResource("FAIL.gif"),output+"/FAIL.gif");
-		Utils.copyFile(Utils.class.getResource("OK.gif"),output+"/OK.gif");
+		String pluginImages=System.getProperty("PLUGIN_PATH");
+		Utils.copyFile(new File(pluginImages,"FAIL.gif"),output+"/FAIL.gif");
+		Utils.copyFile(new File(pluginImages,"OK.gif"),output+"/OK.gif");
 
 		// print fingerprint/scenario status pages
 		while (components.hasMoreElements()) {

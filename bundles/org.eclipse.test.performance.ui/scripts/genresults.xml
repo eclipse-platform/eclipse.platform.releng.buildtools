@@ -1,21 +1,24 @@
 <project default="run">
 
 	<target name="init">
-		<condition property="java.library.path" value="../../../plugins/org.eclipse.swt.win32_3.1.0/os/win32/x86">
+		<condition property="java.library.path" value="${basedir}/../..//org.eclipse.swt.win32_3.1.0/os/win32/x86">
 			<os family="windows" />
 		</condition>
-		<condition property="java.library.path" value="../../../plugins/org.eclipse.swt.motif_3.1.0/os/linux/x86">
-			<os family="Linux" />
+		<condition property="swt.library.path" value="${basedir}/../../org.eclipse.swt.motif_3.1.0/os/linux/x86">
+			<os family="unix" />
 		</condition>
 		<condition property="swt.exclude" value="**/*swt.motif*/**/*.jar,**/*swt.gtk/**/*.jar">
 			<os family="windows" />
 		</condition>
 		<condition property="swt.exclude" value="**/*swt.win32*/**/*.jar">
-			<os family="Linux" />
+			<os family="unix" />
 		</condition>
 	</target>
 
-	<target name="run">
+	<target name="run" depends="init">
+		<echo message="${args}" />
+		<echo message="${dbloc}" />
+		<echo message="${swt.library.path}" />
 		<java classname="org.eclipse.test.performance.ui.Main" fork="true" maxmemory="256m">
 			<arg line="${args}" />
 			<classpath>
@@ -23,13 +26,15 @@
 					<include name="**/*.jar" />
 					<exclude name="${swt.exclude}" />
 				</fileset>
-				<fileset dir="${db.bin}" />
+				<fileset dir="${dbbin}" />
 			</classpath>
 
-			<env key="LD_LIBRARY_PATH" value="${basedir}/../org.eclipse.releng.basebuilder" />
-			<sysproperty key="java.library.path" value="${java.library.path}" />
+			<env key="LD_LIBRARY_PATH" value="${basedir}/../../.." />
+			<sysproperty key="java.library.path" value="${java.library.path}:${swt.library.path}" />
+			<sysproperty key="PLUGIN_PATH" value="${basedir}/.." />
 			<sysproperty key="eclipse.perf.dbloc" value="${dbloc}" />
 		</java>
+
 	</target>
 	
 </project>

@@ -280,9 +280,10 @@ public class Utils {
 	 * @param src - the source file.
 	 * @param dest - the destination.
 	 */
-	public static void copyFile(URL src, String dest) {
+	public static void copyFile(File src, String dest) {
+		
 		try {
-			InputStream in = new FileInputStream(src.getFile());
+			InputStream in = new FileInputStream(src);
 			OutputStream out = new FileOutputStream(dest);
 			byte[] buf = new byte[1024];
 			int len;

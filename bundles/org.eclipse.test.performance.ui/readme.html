@@ -78,12 +78,12 @@
 <ul>
       <li>Windows 
         <ul>
-          <li>set db.bin=c:\Cloudscape_10.0\lib</li>
+          <li>set dbbin=c:\Cloudscape_10.0\lib</li>
         </ul>
       </li>
       <li>on Linux
 <ul>
-          <li>export db.bin=/home/user/Cloudscape_10.0/lib<br>
+          <li>export dbbin=/home/user/Cloudscape_10.0/lib<br>
             <br>
           </li>
         </ul>
@@ -95,7 +95,8 @@
 <p>From a terminal or dos prompt,<br>
 </p>
 <p><b>1. cd to org.eclipse.releng.basebuilder\plugins\org.eclipse.test.performance.ui\scripts<br>
-  2. execute the following command:<br>
+  2. if running on Linux, execute &quot;chmod 755 genresults&quot;<br>
+  </b><b>2. execute the following command:<br>
   <br>
   genresults -baseline &lt;baseline build id&gt; -current &lt;current build id&gt; 
   -config &lt;comma-separated list of configs&gt; -jvm &lt;jvm name&gt; -output 
