@@ -30,7 +30,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.test.internal.performance.InternalDimensions;
+import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
@@ -69,7 +69,12 @@ public class FingerPrint {
         
         BarGraph bar= new BarGraph("Performance of " + thisBuildID + " relative to " + referenceBuildId);
                 
-        SummaryEntry[] entries= DB.querySummaries(new Variations(config, thisBuildID), true);
+        Variations variations= new Variations();
+        variations.put(PerformanceTestPlugin.CONFIG, config);
+        variations.put(PerformanceTestPlugin.BUILD, thisBuildID);
+        // only return summaries for "org.eclipse.jdt.text"; pass a null for all global scenarios
+        String scenarioPrefix= "org.eclipse.jdt.text.%";	//$NON-NLS-1$
+        SummaryEntry[] entries= DB.querySummaries(variations, scenarioPrefix);
         if (entries != null) {
             for (int i= 0; i < entries.length; i++) {
                 SummaryEntry se= entries[i];
