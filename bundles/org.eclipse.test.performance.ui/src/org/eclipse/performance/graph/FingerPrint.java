@@ -57,7 +57,7 @@ public class FingerPrint {
     public FingerPrint(String config, String reference, String thisBuildId, String outputDir) {
         this();
         referenceBuildId= reference;
-        this.config= "relengbuildwin2";
+        this.config= config;
         this.thisBuildID= thisBuildId;
         outputDirectory= outputDir;
         variations= new Variations();
@@ -88,7 +88,7 @@ public class FingerPrint {
     }
     
     public static void main(String args[]) {
-        FingerPrint main= new FingerPrint("relengbuildwin2",args[0],args[1],args[2]);  
+        FingerPrint main= new FingerPrint(args[0],args[1],args[2],args[3]);  
     }
 
     public void run(Object[] entries, String component) {
@@ -115,7 +115,9 @@ public class FingerPrint {
         if (areas != null) {
 	        try {
 	            PrintStream os= new PrintStream(new FileOutputStream(outputDirectory + '/' + outName + ".php"));
-	            os.println("<html><body>");
+	   	        os.println("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">");
+	   	        os.println("<link rel=\"stylesheet\" href=\"../../../../default_style.css\" type=\"text/css\">");
+	            os.println("<body>");
 	            os.println("<img src=\"" + outName + ".jpeg\" usemap=\"#" + outName + "\">");
 	            os.println("<map name=\"" + outName + "\">");
 	            os.println(areas);

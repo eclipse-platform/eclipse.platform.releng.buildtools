@@ -135,6 +135,7 @@ public class LineGraph {
             
             if (fAreaBuffer == null)
                 fAreaBuffer= new StringBuffer();
+            
             fAreaBuffer.append("\r<area shape=\"CIRCLE\" coords=\""+(xposition-2)+','+(yposition-2)+','+5+"\" nohref onMouseover=\"showtip(this,event,'"+thisItem.title+": "+thisItem.description+"')\" onMouseout=\"hidetip()\">");
             
             

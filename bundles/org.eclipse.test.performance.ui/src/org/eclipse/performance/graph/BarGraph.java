@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Display;
 public class BarGraph {
 
     private static final int MARGIN= 5;		// margin on all four sides
-    private static final int BARHEIGHT= 10;	// height of bar
+    private static final int BARHEIGHT= 8;	// height of bar
     private static final int GAP= 10;		// gap between bars
     private static final int TGAP= 5; 		// gap between lines and labels
     
@@ -89,8 +89,8 @@ public class BarGraph {
         Color fg= display.getSystemColor(SWT.COLOR_BLACK);
         
         // draw title centered on top
-        Point es1= gc.stringExtent(fTitle);
-        gc.drawString(fTitle, (w-es1.x)/2, MARGIN, true);
+        int titleHeight= gc.stringExtent(fTitle).y;
+        gc.drawString(fTitle, MARGIN, MARGIN, true);
         
         int center= MARGIN+w/2;
         int w2= w/2-gc.stringExtent("-99.9").x-TGAP;	// reserve space //$NON-NLS-1$
@@ -120,7 +120,7 @@ public class BarGraph {
         }
         
         // draw striped background
-        int y= MARGIN+es1.y+GAP;
+        int y= MARGIN+titleHeight+GAP;
         Color lightblue= new Color(display, 237, 243, 254);
         gc.setBackground(lightblue);
         for (int i= 0; i < bars.length; i++)
@@ -187,7 +187,7 @@ public class BarGraph {
             if (hasURL) {
                 gc.setForeground(blue);
                 Point e= gc.stringExtent(title);
-                gc.drawLine(x, labelvpos+e.y-2, x+e.x, labelvpos+e.y-2);
+                gc.drawLine(x, labelvpos+e.y-1, x+e.x, labelvpos+e.y-1);
             }
             gc.drawString(title, x, labelvpos, true);
             if (hasURL)

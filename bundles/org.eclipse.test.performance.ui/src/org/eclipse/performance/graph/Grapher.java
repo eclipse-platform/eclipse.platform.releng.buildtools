@@ -84,6 +84,8 @@ public class Grapher {
 	                    String buildID= ts.getLabel(j);
 	                    double value= ts.getValue(j);
 	                    Color c= buildID.indexOf(referenceBuildId)  >= 0 ? green : black;
+	                    int underscoreIndex=buildID.indexOf('_');
+	                    buildID=(buildID.indexOf('_')==-1)?buildID:buildID.substring(0,underscoreIndex);
 	                    if (c == green)
 	                    	graph.addItem(buildID, dim.getDisplayValue(value), value, c, true);
 	                    if (!buildID.startsWith("N"))

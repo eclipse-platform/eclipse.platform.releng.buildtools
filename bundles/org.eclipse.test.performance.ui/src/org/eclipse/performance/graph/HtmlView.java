@@ -33,14 +33,14 @@ public class HtmlView {
     	
     	String [] bgColors= {"#DDDDDD","#EEEEEE"};
     	String reference=args[0];
-        String [] buildTypeFilter={reference,args[1]+"%"};
-    	String resultsFolder=args[2];
+    	String resultsFolder=args[1];
+    	String config=args[2];
 		String outFile= null;
 		PrintStream ps= null;
        // get all Scenarios 
         Dim[] qd= null; // new Dim[] { InternalDimensions.CPU_TIME };
         Variations variations= new Variations();
-        variations.put(PerformanceTestPlugin.CONFIG, "relengbuildwin2");       
+        variations.put(PerformanceTestPlugin.CONFIG, config);       
         variations.put(PerformanceTestPlugin.BUILD, "%");
         Scenario[] scenarios=DB.queryScenarios(variations, "org.eclipse%", PerformanceTestPlugin.BUILD, qd);
         
@@ -69,8 +69,11 @@ public class HtmlView {
             
             String[] timeSeriesLabels= t.getTimeSeriesLabels();
             ps.println("<tr><td>Builds:</td>"); //$NON-NLS-1$
-            for (int j= 0; j < timeSeriesLabels.length; j++)
-                ps.println("<td bgcolor="+bgColors[(j+3)%2] +">"+timeSeriesLabels[j]+"</td>");
+            for (int j= 0; j < timeSeriesLabels.length; j++){
+            	int underScoreIndex=timeSeriesLabels[j].indexOf('_');
+            	timeSeriesLabels[j]=(underScoreIndex==-1)?timeSeriesLabels[j]:timeSeriesLabels[j].substring(0,underScoreIndex);
+            	ps.println("<td bgcolor="+bgColors[(j+3)%2] +">"+timeSeriesLabels[j]+"</td>");
+            }
             ps.println("</tr>");
                                     
             Dim[] dimensions= t.getDimensions();
