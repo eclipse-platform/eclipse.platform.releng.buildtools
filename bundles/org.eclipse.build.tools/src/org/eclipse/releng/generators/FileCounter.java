@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
@@ -56,10 +56,17 @@ public class FileCounter extends Task {
 		
 		for (int i = 0; i < names.length; i++) {
 			System.out.println("Name: " + names[i]);
-			int index = names[i].toLowerCase().indexOf(this.getFilterString().toLowerCase());
-			if (index != -1) {
-				count++;
+			
+			int index = -1;
+			StringTokenizer types = getFileTypes();
+			
+			while (types.hasMoreTokens()){
+				index = names[i].toLowerCase().indexOf(types.nextToken().toLowerCase());
+				if (index != -1) {
+					count++;
+				}
 			}
+
 		}
 		
 		try {
@@ -72,6 +79,10 @@ public class FileCounter extends Task {
 			throw new BuildException("Can not create file.count file");
 		}
 		
+	}
+
+	private StringTokenizer getFileTypes(){
+		return new StringTokenizer(getFilterString(),",");
 	}
 
 	/**

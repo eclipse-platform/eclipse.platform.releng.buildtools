@@ -18,7 +18,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.eclipse.releng.Mailer;
+
 
 /**
  * @version 	1.0
@@ -39,18 +39,9 @@ public class TestResultsGenerator extends Task {
 	private boolean testsRan = true;
 	//assume tests ran.  If no html files are found, this is set to false
 
-	//for backward compatability with old testManifest.xml
-	private boolean useNewFormat = false;
-
-	private Mailer mailer;
-
 	// Parameters
 	// build runs JUnit automated tests
 	private boolean isBuildTested;
-
-	// buildType used to determine if mail should be sent on
-	// successful build completion
-	private String buildType;
 
 	// Comma separated list of drop tokens
 	private String dropTokenList;
@@ -91,7 +82,6 @@ public class TestResultsGenerator extends Task {
 
 	public static void main(String[] args) {
 		TestResultsGenerator test = new TestResultsGenerator();
-		test.setUseNewFormat(true);
 		test.setDropTokenList(
 			"%sdk%,%tests%,%examples%,%runtime%,%jdt%,%teamextras%,%infocenter%");
 		test.getDropTokensFromList(test.dropTokenList);
@@ -130,7 +120,6 @@ public class TestResultsGenerator extends Task {
 		System.out.println("End: Generating test results indx page");
 		writeTestResultsFile();
 		writeDropIndexFile();
-		mailResults();
 	}
 
 	public void parseCompileLogs() {
@@ -399,12 +388,6 @@ public class TestResultsGenerator extends Task {
 
 		result = result + "<td><div align=left>" + imageName + "</div></td>\n";
 		result = result + "<td>" + aPlatform.getName() + "</td>";
-
-		if (isUseNewFormat()){
-			result = result + "<td><div align=\"center\">(<a href=\"download.php?dropFile="+aPlatform.getFileName() +"\">http</a>)\n";
-			result = result + "&nbsp;&nbsp;<?php echo \"(<a href='ftp://$SERVER_NAME/@buildlabel@/"+aPlatform.getFileName() +"'>ftp</a>)</div></td>\" ?>\n";
-		}
-
 		result = result + "<td>" + aPlatform.getFileName() + "</td>\n";
 		result = result + "</tr>\n";
 
@@ -588,46 +571,7 @@ public class TestResultsGenerator extends Task {
 		}
 	}
 
-	private void mailResults() {
-		//send a different message for the following cases:
-		//build is not tested at all
-		//build is tested, tests have not run
-		//build is tested, tests have run with error and or failures
-		//build is tested, tests have run with no errors or failures
-		try {
-			mailer = new Mailer();
-		} catch (NoClassDefFoundError e) {
-			return;
-		}
-		String buildDownloadUrl = mailer.getBuildProperties().getDownloadUrl()+"/"+mailer.getBuildProperties().getBuildLabel();
-		String subject = "Build is complete.  ";
-		String message = "The build is complete.  \n\n"+buildDownloadUrl;
-
-		if (testsRan) {
-			subject = "Automated JUnit Testing complete.  ";
-			message = "Automated JUnit testing is complete.  ";
-			subject =
-				subject.concat(
-					(testResultsWithProblems.endsWith("\n"))
-						? "All tests pass"
-						: "Test failures/errors occurred.");
-			message =
-				message.concat(
-					(testResultsWithProblems.endsWith("\n"))
-						? "All tests pass"
-						: "Test failures/errors occurred in the following:  "
-							+ testResultsWithProblems)+"\n\n"+buildDownloadUrl+"/"+testResultsHtmlFileName;
-		} else if (isBuildTested && (!buildType.equals("N"))) {
-			subject = subject.concat("Automated JUnit testing is starting.");
-			message = "The " + subject+"\n\n"+buildDownloadUrl;
-		}
-
-		if (subject.endsWith("Test failures/errors occurred."))
-			mailer.sendMessage(subject, message);
-		else if (!buildType.equals("N"))
-			mailer.sendMessage(subject, message);
-
-	}
+	
 
 	/**
 	 * Gets the hrefTestResultsTargetPath.
@@ -751,35 +695,6 @@ public class TestResultsGenerator extends Task {
 		this.isBuildTested = isBuildTested;
 	}
 
-	/**
-	 * Returns the buildType.
-	 * @return String
-	 */
-	public String getBuildType() {
-		return buildType;
-	}
-
-	/**
-	 * Sets the buildType.
-	 * @param buildType The buildType to set
-	 */
-	public void setBuildType(String buildType) {
-		this.buildType = buildType;
-	}
-
-	/**
-	 * @return boolean
-	 */
-	public boolean isUseNewFormat() {
-		return useNewFormat;
-}
-	/**
-	 * Sets the useNewFormat.
-	 * @param useNewFormat The useNewFormat to set
-	 */
-	public void setUseNewFormat(boolean useNewFormat) {
-		this.useNewFormat = useNewFormat;
-	}
 
 	/**
 	 * @return
@@ -798,10 +713,6 @@ public class TestResultsGenerator extends Task {
 	/**
 	 * @return
 	 */
-
-	/**
-	 * @return
-	 */
 	public Vector getDropTokens() {
 		return dropTokens;
 	}
@@ -811,6 +722,20 @@ public class TestResultsGenerator extends Task {
 	 */
 	public void setDropTokens(Vector vector) {
 		dropTokens = vector;
+	}
+
+	/**
+	 * @return
+	 */
+	public String getTestResultsWithProblems() {
+		return testResultsWithProblems;
+	}
+
+	/**
+	 * @param string
+	 */
+	public void setTestResultsWithProblems(String string) {
+		testResultsWithProblems = string;
 	}
 
 }
