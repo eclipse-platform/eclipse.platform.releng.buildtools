@@ -16,7 +16,7 @@ public class Main {
 	private String baseline;
 	private String dimensionHistoryOutput;
 	private String dimensionHistoryUrl;
-	private String fpOutput;
+	private String output;
 	private String[] config;
 	private Hashtable configDescriptors;
 	private String currentBuildId;
@@ -37,8 +37,7 @@ public class Main {
 	}
 
 	private void run() {
-		String tmpDimensionOutput=dimensionHistoryOutput;
-
+		String tmpDimensionOutput=output;
 		for (int i = 0; i < config.length; i++) {
 			Utils.ConfigDescriptor cd=null;
 			if (configDescriptors!=null){
@@ -47,24 +46,24 @@ public class Main {
 				dimensionHistoryUrl = cd.url;
 				if (cd.outputDir != null)
 					dimensionHistoryOutput = cd.outputDir;
-			}
-			dimensionHistoryOutput=tmpDimensionOutput+"/"+config[i];
+			} else
+				dimensionHistoryOutput=tmpDimensionOutput+"/"+config[i];			
+
 			run(config[i],cd);
 		}
 
 		Enumeration components = fingerPrints.keys();
 
-		Utils.copyFile(Utils.class.getResource("FAIL.gif"),fpOutput+"/FAIL.gif");
-		Utils.copyFile(Utils.class.getResource("OK.gif"),fpOutput+"/OK.gif");
+		Utils.copyFile(Utils.class.getResource("FAIL.gif"),output+"/FAIL.gif");
+		Utils.copyFile(Utils.class.getResource("OK.gif"),output+"/OK.gif");
 
 		// print fingerprint/scenario status pages
 		while (components.hasMoreElements()) {
 			String component = components.nextElement().toString();
 			try {		
-				File output = new File(fpOutput + '/' + component + ".php");
-				output.getParentFile().mkdirs();
-				PrintStream os = new PrintStream(new FileOutputStream(fpOutput
-						+ '/' + component + ".php"));
+				File outputFile = new File(output, component + ".php");
+				outputFile.getParentFile().mkdirs();
+				PrintStream os = new PrintStream(new FileOutputStream(outputFile));
 				os.println(Utils.HTML_OPEN);
 				os.println(Utils.HTML_DEFAULT_CSS);
 				os.println("<body>");
@@ -83,6 +82,8 @@ public class Main {
 							+ baselineName
 							+ "</h3>";
 				os.println(title);
+				
+				//print the html representation of fingerprint for each config 
 				while (configs.hasMoreElements()) {
 					String config = configs.nextElement().toString();
 					FingerPrint fp = (FingerPrint) fps.get(config);
@@ -91,8 +92,7 @@ public class Main {
 				if (component != "") {
 					char buildType = currentBuildId.charAt(0);
 
-					// print the component scenario table beneath the
-					// fingerprint
+				//print the component scenario status table beneath the fingerprint
 					variations.put("config", "%");
 					ScenarioStatusTable sst = new ScenarioStatusTable(
 							variations, component + "%", configDescriptors);
@@ -112,6 +112,7 @@ public class Main {
 			scenarios = Utils.getScenarios("%", scenarioFilter, config, jvm);
 			variations = Utils.getVariations("%", config, jvm);
 
+			//generates scenario result pages and line graphs
 			if (genScenarioSummaries || genAll) {
 				System.out.print(config
 						+ ": generating scenario summaries...");
@@ -119,10 +120,15 @@ public class Main {
 				System.out.println("done.");
 			}
 
+			//creates and stores fingerprint objects
 			if (genFingerPrints || genAll) {
 				System.out.print(config + ": generating fingerprints...");
+				
+				//global
 				FingerPrint global = new FingerPrint(null, config, baseline,
-						currentBuildId, variations, fpOutput, configDescriptors);
+						currentBuildId, variations, output, configDescriptors);
+				
+				//store mappings of fingerprints per config for each component
 				Hashtable t;
 				if (fingerPrints.get("global") != null)
 					t = (Hashtable) fingerPrints.get("global");
@@ -132,13 +138,16 @@ public class Main {
 				t.put(config, global);
 				fingerPrints.put("global", t);
 
+				//get unique component names from scenario names
 				ArrayList components = Utils.getComponentNames(scenarios);
+		
+				//store fingerprints for config for each component
 				for (int i = 0; i < components.size(); i++) {
 					String component = components.get(i).toString();
 					variations.put("config", config);
 					FingerPrint componentFp = new FingerPrint(component,
 							config, baseline, currentBuildId, variations,
-							fpOutput, configDescriptors);
+							output, configDescriptors);
 					if (fingerPrints.get(component) != null)
 						t = (Hashtable) fingerPrints.get(component);
 					else
@@ -159,6 +168,10 @@ public class Main {
 
 		while (i < args.length) {
 			String arg = args[i];
+			if (!arg.startsWith("-")){
+				i++;
+				continue;
+			}
 			
 			if (arg.equals("-baseline")) {
 				baseline = args[i + 1];
@@ -167,6 +180,7 @@ public class Main {
 					printUsage();
 				}
 				i++;
+				continue;
 			}
 			if (arg.equals("-highlight.latest")) {
 				if (args[i + 1].startsWith("-")) {
@@ -179,6 +193,7 @@ public class Main {
 					pointsOfInterest.add(ids[j]);
 				}
 				i++;
+				continue;
 			}
 			if (arg.equals("-current")) {
 				currentBuildId = args[i + 1];
@@ -187,6 +202,7 @@ public class Main {
 					printUsage();
 				}
 				i++;
+				continue;
 			}
 			if (arg.equals("-jvm")) {
 				jvm = args[i + 1];
@@ -195,22 +211,16 @@ public class Main {
 					printUsage();
 				}
 				i++;
+				continue;
 			}
-			if (arg.equals("-fp.output")) {
-				fpOutput = args[i + 1];
-				if (fpOutput.startsWith("-")) {
-					System.out.println("Missing value for -fp.output parameter");
+			if (arg.equals("-output")) {
+				output = args[i + 1];
+				if (output.startsWith("-")) {
+					System.out.println("Missing value for -output parameter");
 					printUsage();
 				}
 				i++;
-			}
-			if (arg.equals("-dim.history.output")|| arg.equals("-dim.output")) {
-				dimensionHistoryOutput = args[i + 1];
-				if (dimensionHistoryOutput.startsWith("-")) {
-					System.out.println("Missing value for -dim.output parameter");
-					printUsage();
-				}
-				i++;
+				continue;
 			}
 			if (arg.equals("-config")) {
 				String configs = args[i + 1];
@@ -220,6 +230,7 @@ public class Main {
 				}
 				config = configs.split(",");
 				i++;
+				continue;
 			}
 			if (arg.equals("-config.properties")) {
 				String configProperties = args[i + 1];
@@ -230,6 +241,7 @@ public class Main {
 				configDescriptors = Utils
 						.getConfigDescriptors(configProperties);
 				i++;
+				continue;
 			}
 			if (arg.equals("-scenario.filter")||arg.equals("-scenario.pattern")) {
 				scenarioFilter = args[i + 1];
@@ -238,19 +250,21 @@ public class Main {
 					printUsage();
 				}
 				i++;
+				continue;
 			}
 			if (arg.equals("-fingerprints")) {
 				genFingerPrints = true;
 				genAll = false;
+				continue;
 			}
 			if (arg.equals("-scenarioresults")) {
 				genScenarioSummaries = true;
 				genAll = false;
+				continue;
 			}
-			i++;
 		}
 		
-		if (baseline == null || fpOutput == null || config == null
+		if (baseline == null || output == null || config == null
 				|| jvm == null
 				|| currentBuildId == null)
 			printUsage();
@@ -271,16 +285,11 @@ public class Main {
 								+"\n\tValue specified in \"jvm\" key in eclipse.perf.config system property for current build.\n\n"
 						
 						+ "-config" 
-								+"\n\tComma separated list of config names."
+								+"\n\tComma separated list of config names for which to generate results."
 								+"\n\tSame as values specified in \"config\" key in eclipse.perf.config system property.\n\n"
 
-						+ "-fp.output"
-								+" \n\tPath to output directory for fingerprints.\n\n"		
-
-						+ "-dim.output"
-								+"\n\tPath to output directory for raw data of dimensions presented in  html tables and line graphs."
-								+"\n\tOptional if information provided in config.properties (below)."
-								+"\n\tLine graphs produced in subdirectory called \"graphs\".\n\n"
+						+ "-output"
+								+" \n\tPath to default output directory.\n\n"
 
 						+ "[-config.properties]"
 								+"\n\tOptional.  Used by scenario status table to provide the following:"

@@ -32,11 +32,12 @@ import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Variations;
 
-/**
- * a utility class which provides html templates and other constant values.
- */
 public class Utils {
 
+	/**
+	 * @param dimension
+	 * @return A description of the dimension.
+	 */
 	public static String getDimensionDescription(String dimension){
 		/*Descriptions of dimensions */
 		//Windows and Linux
@@ -67,7 +68,11 @@ public class Utils {
 		return "";
 	}
 
-	
+	/**
+	 * @param timeSeriesLabels - an array of build ID's with results for a scenario.
+	 * @param current - the current build ID
+	 * @return Build Id's of Nightly builds preceding current.
+	 */
 	public static ArrayList lastSevenNightlyBuildNames(String[] timeSeriesLabels, String current) {
 		int currentIndex=getBuildNameIndex(timeSeriesLabels,current);
 		ArrayList labels = new ArrayList();
@@ -85,7 +90,8 @@ public class Utils {
 		return labels;
 	}
 	
-	/** HTML source used at beginning of html document.
+	/** 
+	 * HTML source used at beginning of html document.
 	 */
 	public static String HTML_OPEN = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">";
 
@@ -112,8 +118,7 @@ public class Utils {
 			+ "</style>";
 
 	/**
-	 * An utility object which stores a name, description and url associated for
-	 * a performance configuration.
+	 * An utility object which stores a name, description, url and optional output directory.
 	 */
 	public static class ConfigDescriptor {
 		String name;
@@ -148,11 +153,10 @@ public class Utils {
 	}
 
 	/**
-	 * 
 	 * @param configDescriptors
-	 *            a semi-colon separated listing of config descriptions.<br>
-	 *            Uses the following format: name,description, url;name2,
-	 *            description2,url2;etc..
+	 *            A semi-colon separated listing of config descriptions.<br>
+	 *            Uses the following format: name,description, url,outputdir;name2,
+	 *            description2,url2,output2;etc..
 	 * @return a mapping of config names to their ConfigDescriptors.
 	 */
 	public static Hashtable getConfigDescriptors(String configDescriptors) {
@@ -176,9 +180,9 @@ public class Utils {
 	}
 
 	/**
-	 * Get all the scenarios for specified variations
+	 * Queries database with variation composed of buildIdPattern, config and jvm.
 	 * 
-	 * @return
+	 * @return Array of scenarios.
 	 */
 	public static Scenario[] getScenarios(String buildIdPattern,
 			String scenarioPattern, String config, String jvm) {
@@ -192,7 +196,7 @@ public class Utils {
 	}
 
 	/**
-	 * Creates a Variations object from
+	 * Creates a Variations object using build id pattern, config and jvm.
 	 * 
 	 * @param buildIdPattern
 	 * @param config
@@ -209,13 +213,8 @@ public class Utils {
 	}
 
 	/**
-	 * returns a list of components as taken from common prefixes to scenario
-	 * names
-	 * 
 	 * @param scenarios
-	 * @param summaryEntries
-	 * @param componentMapping
-	 * @return
+	 * @return list of unique component names derived from prefixes to scenario names.
 	 */
 	public static ArrayList getComponentNames(Scenario[] scenarios) {
 		ArrayList componentNames = new ArrayList();
@@ -236,6 +235,10 @@ public class Utils {
 		return componentNames;
 	}
 
+	/**
+	 * @param fp - a FingerPrint object
+	 * @return - an html representation of the fingerprint.
+	 */
 	public static String getImageMap(FingerPrint fp) {
 		String componentDescription = fp.config;
 		if (fp.configDescriptors != null)
@@ -259,6 +262,11 @@ public class Utils {
 	}
 	
 
+	/**
+	 * @param fp - a fingerprint object which provides variations, component name and configDescriptor 
+	 * information.
+	 * @return - HTML table of all scenarios for a component with red x or green check indicators.
+	 */
 	public static String printScenarioStatusTable(FingerPrint fp) {
 		// print the component scenario table beneath the fingerprint
 		fp.variations.put("config", "%");
@@ -267,6 +275,11 @@ public class Utils {
 		return sst.toString();
 	}
 
+	/**
+	 * Utility method to copy a file.
+	 * @param src - the source file.
+	 * @param dest - the destination.
+	 */
 	public static void copyFile(URL src, String dest) {
 		try {
 			InputStream in = new FileInputStream(src.getFile());
@@ -287,7 +300,13 @@ public class Utils {
 	}
 	
 	/**
-	 * 
+	 * Returns a LineGraph object representing measurements for a scenario over builds.
+	 * @param t - the scenario object.
+	 * @param dimensionName - the name of the measurement for which to generate graph.
+	 * @param reference - the reference build to label.
+	 * @param current - the current build to label.
+	 * @param pointsOfInterest - an array of buildIds.  Points for these are highlighted on graph.
+	 * @return a LineGraph object.
 	 */
 	public static LineGraph getLineGraph(Scenario t, String dimensionName,
 		String reference, String current,ArrayList pointsOfInterest) {
@@ -340,6 +359,11 @@ public class Utils {
 		return graph;
 	}
 
+	/**
+	 * Prints a LineGraph object as a gif
+	 * @param p - the LineGraph object.
+	 * @param output - the output file path.
+	 */
 	public static void printLineGraphGif(LineGraph p, String output) {
 		File outputFile = new  File(output);
 		outputFile.getParentFile().mkdir();
@@ -372,8 +396,9 @@ public class Utils {
 	}
 
 	/**
-	 * @param p
-	 * @param output
+	 * Utility method which returns HTML code representing an image map for a LineGraph object.
+	 * @param p - the LineGraph object.
+	 * @param imageSource - the path to insert for the src attribute to <img>. 
 	 */
 	public static String getImageMap(LineGraph p, String imageSource) {
 		String result="";
@@ -387,6 +412,12 @@ public class Utils {
 		return result;
 	}
 
+	/**
+	 * A utility which returns the index of a given buildId in an array.
+	 * @param timeSeriesLabels - array of buildIds
+	 * @param buildId - the buildId for which to find return value.
+	 * @return The index of the buildID in the array.
+	 */
 	public static int getBuildNameIndex(String[] timeSeriesLabels,
 			String buildId) {
 		for (int i = timeSeriesLabels.length-1; i>-1;i--) {

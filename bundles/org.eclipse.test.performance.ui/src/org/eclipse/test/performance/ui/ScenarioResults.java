@@ -38,19 +38,14 @@ public class ScenarioResults {
 	private ArrayList pointsOfInterest;
 	
 	/**
-	 * An html table representation for a scenario of all dimensions stored in a
-	 * performance database for all builds.
-	 * 
-	 * @param scenarios
-	 *            The list of scenarios for which to create the tables.
-	 * @param reference
-	 *            The reference build to highlight in the table.
-	 * @param resultsFolder
-	 *            The output folder for the html files generated. The results
-	 *            folder will contain a graphs subdirectory which will contain
-	 *            line graphs of the a specified dimension measurement over time
-	 *            for a specific scenario.
-	 * @param object
+	 * Summary of results for a scenario for a given build compared to a reference.
+	 * @param scenarios - the array of Scenario objects for which to generate results.
+	 * @param reference - the reference build ID
+	 * @param resultsFolder - the output directory.
+	 * @param configName - the config for which to generate results.
+	 * @param current - the current buildID
+	 * @param configDescriptor - a ConfigDescriptor object.
+	 * @param pointsOfInterest - an ArrayList of buildId's to highlight on line graphs.
 	 */
 	public ScenarioResults(Scenario[] scenarios, String reference,
 			String resultsFolder, String configName, String current, Utils.ConfigDescriptor configDescriptor,ArrayList pointsOfInterest) {
@@ -68,7 +63,7 @@ public class ScenarioResults {
 		run();
 	}
 
-	public void run() {
+	private void run() {
 
 		String[] bgColors = { "#DDDDDD", "#EEEEEE" };
 		String outFile = null;

@@ -8,7 +8,7 @@ import org.eclipse.test.internal.performance.db.Variations;
 
 public class ScenarioStatusTable {
 	
-	protected Hashtable configMaps=null;
+	private Hashtable configMaps=null;
 	private Variations variations;
 	private String scenarioPattern;
 	private ArrayList configNames=new ArrayList();
@@ -27,13 +27,21 @@ public class ScenarioStatusTable {
 		}
 	}
 	
+	/**
+	 * Creates an HTML table of red x/green check for a scenario for each configuration.
+	 * @param variations
+	 * @param scenarioPattern
+	 * @param configDescriptors
+	 */
 	public ScenarioStatusTable(Variations variations,String scenarioPattern,Hashtable configDescriptors){
 		configMaps=configDescriptors;
 		this.variations=variations;
 		this.scenarioPattern=scenarioPattern;
 	}
 	
-	
+	/**
+	 * Returns HTML representation of scenario status table.
+	 */
 	public String toString() {
 		String OS="config";
 		String htmlTable="";

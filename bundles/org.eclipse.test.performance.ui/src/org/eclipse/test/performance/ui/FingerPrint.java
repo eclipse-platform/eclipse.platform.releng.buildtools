@@ -82,10 +82,8 @@ public class FingerPrint {
     }    
     
     /**
-     * Creates the fingerprint gif, image map and scenario status table for a specified component.
-     * @param entries The result of a database query for summaries for a specified variation.
-     * @param component The component name.  Typically the prefix of each scenario.  Used to filter entries
-     * to include on fingerprint and scenario status table.
+     * Creates the fingerprint gif, image map and scenario status table for the component.
+     * @param entries - the result of a database query for summaries for a specified variation.
      */
     public void run(Object[] entries) {
         new File(outputDirectory).mkdirs();
