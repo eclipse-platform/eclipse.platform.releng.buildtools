@@ -83,15 +83,15 @@ public class LineGraph {
         
         int labelWidth= Math.max(emin.x, emax.x) + 2;
                 
-        int top= PADDING;
+        int top= PADDING*2;
         int bottom= bounds.height - titleHeight - PADDING;
         int left= PADDING + labelWidth;
 
         GraphItem lastItem= (GraphItem) fItems.get(fItems.size()-1);
-        int right= bounds.width - lastItem.getSize(g).x - PADDING;
+        int right= bounds.width - lastItem.getSize(g).x - PADDING/2;
 
         // draw the title
-        g.drawString(fTitle, (bounds.width - titleWidth) / 2, top, true);
+        g.drawString(fTitle, (bounds.width - titleWidth) / 2, titleHeight, true);
         
         // draw the max and min values
         g.drawString(smin, PADDING/2+labelWidth-emin.x, bottom-titleHeight, true);

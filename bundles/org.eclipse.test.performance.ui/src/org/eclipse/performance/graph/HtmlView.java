@@ -43,7 +43,6 @@ public class HtmlView {
         variations.put(PerformanceTestPlugin.CONFIG, "relengbuildwin2");       
         variations.put(PerformanceTestPlugin.BUILD, "%");
         SummaryEntry[] entries= DB.querySummaries(variations,null);
-        
         Scenario[] scenarios=DB.queryScenarios(variations, "%", PerformanceTestPlugin.BUILD, qd);
         
         
