@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.Enumeration;
 
 import org.apache.tools.ant.Task;
 import org.apache.xerces.parsers.DOMParser;
@@ -98,12 +99,12 @@ public class TestResultsGenerator extends Task {
 		test.setDropTemplateFileName(
 			"D:\\junk\\templateFiles\\index.php.template");
 		test.setTestResultsHtmlFileName("testResults.php");
-		test.setDropHtmlFileName("index.php");
-		//test.setDropHtmlFileName("index.html");
+//		test.setDropHtmlFileName("index.php");
+		test.setDropHtmlFileName("index.html");
 
 		test.setHrefTestResultsTargetPath("testresults");
 		test.setCompileLogsDirectoryName(
-			"D:\\workspaces\\builderfixing\\RelEng Java Tools\\N-N20021202-200212021551\\compilelogs");
+			"D:\\junk\\compilelogs");
 		test.setHrefCompileLogsTargetPath("compilelogs");
 		test.setTestManifestFileName("D:\\junk\\testManifest.xml");
 		test.execute();
@@ -248,14 +249,36 @@ public class TestResultsGenerator extends Task {
 
 	}
 
+	private String verifyAllTestsRan(String directory) {
+		Vector missingTestLogs = new Vector();
+		Enumeration enumeration = (anErrorTracker.getTestLogs()).elements();
+
+		String replaceString="";
+		while (enumeration.hasMoreElements()) {
+			String testLogName = enumeration.nextElement().toString();
+
+			if (new File(directory + File.separator + testLogName)
+				.exists()) 
+				continue;
+
+			anErrorTracker.registerError(testLogName);
+			replaceString = replaceString + formatRow(testLogName, -1, false);
+
+			
+		}
+		return replaceString;
+	}
+
 	public void parseXml() {
 
 		File sourceDirectory = new File(xmlDirectoryName);
 
 		if (sourceDirectory.exists()) {
-			File[] xmlFileNames = sourceDirectory.listFiles();
 
 			String replaceString = "";
+
+			File[] xmlFileNames = sourceDirectory.listFiles();
+
 			for (int i = 0; i < xmlFileNames.length; i++) {
 				if (xmlFileNames[i].getPath().endsWith(".xml")) {
 					String fullName = xmlFileNames[i].getPath();
@@ -274,10 +297,12 @@ public class TestResultsGenerator extends Task {
 
 					replaceString =
 						replaceString
-							+ formatRow(xmlFileNames[i].getPath(), errorCount);
+							+ formatRow(xmlFileNames[i].getPath(), errorCount,true);
 				}
 			}
-
+			//check for missing test logs
+			replaceString=replaceString+verifyAllTestsRan(xmlDirectoryName);
+			
 			testResultsTemplateString =
 				replace(
 					testResultsTemplateString,
@@ -473,11 +498,15 @@ public class TestResultsGenerator extends Task {
 		return aString;
 	}
 
-	private String formatRow(String fileName, int errorCount) {
+	private String formatRow(String fileName, int errorCount, boolean link) {
 
 		// replace .xml with .html
 
 		String aString = "";
+		if (!link) {
+			return "<tr><td>" + fileName + " (missing)" + "</td><td>" + "DNF";
+		}
+
 		if (fileName.endsWith(".xml")) {
 
 			int begin = fileName.lastIndexOf(File.separatorChar);
@@ -553,40 +582,39 @@ public class TestResultsGenerator extends Task {
 		//build is tested, tests have not run
 		//build is tested, tests have run with error and or failures
 		//build is tested, tests have run with no errors or failures
-		try{
+		try {
 			mailer = new Mailer();
-			} catch (NoClassDefFoundError e){
-				return;
-			}
+		} catch (NoClassDefFoundError e) {
+			return;
+		}
 
-			String subject = "Build is complete.  ";
-			String message = "The build is complete.  ";
+		String subject = "Build is complete.  ";
+		String message = "The build is complete.  ";
 
-			if (testsRan) {
-				subject = "Automated JUnit Testing complete.  ";
-				message = "Automated JUnit testing is complete.  ";
-				subject =
-					subject.concat(
-						(testResultsWithProblems.endsWith("\n"))
-							? "All tests pass"
-							: "Test failures/errors occurred.");
-				message =
-					message.concat(
-						(testResultsWithProblems.endsWith("\n"))
-							? "All tests pass"
-							: "Test failures/errors occurred in the following:  "
-								+ testResultsWithProblems);
-			} else if (isBuildTested && (!buildType.equals("N"))) {
-				subject =
-					subject.concat("Automated JUnit testing is starting.");
-				message = "The " + subject;
-			}
+		if (testsRan) {
+			subject = "Automated JUnit Testing complete.  ";
+			message = "Automated JUnit testing is complete.  ";
+			subject =
+				subject.concat(
+					(testResultsWithProblems.endsWith("\n"))
+						? "All tests pass"
+						: "Test failures/errors occurred.");
+			message =
+				message.concat(
+					(testResultsWithProblems.endsWith("\n"))
+						? "All tests pass"
+						: "Test failures/errors occurred in the following:  "
+							+ testResultsWithProblems);
+		} else if (isBuildTested && (!buildType.equals("N"))) {
+			subject = subject.concat("Automated JUnit testing is starting.");
+			message = "The " + subject;
+		}
 
-			if (subject.endsWith("Test failures/errors occurred."))
-				mailer.sendMessage(subject, message);
-			else if (!buildType.equals("N"))
-				mailer.sendMessage(subject, message);
-		
+		if (subject.endsWith("Test failures/errors occurred."))
+			mailer.sendMessage(subject, message);
+		else if (!buildType.equals("N"))
+			mailer.sendMessage(subject, message);
+
 	}
 
 	/**

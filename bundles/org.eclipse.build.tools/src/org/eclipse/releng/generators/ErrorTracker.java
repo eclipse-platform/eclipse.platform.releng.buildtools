@@ -18,6 +18,10 @@ import org.xml.sax.SAXException;
  */
 public class ErrorTracker {
 
+	// List of test logs expected at end of build
+	private Vector testLogs = new Vector();
+
+
 	// Platforms keyed on 
 	private Hashtable platforms = new Hashtable();
 	private Hashtable logFiles = new Hashtable();
@@ -29,8 +33,7 @@ public class ErrorTracker {
 		// For testing only.  Should not be invoked
 		
 		ErrorTracker anInstance = new ErrorTracker();
-		anInstance.loadFile("c:\\eclipse\\workspace\\RelEng Java Tools\\testManifest.xml");
-		
+		anInstance.loadFile("D:\\workspaces\\builder_rework\\org.eclipse.releng.eclipsebuilder\\testManifest.xml");
 		String[] theTypes = anInstance.getTypes();
 		for (int i=0; i < theTypes.length; i++) {
 			// System.out.println("Type: " + theTypes[i]);
@@ -76,14 +79,30 @@ public class ErrorTracker {
 				Node logFile = anEffectedFile.getParentNode();
 				String logFileName = (String) logFile.getAttributes().getNamedItem("name").getNodeValue();
 				String effectedFileID = (String) anEffectedFile.getAttributes().getNamedItem("id").getNodeValue();				
-				
+				System.out.println(logFileName);
 				Vector aVector = (Vector) logFiles.get(logFileName);
 				if (aVector == null) {
 					aVector = new Vector();
 					logFiles.put(logFileName, aVector);
+					
 				}
 				aVector.addElement((PlatformStatus) platforms.get(effectedFileID));
 			}
+			
+			// store a list of the test logs expected after testing
+			NodeList testLogList = document.getElementsByTagName("logFile");
+				int testLogCount = testLogList.getLength();
+				for (int i = 0; i < testLogCount; i++) {
+								
+					Node testLog = testLogList.item(i);
+					String testLogName = (String) testLog.getAttributes().getNamedItem("name").getNodeValue();
+					if (testLogName.endsWith(".xml")){
+						testLogs.add(testLogName);
+						System.out.println(testLogName);
+					}
+			
+			}
+
 
 //			// Test this mess.
 //			Object[] results = platforms.values().toArray();
@@ -164,4 +183,13 @@ public class ErrorTracker {
 		}
 		return  result;
 	}	
+
+	/**
+	 * Returns the testLogs.
+	 * @return Vector
+	 */
+	public Vector getTestLogs() {
+		return testLogs;
+	}
+
 }
