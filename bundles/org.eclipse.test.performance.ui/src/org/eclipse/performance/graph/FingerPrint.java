@@ -51,15 +51,18 @@ public class FingerPrint {
     SummaryEntry [] entries;
     ArrayList prefixEntries;
     Variations variations;
+    String linkUrl;
+    
     public FingerPrint() {
     }
 
-    public FingerPrint(String config, String reference, String thisBuildId, String outputDir) {
+    public FingerPrint(String config, String reference, String thisBuildId, String outputDir, String linkUrl) {
         this();
         referenceBuildId= reference;
         this.config= config;
         this.thisBuildID= thisBuildId;
         outputDirectory= outputDir;
+        this.linkUrl=linkUrl;
         variations= new Variations();
         variations.put(PerformanceTestPlugin.CONFIG, config);
         variations.put(PerformanceTestPlugin.BUILD, thisBuildID);
@@ -88,7 +91,7 @@ public class FingerPrint {
     }
     
     public static void main(String args[]) {
-        FingerPrint main= new FingerPrint(args[0],args[1],args[2],args[3]);  
+        FingerPrint main= new FingerPrint(args[0],args[1],args[2],args[3],args[4]);  
     }
 
     public void run(Object[] entries, String component) {
@@ -127,10 +130,10 @@ public class FingerPrint {
 	            if (component!=""){
 	            char buildType=thisBuildID.charAt(0);
 	            os.println("<?php");
-	            os.println("	$buildType="+buildType+";");
+	            os.println("	$config=trim($QUERY_STRING);");
 	            os.println("	$packageprefix=\""+component+"\";");
 
-	            os.println("	$aDirectory=dir(\"../../../$buildType-scenarios\");");
+	            os.println("	$aDirectory=dir(\"../../../../performance/$config\");");
 	            os.println("	$index = 0;");
 	            	
 	            os.println("	while ($anEntry = $aDirectory->read()) {");
@@ -154,7 +157,7 @@ public class FingerPrint {
 	            os.println("	echo \"<h3>All $scenarioCount scenarios</h3>\"; ");
 
 	            os.println("	for ($counter=0;$counter<count($scenarios);$counter++){");
-	            os.println("		$line = \"<a href=\\\"../../../$buildType-scenarios/$scenarios[$counter].html\\\">$scenarios[$counter]</a><br>\";");
+	            os.println("		$line = \"<a href=\\\"../../../../performance/$config/$scenarios[$counter].html\\\">$scenarios[$counter]</a><br>\";");
 	            os.println("	 	echo \"$line\";");
 	            os.println("	}");
 	            os.println("	}");
@@ -201,7 +204,8 @@ public class FingerPrint {
 	            }
 	            if (Math.abs(percent) < 200) {
 	                String n= name + " (" + dims[i].getName() + ")" + refData;
-	                bar.addItem(n, percent,"http://download.eclipse.org/downloads/"+thisBuildID.substring(0,1)+"-scenarios/"+scenarioName.replace('#','.').replace(':','_').replace('\\','_')+".html"); //$NON-NLS-1$ //$NON-NLS-2$
+	                
+	                bar.addItem(n, percent,linkUrl+"/"+scenarioName.replace('#','.').replace(':','_').replace('\\','_')+".html"); //$NON-NLS-1$ //$NON-NLS-2$
 	            }
 	        }
         }
