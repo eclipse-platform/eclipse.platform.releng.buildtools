@@ -67,6 +67,7 @@ public class FingerPrint {
         outputDirectory= outputDir;
         linkUrl=url+"/graphs";
         this.config=config;
+        variations.put(PerformanceTestPlugin.BUILD, currentBuildId);
         if (component==null){
         	entries= DB.querySummaries(variations,null);
         	this.component="";

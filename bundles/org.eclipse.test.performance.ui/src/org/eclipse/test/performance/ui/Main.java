@@ -53,6 +53,7 @@ public class Main {
 			
 			ArrayList components = Utils.getComponentNames(scenarios);
 			for (int i = 0; i < components.size(); i++) {
+				variations.put("config",config);
 				new FingerPrint(components.get(i).toString(), config, baseline,
 						currentBuildId, variations, fpOutput, configProperties,
 						fpLinkUrl);
