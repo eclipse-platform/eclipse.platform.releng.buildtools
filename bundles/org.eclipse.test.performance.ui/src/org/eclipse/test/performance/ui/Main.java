@@ -34,15 +34,15 @@ public class Main {
 		scenarios = Utils.getScenarios("%", scenarioFilter, config, jvm);
 		variations = Utils.getVariations("%", config, jvm);
 		
-		if (genDimensionHistories || genAll){
-			System.out.print("Generating dimension history tables...");
-			new DimensionHistories(scenarios, dimensionHistoryOutput, baseline);
+		if (genDimensionGraphs || genAll){
+			System.out.print("Generating dimension history graphs...");
+			new DimensionHistories(scenarios, dimensionHistoryOutput+"/graphs", baseline);
 			System.out.println("done.");
 		}
 		
-		if (genDimensionGraphs || genAll){
-			System.out.print("Generating dimension line graphs...");
-			new DimensionsTables(scenarios, baseline, dimensionHistoryOutput+"/graphs");
+		if (genDimensionHistories || genAll){
+			System.out.print("Generating dimension line tables...");
+			new DimensionsTables(scenarios, baseline, dimensionHistoryOutput);
 			System.out.println("done.");
 		}
 		
