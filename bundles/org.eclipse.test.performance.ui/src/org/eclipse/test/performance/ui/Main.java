@@ -194,7 +194,7 @@ public class Main {
 				}
 				i++;
 			}
-			if (arg.equals("-dim.history.output")) {
+			if (arg.equals("-dim.history.output")|| arg.equals("-dim.output")) {
 				dimensionHistoryOutput = args[i + 1];
 				if (dimensionHistoryOutput.startsWith("-")) {
 					printUsage();
@@ -256,17 +256,46 @@ public class Main {
 	private void printUsage() {
 		System.out
 				.println("Usage:\n"
-						+ " -baseline <baseline build id>\n"
-						+ " -jvm <jvm name>\n"
-						+ " -dim.history.output <path to output directory for html tables of measurements.  Optional if information provided in config.properties.  Line graphs produced in subdirectory called graphs>\n"
-						+ " -fp.output <path to output directory for fingerprint jpegs and html pages>\n"
-						+ " -config <comma separated list of config names>\n"
-						+ " -config.properties <name1,description1,url1 [,outputdir1];name2,description2,url2 [,outputdir2];etc..>\n"
-						+ " -current <current build id>\n"
-						+ " [-scenario.filter <scenario prefix>]\n"
-						+ " [-fingerprints]\n" 
-						+ " [-dimensiongraphs]\n"
-						+ " [-dimensiontables]\n");
+						
+						+ "-baseline"
+								+"\n\tBuild id against which to compare results."
+								+"\n\tSame as value specified for the \"build\" key in the eclipse.perf.config system property.\n\n"
+								
+						+ "-current" 
+								+"\n\tbuild id for which to generate results.  Compared to build id specified in -baseline parameter above."
+								+"\n\tSame as value specified for the \"build\" key in the eclipse.perf.config system property. \n\n"
+							
+						+ "-jvm"
+								+"\n\tValue specified in \"jvm\" key in eclipse.perf.config system property for current build.\n\n"
+						
+						+ "-config" 
+								+"\n\tComma separated list of config names."
+								+	"\n\tSame as values specified in \"config\" key in eclipse.perf.config system property.\n\n"
+
+						+ "-dim.output"
+								+"\n\tPath to output directory for raw data of dimensions presented in  html tables and line graphs."
+								+"\n\tOptional if information provided in config.properties (below)."
+								+"\n\tLine graphs produced in subdirectory called \"graphs\".\n\n"
+
+						+ "-config.properties" 
+								+"\n\tname1,description1,url1 [,outputdir1];name2,description2,url2 [,outputdir2];etc..\n\n"
+					
+						+ "-fp.output"
+								+" \n\tPath to output directory for fingerprints.\n\n"		
+						
+						+ "[-scenario.filter]"
+								+" \n\tOptional.  Scenario prefix pattern to query database.  If not specified,"
+								+"\n\tdefault of % used in query.\n\n"
+									
+						+ "[-fingerprints]" 
+								+"\n\tOptional.  Use to generate fingerprints only.\n\n"
+									
+						+ "[-dimensiongraphs]"
+								+"\n\tOptional.  Use to generate dimension line graphs only.\n\n"
+								
+						+ "[-dimensiontables]"
+								+"\n\tOptional.  Use to generate dimension raw data tables only.\n\n");
+		
 		System.exit(1);
 
 	}
