@@ -17,6 +17,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
@@ -47,7 +50,9 @@ public class FingerPrint {
     String referenceBuildId;
     String thisBuildID;
     String config;
-
+    SummaryEntry [] entries;
+    ArrayList prefixEntries;
+    Variations variations;
     public FingerPrint() {
     }
 
@@ -55,46 +60,107 @@ public class FingerPrint {
         this();
         referenceBuildId= reference;
         this.config= "relengbuildwin2";
-        thisBuildID= thisBuildId;
+        this.thisBuildID= thisBuildId;
         outputDirectory= outputDir;
-        
-    }
-    public static void main(String args[]) {
-        FingerPrint main= new FingerPrint("relengbuildwin2",args[0],args[1],args[2]);  
-        main.run();
-    }
-
-    public void run() {
-        new File(outputDirectory).mkdirs();
-        
-        BarGraph bar= new BarGraph("Performance of " + thisBuildID + " relative to " + referenceBuildId);
-                
-        Variations variations= new Variations();
+        variations= new Variations();
         variations.put(PerformanceTestPlugin.CONFIG, config);
         variations.put(PerformanceTestPlugin.BUILD, thisBuildID);
         // only return summaries for "org.eclipse.jdt.text"; pass a null for all global scenarios
-      //  String scenarioPrefix= "org.eclipse.jdt.%";	//$NON-NLS-1$
-        SummaryEntry[] entries= DB.querySummaries(variations,null);
+        entries= DB.querySummaries(variations,null);
+       	run(entries,"");
+       	getComponentEntries(entries);
+
+    }
+    
+    private void getComponentEntries(SummaryEntry[] entries){
+    	if (entries==null)
+    		return;
+    	for (int i=0;i<entries.length;i++){
+    		SummaryEntry entry=entries[i];
+    		if (entry==null)
+    			return;
+    		ArrayList componentEntries;
+    		String prefix=entry.scenarioName.substring(0,entry.scenarioName.indexOf(".test"));
+    		if (prefixEntries==null)
+    			prefixEntries=new ArrayList();
+    		if (!prefixEntries.contains(prefix)){
+    	       	run(DB.querySummaries(variations,prefix+'%'),prefix);
+    		}
+    	}
+    }
+    
+    public static void main(String args[]) {
+        FingerPrint main= new FingerPrint("relengbuildwin2",args[0],args[1],args[2]);  
+    }
+
+    public void run(Object[] entries, String component) {
+    	String fileId="";
+    	if (!component.equals(""))
+    		fileId=component+"_";
+    	
+        new File(outputDirectory).mkdirs();
+        
+        BarGraph bar= new BarGraph("Performance of " + component +" "+thisBuildID + " relative to " + referenceBuildId);
+                
         if (entries != null) {
             for (int i= 0; i < entries.length; i++) {
-                SummaryEntry se= entries[i];
+                SummaryEntry se= (SummaryEntry)entries[i];
                 add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName);    
             }
         }
-        
-        String outName= "FP_" + referenceBuildId + '_' + thisBuildID;
+      
+        String outName= "FP_" + fileId+ referenceBuildId + '_' + thisBuildID;
         save(bar, outputDirectory + '/' + outName);
         //show(bar);
         
         String areas= bar.getAreas();
         if (areas != null) {
 	        try {
-	            PrintStream os= new PrintStream(new FileOutputStream(outputDirectory + '/' + outName + ".html"));
+	            PrintStream os= new PrintStream(new FileOutputStream(outputDirectory + '/' + outName + ".php"));
 	            os.println("<html><body>");
-	            os.println("<img src=\"performance/" + outName + ".jpeg\" usemap=\"#" + outName + "\">");
+	            os.println("<img src=\"" + outName + ".jpeg\" usemap=\"#" + outName + "\">");
 	            os.println("<map name=\"" + outName + "\">");
 	            os.println(areas);
-	            os.println("</map>");
+	            os.println("</map><br>");
+
+	            if (component!=""){
+	            char buildType=thisBuildID.charAt(0);
+	            os.println("<?php");
+	            os.println("	$buildType="+buildType+";");
+	            os.println("	$packageprefix=\""+component+"\";");
+
+	            os.println("	$aDirectory=dir(\"../../../$buildType-scenarios\");");
+	            os.println("	$index = 0;");
+	            	
+	            os.println("	while ($anEntry = $aDirectory->read()) {");
+
+	            os.println("		if ($anEntry != \".\" && $anEntry != \"..\") {");
+	            os.println("			if (strstr($anEntry,$packageprefix) && strstr($anEntry,\".html\")){");
+	            os.println("				$scenarioname=substr($anEntry,0,-5);");
+	            os.println("				$scenarios[$index]=$scenarioname;");
+	            os.println("				$index++;");
+	            				
+	            os.println("			}");
+	            os.println("		}");
+	            os.println("}");
+
+	            os.println("	$scenarioCount=count($scenarios);");
+	            os.println("	if ($scenarioCount==0){");
+	            os.println("		echo \"Results being generated.\";");
+	            os.println("	}");
+	            os.println("	else{");
+	            os.println("	sort($scenarios);");
+	            os.println("	echo \"<h3>All $scenarioCount scenarios</h3>\"; ");
+
+	            os.println("	for ($counter=0;$counter<count($scenarios);$counter++){");
+	            os.println("		$line = \"<a href=\\\"../../../$buildType-scenarios/$scenarios[$counter].html\\\">$scenarios[$counter]</a><br>\";");
+	            os.println("	 	echo \"$line\";");
+	            os.println("	}");
+	            os.println("	}");
+	            os.println("	aDirectory.closedir();");
+	            os.println("?>");
+	            }        
+	            
 	            os.println("</body></html>");
 	            os.close();
 	        } catch (FileNotFoundException e) {

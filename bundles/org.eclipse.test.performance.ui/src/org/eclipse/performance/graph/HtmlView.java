@@ -42,8 +42,7 @@ public class HtmlView {
         Variations variations= new Variations();
         variations.put(PerformanceTestPlugin.CONFIG, "relengbuildwin2");       
         variations.put(PerformanceTestPlugin.BUILD, "%");
-        SummaryEntry[] entries= DB.querySummaries(variations,null);
-        Scenario[] scenarios=DB.queryScenarios(variations, "%", PerformanceTestPlugin.BUILD, qd);
+        Scenario[] scenarios=DB.queryScenarios(variations, "org.eclipse%", PerformanceTestPlugin.BUILD, qd);
         
         
         Grapher grapher =new Grapher(scenarios,resultsFolder+"/graphs",reference);
@@ -78,12 +77,15 @@ public class HtmlView {
             for (int i= 0; i < dimensions.length; i++) {
                 Dim dim= dimensions[i];
                 try{
-                ps.println("<tr><td><a href=\""+t.getScenarioName().replace('#','.').replace(':','_').replace('\\','_')+"_"+dim.getName()+".jpeg\">"+dim.getName() + ':'+"</a></td>");
+                ps.println("<tr><td><a href=\"graphs/"+t.getScenarioName().replace('#','.').replace(':','_').replace('\\','_')+"_"+dim.getName()+".html\">"+dim.getName() + ':'+"</a></td>");
                 TimeSeries ts= t.getTimeSeries(dim);
  
                 int n= ts.getLength();
                 for (int j= 0; j < n; j++) {
-                    String stddev= " [" + dim.getDisplayValue(ts.getStddev(j)) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+    	            String stddev= ""; //$NON-NLS-1$
+                    double stddev2= ts.getStddev(j);
+    	            if (stddev2 != 0.0)
+    	                stddev= " [" + dim.getDisplayValue(ts.getStddev(j)) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
                     ps.println("<td bgcolor="+bgColors[(j+3)%2] +">"+dim.getDisplayValue(ts.getValue(j)) + stddev+"</td>");
                 }
                 } catch (AssertionFailedError e){
