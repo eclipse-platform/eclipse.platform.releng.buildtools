@@ -15,6 +15,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import junit.framework.AssertionFailedError;
+
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Report;
@@ -39,7 +41,7 @@ public class HtmlView {
 
         for (int s= 0; s < scenarios.length; s++) {
             Scenario t= scenarios[s];
-            outFile=resultsFolder+"/"+t.getScenarioName().replace('#','.')+".html";
+            outFile=resultsFolder+"/"+t.getScenarioName().replace('#','.').replace(':','_').replace('\\','_')+".html";
     		if (outFile != null) {
     		    try {
                     ps= new PrintStream(new BufferedOutputStream(new FileOutputStream(outFile)));
@@ -51,7 +53,7 @@ public class HtmlView {
     		    ps= System.out;
    	        ps.println("<html><body>"); //$NON-NLS-1$
             ps.println("Scenario: " + t.getScenarioName()+"<br><br>"); //$NON-NLS-1$ //$NON-NLS-2$
-            ps.println("<table>"); //$NON-NLS-1$ //$NON-NLS-2$
+            ps.println("<font size=\"-6\"><table>"); //$NON-NLS-1$ //$NON-NLS-2$
 
             Report r= new Report(2);
             
@@ -65,20 +67,25 @@ public class HtmlView {
             Dim[] dimensions= t.getDimensions();
             for (int i= 0; i < dimensions.length; i++) {
                 Dim dim= dimensions[i];
-                r.addCell("<tr><td><a href=\""+t.getScenarioName().replace('#','.')+"_"+dim.getName()+".jpeg\">"+dim.getName() + ':'+"</a></td>");
-                
+                try{
+                r.addCell("<tr><td><a href=\""+t.getScenarioName().replace('#','.').replace(':','_').replace('\\','_')+"_"+dim.getName()+".jpeg\">"+dim.getName() + ':'+"</a></td>");
                 TimeSeries ts= t.getTimeSeries(dim);
+ 
                 int n= ts.getLength();
                 for (int j= 0; j < n; j++) {
                     String stddev= " [" + dim.getDisplayValue(ts.getStddev(j)) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
                     r.addCellRight("<td>"+dim.getDisplayValue(ts.getValue(j)) + stddev+"</td>");
+                }
+                } catch (AssertionFailedError e){
+                	e.printStackTrace();
+                	continue;
                 }
                 ps.println("</tr>"); //$NON-NLS-1$ //$NON-NLS-2$            
                 r.nextRow();
             }
             r.print(ps);
             ps.println();      
-            ps.println("</table><br><br>");
+            ps.println("</font></table><br><br>");
             ps.println("</body></html>"); //$NON-NLS-1$
             if (ps != System.out)
                 ps.close();

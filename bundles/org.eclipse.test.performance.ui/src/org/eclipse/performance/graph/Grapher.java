@@ -16,6 +16,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
+import junit.framework.AssertionFailedError;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.eclipse.swt.SWT;
@@ -68,7 +71,9 @@ public class Grapher {
                 Dim dim= dimensions[i];
                 String dimensionName= dim.getName();
                 LineGraph graph= new LineGraph(scenarioName + ": " + dimensionName, dim);
-                TimeSeries ts= t.getTimeSeries(dim);
+                TimeSeries ts=null;
+                try{
+                ts= t.getTimeSeries(dim);
                 int n= ts.getLength();
                 
                 if (n > 0) {
@@ -78,7 +83,11 @@ public class Grapher {
 	                    Color c= buildID.indexOf("base") >= 0 ? green : black;
 	                    graph.addItem(buildID, dim.getDisplayValue(value), value, c);
 	                }
-	                drawGraph(graph, outputDirectory + "/" + scenarioName.replace('#', '.') + "_" + dimensionName);
+	                
+	                drawGraph(graph, outputDirectory + "/" + scenarioName.replace('#', '.').replace(':','_').replace('\\','_') + "_" + dimensionName);
+                }
+                } catch (AssertionFailedError e){
+                	//System.err.println("Unable to get result for: "+t.getScenarioName()+" "+ts.toString());
                 }
             }
         }
