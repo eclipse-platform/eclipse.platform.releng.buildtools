@@ -59,4 +59,8 @@ public class Component {
 		this.maps = maps;
 	}
 
+	public boolean ownsMap(String map){
+		return maps.contains(map);
+	}
+	
 }
