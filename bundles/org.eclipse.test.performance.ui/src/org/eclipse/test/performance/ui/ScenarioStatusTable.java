@@ -63,9 +63,12 @@ public class ScenarioStatusTable {
 					String failureMessage="";
 					if (!configNames.contains(configs[j]))
 						configNames.add(configs[j]);
-					if (failureMessages[j]!=null)
-						failureMessage=failureMessages[j];
-						scenarioStatus.statusMap.put(configs[j],failureMessage);		
+					if (failureMessages[j]!=null){
+						//ensure correct failure message relates to config
+						if (failureMessages[j].indexOf(configs[j])!=-1)
+							failureMessage=failureMessages[j];
+					}
+					scenarioStatus.statusMap.put(configs[j],failureMessage);		
 				}
 			}
 			

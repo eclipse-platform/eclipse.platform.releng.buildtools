@@ -74,7 +74,7 @@ public class ScenarioResults {
 			Scenario t = scenarios[s];
 			
 			//get latest points of interest matching
-			if (pointsOfInterest.size()!=0){
+			if (this.pointsOfInterest.size()!=0){
 			Iterator iterator = this.pointsOfInterest.iterator();
 				while (iterator.hasNext()) {
 					String match = getMostRecentMatchingBuildID(t, iterator
