@@ -26,15 +26,17 @@ import org.eclipse.test.internal.performance.db.TimeSeries;
 public class HtmlView {
 
     public static  void main (String[] args) {
+    	
     	String [] bgColors= {"#DDDDDD","#EEEEEE"};
-        String buildTypeFilter=args[0];
+        String [] buildTypeFilter={"3%",args[0]+"%"};
     	String resultsFolder=args[1];
 		String outFile= null;
 		PrintStream ps= null;
        // get all Scenarios 
         Dim[] qd= null; // new Dim[] { InternalDimensions.CPU_TIME };
         
-        Scenario[] scenarios= DB.queryScenarios("relengbuildwin2",buildTypeFilter+"%", "%", qd); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        Scenario[] scenarios= DB.queryScenarios("relengbuildwin2",buildTypeFilter, "%", qd); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        
         Grapher grapher =new Grapher(scenarios,resultsFolder);
 
         for (int s= 0; s < scenarios.length; s++) {
@@ -49,8 +51,11 @@ public class HtmlView {
     		}
     		if (ps == null)
     		    ps= System.out;
-   	        ps.println("<html><body>"); //$NON-NLS-1$
-            ps.println("Scenario: " + t.getScenarioName()+"<br><br>"); //$NON-NLS-1$ //$NON-NLS-2$
+   	        ps.println("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">");
+   	        ps.println("<link rel=\"stylesheet\" href=\"../../default_style.css\" type=\"text/css\">");
+   	        ps.println("<title>Eclipse Performance Data</title></head>"); //$NON-NLS-1$
+            ps.println("<body>Scenario: " + t.getScenarioName()+"<br><br>"); //$NON-NLS-1$ //$NON-NLS-2$
+
             ps.println("<font size=\"-6\"><table>"); //$NON-NLS-1$ //$NON-NLS-2$
 
             
