@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.Enumeration;
@@ -151,6 +152,7 @@ public class TestResultsGenerator extends Task {
 		String replaceString = aString;
 
 		File[] directories = sourceDirectory.listFiles();
+		Arrays.sort(directories);
 
 		for (int i = 0; i < directories.length; i++) {
 			if (directories[i].isDirectory()) {
@@ -279,6 +281,7 @@ public class TestResultsGenerator extends Task {
 			String replaceString = "";
 
 			File[] xmlFileNames = sourceDirectory.listFiles();
+			Arrays.sort(xmlFileNames)	;	
 
 			for (int i = 0; i < xmlFileNames.length; i++) {
 				if (xmlFileNames[i].getPath().endsWith(".xml")) {
