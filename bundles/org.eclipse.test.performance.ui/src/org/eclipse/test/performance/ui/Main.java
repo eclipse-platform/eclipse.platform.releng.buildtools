@@ -36,14 +36,13 @@ public class Main {
 		
 		if (genDimensionHistories || genAll){
 			System.out.print("Generating dimension history tables...");
-			new DimensionHistories(scenarios, dimensionHistoryOutput + "/graphs",
-				baseline);
+			new DimensionHistories(scenarios, dimensionHistoryOutput, baseline);
 			System.out.println("done.");
 		}
 		
 		if (genDimensionGraphs || genAll){
 			System.out.print("Generating dimension line graphs...");
-			new DimensionsTables(scenarios, baseline, dimensionHistoryOutput);
+			new DimensionsTables(scenarios, baseline, dimensionHistoryOutput+"/graphs");
 			System.out.println("done.");
 		}
 		
