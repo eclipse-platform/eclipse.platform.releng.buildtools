@@ -1,0 +1,49 @@
+
+
+1.  the eclipse.perf.config setting used to run tests include three key value pairs:  config, build and jvm (for example,
+"eclipse.perf.config=config=relengbuildwin2;build=I20050219-1500;jvm=sun1.4.2_06").
+2.  the value for the "build" key begins with either an 'I' or 'N'.
+
+
+The program expects the following arguments:
+
+
+-baseline
+	Build id against which to compare results.
+	Same as value specified for the "build" key in the eclipse.perf.config system property.
+
+-current
+build id for which to generate results. Compared to build id specified in -baseline parameter above.
+Same as value specified for the "build" key in the eclipse.perf.config system property. 
+
+-jvm
+Value specified in "jvm" key in eclipse.perf.config system property for current build.
+
+-config
+Comma separated list of config names for which to generate results.
+Same as values specified in "config" key in eclipse.perf.config system property.
+
+-output 
+Path to default output directory.
+
+[-config.properties]
+Optional. Used by scenario status table to provide the following:
+alternate descriptions of config values to use in columns.
+url for hyperlinks from status icons for a scenario in each row.
+Can also provide an optional output directory for raw data tables and line graphs for the config.
+The value should be specified in the following format:
+name1,description1,url1 [,outputdir1];name2,description2,url2 [,outputdir2];etc..
+
+[-highlight.latest]
+Optional. Comma-separated list of build Id prefixes used to find most recent matching for each entry.
+Result used to highlight points in line graphs.
+
+[-scenario.pattern]
+Optional. Scenario prefix pattern to query database. If not specified,
+default of % used in query.
+
+[-fingerprints]
+Optional. Use to generate fingerprints only.
+
+[-scenarioresults]
+Generates table of scenario reference and current data with line graphs.
