@@ -542,7 +542,7 @@ public class TestResultsGenerator extends Task {
 
 			
 			if (errorCount > 0)
-				   aString = aString + "</td><td><b>";
+				   aString = aString + "</font></td><td><b><font color=\"#FF0000\">";
 			else 
 				aString = aString + "</td><td>";
 							
