@@ -85,7 +85,10 @@ public class FingerPrint {
     		if (entry==null)
     			return;
     		ArrayList componentEntries;
-    		String prefix=entry.scenarioName.substring(0,entry.scenarioName.indexOf(".test"));
+    		String prefix=entry.scenarioName;
+    		if (entry.scenarioName.indexOf(".test")!=-1){
+    			prefix=entry.scenarioName.substring(0,entry.scenarioName.indexOf(".test"));
+    		}
     		if (prefixEntries==null)
     			prefixEntries=new ArrayList();
     		if (!prefixEntries.contains(prefix)){
