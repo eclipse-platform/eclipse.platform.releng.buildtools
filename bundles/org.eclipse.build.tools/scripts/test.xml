@@ -13,30 +13,23 @@
 Targets for setting up and running tests remotely
 It is assumed that keys are set up on test machines to permit connections without user name and password prompts.
 -->
+	
 <target name="runtests-remote" depends="setRemoteLoginClient,setRemoteCopyClient">
 	<property name="testResults" value="${dropLocation}/${buildLabel}/testresults" />
-	
-	<exec dir="." executable="${loginClient}">
+	<exec dir="." executable="${loginClient}" outputproperty="output">
 		<arg line="${testMachine} mkdir ${testDir}" />
 	</exec>
+	<condition property="test.dir.exists">
+		<or>
+			<contains string="${output}" substring="file exists" casesensitive="false"/>
+			<contains string="${output}" substring="already exists" casesensitive="false"/>
+		</or>			
+	</condition>
 	
-	<!--install the vm used for testing-->
-	<antcall target="installVmForRemote" />
+	<!--install the framework if the test directory did not already exist-->
+	<antcall target="setupTestsOnRemote" />
 	
-	<!--set up the automated testing framework-->
-	<exec dir="." executable="${copyClient}">
-		<arg line="${dropLocation}/${buildLabel}/${testFramework} ${testMachine}:${testDir}" />
-	</exec>
-	<exec dir="." executable="${loginClient}">
-		<arg line="${testMachine} unzip -o -qq ${testDir}/${testFramework} -d ${testDir}" />
-	</exec>
-	<exec dir="." executable="${copyClient}">
-		<arg line="${dropLocation}/${buildLabel}/${runtime} ${testMachine}:${executionDir}" />
-	</exec>
-	
-	<!--callback to custom script for post setup-->
-	<ant antfile="${customTest}" target="customSetup" dir="${basedir}" />
-	
+	<!--execute the test-->
 	<exec dir="." executable="${loginClient}">
 		<arg line="${testMachine} ${testScript} ${args}" />
 	</exec>
@@ -59,7 +52,6 @@ It is assumed that keys are set up on test machines to permit connections withou
 	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/${consolelog} ${testResults}/consolelogs"/>
 	</exec>
-	
 </target>
 
 <target name="setRemoteLoginClient">
@@ -93,6 +85,24 @@ It is assumed that keys are set up on test machines to permit connections withou
 	</exec>
 </target>
 
+	<target name="setupTestsOnRemote" unless="test.dir.exists">		
+		<!--install the vm used for testing-->
+		<antcall target="installVmForRemote" />
+		
+		<!--set up the automated testing framework-->
+		<exec dir="." executable="${copyClient}">
+			<arg line="${dropLocation}/${buildLabel}/${testFramework} ${testMachine}:${testDir}" />
+		</exec>
+		<exec dir="." executable="${loginClient}">
+			<arg line="${testMachine} unzip -o -qq ${testDir}/${testFramework} -d ${testDir}" />
+		</exec>
+		<exec dir="." executable="${copyClient}">
+			<arg line="${dropLocation}/${buildLabel}/${runtime} ${testMachine}:${executionDir}" />
+		</exec>
+	
+		<!--callback to custom script for post setup-->
+		<ant antfile="${customTest}" target="customSetup" dir="${basedir}" />
+	</target>
 
 <!--
 
