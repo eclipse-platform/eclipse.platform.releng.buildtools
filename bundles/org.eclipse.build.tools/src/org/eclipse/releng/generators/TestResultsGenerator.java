@@ -346,7 +346,7 @@ public class TestResultsGenerator extends Task {
 
 	}
 
-	private void writeDropIndexFile() {
+	protected void writeDropIndexFile() {
 
 		String[] types = anErrorTracker.getTypes();
 		for (int i = 0; i < types.length; i++) {
@@ -365,7 +365,7 @@ public class TestResultsGenerator extends Task {
 
 	}
 
-	private String processDropRows(PlatformStatus[] platforms) {
+	protected String processDropRows(PlatformStatus[] platforms) {
 
 		String result = "";
 		for (int i = 0; i < platforms.length; i++) {
