@@ -8,69 +8,94 @@
 	<antcall target="${testTarget}" />
 </target>
 
-<target name="runtests-remote">
-	<!--in cases where a remote user needs to be specified-->
-	<condition property="rshuser" value="-l ${user}" >
-		<isset property="user" />
-	</condition>
-	<condition property="rcpuser" value=".${user}" >
-		<isset property="user" />
-	</condition>
-
-
-	<!--
-	testDir:  the absolute path to the directory where the testing will occur
-	-->
-	<exec dir="." executable="rsh">
-		<arg line="${testMachine} ${rshuser} mkdir ${testDir}" />
+<!--
+Targets for setting up and running tests remotely
+It is assumed that keys are set up on test machines to permit connections without user name and password prompts.
+-->
+<target name="runtests-remote" depends="setRemoteLoginClient,setRemoteCopyClient">
+	<exec dir="." executable="${remoteLogin}">
+		<arg line="${testMachine} mkdir ${testDir}" />
 	</exec>
-
+	
 	<!--install the vm used for testing-->
-	<antcall target="installVmForRemote" />	
-
-	<!--copy the built automated testing framework-->
-	<exec dir="." executable="rcp">
-		<arg line="${buildDirectory}/${buildLabel}/${testFramework} ${testMachine}${rcpuser}:${testDir}" />
-	</exec>
+	<antcall target="installVmForRemote" />
 	
 	<!--set up the automated testing framework-->
-	<exec dir="." executable="rsh">
-		<arg line="${testMachine} ${rshuser} unzip -o -qq ${testDir}/${testFramework} -d ${testDir}" />
+	<exec dir="." executable="${remoteCopy}">
+		<arg line="${buildDirectory}/${buildLabel}/${testFramework} ${testMachine}:${testDir}" />
+	</exec>
+	<exec dir="." executable="${remoteLogin}">
+		<arg line="${testMachine} unzip -o -qq ${testDir}/${testFramework} -d ${testDir}" />
+	</exec>
+	<exec dir="." executable="${remoteCopy}">
+		<arg line="${buildDirectory}/${buildLabel}/${runtime} ${testMachine}:${testDir}/${executionDir}" />
 	</exec>
 	
-	<!--copy the built runtime to be tested-->
-	<exec dir="." executable="rcp">
-		<arg line="${buildDirectory}/${buildLabel}/${runtime} ${testMachine}${rcpuser}:${executionDir}" />
-	</exec>
-
-	<!--callback to custom script for additional setup-->
+	<!--callback to custom script for post setup-->
 	<ant antfile="${customTest}" target="customSetup" dir="${basedir}" />
-
-	<!--execute the tests-->
-	<exec dir="." executable="rsh">
+	
+	<exec dir="." executable="${remoteLogin}">
 		<arg line="${testMachine} ${testScript} ${args}" />
 	</exec>
 	
-	<!--  this directory must exist before rcp operation  -->
+	<!--  this directory must exist before remote copy operation  -->
 	<mkdir dir="${buildDirectory}/${buildLabel}/testresults" />
 	<mkdir dir="${buildDirectory}/${buildLabel}/testresults/consolelogs" />
-
-	<!--copy results of testing back to build machine-->	
-	<exec dir="." executable="rcp">
-		<arg line="-r ${testMachine}${rcpuser}:${executionDir}/results/html ${buildDirectory}/${buildLabel}/testresults"/>
+	
+	<exec dir="." executable="${remoteCopy}">
+		<arg line="-r ${testMachine}:${executionDir}/results/html ${buildDirectory}/${buildLabel}/testresults"/>
 	</exec>
-	<exec dir="." executable="rcp">
-		<arg line="-r ${testMachine}${rcpuser}:${executionDir}/results/xml ${buildDirectory}/${buildLabel}/testresults"/>
+	<exec dir="." executable="${remoteCopy}">
+		<arg line="-r ${testMachine}:${executionDir}/results/xml ${buildDirectory}/${buildLabel}/testresults"/>
+	</exec>
+	<exec dir="." executable="${remoteCopy}">
+		<arg line="-r ${testMachine}:${executionDir}/results/chkpii ${buildDirectory}/${buildLabel}/testresults"/>
 	</exec>
 
 	<!--  copy the console log from testing  -->
-	<exec dir="." executable="rcp">
-		<arg line="-r ${testMachine}${rcpuser}:${executionDir}/${consolelog} ${buildDirectory}/${buildLabel}/testresults/consolelogs"/>
+	<exec dir="." executable="${remoteCopy}">
+		<arg line="-r ${testMachine}:${executionDir}/${consolelog} ${buildDirectory}/${buildLabel}/testresults/consolelogs"/>
 	</exec>
 	
 </target>
 
+<target name="setRemoteLoginClient">
+	<!--use rsh if rsh is set, otherwise use default, ssh-->
+	<condition property="remoteLogin" value="rsh">
+		<isset property="rsh" />
+	</condition>
+	<!--default remote login client-->
+	<property name="remoteLogin" value="ssh" />	
+</target>
 
+<target name="setRemoteCopyClient">
+	<!--use rcp if rsh is set, otherwise use default, scp-->
+	<condition property="remoteCopy" value="rcp">
+		<isset property="rsh" />
+	</condition>
+	<!--default remote copy client-->
+	<property name="remoteCopy" value="scp" />	
+</target>
+
+<target name="installVmForRemote" unless="skipVmInstall">
+	<!--get and install the vm to test with-->
+	<get src="${vmUrl}" dest="${vmDest}"/>
+	
+	<exec dir="." executable="${copyClient}">
+		<arg line="${vmDest} ${testMachine}:${testDir}" />
+	</exec>
+	
+	<exec dir="." executable="${loginClient}">
+		<arg line="${testMachine} ${vmInstallCommand}" />
+	</exec>
+</target>
+
+
+<!--
+
+Targets for setting up and running tests locally
+
+-->
 <target name="runtests-local">
 	<delete dir="${testDir}" quiet="true"/>
 	<mkdir dir="${testDir}" />
@@ -100,17 +125,6 @@
 	</copy>
 
 	<copy todir="${buildDirectory}/${buildLabel}/testresults/consolelogs" file="${executionDir}/${consolelog}" />
-</target>
-
-<target name="installVmForRemote" unless="skipVmInstall">
-	<!--get and install the vm to test with-->
-	<get src="${vmUrl}" dest="${vmDest}" usetimestamp="true"/>
-	<exec dir="." executable="rcp">
-		<arg line="${vmDest} ${testMachine}:${testDir}" />
-	</exec>
-	<exec dir="." executable="rsh">
-		<arg line="${testMachine} ${vmInstallCommand}" />
-	</exec>
 </target>
 
 <target name="installVmForLocal" unless="skipVmInstall">
