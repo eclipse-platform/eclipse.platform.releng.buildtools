@@ -16,10 +16,14 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import junit.framework.AssertionFailedError;
+
+import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
+import org.eclipse.test.internal.performance.db.SummaryEntry;
 import org.eclipse.test.internal.performance.db.TimeSeries;
+import org.eclipse.test.internal.performance.db.Variations;
 
 
 
@@ -35,8 +39,13 @@ public class HtmlView {
 		PrintStream ps= null;
        // get all Scenarios 
         Dim[] qd= null; // new Dim[] { InternalDimensions.CPU_TIME };
+        Variations variations= new Variations();
+        variations.put(PerformanceTestPlugin.CONFIG, "relengbuildwin2");       
+        variations.put(PerformanceTestPlugin.BUILD, "%");
+        SummaryEntry[] entries= DB.querySummaries(variations,null);
         
-        Scenario[] scenarios= DB.queryScenarios("relengbuildwin2",buildTypeFilter, "%", qd); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        Scenario[] scenarios=DB.queryScenarios(variations, "%", PerformanceTestPlugin.BUILD, qd);
+        
         
         Grapher grapher =new Grapher(scenarios,resultsFolder,reference);
 

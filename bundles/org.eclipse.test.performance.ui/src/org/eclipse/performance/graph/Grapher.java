@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
+import org.eclipse.test.internal.performance.db.SummaryEntry;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 
 /**
@@ -44,7 +45,7 @@ public class Grapher {
     String outputDirectory;
     String referenceBuildId;
     String buildTypeFilter;
-    Scenario[] scenarios;
+    Scenario [] scenarios;
     
     public Grapher() {
         super();
