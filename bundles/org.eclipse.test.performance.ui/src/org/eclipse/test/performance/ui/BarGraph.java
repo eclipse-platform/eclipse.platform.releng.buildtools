@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.performance.graph;
+package org.eclipse.test.performance.ui;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;

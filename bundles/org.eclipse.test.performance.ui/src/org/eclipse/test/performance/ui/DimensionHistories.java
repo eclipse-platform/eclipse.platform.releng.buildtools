@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.performance.graph;
+package org.eclipse.test.performance.ui;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -20,8 +20,6 @@ import java.io.PrintStream;
 
 import junit.framework.AssertionFailedError;
 
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
@@ -29,15 +27,10 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.data.Dim;
-import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
-import org.eclipse.test.internal.performance.db.SummaryEntry;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 
-/**
- * @author SDimitrov
- */
-public class Grapher {
+public class DimensionHistories {
 
     private static final int GRAPH_HEIGHT= 300;
     private static final int GRAPH_WIDTH= 800;
@@ -48,10 +41,7 @@ public class Grapher {
     String buildTypeFilter;
     Scenario [] scenarios;
     
-    public Grapher() {
-        super();
-    }
-    public Grapher(Scenario [] scenarios,String output,String reference) {
+     public DimensionHistories(Scenario [] scenarios,String output,String reference) {
     	this.scenarios=scenarios;
     	outputDirectory=output;
     	referenceBuildId=reference;
@@ -121,38 +111,14 @@ public class Grapher {
             if (areas != null) {
     	        try {
     	            PrintStream os= new PrintStream(new FileOutputStream(output + ".html"));
-     	            os.println("<html><body>");
-    	            os.println("<script language=\"JavaScript\">");
-    	            os.println("if (!document.layers&&!document.getElementById)");
-    	            os.println("event=\"test\"");
-    	            os.println("function showtip(current,e,text){");
-    	            os.println("if (document.getElementById){");
-    	            os.println("thetitle=text.split('<br>')");
-    	            os.println("if (thetitle.length>1){");
-    	            os.println("thetitles=''");
-    	            os.println("for (i=0;i<thetitle.length;i++)");
-    	            os.println("thetitles+=thetitle[i]");
-    	            os.println("current.title=thetitles}");
-    	            os.println("else");
-    	            os.println("current.title=text}");
-    	            os.println("else if (document.layers){");
-    	            os.println("document.tooltip.document.write('<layer bgColor=\"white\" style=\"border:1px solid black;font-size:12px;\">'+text+'</layer>')");
-    	            os.println("document.tooltip.document.close()");
-    	            os.println("document.tooltip.left=e.pageX+5");
-    	            os.println("document.tooltip.top=e.pageY+5");
-    	            os.println("document.tooltip.visibility=\"show\"}}");
-    	            os.println("function hidetip(){");
-    	            os.println("if (document.layers)");
-    	            os.println("document.tooltip.visibility=\"hidden\"}");
-    	            os.println("</script>");
-    	            os.println("<div id=\"tooltip\" style=\"position:absolute;visibility:hidden\"></div>");
-
-    	            
+     	            os.println(Utils.HTML_OPEN);//"<html><body>");
+     	            os.println("<body>");
+    	            os.println(Utils.HTML_MAP_MOUSE_OVER_JS);//"<script language=\"JavaScript\">");
     	            os.println("<img src=\"" + scenarioName + ".jpeg\" usemap=\"#" + scenarioName + "\">");
     	            os.println("<map name=\"" + scenarioName + "\">");
     	            os.println(areas);
-    	            os.println("</map>");
-    	            os.println("</body></html>");
+    	            os.println("</map></body>");
+    	            os.println(Utils.HTML_CLOSE);
     	            os.close();
     	        } catch (FileNotFoundException e) {
     	            // TODO Auto-generated catch block

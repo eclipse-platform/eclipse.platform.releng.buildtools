@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.performance.graph;
+package org.eclipse.test.performance.ui;
 
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
@@ -17,34 +17,35 @@ import java.io.PrintStream;
 
 import junit.framework.AssertionFailedError;
 
-import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.data.Dim;
-import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
-import org.eclipse.test.internal.performance.db.SummaryEntry;
 import org.eclipse.test.internal.performance.db.TimeSeries;
-import org.eclipse.test.internal.performance.db.Variations;
 
-public class HtmlView {
+public class DimensionsTables {
+	private Scenario[] scenarios;
+	private String reference;
+	private String resultsFolder;
 
-    public static void main(String[] args) {
+	/**
+	 * An html table representation for a scenario of all dimensions stored in a performance database for all builds.
+	 * @param scenarios The list of scenarios for which to create the tables.
+	 * @param reference The reference build to highlight in the table. (TODO)
+	 * @param resultsFolder The output folder for the html files generated.  The results folder will contain a graphs 
+	 * subdirectory which will contain line graphs of the a specified dimension measurement over time for a specific scenario.
+	 */
+	public DimensionsTables (Scenario[] scenarios,String reference,String resultsFolder){
+		this.scenarios=scenarios;
+		this.reference=reference;
+		this.resultsFolder=resultsFolder;
+		run();
+	}
+	
+	
+    public void run() {
 
         String[] bgColors = { "#DDDDDD", "#EEEEEE" };
-        String reference = args[0];
-        String resultsFolder = args[1];
-        String config = args[2];
-        String jvm=args[3];
         String outFile = null;
         PrintStream ps = null;
-        // get all Scenarios
-        Dim[] qd = null; // new Dim[] { InternalDimensions.CPU_TIME };
-        Variations variations = new Variations();
-        variations.put(PerformanceTestPlugin.CONFIG, config);
-        variations.put(PerformanceTestPlugin.BUILD, "%");
-        variations.put("jvm",jvm);
-        Scenario[] scenarios = DB.queryScenarios(variations, "org.eclipse%", PerformanceTestPlugin.BUILD, qd);
-
-        new Grapher(scenarios,resultsFolder+"/graphs",reference);
 
         for (int s = 0; s < scenarios.length; s++) {
             Scenario t = scenarios[s];
@@ -58,8 +59,8 @@ public class HtmlView {
             }
             if (ps == null)
                 ps = System.out;
-            ps.println("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">");
-            ps.println("<link rel=\"stylesheet\" href=\"../../default_style.css\" type=\"text/css\">");
+            ps.println(Utils.HTML_OPEN);//<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">");
+            ps.println(Utils.HTML_DEFAULT_CSS);
             ps.println("<title>Eclipse Performance Data</title></head>"); //$NON-NLS-1$
             ps.println("<body><h4>Scenario: " + t.getScenarioName() + "</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
             ps.println("<table>"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -94,8 +95,8 @@ public class HtmlView {
 
                 }
                 ps.println();
-                ps.println("</font></table><br><br>");
-                ps.println("</body></html>"); //$NON-NLS-1$
+                ps.println("</font></table><br><br></body>");
+                ps.println(Utils.HTML_CLOSE); //$NON-NLS-1$
                 if (ps != System.out)
                     ps.close();
 

@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.performance.graph;
+package org.eclipse.test.performance.ui;
 
 import java.util.*;
 

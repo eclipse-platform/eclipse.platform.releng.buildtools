@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.performance.graph;
+package org.eclipse.test.performance.ui;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -17,7 +17,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
@@ -46,73 +45,51 @@ public class FingerPrint {
 
     String outputDirectory;
     String referenceBuildId;
-    String thisBuildID;
+    String currentBuildId;
+    String component;
     String config;
-    String jvm;
+    String configDescriptors;
     SummaryEntry [] entries;
-    ArrayList prefixEntries;
     Variations variations;
+  
     String linkUrl;
     
     public FingerPrint() {
     }
 
-    public FingerPrint(String config, String jvm, String reference, String thisBuildId, String outputDir, String linkUrl) {
-        this();
+
+    public FingerPrint(String component,String config, String reference, String current,Variations variations, String outputDir, String configDescriptors, String url) {
+    	this.configDescriptors=configDescriptors;
+        this.variations=variations;
+        this.component=component;
         referenceBuildId= reference;
-        this.config= config;
-        this.jvm=jvm;
-        this.thisBuildID= thisBuildId;
+        currentBuildId= current;
         outputDirectory= outputDir;
-        this.linkUrl=linkUrl;
-        variations= new Variations();
-        variations.put(PerformanceTestPlugin.CONFIG, config);
-        variations.put(PerformanceTestPlugin.BUILD, thisBuildID);
-        variations.put("jvm", jvm);
-
-        // only return summaries for "org.eclipse.jdt.text"; pass a null for all global scenarios
-        entries= DB.querySummaries(variations,null);
-       	run(entries,"");
-       	getComponentEntries(entries);
-
-    }
+        linkUrl=url+"/graphs";
+        this.config=config;
+        if (component==null){
+        	entries= DB.querySummaries(variations,null);
+        	this.component="";
+        }
+        else
+        	entries=DB.querySummaries(variations,component+'%');
+       	run(entries);
+    }    
     
-    private void getComponentEntries(SummaryEntry[] entries){
-    	if (entries==null)
-    		return;
-    	for (int i=0;i<entries.length;i++){
-    		SummaryEntry entry=entries[i];
-    		if (entry==null)
-    			return;
-    		ArrayList componentEntries;
-    		String prefix=entry.scenarioName;
-    		if (entry.scenarioName.indexOf(".test")!=-1){
-    			prefix=entry.scenarioName.substring(0,entry.scenarioName.indexOf(".test"));
-    		}
-    		if (prefixEntries==null)
-    			prefixEntries=new ArrayList();
-    		if (!prefixEntries.contains(prefix)){
-    	       	run(DB.querySummaries(variations,prefix+'%'),prefix);
-    		}
-    	}
-    }
-    
-    public static void main(String args[]) {
-        FingerPrint main= new FingerPrint(args[0],args[1],args[2],args[3],args[4],args[5]);  
-    }
-
-    public void run(Object[] entries, String component) {
-    	String fileId="";
-    	if (!component.equals(""))
-    		fileId=component+"_";
-    	
+    /**
+     * Creates the fingerprint jpeg, image map and scenario status table for a specified component.
+     * @param entries The result of a database query for summaries for a specified variation.
+     * @param component The component name.  Typically the prefix of each scenario.  Used to filter entries
+     * to include on fingerprint and scenario status table.
+     */
+    public void run(Object[] entries) {
         new File(outputDirectory).mkdirs();
         String referenceName=referenceBuildId;
         int underscoreIndex=referenceBuildId.indexOf('_');
         
         if (underscoreIndex!=-1)
         	referenceName=referenceBuildId.substring(0,underscoreIndex);
-        String title="Performance of " + component +" "+thisBuildID + " relative to " + referenceName;
+        String title="Performance of " + component +" "+currentBuildId + " relative to " + referenceName;
         BarGraph bar= new BarGraph(null);
                 
         if (entries != null) {
@@ -121,84 +98,57 @@ public class FingerPrint {
                 add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName);    
             }
         }
-        String outName= "FP_" + fileId+ referenceName + '_' + thisBuildID;
+        
+        String outName= "FP_" + component+ '_'+referenceName + '_' + currentBuildId;
+               
+        if (component=="")
+        	outName= "FP_"+referenceName + '_' + currentBuildId;
         save(bar, outputDirectory + '/' + outName);
+        
         //show(bar);
         
         String areas= bar.getAreas();
-        if (areas != null) {
-	        try {
+ 	        try {
 	            PrintStream os= new PrintStream(new FileOutputStream(outputDirectory + '/' + outName + ".php"));
-	   	        os.println("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">");
-	   	        os.println("<link rel=\"stylesheet\" href=\"../../../../default_style.css\" type=\"text/css\">");
+	   	        os.println(Utils.HTML_OPEN);
+	   	        os.println(Utils.HTML_DEFAULT_CSS);
 	            os.println("<body>");
 	            os.println("<h3>"+title+"</h3>");
-	            os.println("<img src=\"" + outName + ".jpeg\" usemap=\"#" + outName + "\">");
-	            os.println("<map name=\"" + outName + "\">");
-	            os.println(areas);
-	            os.println("</map><br>");
+	            if (areas != null) {
+	            	os.println("<img src=\"" + outName + ".jpeg\" usemap=\"#" + outName + "\">");
+	            	os.println("<map name=\"" + outName + "\">");
+	            	os.println(areas);
+	            	os.println("</map>\n");
+	            } else {
+	            	os.println("<br>There is no fingerprint for component "+component+"<br><br>\n");
+	            }
 
 	            if (component!=""){
-	            char buildType=thisBuildID.charAt(0);
-	            os.println("<?php");
-	            os.println("	$config=trim($QUERY_STRING);");
-	            os.println("	$packageprefix=\""+component+"\";");
-
-	            os.println("	$aDirectory=dir(\"../../../../performance/$config\");");
-	            os.println("	$index = 0;");
-	            	
-	            os.println("	while ($anEntry = $aDirectory->read()) {");
-
-	            os.println("		if ($anEntry != \".\" && $anEntry != \"..\") {");
-	            os.println("			if (strstr($anEntry,$packageprefix) && strstr($anEntry,\".html\")){");
-	            os.println("				$scenarioname=substr($anEntry,0,-5);");
-	            os.println("				$scenarios[$index]=$scenarioname;");
-	            os.println("				$index++;");
-	            				
-	            os.println("			}");
-	            os.println("		}");
-	            os.println("}");
-
-	            os.println("	$scenarioCount=count($scenarios);");
-	            os.println("	if ($scenarioCount==0){");
-	            os.println("		echo \"Results being generated.\";");
-	            os.println("	}");
-	            os.println("	else{");
-	            os.println("	sort($scenarios);");
-	            os.println("	echo \"<h3>All $scenarioCount scenarios</h3>\"; ");
-
-	            os.println("	for ($counter=0;$counter<count($scenarios);$counter++){");
-	            os.println("		$line = \"<a href=\\\"../../../../performance/$config/$scenarios[$counter].html\\\">$scenarios[$counter]</a><br>\";");
-	            os.println("	 	echo \"$line\";");
-	            os.println("	}");
-	            os.println("	}");
-	            os.println("	aDirectory.closedir();");
-	            os.println("?>");
-	            }        
+	            char buildType=currentBuildId.charAt(0);
 	            
-	            os.println("</body></html>");
+	            //print the component scenario table beneath the fingerprint
+	            ScenarioStatusTable sst=new ScenarioStatusTable(variations,component+"%",configDescriptors);
+	            os.println(sst.toString());	            }
+	            
+	            os.println(Utils.HTML_CLOSE);
 	            os.close();
 	        } catch (FileNotFoundException e) {
-	            // TODO Auto-generated catch block
 	            e.printStackTrace();
 	        }
-        }
-    }
+       }
+
     
     private void add(BarGraph bar, String name, Dim[] dims, String scenarioName) {
         
         String refData= "";
-        Variations v= new Variations();
-        v.put(PerformanceTestPlugin.CONFIG, config);
-        v.put("jvm", jvm);
-        Scenario scenario= DB.getScenarioSeries(scenarioName, v, PerformanceTestPlugin.BUILD, referenceBuildId, thisBuildID, dims);
+        Scenario scenario= DB.getScenarioSeries(scenarioName, variations, PerformanceTestPlugin.BUILD, referenceBuildId, currentBuildId, dims);
         String[] timeSeriesLabels= scenario.getTimeSeriesLabels();
         if (timeSeriesLabels.length == 2) {
             // we mark the label with a '*' or '†' to indicate that no data was available for the specified builds
             if (!timeSeriesLabels[0].equals(referenceBuildId)) {
                 name= '*' + name;
                 refData= " (" + timeSeriesLabels[0] + ")";
-            } else if (!timeSeriesLabels[1].equals(thisBuildID)) {
+            } else if (!timeSeriesLabels[1].equals(currentBuildId)) {
                 name= '†' + name;
                 refData= " (" + timeSeriesLabels[1] + ")";
             }
