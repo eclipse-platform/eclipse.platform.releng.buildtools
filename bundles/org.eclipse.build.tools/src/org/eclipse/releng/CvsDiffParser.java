@@ -13,10 +13,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Properties;
-import java.io.FileInputStream;
-import java.util.StringTokenizer;
-import java.util.Enumeration;
 
 /**
  * @author kmoir
@@ -42,13 +38,12 @@ public class CvsDiffParser extends Task {
 
 		CvsDiffParser parser = new CvsDiffParser();
 		parser.setMapDiffFile("d:/junk/cvsDiff.txt");
-		parser.mapOwnerProperties="d:/junk/component.properties";
 		parser.execute();		
 	}
 
 	public void execute() throws BuildException {
 		parseMapDiffFile();
-		notify(getComponentsFromDiff());
+		sendNotice();
 	}
 
 	/**
@@ -64,21 +59,6 @@ public class CvsDiffParser extends Task {
 	 */
 	public void setMapDiffFile(String mapDiffFile) {
 		this.mapDiffFile = mapDiffFile;
-	}
-
-	/**
-	 * @return Returns the mapOwnerProperties.
-	 */
-	public String getMapOwnerProperties() {
-		return mapOwnerProperties;
-	}
-
-	/**
-	 * @param mapOwnerProperties
-	 *            The mapOwnerProperties to set.
-	 */
-	public void setMapOwnerProperties(String mapOwnerProperties) {
-		this.mapOwnerProperties = mapOwnerProperties;
 	}
 
 	private void parseMapDiffFile() {
@@ -121,74 +101,9 @@ public class CvsDiffParser extends Task {
 		}
 	}
 
-	
-	private Component[] getComponents() {
-
-		Properties componentProperties;
-
-		componentProperties = new Properties();
-		try {
-			componentProperties.load(
-				new FileInputStream(new File(mapOwnerProperties)));
-		} catch (IOException e) {
-			throw new BuildException("Unable to find component.properties");
-		}
-
-		Component[] components = new Component[componentProperties.size()];
-
-		Enumeration propKeys = componentProperties.keys();
-		int i = 0;
-
-		while (propKeys.hasMoreElements()) {
-			String key=propKeys.nextElement().toString();
-			components[i++] =
-				getComponent(
-					key,
-					componentProperties.getProperty(
-						key));
-		}
-
-		return components;
-
-	}
-
-	private Component getComponent(String componentName, String mapList) {
-
-		Component component = new Component();
-		component.setComponentName(componentName);
-
-		// Create a vector of map names from the map list //
-		StringTokenizer str = new StringTokenizer(mapList, ",");
-		while (str.hasMoreTokens()) {
-			component.getMaps().add(str.nextToken());
-		}
-		return component;
-	}
-
-	private Vector getComponentsFromDiff(){
-		Vector componentNames=new Vector();
+	private void sendNotice(){
 		
-		Component [] components = getComponents();
-		
-		if (updatedMaps==null){
-			notify(null);
-		}
-
-		for (int i=0; i<updatedMaps.size(); i++){
-
-			for (int j=0; j<components.length; j++){
-				Component component= components[j];
-				if (component.ownsMap((String)updatedMaps.elementAt(i)))
-					if (!componentNames.contains(component.getComponentName()))
-						componentNames.add(component.getComponentName());
-			}
-		}
-		return componentNames;
-	}
-	
-	private void notify(Vector componentNames){
-		
-		if (componentNames==null || componentNames.size()==0){
+		if (updatedMaps==null || updatedMaps.size()==0){
 			throw new BuildException("Build cancelled - map files unchanged.");
 		} 
 		
@@ -199,13 +114,6 @@ public class CvsDiffParser extends Task {
 		
 		for (int i=0; i<updatedMaps.size();i++){
 			message=message.concat(updatedMaps.elementAt(i).toString()+"\n");
-		}
-		
-		message=message.concat("\nThe following teams will need to validate this build:\n\n");	
-		
-		for (int i=0; i<componentNames.size();i++){
-	
-			message=message.concat(componentNames.elementAt(i).toString()+"\n");
 		}
 		
 		try {
