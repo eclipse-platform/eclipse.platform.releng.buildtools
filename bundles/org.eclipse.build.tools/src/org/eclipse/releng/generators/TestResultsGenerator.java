@@ -11,7 +11,10 @@ import java.util.Vector;
 import java.util.Enumeration;
 
 import org.apache.tools.ant.Task;
-import org.apache.xerces.parsers.DOMParser;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -32,7 +35,7 @@ public class TestResultsGenerator extends Task {
 	private Vector dropTokens;
 	private String testResultsWithProblems = "\n";
 
-	private DOMParser parser = new DOMParser();
+	private DocumentBuilder parser =null;
 	private ErrorTracker anErrorTracker;
 	private String testResultsTemplateString = "";
 	private String dropTemplateString = "";
@@ -537,17 +540,17 @@ public class TestResultsGenerator extends Task {
 	}
 
 	private int countErrors(String fileName) {
-
+		int errorCount = 0;
 		try {
-			parser.parse(fileName);
-
-			Document document = parser.getDocument();
+			DocumentBuilderFactory docBuilderFactory=DocumentBuilderFactory.newInstance();
+			parser=docBuilderFactory.newDocumentBuilder();
+			
+			Document document = parser.parse(fileName);
 			NodeList elements = document.getElementsByTagName(elementName);
 
 			int elementCount = elements.getLength();
 			if (elementCount == 0)
 				return -1;
-			int errorCount = 0;
 			for (int i = 0; i < elementCount; i++) {
 				Element element = (Element) elements.item(i);
 				NamedNodeMap attributes = element.getAttributes();
@@ -559,7 +562,7 @@ public class TestResultsGenerator extends Task {
 					errorCount + Integer.parseInt(aNode.getNodeValue());
 
 			}
-			return errorCount;
+			
 		} catch (IOException e) {
 			System.out.println("IOException: " + fileName);
 			// e.printStackTrace();
@@ -568,7 +571,10 @@ public class TestResultsGenerator extends Task {
 			System.out.println("SAXException: " + fileName);
 			// e.printStackTrace();
 			return 0;
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
 		}
+		return errorCount;
 	}
 
 	

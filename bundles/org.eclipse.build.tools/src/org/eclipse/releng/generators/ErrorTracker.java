@@ -5,7 +5,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import java.util.Vector;
-import org.apache.xerces.parsers.DOMParser;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -45,12 +48,16 @@ public class ErrorTracker {
 	}
 	
 	public void loadFile(String fileName) {
-		
-		DOMParser parser = new DOMParser();
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder parser=null;
+		try {
+			parser = docBuilderFactory.newDocumentBuilder();
+		} catch (ParserConfigurationException e1) {
+			e1.printStackTrace();
+		}
 		try {
 			
-			parser.parse(fileName);
-			Document document = parser.getDocument();
+			Document document = parser.parse(fileName);
 			NodeList elements = document.getElementsByTagName("platform");
 			int elementCount = elements.getLength();
 			int errorCount = 0;

@@ -4,7 +4,9 @@
  */
 
 package org.eclipse.releng;
-import org.apache.xerces.parsers.SAXParser;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.SAXException;
@@ -25,10 +27,17 @@ public class ElementParser extends DefaultHandler {
 
     public ElementParser() {
         //  Create a Xerces SAX Parser
-        parser = new SAXParser();
+    	SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+    	
+    	try {
+			parser = saxParserFactory.newSAXParser();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
+    	
         
-        //  Set Content Handler
-        parser.setContentHandler (this);
         
         // instantiate vectors that will hold lists of plugins and features read from feature.xml
         plugins = new Vector();
@@ -39,7 +48,7 @@ public class ElementParser extends DefaultHandler {
 			
 	    //  Parse the Document      
         try {
-            parser.parse(xmlFile);
+            parser.parse(xmlFile,this);
         } catch (SAXException e) {
             System.err.println (e);
         } catch (IOException e) {
