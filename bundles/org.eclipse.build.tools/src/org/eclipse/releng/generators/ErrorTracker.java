@@ -3,6 +3,7 @@ package org.eclipse.releng.generators;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.io.File;
 
 import java.util.Vector;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -85,8 +86,9 @@ public class ErrorTracker {
 				Node anEffectedFile = effectedFiles.item(i);
 				Node logFile = anEffectedFile.getParentNode();
 				String logFileName = (String) logFile.getAttributes().getNamedItem("name").getNodeValue();
+				logFileName=convertPathDelimiters(logFileName);
 				String effectedFileID = (String) anEffectedFile.getAttributes().getNamedItem("id").getNodeValue();				
-				System.out.println(logFileName);
+				//System.out.println(logFileName);
 				Vector aVector = (Vector) logFiles.get(logFileName);
 				if (aVector == null) {
 					aVector = new Vector();
@@ -105,7 +107,7 @@ public class ErrorTracker {
 					String testLogName = (String) testLog.getAttributes().getNamedItem("name").getNodeValue();
 					if (testLogName.endsWith(".xml")){
 						testLogs.add(testLogName);
-						System.out.println(testLogName);
+						//System.out.println(testLogName);
 					}
 			
 			}
@@ -199,4 +201,8 @@ public class ErrorTracker {
 		return testLogs;
 	}
 
+	private String convertPathDelimiters(String path){
+		return new File(path).getPath();
+	}
+	
 }
