@@ -524,7 +524,7 @@ public class TestResultsGenerator extends Task {
 			String shortName = fileName.substring(begin + 1, end);
 			
 			if (errorCount > 0)
-			   aString = aString + "<tr><td><b>";
+			   aString = aString + "<tr><td><b><font color=\"#FF0000\">";
 			else 
 				aString = aString + "<tr><td>";
 			
@@ -553,7 +553,7 @@ public class TestResultsGenerator extends Task {
 				aString = aString + String.valueOf(errorCount);
 				
 			if (errorCount > 0)
-				aString = aString + "</b></td></tr>";
+				aString = aString + "</font></b></td></tr>";
 			else 	
 				aString = aString + "</td></tr>";
 		}
