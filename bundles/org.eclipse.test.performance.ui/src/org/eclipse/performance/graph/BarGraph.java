@@ -63,7 +63,10 @@ public class BarGraph {
     public int getHeight() {
         int n= fItems.size();
         int textHeight= 16;
-        return MARGIN+textHeight+GAP + n*(GAP+BARHEIGHT) + GAP+textHeight+MARGIN;
+        int titleHeight= 0;
+        if (fTitle != null)
+            titleHeight= textHeight + GAP;
+        return MARGIN + titleHeight + n*(GAP+BARHEIGHT) + GAP+textHeight + MARGIN;
     }
 
     public void paint(Display display, int width, int height, GC gc) {
@@ -88,9 +91,11 @@ public class BarGraph {
         
         Color fg= display.getSystemColor(SWT.COLOR_BLACK);
         
-        // draw title centered on top
-        int titleHeight= gc.stringExtent(fTitle).y;
-        gc.drawString(fTitle, MARGIN, MARGIN, true);
+        int vstart= 0;	// start rows here
+        if (fTitle != null) {
+            vstart= gc.stringExtent(fTitle).y + GAP;
+            gc.drawString(fTitle, MARGIN, MARGIN, true);	// draw title left aligned
+        }
         
         int center= MARGIN+w/2;
         int w2= w/2-gc.stringExtent("-99.9").x-TGAP;	// reserve space //$NON-NLS-1$
@@ -120,7 +125,7 @@ public class BarGraph {
         }
         
         // draw striped background
-        int y= MARGIN+titleHeight+GAP;
+        int y= MARGIN+vstart;
         Color lightblue= new Color(display, 237, 243, 254);
         gc.setBackground(lightblue);
         for (int i= 0; i < bars.length; i++)
