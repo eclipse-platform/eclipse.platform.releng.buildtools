@@ -97,8 +97,8 @@ public class FingerPrint {
     		fileId=component+"_";
     	
         new File(outputDirectory).mkdirs();
-        
-        BarGraph bar= new BarGraph("Performance of " + component +" "+thisBuildID + " relative to " + referenceBuildId);
+        String title="Performance of " + component +" "+thisBuildID + " relative to " + referenceBuildId;
+        BarGraph bar= new BarGraph(null);
                 
         if (entries != null) {
             for (int i= 0; i < entries.length; i++) {
@@ -118,6 +118,7 @@ public class FingerPrint {
 	   	        os.println("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">");
 	   	        os.println("<link rel=\"stylesheet\" href=\"../../../../default_style.css\" type=\"text/css\">");
 	            os.println("<body>");
+	            os.println("<h3>"+title+"</h3>");
 	            os.println("<img src=\"" + outName + ".jpeg\" usemap=\"#" + outName + "\">");
 	            os.println("<map name=\"" + outName + "\">");
 	            os.println(areas);
