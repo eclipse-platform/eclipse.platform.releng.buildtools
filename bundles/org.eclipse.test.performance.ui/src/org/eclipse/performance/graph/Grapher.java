@@ -32,7 +32,7 @@ import org.eclipse.test.internal.performance.db.TimeSeries;
 /**
  * @author SDimitrov
  */
-public class Main {
+public class Grapher {
 
     private static final int GRAPH_HEIGHT= 300;
     private static final int GRAPH_WIDTH= 800;
@@ -43,29 +43,13 @@ public class Main {
     String buildTypeFilter;
     Scenario[] scenarios;
     
-    public Main() {
+    public Grapher() {
         super();
     }
-    public Main(Scenario [] scenarios,String output) {
+    public Grapher(Scenario [] scenarios,String output) {
     	this.scenarios=scenarios;
     	outputDirectory=output;
     	run();
-    }
-    public static void main(String args[]) {
-
-        Main main= new Main();
-
-        if (false) {
-            main.testResultDirectory= "d:/junk/eclipseperf";
-            main.buildTypeFilter= "I";
-            main.outputDirectory= "d:/junk/graphs-I";
-        } else {
-            main.testResultDirectory= "testin";
-            main.buildTypeFilter= args[0];		// all tags starting with 'b'
-            main.outputDirectory= args[1];
-        }
-
-      //  main.start();
     }
 
     public void run() {
@@ -76,9 +60,7 @@ public class Main {
 
         new File(outputDirectory).mkdirs();
 
-     //   Scenario[] scenarios= DB.queryScenarios("%", buildTypeFilter, "%"); // get all Scenarios
-
-        for (int s= 0; s < scenarios.length; s++) {
+         for (int s= 0; s < scenarios.length; s++) {
             Scenario t= scenarios[s];
             String scenarioName= t.getScenarioName();
             Dim[] dimensions= t.getDimensions();

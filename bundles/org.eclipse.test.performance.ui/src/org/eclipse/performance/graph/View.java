@@ -21,45 +21,31 @@ import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 
 
+
 public class View {
 
-    public static void main(String[] args) {
-    	run("org.eclipse.ant");
-    //	run("org.eclipse.core.tests.runtime.perf.StartupTest.testApplicationStartup");
-    //	run("org.eclipse.osgi");
-    // 	run("org.eclipse.jdt.debug");
-    // 	run("org.eclipse.jdt.text");
-    // 	run("org.eclipse.jdt.ui");
-     // run("org.eclipse.swt");
-     //  	run("org.eclipse.team");
-     //  	run("org.eclipse.ui");
-
-    }
-    
-
-    public static  void run (String scenario) {
-		
-
+    public static  void main (String[] args) {
+		String buildTypeFilter=args[0];
+    	String resultsFolder=args[1];
 		String outFile= null;
-		outFile= "out/"+scenario+".html";	//$NON-NLS-1$
 		PrintStream ps= null;
 
         // get all Scenarios 
         Dim[] qd= null; // new Dim[] { InternalDimensions.CPU_TIME };
         
-        Scenario[] scenarios= DB.queryScenarios("%", "I%", scenario+"%", qd); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    //    Main grapher =new Main(scenarios,"out");
+        Scenario[] scenarios= DB.queryScenarios("relengbuildwin2",buildTypeFilter+"%", "%", qd); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        Grapher grapher =new Grapher(scenarios,resultsFolder);
  
  
         
         for (int s= 0; s < scenarios.length; s++) {
             Scenario t= scenarios[s];
-            outFile="out/"+t.getScenarioName().replace('#','.')+".html";
+            outFile=resultsFolder+"/"+t.getScenarioName().replace('#','.')+".html";
     		if (outFile != null) {
     		    try {
                     ps= new PrintStream(new BufferedOutputStream(new FileOutputStream(outFile)));
                 } catch (FileNotFoundException e) {
-                    System.err.println("can't create output file"); //$NON-NLS-1$
+                    System.err.println("can't create output file"+outFile); //$NON-NLS-1$
                 }
     		}
     		if (ps == null)
