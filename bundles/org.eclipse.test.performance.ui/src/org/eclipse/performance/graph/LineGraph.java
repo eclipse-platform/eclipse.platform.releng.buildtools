@@ -91,7 +91,7 @@ public class LineGraph {
         int right= bounds.width - lastItem.getSize(g).x - PADDING;
 
         // draw the title
-        g.drawString(fTitle, (bounds.width - titleWidth) / 2, top);
+        g.drawString(fTitle, (bounds.width - titleWidth) / 2, top, true);
         
         // draw the max and min values
         g.drawString(smin, PADDING/2+labelWidth-emin.x, bottom-titleHeight, true);
