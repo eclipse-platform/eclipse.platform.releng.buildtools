@@ -28,14 +28,18 @@ public class BarGraph {
     private static final int GAP= 10;		// gap between bars
     private static final int TGAP= 5; 		// gap between lines and labels
     
+    private StringBuffer fAreaBuffer;
+    
     private static class BarItem {
 
         String title;
         double value;
+        String url;
 
-        BarItem(String t, double v) {
+        BarItem(String t, double v, String u) {
             title= t;
             value= v;
+            url= u;
         }
     }
 
@@ -49,7 +53,11 @@ public class BarGraph {
     }
     
     public void addItem(String name, double value) {
-        fItems.add(new BarItem(name, value));
+        fItems.add(new BarItem(name, value, null));
+    }
+
+    public void addItem(String name, double value, String url) {
+        fItems.add(new BarItem(name, value, url));
     }
 
     public int getHeight() {
@@ -172,8 +180,24 @@ public class BarGraph {
             }
             
             gc.drawString(bars[i].title, MARGIN+w+TGAP, labelvpos, true);
+                                
+            int y0= y;
+            y+= BARHEIGHT+GAP;            
             
-            y+= BARHEIGHT+GAP;
+            if (bars[i].url != null) {
+                if (fAreaBuffer == null)
+                    fAreaBuffer= new StringBuffer();
+                fAreaBuffer.append("<area shape=\"RECT\" coords=\"0,"+y0+','+width+','+y+"\" href=\""+ bars[i].url +"\">");
+            }
         }
+    }
+    
+    public String getAreas() {
+        if (fAreaBuffer != null) {
+            String s= fAreaBuffer.toString();
+            fAreaBuffer= null;
+            return s;
+        }
+        return null;
     }
 }
