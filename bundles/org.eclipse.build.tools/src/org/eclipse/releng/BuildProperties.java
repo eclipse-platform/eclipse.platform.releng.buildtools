@@ -68,7 +68,7 @@ public class BuildProperties {
 				ftpUrl = buildProperties.get("ftpUrl").toString();
 			} catch (NullPointerException e) {
 				System.out.println(
-				"Value for httpUrl not found in monitor.properties");
+				"Value for ftpUrl not found in monitor.properties");
 			}
 				
 			try {

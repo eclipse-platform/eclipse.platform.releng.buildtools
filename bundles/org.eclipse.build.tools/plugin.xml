@@ -16,6 +16,11 @@
    </extension>
 	<!-- Tasks -->
    <extension point="org.eclipse.ant.core.antTasks">
+        <antTask
+            library="buildTools.jar"
+            name="verifyCompile"
+            class="org.eclipse.releng.CompileErrorCheck">
+      </antTask>
        <antTask
             library="buildTools.jar"
             name="findMachine"
