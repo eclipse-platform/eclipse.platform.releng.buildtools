@@ -234,7 +234,7 @@ public class ScenarioResults {
 			double diffValue=values[0][j]-values[1][j];
 			double diffPercentage=0;
 			if (values[1][j]!=0)
-				diffPercentage=((int)(((diffValue/values[1][j])*1000)))/10.0;
+				diffPercentage=((int)(((diffValue/Math.abs(values[1][j]))*1000)))/10.0;
 			String diffDisplayValue=dim.getDisplayValue(diffValue);
 			//green
 			String fontColor="";
