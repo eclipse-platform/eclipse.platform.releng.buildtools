@@ -91,8 +91,9 @@ public class TestResultsGenerator extends Task {
 
 	public static void main(String[] args) {
 		TestResultsGenerator test = new TestResultsGenerator();
+		test.setUseNewFormat(true);
 		test.setDropTokenList(
-			"%sdk%,%tests%,%example%,%runtime%,%jdt%,%teamextras%,%infocenter%");
+			"%sdk%,%tests%,%examples%,%runtime%,%jdt%,%teamextras%,%infocenter%");
 		test.getDropTokensFromList(test.dropTokenList);
 		test.setIsBuildTested(false);
 		test.setXmlDirectoryName("D:\\junk\\testresults\\xml");
@@ -401,7 +402,7 @@ public class TestResultsGenerator extends Task {
 
 		if (isUseNewFormat()){
 			result = result + "<td><div align=\"center\">(<a href=\"download.php?dropFile="+aPlatform.getFileName() +"\">http</a>)\n";
-			result = result + "&nbsp;&nbsp;<?php echo \"(<a href='ftp://$SERVER_NAME/"+aPlatform.getFileName() +"'>ftp</a>)</div></td>\" ?>\n";
+			result = result + "&nbsp;&nbsp;<?php echo \"(<a href='ftp://$SERVER_NAME/@buildlabel@/"+aPlatform.getFileName() +"'>ftp</a>)</div></td>\" ?>\n";
 		}
 
 		result = result + "<td>" + aPlatform.getFileName() + "</td>\n";
