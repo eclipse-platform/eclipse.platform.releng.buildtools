@@ -113,6 +113,7 @@ public class Main extends Task {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
+            image.dispose();
             if (out != null) {
                 try {
                     out.close();
