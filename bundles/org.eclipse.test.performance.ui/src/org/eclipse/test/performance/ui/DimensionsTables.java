@@ -69,18 +69,29 @@ public class DimensionsTables {
             ps.println("<tr><td>Builds:</td>"); //$NON-NLS-1$
             Dim[] dimensions = t.getDimensions();
             try {
-
                 for (int i = 0; i < dimensions.length; i++) {
                     Dim dim = dimensions[i];
                     ps.println("<td><a href=\"graphs/" + t.getScenarioName().replace('#', '.').replace(':', '_').replace('\\', '_') + "_" + dim.getName() + ".html\">" + dim.getName() + "</a></td>");
                 }
                 ps.print("</tr>");
-                boolean referencePrinted=false;
+                
+                String table="";
+                boolean isReference=false;
+                
                 for (int j = timeSeriesLabels.length-1; j > -1; j--) {
+                	isReference=timeSeriesLabels[j].equals(reference);
+                	
                     int underScoreIndex = timeSeriesLabels[j].indexOf('_');
                     timeSeriesLabels[j] = (underScoreIndex == -1) ? timeSeriesLabels[j] : timeSeriesLabels[j].substring(0, underScoreIndex);
-                    ps.println("<tr bgcolor=" + bgColors[(j + 3) % 2] + "><td>" + timeSeriesLabels[j] + "</td>");
-                       
+                	if (isReference){
+                        ps.println("<tr bgcolor=" + bgColors[(j + 3) % 2] + "><td><b>" + timeSeriesLabels[j] + " (baseline)</b></td>");
+                		table=table.concat("<tr bgcolor=" + bgColors[(j + 3) % 2] + "><td><b>" + timeSeriesLabels[j] + "</b></td>");
+                	}
+                	else {
+                		table=table.concat("<tr bgcolor=" + bgColors[(j + 3) % 2] + "><td>" + timeSeriesLabels[j] + "</td>");
+                	}
+
+                    
                     for (int i = 0; i < dimensions.length; i++) {
                         	Dim dim = dimensions[i];
                         	TimeSeries ts = t.getTimeSeries(dim);
@@ -88,12 +99,18 @@ public class DimensionsTables {
                         	double stddev2 = ts.getStddev(j);
                         	if (stddev2 != 0.0)
                         		stddev = " [" + dim.getDisplayValue(ts.getStddev(j)) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
-                        	ps.println("<td>" + dim.getDisplayValue(ts.getValue(j)) + stddev + "</td>");
+                        	if (isReference){
+                        		ps.println("<td><b>" + dim.getDisplayValue(ts.getValue(j)) + stddev + "</b></td>");
+                          		table=table.concat("<td><b>" + dim.getDisplayValue(ts.getValue(j)) + stddev + "</b></td>");
+                        	}
+                        	else
+                        		table=table.concat("<td>" + dim.getDisplayValue(ts.getValue(j)) + stddev + "</td>");
                     }
-                    
-                    ps.println("</tr>");
+  
 
                 }
+              	ps.println(table);
+                ps.println("</tr>");
                 ps.println();
                 ps.println("</font></table><br><br></body>");
                 ps.println(Utils.HTML_CLOSE); //$NON-NLS-1$
