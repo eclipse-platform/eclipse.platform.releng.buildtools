@@ -107,7 +107,12 @@ public class FingerPrint {
     		fileId=component+"_";
     	
         new File(outputDirectory).mkdirs();
-        String title="Performance of " + component +" "+thisBuildID + " relative to " + referenceBuildId;
+        String referenceName=referenceBuildId;
+        int underscoreIndex=referenceBuildId.indexOf('_');
+        
+        if (underscoreIndex!=-1)
+        	referenceName=referenceBuildId.substring(0,underscoreIndex);
+        String title="Performance of " + component +" "+thisBuildID + " relative to " + referenceName;
         BarGraph bar= new BarGraph(null);
                 
         if (entries != null) {
@@ -116,8 +121,7 @@ public class FingerPrint {
                 add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName);    
             }
         }
-      
-        String outName= "FP_" + fileId+ referenceBuildId + '_' + thisBuildID;
+        String outName= "FP_" + fileId+ referenceName + '_' + thisBuildID;
         save(bar, outputDirectory + '/' + outName);
         //show(bar);
         
