@@ -4,10 +4,13 @@
    name="org.eclipse.build.tools"
    version="1.0.0">
 
+	
    <extension point="org.eclipse.ant.core.extraClasspathEntries">
       <extraClasspathEntry
             library="buildTools.jar">
       </extraClasspathEntry>
-     </extension>
-
+    <extraClasspathEntry
+            library="j2ee.jar">
+      </extraClasspathEntry>
+   </extension>
 </plugin>
