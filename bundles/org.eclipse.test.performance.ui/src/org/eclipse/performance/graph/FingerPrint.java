@@ -86,7 +86,7 @@ public class FingerPrint {
 	        try {
 	            PrintStream os= new PrintStream(new FileOutputStream(outputDirectory + '/' + outName + ".html"));
 	            os.println("<html><body>");
-	            os.println("<img src=\"" + outName + ".jpeg\" usemap=\"#" + outName + "\">");
+	            os.println("<img src=\"performance/" + outName + ".jpeg\" usemap=\"#" + outName + "\">");
 	            os.println("<map name=\"" + outName + "\">");
 	            os.println(areas);
 	            os.println("</map>");
