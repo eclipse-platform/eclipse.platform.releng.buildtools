@@ -39,6 +39,9 @@ public class TestResultsGenerator extends Task {
 	private boolean testsRan = true;
 	//assume tests ran.  If no html files are found, this is set to false
 
+	//for backward compatability with old testManifest.xml
+	private boolean useNewFormat = false;
+
 	private Mailer mailer;
 
 	// Parameters
@@ -393,11 +396,16 @@ public class TestResultsGenerator extends Task {
 
 		String result = "<tr>";
 
-		result = result + "<td><div align=left>" + imageName + "</div></td>";
+		result = result + "<td><div align=left>" + imageName + "</div></td>\n";
 		result = result + "<td>" + aPlatform.getName() + "</td>";
-		result = result + "<td>" + aPlatform.getFileName() + "</td>";
 
-		result = result + "</tr>";
+		if (isUseNewFormat()){
+			result = result + "<td><div align=\"center\">(<a href=\"download.php?dropFile="+aPlatform.getFileName() +"\">http</a>)\n";
+			result = result + "&nbsp;&nbsp;<?php echo \"(<a href='ftp://$SERVER_NAME/"+aPlatform.getFileName() +"'>ftp</a>)</div></td>\" ?>\n";
+		}
+
+		result = result + "<td>" + aPlatform.getFileName() + "</td>\n";
+		result = result + "</tr>\n";
 
 		return result;
 	}
@@ -756,6 +764,20 @@ public class TestResultsGenerator extends Task {
 	 */
 	public void setBuildType(String buildType) {
 		this.buildType = buildType;
+	}
+
+	/**
+	 * @return boolean
+	 */
+	public boolean isUseNewFormat() {
+		return useNewFormat;
+}
+	/**
+	 * Sets the useNewFormat.
+	 * @param useNewFormat The useNewFormat to set
+	 */
+	public void setUseNewFormat(boolean useNewFormat) {
+		this.useNewFormat = useNewFormat;
 	}
 
 }
