@@ -27,13 +27,17 @@ import org.eclipse.test.internal.performance.db.TimeSeries;
 
 public class HtmlView {
 
+	String [] bgColors= {"#DDDDDD","#EEEEEE"};
+
     public static  void main (String[] args) {
+    	new HtmlView().run(args);
+    }
+    public void run (String[] args) {
 		String buildTypeFilter=args[0];
     	String resultsFolder=args[1];
 		String outFile= null;
 		PrintStream ps= null;
-
-        // get all Scenarios 
+       // get all Scenarios 
         Dim[] qd= null; // new Dim[] { InternalDimensions.CPU_TIME };
         
         Scenario[] scenarios= DB.queryScenarios("relengbuildwin2",buildTypeFilter+"%", "%", qd); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -60,7 +64,7 @@ public class HtmlView {
             String[] timeSeriesLabels= t.getTimeSeriesLabels();
             r.addCell("<tr><td>Builds:</td>"); //$NON-NLS-1$
             for (int j= 0; j < timeSeriesLabels.length; j++)
-                r.addCellRight("<td>"+timeSeriesLabels[j]+"</td>");
+                r.addCellRight("<td bgcolor="+bgColors[(j+3)%2] +">"+timeSeriesLabels[j]+"</td>");
             ps.print("</tr>");
             r.nextRow();
                         
@@ -74,7 +78,7 @@ public class HtmlView {
                 int n= ts.getLength();
                 for (int j= 0; j < n; j++) {
                     String stddev= " [" + dim.getDisplayValue(ts.getStddev(j)) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
-                    r.addCellRight("<td>"+dim.getDisplayValue(ts.getValue(j)) + stddev+"</td>");
+                    r.addCellRight("<td bgcolor="+bgColors[(j+3)%2] +">"+dim.getDisplayValue(ts.getValue(j)) + stddev+"</td>");
                 }
                 } catch (AssertionFailedError e){
                 	e.printStackTrace();
@@ -91,4 +95,5 @@ public class HtmlView {
                 ps.close();
         }   
     }
+
 }
