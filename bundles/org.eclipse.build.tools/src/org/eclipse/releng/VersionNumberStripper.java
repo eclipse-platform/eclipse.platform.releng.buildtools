@@ -34,7 +34,6 @@ public class VersionNumberStripper extends Task {
 	public String getDirectory(){return directory;}
 
   	public void execute() throws BuildException {
-		directory="D:\\junk\\m6\\eclipse\\plugins";
   		setDirectory(directory);
   		stripVersions();
   	}
