@@ -24,7 +24,7 @@ public class LineGraph {
     private static class GraphItem {
 
         String title;
-        String description=null;
+        String description;
         double value;
         Color color;
 
@@ -46,7 +46,7 @@ public class LineGraph {
         }
     }
     
-    static final int PADDING= 30;
+    static final int PADDING= 4;
 
     String fTitle;
     List fItems;
@@ -72,8 +72,8 @@ public class LineGraph {
         double maxItem= getMaxItem();
         double minItem= getMinItem();
         
-        int max= (int) (Math.ceil(maxItem * (maxItem < 0 ? 0.9 : 1.2)));
-        int min= (int) (Math.floor(minItem * (minItem < 0 ? 1.2 : 0.9)));
+        int max= (int) (Math.ceil(maxItem * (maxItem < 0 ? 0.9 : 1.1)));
+        int min= (int) (Math.floor(minItem * (minItem < 0 ? 1.1 : 0.9)));
 
         String smin= fDimension.getDisplayValue(min);
         Point emin= g.stringExtent(smin);
@@ -84,7 +84,7 @@ public class LineGraph {
         int labelWidth= Math.max(emin.x, emax.x) + 2;
                 
         int top= PADDING;
-        int bottom= bounds.height - titleHeight - PADDING;
+        int bottom= bounds.height - titleHeight;
         int left= PADDING + labelWidth;
 
         GraphItem lastItem= (GraphItem) fItems.get(fItems.size()-1);
@@ -133,10 +133,8 @@ public class LineGraph {
                 shift= 3;	 // below dot
             else     
                 shift= -(2*titleHeight+3);	// above dot
-            if (thisItem.description!=null){
-            	g.drawString(thisItem.title, xposition+2, yposition+shift, true);
-            	g.drawString(thisItem.description, xposition+2, yposition+shift+titleHeight, true);
-            }
+            g.drawString(thisItem.title, xposition+2, yposition+shift, true);
+            g.drawString(thisItem.description, xposition+2, yposition+shift+titleHeight, true);
             g.setBackground(oldbg);
             g.setForeground(oldfg);
             

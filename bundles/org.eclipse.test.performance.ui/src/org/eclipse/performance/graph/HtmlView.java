@@ -28,9 +28,8 @@ public class HtmlView {
     public static  void main (String[] args) {
     	
     	String [] bgColors= {"#DDDDDD","#EEEEEE"};
-    	String reference=args[0];
-        String [] buildTypeFilter={reference,args[1]+"%"};
-    	String resultsFolder=args[2];
+        String [] buildTypeFilter={"3%",args[0]+"%"};
+    	String resultsFolder=args[1];
 		String outFile= null;
 		PrintStream ps= null;
        // get all Scenarios 
@@ -38,7 +37,7 @@ public class HtmlView {
         
         Scenario[] scenarios= DB.queryScenarios("relengbuildwin2",buildTypeFilter, "%", qd); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         
-        Grapher grapher =new Grapher(scenarios,resultsFolder,reference);
+        Grapher grapher =new Grapher(scenarios,resultsFolder);
 
         for (int s= 0; s < scenarios.length; s++) {
             Scenario t= scenarios[s];

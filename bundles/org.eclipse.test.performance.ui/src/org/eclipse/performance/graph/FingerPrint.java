@@ -32,9 +32,7 @@ import org.eclipse.test.internal.performance.InternalDimensions;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
-import org.eclipse.test.internal.performance.db.SummaryEntry;
 import org.eclipse.test.internal.performance.db.TimeSeries;
-import org.eclipse.test.internal.performance.db.Variations;
 
 
 public class FingerPrint {
@@ -85,15 +83,7 @@ public class FingerPrint {
         add(bar, "Scroll Linewise", stdDims, "org.eclipse.jdt.text.tests.performance.ScrollTextEditorTest#testScrollTextEditorLineWise2()");
         add(bar, "Open Quick Outline", stdDims, "org.eclipse.jdt.text.tests.performance.OpenQuickOutlineTest#testOpenQuickOutline1()-warm");
         add(bar, "Classpath Cycle Detection", stdDims, "org.eclipse.jdt.core.tests.model.ClasspathTests#testPerfDenseCycleDetection1()");
-
-        SummaryEntry[] entries= DB.querySummaries(new Variations("relengbuildwin2", thisBuildID), true);  //$NON-NLS-1$//$NON-NLS-2$
-        if (entries != null) {
-            for (int i= 0; i < entries.length; i++) {
-                SummaryEntry se= entries[i];
-                add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName);    
-            }
-        }
-
+        
         save(bar, outputDirectory + "/FP_" + referenceBuildId + "_" + thisBuildID);
         //show(bar);
     }

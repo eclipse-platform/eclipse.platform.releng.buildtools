@@ -3,7 +3,8 @@
 <property name="customTest" value="${tester}/customTest.xml" />
 <property name="testing.properties" value="${tester}/testing.properties" />
 <property file="${testing.properties}" />
-
+<property name="dropLocation" value="${buildDirectory}" />
+	
 <target name="main">
 	<antcall target="${testTarget}" />
 </target>
@@ -13,7 +14,7 @@ Targets for setting up and running tests remotely
 It is assumed that keys are set up on test machines to permit connections without user name and password prompts.
 -->
 <target name="runtests-remote" depends="setRemoteLoginClient,setRemoteCopyClient">
-	<property name="testResults" value="${buildDirectory}/${buildLabel}/testresults" />
+	<property name="testResults" value="${dropLocation}/${buildLabel}/testresults" />
 	
 	<exec dir="." executable="${loginClient}">
 		<arg line="${testMachine} mkdir ${testDir}" />
@@ -24,13 +25,13 @@ It is assumed that keys are set up on test machines to permit connections withou
 	
 	<!--set up the automated testing framework-->
 	<exec dir="." executable="${copyClient}">
-		<arg line="${buildDirectory}/${buildLabel}/${testFramework} ${testMachine}:${testDir}" />
+		<arg line="${dropLocation}/${buildLabel}/${testFramework} ${testMachine}:${testDir}" />
 	</exec>
 	<exec dir="." executable="${loginClient}">
 		<arg line="${testMachine} unzip -o -qq ${testDir}/${testFramework} -d ${testDir}" />
 	</exec>
 	<exec dir="." executable="${copyClient}">
-		<arg line="${buildDirectory}/${buildLabel}/${runtime} ${testMachine}:${executionDir}" />
+		<arg line="${dropLocation}/${buildLabel}/${runtime} ${testMachine}:${executionDir}" />
 	</exec>
 	
 	<!--callback to custom script for post setup-->
@@ -101,16 +102,16 @@ Targets for setting up and running tests locally
 <target name="runtests-local">
 	<delete dir="${testDir}" quiet="true"/>
 	<mkdir dir="${testDir}" />
-	<property name="testResults" value="${buildDirectory}/${buildLabel}/testresults" />
+	<property name="testResults" value="${dropLocation}/${buildLabel}/testresults" />
 	
 	<!--set up testing directory-->
-	<unzip src="${buildDirectory}/${buildLabel}/${testFramework}" dest="${testDir}" />
+	<unzip src="${dropLocation}/${buildLabel}/${testFramework}" dest="${testDir}" />
 	
 	<!--install the vm used for testing-->
 	<antcall target="installVmForLocal" />
 	
 	<!--copy in the runtime to test-->
-	<copy todir="${executionDir}" file="${buildDirectory}/${buildLabel}/${runtime}" />
+	<copy todir="${executionDir}" file="${dropLocation}/${buildLabel}/${runtime}" />
 
 	<!--callback to custom script for additional setup-->
 	<ant antfile="${customTest}" target="customSetup" dir="${basedir}" />
