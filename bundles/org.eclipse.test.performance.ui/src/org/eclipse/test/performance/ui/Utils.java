@@ -77,6 +77,7 @@ public class Utils {
 		String name;
 		String description;
 		String url;
+		String outputDir;
 		
 		/**
 		 * 
@@ -84,10 +85,11 @@ public class Utils {
 		 * @param description a meaningful description to further describe the config.  ie.  win32-win32-x86 Sun 1.4.2_06
 		 * @param url a url to results for this config.  Used in hyperlinks from graphs or tables.
 		 */
-		public ConfigDescriptor(String name, String description, String url){
+		public ConfigDescriptor(String name, String description, String url,String outputDir){
 			this.name=name;
 			this.description=description;
 			this.url=url;
+			this.outputDir=outputDir;
 		}
 		
 	}
@@ -107,8 +109,10 @@ public class Utils {
 			String labelDescriptor=tokenizer.nextToken();
 			int commaIndex=labelDescriptor.indexOf(",");
 			String [] elements=labelDescriptor.split(",");
-			ConfigDescriptor descriptor=new ConfigDescriptor(elements[0],elements[1],elements[2]);
-
+			String output=null;
+			if (elements.length==4)
+				output=elements[3];
+			ConfigDescriptor descriptor=new ConfigDescriptor(elements[0],elements[1],elements[2],output);
 			configMap.put(elements[0],descriptor);
 		}
 		return configMap;
@@ -164,5 +168,26 @@ public class Utils {
     		}
     	}
     	return componentNames;
+    }
+    
+    public static String printHtmlFingerPrint(FingerPrint fp){
+    	String componentDescription=((Utils.ConfigDescriptor)fp.configDescriptors.get(fp.config)).description;
+        String areas= fp.bar.getAreas();
+        String output="";
+            if (areas != null) {
+                output="<h3>"+componentDescription+"</h3>";
+            	output=output.concat("<img src=\"" + fp.getOutName() + ".jpeg\" usemap=\"#" + fp.outName + "\">"+
+            	"<map name=\"" + fp.getOutName() + "\">"+areas+"</map>\n");
+            } else {
+            	output=output.concat("<br>There is no fingerprint for "+componentDescription+"<br><br>\n");
+            }
+            return output;
+    }
+    
+    public static String printScenarioStatusTable(FingerPrint fp){       
+            //print the component scenario table beneath the fingerprint
+            fp.variations.put("config","%");
+            ScenarioStatusTable sst=new ScenarioStatusTable(fp.variations,fp.component+"%",fp.configDescriptors);
+            return sst.toString();
     }
 }

@@ -11,6 +11,7 @@
 package org.eclipse.test.performance.ui;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -52,6 +53,7 @@ public class DimensionsTables {
             outFile = resultsFolder + "/" + t.getScenarioName().replace('#', '.').replace(':', '_').replace('\\', '_') + ".html";
             if (outFile != null) {
                 try {
+                	new File(outFile).getParentFile().mkdirs();
                     ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(outFile)));
                 } catch (FileNotFoundException e) {
                     System.err.println("can't create output file" + outFile); //$NON-NLS-1$

@@ -27,8 +27,8 @@ public class ScenarioStatusTable {
 		}
 	}
 	
-	public ScenarioStatusTable(Variations variations,String scenarioPattern,String configDescriptors){
-		configMaps=Utils.getConfigDescriptors(configDescriptors);
+	public ScenarioStatusTable(Variations variations,String scenarioPattern,Hashtable configDescriptors){
+		configMaps=configDescriptors;
 		this.variations=variations;
 		this.scenarioPattern=scenarioPattern;
 	}
@@ -87,9 +87,9 @@ public class ScenarioStatusTable {
 					if (status.statusMap.containsKey(configName)){
 						htmlTable=htmlTable.concat(message != "" ?"<td><a title=\""+message+"\" href=\""
 								+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
-								+ ".html"+" \"><img border=\"0\" src=\"../../FAIL.gif\"></a></td>" 
+								+ ".html"+" \"><img border=\"0\" src=\"../FAIL.gif\"></a></td>" 
 								:"<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
-								+ ".html"+" \"><img border=\"0\" src=\"../../OK.gif\"></a></td>");
+								+ ".html"+" \"><img border=\"0\" src=\"../OK.gif\"></a></td>");
 					}else{
 						htmlTable=htmlTable.concat("<td>n/a</td>");
 					}

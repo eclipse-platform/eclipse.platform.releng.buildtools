@@ -16,7 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
+import java.util.Hashtable;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
@@ -48,24 +48,26 @@ public class FingerPrint {
     String currentBuildId;
     String component;
     String config;
-    String configDescriptors;
+    Hashtable configDescriptors;
     SummaryEntry [] entries;
     Variations variations;
-  
+    BarGraph bar;
+    String outName;
     String linkUrl;
+    String title;
     
     public FingerPrint() {
     }
 
 
-    public FingerPrint(String component,String config, String reference, String current,Variations variations, String outputDir, String configDescriptors, String url) {
+    public FingerPrint(String component,String config, String reference, String current,Variations variations, String outputDir, Hashtable configDescriptors) {
     	this.configDescriptors=configDescriptors;
         this.variations=variations;
         this.component=component;
         referenceBuildId= reference;
         currentBuildId= current;
         outputDirectory= outputDir;
-        linkUrl=url+"/graphs";
+        linkUrl=((Utils.ConfigDescriptor)configDescriptors.get(config)).url+"/graphs";
         this.config=config;
         variations.put(PerformanceTestPlugin.BUILD, currentBuildId);
         if (component==null){
@@ -90,8 +92,8 @@ public class FingerPrint {
         
         if (underscoreIndex!=-1)
         	referenceName=referenceBuildId.substring(0,underscoreIndex);
-        String title="Performance of " + component +" "+currentBuildId + " relative to " + referenceName;
-        BarGraph bar= new BarGraph(null);
+        title="Performance of " + component +" "+currentBuildId + " relative to " + referenceName;
+        bar= new BarGraph(null);
                 
         if (entries != null) {
             for (int i= 0; i < entries.length; i++) {
@@ -100,43 +102,14 @@ public class FingerPrint {
             }
         }
         
-        String outName= "FP_" + component+ '_'+referenceName + '_' + currentBuildId;
+        outName= "FP_" + component+ '_'+referenceName + '_' + currentBuildId+"."+config;
                
         if (component=="")
-        	outName= "FP_"+referenceName + '_' + currentBuildId;
+        	outName= "FP_"+referenceName + '_' + currentBuildId+"."+config;
         save(bar, outputDirectory + '/' + outName);
         
         //show(bar);
-        
-        String areas= bar.getAreas();
- 	        try {
-	            PrintStream os= new PrintStream(new FileOutputStream(outputDirectory + '/' + outName + ".php"));
-	   	        os.println(Utils.HTML_OPEN);
-	   	        os.println(Utils.HTML_DEFAULT_CSS);
-	            os.println("<body>");
-	            os.println("<h3>"+title+"</h3>");
-	            if (areas != null) {
-	            	os.println("<img src=\"" + outName + ".jpeg\" usemap=\"#" + outName + "\">");
-	            	os.println("<map name=\"" + outName + "\">");
-	            	os.println(areas);
-	            	os.println("</map>\n");
-	            } else {
-	            	os.println("<br>There is no fingerprint for component "+component+"<br><br>\n");
-	            }
-
-	            if (component!=""){
-	            char buildType=currentBuildId.charAt(0);
-	            
-	            //print the component scenario table beneath the fingerprint
-	            variations.put("config","%");
-	            ScenarioStatusTable sst=new ScenarioStatusTable(variations,component+"%",configDescriptors);
-	            os.println(sst.toString());	            }
-	            
-	            os.println(Utils.HTML_CLOSE);
-	            os.close();
-	        } catch (FileNotFoundException e) {
-	            e.printStackTrace();
-	        }
+     
        }
 
     
@@ -235,4 +208,10 @@ public class FingerPrint {
             
         display.dispose();
     }
+	public BarGraph getBar() {
+		return bar;
+	}
+	public String getOutName() {
+		return outName;
+	}
 }
