@@ -41,7 +41,7 @@ import org.eclipse.test.internal.performance.db.Variations;
 
 public class FingerPrint {
     
-    private static final int GRAPH_WIDTH= 800;
+    private static final int GRAPH_WIDTH= 1000;
 
     String outputDirectory;
     String referenceBuildId;
