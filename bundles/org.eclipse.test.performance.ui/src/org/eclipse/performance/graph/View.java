@@ -34,9 +34,6 @@ public class View {
         Dim[] qd= null; // new Dim[] { InternalDimensions.CPU_TIME };
         
         Scenario[] scenarios= DB.queryScenarios("relengbuildwin2",buildTypeFilter+"%", "%", qd); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        Grapher grapher =new Grapher(scenarios,resultsFolder);
- 
- 
         
         for (int s= 0; s < scenarios.length; s++) {
             Scenario t= scenarios[s];
@@ -84,6 +81,7 @@ public class View {
             if (ps != System.out)
                 ps.close();
         }
+    Grapher grapher =new Grapher(scenarios,resultsFolder);
 
     }
 }
