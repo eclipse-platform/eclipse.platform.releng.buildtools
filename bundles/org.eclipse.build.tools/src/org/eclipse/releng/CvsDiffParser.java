@@ -41,7 +41,7 @@ public class CvsDiffParser extends Task {
 	public static void main(String[] args) {
 
 		CvsDiffParser parser = new CvsDiffParser();
-		parser.setMapDiffFile("d:/junk/diff.txt");
+		parser.setMapDiffFile("d:/junk/cvsDiff.txt");
 		parser.mapOwnerProperties="d:/junk/component.properties";
 		parser.execute();		
 	}
@@ -106,9 +106,14 @@ public class CvsDiffParser extends Task {
 							.substring(aLine.indexOf(":"), aLine.indexOf(",")))
 							.trim();
 					
-					//TODO:  add verification for actual changes in tags
-					
-					updatedMaps.add(new File(mapPath).getName());
+					//verification for actual changes in tags
+					while ((aLine = in.readLine()) != null && !aLine.startsWith("===")){
+						if (aLine.startsWith("< plugin")||aLine.startsWith("< fragment")||aLine.startsWith("< feature")){
+							updatedMaps.add(new File(mapPath).getName());
+							break;
+						}
+					}
+		
 				}
 			}
 		} catch (IOException e) {
