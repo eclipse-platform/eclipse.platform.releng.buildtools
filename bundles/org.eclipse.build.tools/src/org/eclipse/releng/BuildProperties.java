@@ -30,6 +30,9 @@ public class BuildProperties {
 	// the name of the directory containing the builds, typically <buildType>-<buildType><build date>-<timestamp>
 	private String buildLabel;
 
+	// the main download URL
+	private String downloadUrl;
+
 	// the Object that holds the key value pairs in monitor.properties
 	private Properties buildProperties;
 
@@ -51,6 +54,13 @@ public class BuildProperties {
 
 				}
 
+			try {
+					downloadUrl = buildProperties.get("downloadUrl").toString();
+				} catch (NullPointerException e) {
+					System.out.println(
+						"Value for downloadUrl not found in monitor.properties");
+				}
+				
 			try {
 				buildid = buildProperties.get("buildid").toString();
 			} catch (NullPointerException e) {
@@ -241,6 +251,22 @@ public class BuildProperties {
 	 */
 	public void setBuildSubjectPrefix(String buildSubjectPrefix) {
 		this.buildSubjectPrefix = buildSubjectPrefix;
+	}
+
+	/**
+	 * Returns the downloadUrl.
+	 * @return String
+	 */
+	public String getDownloadUrl() {
+		return downloadUrl;
+	}
+
+	/**
+	 * Sets the downloadUrl.
+	 * @param downloadUrl The downloadUrl to set
+	 */
+	public void setDownloadUrl(String downloadUrl) {
+		this.downloadUrl = downloadUrl;
 	}
 
 }

@@ -588,9 +588,9 @@ public class TestResultsGenerator extends Task {
 		} catch (NoClassDefFoundError e) {
 			return;
 		}
-
+		String buildDownloadUrl = mailer.getBuildProperties().getDownloadUrl()+"/"+mailer.getBuildProperties().getBuildLabel();
 		String subject = "Build is complete.  ";
-		String message = "The build is complete.  ";
+		String message = "The build is complete.  \n\n"+buildDownloadUrl;
 
 		if (testsRan) {
 			subject = "Automated JUnit Testing complete.  ";
@@ -605,10 +605,10 @@ public class TestResultsGenerator extends Task {
 					(testResultsWithProblems.endsWith("\n"))
 						? "All tests pass"
 						: "Test failures/errors occurred in the following:  "
-							+ testResultsWithProblems);
+							+ testResultsWithProblems)+"\n\n"+buildDownloadUrl+"/"+testResultsHtmlFileName;
 		} else if (isBuildTested && (!buildType.equals("N"))) {
 			subject = subject.concat("Automated JUnit testing is starting.");
-			message = "The " + subject;
+			message = "The " + subject+"\n\n"+buildDownloadUrl;
 		}
 
 		if (subject.endsWith("Test failures/errors occurred."))

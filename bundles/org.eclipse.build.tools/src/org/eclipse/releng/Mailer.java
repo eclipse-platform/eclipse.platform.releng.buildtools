@@ -65,6 +65,7 @@ public class Mailer {
 		MimeMessage message = new MimeMessage(session);
 
 		try {
+			
 			// Set the from address
 			message.setFrom(new InternetAddress(buildProperties.getSender()));
 
@@ -172,6 +173,22 @@ public class Mailer {
 		System.out.println("\nhost="+buildProperties.getHost()+"\nsender="+buildProperties.getSender()+"\nrecipients="+buildProperties.getRecipientList());
 		System.out.println("\nSubject="+aSubject+"\nMessage="+aMessage);
 		return;
+	}
+
+	/**
+	 * Returns the buildProperties.
+	 * @return BuildProperties
+	 */
+	public BuildProperties getBuildProperties() {
+		return buildProperties;
+	}
+
+	/**
+	 * Sets the buildProperties.
+	 * @param buildProperties The buildProperties to set
+	 */
+	public void setBuildProperties(BuildProperties buildProperties) {
+		this.buildProperties = buildProperties;
 	}
 
 }
