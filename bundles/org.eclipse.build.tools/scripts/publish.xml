@@ -1,0 +1,125 @@
+<project name="Publish Build" default="default">
+
+<!-- Properties that must be passed to this script:
+	buildDirectory: Path to perform the build in.  (A working directory)
+	buildType:		Type of build (nightly, integration etc.)
+	buildId:		Build name
+	buildLabel:		<buildType>-<buildName>-<timestamp>
+-->
+<property name="result" value="${buildDirectory}/${buildLabel}" />
+
+<!--name of generated index page-->
+<property name="indexFileName" value="index.html" />
+
+<target name="default">
+	<antcall target="countFiles" />
+	<antcall target="generateIndex" />
+	<antcall target="getStaticFiles" />
+</target>
+	
+<target name="generateIndex">
+ 
+  <property name="class" value="org.eclipse.releng.generators.TestResultsGenerator" />
+  <taskdef name="indexResults" classname="${class}" />
+   
+<!--
+	isBuildTested:  true|false  should JUnit plugin test results be used to generate index page
+	dropTokenList:  comma separated list of strings which should be replaced by the fileName attribute settings in the testManifest.xml.
+	xmlDirectoryName:  path to directory containing JUnit plugin test results in xml format (see doc is org.eclipse.test).
+	dropDirectoryName: path to directory containing the result of the build.
+	testResultsTemplateFileName:  path to template file used to generate page with links to JUnit test results	
+	testResultsHtmlFileName:  name of file which will be generated with links to JUnit test results
+	dropHtmlFileName:  name of generated index page
+	hrefTestResultsTargetPath:  relative path from index page to directory containing JUnit html test results
+	hrefCompileLogsTargetPath:  relative path from index page directory containing compilelogs
+	testManifestFileName:	name of xml file containing descriptions of zip types and log files
+
+	
+	
+-->
+  <indexResults 
+    isBuildTested="${isBuildTested}"
+    dropTokenList="${dropTokenList}"
+    xmlDirectoryName="${result}/testresults/xml"
+    dropDirectoryName="${result}"
+    testResultsTemplateFileName="${basedir}/templateFiles/testResults.php.template"
+    dropTemplateFileName="${basedir}/templateFiles/index.html.template"
+    testResultsHtmlFileName="testResults.php"
+    dropHtmlFileName="${indexFileName}"
+    hrefTestResultsTargetPath="testresults/html"
+    hrefCompileLogsTargetPath="compilelogs"
+    compileLogsDirectoryName="${result}/compilelogs"
+    testManifestFileName="${basedir}/testManifest.xml"
+  />
+
+	<tstamp>
+		<format property="TODAY" pattern="MMMM d, yyyy"/>
+	</tstamp>
+	
+  	<!--  Insert Build Type descriptor  -->
+  	<antcall target="${buildType}" />
+  	
+  	<!--  Insert Build Date  -->
+	<replace file="${result}/${indexFileName}" token="@date@" value="${TODAY}"/>
+	
+  	<!--  Insert Build Name  -->
+	<replace file="${result}/${indexFileName}" token="@build@" value="${buildId}"/>
+
+  	<!--  Update timestamp on file to permit overwrite through Ant copy task  -->
+	<touch file="${result}/${indexFileName}" />
+</target>
+
+
+<target name="getStaticFiles">
+	<!--get static files required in the buildLabel directory-->
+	<copy todir="${result}">
+		<fileset dir="staticDropFiles" />
+	</copy>
+	
+	<!--copy buildnotes from plugin directories-->
+	<mkdir dir="${result}/buildnotes" />
+	<copy todir="${result}/buildnotes" flatten="true">
+		<fileset dir="${buildDirectory}/plugins" includes="**/buildnotes_*.html" />
+	</copy>
+</target>
+
+<target name="countFiles">
+<!--	files.count is a file that should exist in the drop directory with a count of the zip files in the same directory.
+		It is required to generate a link to the build on the downloads page.
+ -->
+ <taskdef name="countFiles" classname="org.eclipse.releng.generators.FileCounter" />
+ 
+	<countFiles 
+		sourceDirectory="${result}"
+		filterString=".zip,.tar.gz"
+		outputFile="${result}/files.count"
+	/>
+	
+</target>
+
+<!--Build type descriptors-->
+<target name="I">
+	<replace file="${result}/${indexFileName}" token="@type@" value="Integration"/>
+</target>
+	
+<target name="N">
+	<replace file="${result}/${indexFileName}" token="@type@" value="Nightly"/>
+</target>
+	
+<target name="M">
+	<replace file="${result}/${indexFileName}" token="@type@" value="Maintenance"/>
+</target>
+
+<target name="R">
+	<replace file="${result}/${indexFileName}" token="@type@" value="Release"/>
+</target>
+	
+<target name="S">
+	<replace file="${result}/${indexFileName}" token="@type@" value="Stable"/>
+</target>
+
+<target name="T">
+	<replace file="${result}/${indexFileName}" token="@type@" value="Test"/>
+</target>
+	
+</project>
