@@ -18,6 +18,11 @@
    <extension point="org.eclipse.ant.core.antTasks">
        <antTask
             library="buildTools.jar"
+            name="findMachine"
+            class="org.eclipse.releng.FindMachineTask">
+      </antTask>
+          <antTask
+            library="buildTools.jar"
             name="modifiedMaps"
             class="org.eclipse.releng.CvsDiffParser">
       </antTask>
