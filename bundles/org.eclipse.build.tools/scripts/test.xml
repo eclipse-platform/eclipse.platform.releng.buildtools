@@ -28,7 +28,7 @@ It is assumed that keys are set up on test machines to permit connections withou
 		<arg line="${testMachine} unzip -o -qq ${testDir}/${testFramework} -d ${testDir}" />
 	</exec>
 	<exec dir="." executable="${copyClient}">
-		<arg line="${buildDirectory}/${buildLabel}/${runtime} ${testMachine}:${testDir}/${executionDir}" />
+		<arg line="${buildDirectory}/${buildLabel}/${runtime} ${testMachine}:${executionDir}" />
 	</exec>
 	
 	<!--callback to custom script for post setup-->
