@@ -16,8 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -49,15 +47,16 @@ public class FingerPrint {
     public FingerPrint() {
     }
 
+    public FingerPrint(String config, String reference, String thisBuildId, String outputDir) {
+        this();
+        referenceBuildId= reference;
+        config= "relengbuildwin2";
+        thisBuildID= thisBuildId;
+        outputDirectory= outputDir;
+        
+    }
     public static void main(String args[]) {
-
-        FingerPrint main= new FingerPrint();
-
-        main.referenceBuildId= "args[0]";
-        main.config= "relengbuildwin2";
-        main.thisBuildID= "args[1]";
-        main.outputDirectory= "args[2]";
-       
+        FingerPrint main= new FingerPrint("relengbuildwin2",args[0],args[1],args[2]);  
         main.run();
     }
 
