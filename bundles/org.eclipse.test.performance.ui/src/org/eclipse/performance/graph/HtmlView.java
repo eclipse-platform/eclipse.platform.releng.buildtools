@@ -46,7 +46,7 @@ public class HtmlView {
         Scenario[] scenarios=DB.queryScenarios(variations, "%", PerformanceTestPlugin.BUILD, qd);
         
         
-        Grapher grapher =new Grapher(scenarios,resultsFolder,reference);
+        Grapher grapher =new Grapher(scenarios,resultsFolder+"/graphs",reference);
 
         for (int s= 0; s < scenarios.length; s++) {
             Scenario t= scenarios[s];

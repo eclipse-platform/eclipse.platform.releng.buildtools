@@ -122,10 +122,10 @@ public class Grapher {
     	            PrintStream os= new PrintStream(new FileOutputStream(output + ".html"));
      	            os.println("<html><body>");
     	            os.println("<script language=\"JavaScript\">");
-    	            os.println("if (!document.layers&&!document.all)");
+    	            os.println("if (!document.layers&&!document.getElementById)");
     	            os.println("event=\"test\"");
     	            os.println("function showtip(current,e,text){");
-    	            os.println("if (document.all){");
+    	            os.println("if (document.getElementById){");
     	            os.println("thetitle=text.split('<br>')");
     	            os.println("if (thetitle.length>1){");
     	            os.println("thetitles=''");

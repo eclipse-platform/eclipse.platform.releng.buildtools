@@ -21,21 +21,25 @@ import org.eclipse.test.internal.performance.data.Dim;
 
 public class LineGraph {
     
+    StringBuffer fAreaBuffer;
+    
     private static class GraphItem {
 
         String title;
         String description=null;
         double value;
         Color color;
+        boolean displayDescription=false;
 
-        GraphItem(String title, double value, Color color) {
-            this.title= title;
-            this.value= value;
-            this.color= color;
+        GraphItem(String title, String description,double value, Color color,boolean display) {
+        	this(title, description, value, color);
+        	this.displayDescription=display;
         }
 
         GraphItem(String title, String description, double value, Color color) {
-            this(title, value, color);
+            this.title= title;
+            this.value= value;
+            this.color= color;
             this.description= description;
         }
         
@@ -47,6 +51,7 @@ public class LineGraph {
     }
     
     static final int PADDING= 30;
+    
 
     String fTitle;
     List fItems;
@@ -128,12 +133,17 @@ public class LineGraph {
             g.setForeground(thisItem.color);
             g.fillOval(xposition-2, yposition-2, 5, 5);
             
+            if (fAreaBuffer == null)
+                fAreaBuffer= new StringBuffer();
+            fAreaBuffer.append("\r<area shape=\"CIRCLE\" coords=\""+(xposition-2)+','+(yposition-2)+','+5+"\" nohref onMouseover=\"showtip(this,event,'"+thisItem.title+": "+thisItem.description+"')\" onMouseout=\"hidetip()\">");
+            
+            
             int shift;
             if (i > 0 && yposition < lasty)
                 shift= 3;	 // below dot
             else     
                 shift= -(2*titleHeight+3);	// above dot
-            if (thisItem.description!=null){
+            if (thisItem.displayDescription){
             	g.drawString(thisItem.title, xposition+2, yposition+shift, true);
             	g.drawString(thisItem.description, xposition+2, yposition+shift+titleHeight, true);
             }
@@ -148,12 +158,12 @@ public class LineGraph {
         g.dispose();
     }
 
-    public void addItem(String name, double value, Color col) {
-        fItems.add(new GraphItem(name, value, col));
+    public void addItem(String name, String description, double value, Color col) {
+    	addItem(name, description, value, col,false);
     }
 
-    public void addItem(String name, String description, double value, Color col) {
-        fItems.add(new GraphItem(name, description, value, col));
+    public void addItem(String name, String description, double value, Color col, boolean display) {
+        fItems.add(new GraphItem(name, description, value, col,display));
     }
 
     public double getMaxItem() {
@@ -178,5 +188,13 @@ public class LineGraph {
         if (minItem == 0)
             return -1;
         return minItem;
+    }
+    public String getAreas() {
+        if (fAreaBuffer != null) {
+            String s= fAreaBuffer.toString();
+            fAreaBuffer= null;
+            return s;
+        }
+        return null;
     }
 }
