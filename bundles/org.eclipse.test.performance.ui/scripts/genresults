@@ -6,4 +6,4 @@
 export bb.plugins=./../../..
 export args=$*
 
-java -cp ./../../../startup.jar org.eclipse.core.launcher.Main -application org.eclipse.ant.core.antRunner -f genresults.xml "-Dargs=%args%" "-Ddb.classpath=%CLASSPATH%" "-Ddbloc=%dbloc%" "-Ddb.bin=%db.bin"
+java -jar ./../../../startup.jar -application org.eclipse.ant.core.antRunner -f genresults.xml -Dargs=$args -Ddbloc=$dbloc -Ddb.bin=$db.bin

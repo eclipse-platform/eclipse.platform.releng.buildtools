@@ -1,8 +1,7 @@
 <title>org.eclipse.test.performance.ui readme</title> 
-<p>README<br>
+<p><b><font size="+2">README</font></b><br>
 </p>
-<p>** work in progress **</p>
-<p>last updated: Feb. 21, 2005<br>
+<p>last updated: Feb. 23, 2005<br>
 </p>
 <p><b>Introduction</b><br>
   <br>
@@ -35,62 +34,74 @@
       <li>For example, it is assumed that the scenario &quot;org.eclipse.help.tests.performance.appserver.TestAppserver#testAppserverCycle()&quot; 
         belongs to the &quot;org.eclipse.help&quot; component. </li>
       <li>Unique scenario prefixes are derived from all the scenarios in the database 
-        to group results.</li>
+        and are used to group results.</li>
     </ul>
   </li>
 </ul>
 <p><br>
-  For purposes of this document, the term &quot;<a href="http://download.eclipse.org/downloads/drops/S-3.1M5a-200502191500/performance/performance.php">fingerprint</a>&quot; 
+  For purposes of this document, the term &quot;<a href="descriptions.html#fp">fingerprint</a>&quot; 
   will be used to refer to a bar graph which represents the performance summary 
   at a global or component level for each test configuration.<br>
   <br>
-  The term &quot;<a href="http://download.eclipse.org/downloads/drops/S-3.1M5a-200502191500/performance/org.eclipse.ui.php#sst">scenario 
+  The term &quot;<a href="descriptions.html#sst">scenario 
   status table</a>&quot; will be used to refer to a table of scenarios with green 
   checks and red x indicators below a component fingerprint. This table gives 
   an overall view of the status for all scenarios for a component for all configurations.<br>
 </p>
-<p>The term &quot;<a href="http://download.eclipse.org/downloads/drops/S-3.1M5a-200502191500/performance/linux/org.eclipse.ui.tests.performance.OpenCloseViewTest.showView_org.eclipse.ui.tests.perf_basic().html">scenario 
+<p>The term &quot;<a href="descriptions.html#sr">scenario 
   results</a>&quot; will be used to refer to a web page comparing current performance 
   measurements to the baseline measurements for one scenario on one configuration. 
   The web page displays the raw data for the current and baseline measurements 
   and also displays line graphs showing the measured values over the course of 
   builds between the current and baseline.</p>
 <p><br>
-  <b>Setup</b></p>
+  <b>Requirements</b> </p>
 <ul>
+  <li>Windows or Linux (x86)</li>
   <li>Cloudscape or Derby java libraries</li>
-  <li>SWT java libraries</li>
-  <li>org.eclipse.releng.basebuilder plug-ins</li>
-  <li>Cloudscape or Derby database, local or network with performance data<br>
-    <br>
-  </li>
-  <li>System variables settings for eclipse.perf.dbloc and java.library.path:<br>
-    eclipse.perf.dbloc=&lt;database location, i.e. net://trelenggtk.ottawa.ibm.com&gt;<br>
-    java.library.path=&lt;path to directory containing swt native libraries related 
-    to SWT java libraries on classpath&gt; 
+  <li>org.eclipse.releng.basebuilder</li>
+  <li>1.4 level jvm</li>
+</ul>
+<p><b>Setup</b><br>
+</p>
+<ul>
+  <li>Set the environment variable &quot;dbloc&quot; to the location of the database 
+    containing the performance data. 
     <ul>
-      <li>i.e. org.eclipse.releng.basebuilder\plugins\org.eclipse.swt.win32_3.1.0\os\win32\x86&gt; 
-        <br>
+      <li> i.e. export dbloc==net://trelenggtk.ottawa.ibm.com<br>
         <br>
       </li>
     </ul>
   </li>
-  <li>if running on linux, motif, x86, the LD_LIBRARY_PATH environment variable 
-    should be set to the directory containing the motif libraries libXm.so, libXm.so.2, 
-    libXm.so.2.1 (available in root of org.eclipse.releng.basebuilder).<br>
-    <br>
+  <li>Set the environment variable &quot;db.bin&quot; to the location of the directory 
+    containing the Cloudscape or Derby jars
+<ul>
+      <li>Windows 
+        <ul>
+          <li>set db.bin=c:\Cloudscape_10.0\lib</li>
+        </ul>
+      </li>
+      <li>on Linux
+<ul>
+          <li>export db.bin=/home/user/Cloudscape_10.0/lib<br>
+            <br>
+          </li>
+        </ul>
+      </li>
+    </ul>
   </li>
 </ul>
 <p><b>Running the program</b></p>
-<p>open a terminal, cd to org.eclipse.releng.basebuilder and execute the following 
-  command: <br>
-  <b><br>
-  java -xmx 256m -cp &lt;classpath&gt; org.eclipse.test.performance.ui.Main -Declipse.perf.dbloc=&lt;database 
-  location&gt; -Djava.library.path=&lt;path to swt native libraries&gt; -baseline 
-  &lt;baseline build id&gt; -current &lt;current build id&gt; -config &lt;comma-separated 
-  list of configs&gt; -jvm &lt;jvm name&gt; -output &lt;output dir&gt; [-config.properties 
-  &lt;properties&gt;] [highlight.latest &lt;buildid patterns&gt;] [scenario.pattern 
-  &lt;scenario prefix patterns&gt;] [-fingerprints][-scenarioresults]</b></p>
+<p>From a terminal or dos prompt,<br>
+</p>
+<p><b>1. cd to org.eclipse.releng.basebuilder\plugins\org.eclipse.test.performance.ui\scripts<br>
+  2. execute the following command:<br>
+  <br>
+  genresults -baseline &lt;baseline build id&gt; -current &lt;current build id&gt; 
+  -config &lt;comma-separated list of configs&gt; -jvm &lt;jvm name&gt; -output 
+  &lt;output dir&gt; [-config.properties &lt;properties&gt;] [highlight.latest 
+  &lt;buildid patterns&gt;] [scenario.pattern &lt;scenario prefix patterns&gt;] 
+  [-fingerprints][-scenarioresults]</b></p>
 <br>
 Parameter descriptions: 
 <blockquote>
