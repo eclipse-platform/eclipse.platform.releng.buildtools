@@ -9,11 +9,20 @@
 </target>
 
 <target name="runtests-remote">
+	<!--in cases where a remote user needs to be specified-->
+	<condition property="rshuser" value="-l ${user}" >
+		<isset property="user" />
+	</condition>
+	<condition property="rcpuser" value=".${user}" >
+		<isset property="user" />
+	</condition>
+
+
 	<!--
 	testDir:  the absolute path to the directory where the testing will occur
 	-->
 	<exec dir="." executable="rsh">
-		<arg line="${testMachine} mkdir ${testDir}" />
+		<arg line="${testMachine} ${rshuser} mkdir ${testDir}" />
 	</exec>
 
 	<!--install the vm used for testing-->
@@ -21,17 +30,17 @@
 
 	<!--copy the built automated testing framework-->
 	<exec dir="." executable="rcp">
-		<arg line="${buildDirectory}/${buildLabel}/${testFramework} ${testMachine}:${testDir}" />
+		<arg line="${buildDirectory}/${buildLabel}/${testFramework} ${testMachine}${rcpuser}:${testDir}" />
 	</exec>
 	
 	<!--set up the automated testing framework-->
 	<exec dir="." executable="rsh">
-		<arg line="${testMachine} unzip -o -qq ${testDir}/${testFramework} -d ${testDir}" />
+		<arg line="${testMachine} ${rshuser} unzip -o -qq ${testDir}/${testFramework} -d ${testDir}" />
 	</exec>
 	
 	<!--copy the built runtime to be tested-->
 	<exec dir="." executable="rcp">
-		<arg line="${buildDirectory}/${buildLabel}/${runtime} ${testMachine}:${executionDir}" />
+		<arg line="${buildDirectory}/${buildLabel}/${runtime} ${testMachine}${rcpuser}:${executionDir}" />
 	</exec>
 
 	<!--callback to custom script for additional setup-->
@@ -48,15 +57,15 @@
 
 	<!--copy results of testing back to build machine-->	
 	<exec dir="." executable="rcp">
-		<arg line="-r ${testMachine}:${executionDir}/results/html ${buildDirectory}/${buildLabel}/testresults"/>
+		<arg line="-r ${testMachine}${rcpuser}:${executionDir}/results/html ${buildDirectory}/${buildLabel}/testresults"/>
 	</exec>
 	<exec dir="." executable="rcp">
-		<arg line="-r ${testMachine}:${executionDir}/results/xml ${buildDirectory}/${buildLabel}/testresults"/>
+		<arg line="-r ${testMachine}${rcpuser}:${executionDir}/results/xml ${buildDirectory}/${buildLabel}/testresults"/>
 	</exec>
 
 	<!--  copy the console log from testing  -->
 	<exec dir="." executable="rcp">
-		<arg line="-r ${testMachine}:${executionDir}/${consolelog} ${buildDirectory}/${buildLabel}/testresults/consolelogs"/>
+		<arg line="-r ${testMachine}${rcpuser}:${executionDir}/${consolelog} ${buildDirectory}/${buildLabel}/testresults/consolelogs"/>
 	</exec>
 	
 </target>
