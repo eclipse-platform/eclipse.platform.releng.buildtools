@@ -96,9 +96,9 @@ public class TestResultsGenerator extends Task {
 	public static void main(String[] args) {
 		TestResultsGenerator test = new TestResultsGenerator();
 		test.setDropTokenList(
-			"%sdk%,%tests%,%examples%,%runtime%,%jdt%,%teamextras%,%infocenter%");
+			"%sdk%,%tests%,%runtime%,%jdt%,%teamextras%,%rcpsdk%,%pde%,%pdesdk%,%swt%");
 		test.getDropTokensFromList(test.dropTokenList);
-		test.setIsBuildTested(false);
+		test.setIsBuildTested(true);
 		test.setXmlDirectoryName("D:\\junk\\testresults\\xml");
 		test.setHtmlDirectoryName("D:\\junk\\testresults");
 		test.setDropDirectoryName("D:\\junk");
@@ -360,7 +360,7 @@ public class TestResultsGenerator extends Task {
 					dropTemplateString,
 					dropTokens.get(i).toString(),
 					replaceString);
-		}
+			}
 
 		String outputFileName =
 			dropDirectoryName + File.separator + dropHtmlFileName;
@@ -522,14 +522,20 @@ public class TestResultsGenerator extends Task {
 			int end = fileName.lastIndexOf(".xml");
 
 			String shortName = fileName.substring(begin + 1, end);
-			
-			if (errorCount > 0)
-			   aString = aString + "<tr><td><b><font color=\"#FF0000\">";
+			String displayName = shortName;
+			if (errorCount != 0)
+			   aString = aString + "<tr><td><b>";
 			else 
 				aString = aString + "<tr><td>";
 			
-			aString =
-				aString
+
+			if (errorCount!=0){
+				displayName="<font color=\"#ff0000\">"+displayName+"</font>";
+			}
+			if (errorCount==-1){
+				aString=aString.concat(displayName);
+			}else {
+				aString=aString
 					+ "<a href="
 					+ "\""
 					+ hrefTestResultsTargetPath
@@ -537,22 +543,23 @@ public class TestResultsGenerator extends Task {
 					+ shortName
 					+ ".html"
 					+ "\">"
-					+ shortName
+					+ displayName
 					+ "</a>";
-
-			
+			}
 			if (errorCount > 0)
-				   aString = aString + "</font></td><td><b><font color=\"#FF0000\">";
+				   aString = aString + "</td><td><b>";
 			else 
 				aString = aString + "</td><td>";
 							
 			if (errorCount == -1)
-				aString = aString + "DNF";
+				aString = aString + "<font color=\"#ff0000\">DNF";
 
+			else if (errorCount >0)
+				aString = aString + "<font color=\"#ff0000\">"+String.valueOf(errorCount);
 			else
-				aString = aString + String.valueOf(errorCount);
+				aString = aString +String.valueOf(errorCount);
 				
-			if (errorCount > 0)
+			if (errorCount != 0)
 				aString = aString + "</font></b></td></tr>";
 			else 	
 				aString = aString + "</td></tr>";
@@ -564,6 +571,10 @@ public class TestResultsGenerator extends Task {
 
 	private int countErrors(String fileName) {
 		int errorCount = 0;
+		
+		if (new File(fileName).length()==0)
+			return -1;
+		
 		try {
 			DocumentBuilderFactory docBuilderFactory=DocumentBuilderFactory.newInstance();
 			parser=docBuilderFactory.newDocumentBuilder();
