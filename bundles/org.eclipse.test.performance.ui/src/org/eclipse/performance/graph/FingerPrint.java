@@ -186,6 +186,7 @@ public class FingerPrint {
         String refData= "";
         Variations v= new Variations();
         v.put(PerformanceTestPlugin.CONFIG, config);
+        v.put("jvm", jvm);
         Scenario scenario= DB.getScenarioSeries(scenarioName, v, PerformanceTestPlugin.BUILD, referenceBuildId, thisBuildID, dims);
         String[] timeSeriesLabels= scenario.getTimeSeriesLabels();
         if (timeSeriesLabels.length == 2) {

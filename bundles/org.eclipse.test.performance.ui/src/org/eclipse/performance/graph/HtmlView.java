@@ -80,14 +80,14 @@ public class HtmlView {
                     timeSeriesLabels[j] = (underScoreIndex == -1) ? timeSeriesLabels[j] : timeSeriesLabels[j].substring(0, underScoreIndex);
                     ps.println("<tr bgcolor=" + bgColors[(j + 3) % 2] + "><td>" + timeSeriesLabels[j] + "</td>");
                        
-                        for (int i = 0; i < dimensions.length; i++) {
-                        Dim dim = dimensions[i];
-                        TimeSeries ts = t.getTimeSeries(dim);
-                        String stddev = ""; //$NON-NLS-1$
-                        double stddev2 = ts.getStddev(j);
-                        if (stddev2 != 0.0)
-                            stddev = " [" + dim.getDisplayValue(ts.getStddev(j)) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
-                        ps.println("<td>" + dim.getDisplayValue(ts.getValue(j)) + stddev + "</td>");
+                    for (int i = 0; i < dimensions.length; i++) {
+                        	Dim dim = dimensions[i];
+                        	TimeSeries ts = t.getTimeSeries(dim);
+                        	String stddev = ""; //$NON-NLS-1$
+                        	double stddev2 = ts.getStddev(j);
+                        	if (stddev2 != 0.0)
+                        		stddev = " [" + dim.getDisplayValue(ts.getStddev(j)) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+                        	ps.println("<td>" + dim.getDisplayValue(ts.getValue(j)) + stddev + "</td>");
                     }
                     
                     ps.println("</tr>");
