@@ -1,13 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
 <plugin
    id="org.eclipse.build.tools"
    name="org.eclipse.build.tools"
    version="1.0.0">
 
-	
-   <extension point="org.eclipse.ant.core.extraClasspathEntries">
+   <runtime>
+   </runtime>
+
+   <extension
+         point="org.eclipse.ant.core.extraClasspathEntries">
       <extraClasspathEntry
             library="buildTools.jar">
       </extraClasspathEntry>
    </extension>
+	<!-- Tasks -->
+   <!--extension point="org.eclipse.ant.core.antTasks">
+      <antTask
+            library="buildTools.jar"
+            name="versionTrack"
+            class="org.eclipse.releng.generators.VersionTrackerTask">
+      </antTask>
+    </extension-->
+    <extension point="org.eclipse.ant.core.antTasks">
+      <antTask
+            library="buildTools.jar"
+            name="modifiedMaps"
+            class="org.eclipse.releng.CvsDiffParser">
+      </antTask>
+    </extension>
 </plugin>
