@@ -27,13 +27,9 @@ import org.eclipse.test.internal.performance.db.TimeSeries;
 
 public class HtmlView {
 
-	String [] bgColors= {"#DDDDDD","#EEEEEE"};
-
     public static  void main (String[] args) {
-    	new HtmlView().run(args);
-    }
-    public void run (String[] args) {
-		String buildTypeFilter=args[0];
+    	String [] bgColors= {"#DDDDDD","#EEEEEE"};
+        String buildTypeFilter=args[0];
     	String resultsFolder=args[1];
 		String outFile= null;
 		PrintStream ps= null;
@@ -41,7 +37,7 @@ public class HtmlView {
         Dim[] qd= null; // new Dim[] { InternalDimensions.CPU_TIME };
         
         Scenario[] scenarios= DB.queryScenarios("relengbuildwin2",buildTypeFilter+"%", "%", qd); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        Grapher grapher =new Grapher(scenarios,resultsFolder);
+ //       Grapher grapher =new Grapher(scenarios,resultsFolder);
 
         for (int s= 0; s < scenarios.length; s++) {
             Scenario t= scenarios[s];
