@@ -255,13 +255,16 @@ public class Main {
 			if (arg.equals("-fingerprints")) {
 				genFingerPrints = true;
 				genAll = false;
+				i++;
 				continue;
 			}
 			if (arg.equals("-scenarioresults")) {
 				genScenarioSummaries = true;
 				genAll = false;
+				i++;
 				continue;
 			}
+			i++;
 		}
 		
 		if (baseline == null || output == null || config == null
