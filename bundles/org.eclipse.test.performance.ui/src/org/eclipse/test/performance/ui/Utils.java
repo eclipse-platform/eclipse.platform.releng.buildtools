@@ -37,26 +37,40 @@ import org.eclipse.test.internal.performance.db.Variations;
  */
 public class Utils {
 
-	public static int getBuildNameIndex(String[] timeSeriesLabels,
-			String buildId) {
-		for (int i = 0; i < timeSeriesLabels.length; i++) {
-			String timeSeriesLabel = timeSeriesLabels[i];
-			if (timeSeriesLabel.equals(buildId))
-				return i;
-		}
-		return -1;
+	public static String getDimensionDescription(String dimension){
+		/*Descriptions of dimensions */
+		//Windows and Linux
+		Hashtable descriptions = new Hashtable();
+		descriptions.put("cpu time","Amount of time the process ran on the CPU.");
+			
+		descriptions.put("kernel time","Amount of time the process ran on the CPU, while the CPU was in kernel mode.");
+		descriptions.put("used java heap","Change in the amount of memory allocated for Java objects.");
+		descriptions.put("working set","Change in the amount of physical memory used by the process (other data resides in swap space).");
+
+		//Linux
+		descriptions.put("data size","Change in the process' data and stack memory size.");
+		descriptions.put("hard page faults","Number of memory pages that were loaded from swap space on disk.");
+		descriptions.put("library size","Change in the process' library memory size.");
+		descriptions.put("soft page faults","Number of memory pages that were loaded from memory (i.e., they were not mapped in the process' page table, but already present in memory for some reason).");
+		descriptions.put("text size","Change in the process' code memory size, useful with start-up tests.");
+
+		//Windows
+		descriptions.put("committed","Change in the amount of allocated memory (both, in physical memory and swap space, can be preallocated for future use).");
+		descriptions.put("elapsed process","Amount of wall-clock time.");
+		descriptions.put("gdi objects","Change in the number of GDI (Graphics Device Interface) objects, can be useful for UI tests (particularly start-up tests).");
+		descriptions.put("page faults","Number of memory pages that were loaded from swap space on disk or from memory (i.e., in the latter case, they were not mapped in the process' page table, but already present in memory for some reason).");
+		descriptions.put("system time","* no longer measured, same as elapsed time, see PerformanceMonitor *");
+		descriptions.put("working set peak","Increase of the maximum working set size, useful with start-up tests.");
+
+		if(descriptions.get(dimension.toLowerCase())!=null)
+			return descriptions.get(dimension.toLowerCase()).toString();
+		return "";
 	}
-	public static boolean inIncludedBuilds(int [] indeces, int i){
-		for (int x=0;x<indeces.length;x++){
-			if (indeces[x]==i)
-				return true;
-		}
-		return false;
-	}
+
 	
-	public static int[] getLastSevenNightlyBuildNameIndeces(String[] timeSeriesLabels, String current) {
+	public static ArrayList lastSevenNightlyBuildNames(String[] timeSeriesLabels, String current) {
 		int currentIndex=getBuildNameIndex(timeSeriesLabels,current);
-		int[] indeces = { -1, -1, -1, -1, -1, -1, -1 };
+		ArrayList labels = new ArrayList();
 		int j=6;
 		
 			for (int i = timeSeriesLabels.length-1; i>-1; i--) {
@@ -64,12 +78,11 @@ public class Utils {
 					break;
 				String timeSeriesLabel = timeSeriesLabels[i];
 				if (timeSeriesLabel.startsWith("N")&&i<currentIndex){
-					indeces[j] = i;
+					labels.add(timeSeriesLabel);
 					j--;
-				}
-			
+				}		
 		}
-		return indeces;
+		return labels;
 	}
 	
 	/** HTML source used at beginning of html document.
@@ -277,11 +290,12 @@ public class Utils {
 	 * 
 	 */
 	public static LineGraph getLineGraph(Scenario t, String dimensionName,
-		String reference, String current) {
+		String reference, String current,ArrayList pointsOfInterest) {
 		Display display = Display.getDefault();
-		Color black = display.getSystemColor(SWT.COLOR_BLACK);
-		Color green = display.getSystemColor(SWT.COLOR_DARK_GREEN);
 
+		Color black = display.getSystemColor(SWT.COLOR_BLACK);
+		Color yellow = display.getSystemColor(SWT.COLOR_DARK_YELLOW);
+		Color magenta = display.getSystemColor(SWT.COLOR_MAGENTA);
 		String scenarioName = t.getScenarioName();
 		Dim[] dimensions = t.getDimensions();
 		Dim dim=null;
@@ -302,15 +316,20 @@ public class Utils {
 				for (int j = 0; j < n; j++) {
 					String buildID = ts.getLabel(j);
 					double value = ts.getValue(j);
-					Color c = buildID.indexOf(reference) >= 0 ? green : black;
+					Color c=yellow;
+					if (buildID.equals(reference)||pointsOfInterest.contains(buildID))
+						c =magenta;
+					else if (buildID.startsWith("I"))
+						c=black;
+					
 					int underscoreIndex = buildID.indexOf('_');
 					buildID = (buildID.indexOf('_') == -1) ? buildID : buildID
 							.substring(0, underscoreIndex);
-					if (c == green || ts.getLabel(j).equals(current))
+					if (ts.getLabel(j).equals(reference) || ts.getLabel(j).equals(current))
 						graph.addItem(buildID, dim.getDisplayValue(value),
 								value, c, true);
-					else if(ts.getLabel(j).startsWith("I")||ts.getLabel(j).startsWith("2")||ts.getLabel(j).startsWith("3.0.1")||inIncludedBuilds(getLastSevenNightlyBuildNameIndeces(t.getTimeSeriesLabels(),current),j))
-						graph.addItem(buildID, dim.getDisplayValue(value),
+					else if(buildID.startsWith("I")||pointsOfInterest.contains(ts.getLabel(j))||lastSevenNightlyBuildNames(t.getTimeSeriesLabels(),current).contains(buildID))
+						graph.addItem(ts.getLabel(j), dim.getDisplayValue(value),
 								value, c);
 				}
 			}
@@ -328,7 +347,7 @@ public class Utils {
 		int GRAPH_HEIGHT = 200;
 		Image image = new Image(Display.getDefault(), GRAPH_WIDTH, GRAPH_HEIGHT);
 		p.paint(image);
-
+		
 	     /* Downscale to 8 bit depth palette to save to gif */
         ImageData data = Utils.downSample(image);
         ImageLoader il= new ImageLoader();
@@ -368,6 +387,16 @@ public class Utils {
 		return result;
 	}
 
+	public static int getBuildNameIndex(String[] timeSeriesLabels,
+			String buildId) {
+		for (int i = timeSeriesLabels.length-1; i>-1;i--) {
+			String timeSeriesLabel = timeSeriesLabels[i];
+			if (timeSeriesLabel.startsWith(buildId))
+				return i;
+		}
+		return -1;
+	}
+	
     /** Downsample Image to 8 bit depth format
      *  so that the resulting image data can
      *  be saved to GIF.
@@ -466,5 +495,4 @@ public class Utils {
         }
         return newData;
 	}
-    
 }

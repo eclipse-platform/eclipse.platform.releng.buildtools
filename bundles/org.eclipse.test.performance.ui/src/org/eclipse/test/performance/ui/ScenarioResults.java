@@ -34,7 +34,9 @@ public class ScenarioResults {
 	private String configName;
 
 	private String current;
-
+	
+	private ArrayList pointsOfInterest;
+	
 	/**
 	 * An html table representation for a scenario of all dimensions stored in a
 	 * performance database for all builds.
@@ -51,11 +53,13 @@ public class ScenarioResults {
 	 * @param object
 	 */
 	public ScenarioResults(Scenario[] scenarios, String reference,
-			String resultsFolder, String configName, String current, Utils.ConfigDescriptor configDescriptor) {
+			String resultsFolder, String configName, String current, Utils.ConfigDescriptor configDescriptor,ArrayList pointsOfInterest) {
 		this.scenarios = scenarios;
 		this.reference = reference;
 		this.resultsFolder = resultsFolder;
 		this.configName = configName;
+
+		this.pointsOfInterest=pointsOfInterest;
 		if (configDescriptor!=null){
 			this.configName=configDescriptor.description;
 			this.resultsFolder=configDescriptor.outputDir;
@@ -71,7 +75,17 @@ public class ScenarioResults {
 		PrintStream ps = null;
 
 		for (int s = 0; s < scenarios.length; s++) {
+			ArrayList pointsOfInterest=new ArrayList();
 			Scenario t = scenarios[s];
+			
+			//get latest points of interest matching
+			Iterator iterator = this.pointsOfInterest.iterator();
+			while (iterator.hasNext()){
+				String match=getMostRecentMatchingBuildID(t,iterator.next().toString());
+					if (match!=null)
+						pointsOfInterest.add(match);
+			}
+			
 			int []buildNameIndeces={-1,-1};
 			buildNameIndeces[0]=Utils.getBuildNameIndex(t.getTimeSeriesLabels(),current);
 			buildNameIndeces[1]=Utils.getBuildNameIndex(t.getTimeSeriesLabels(),reference);
@@ -103,12 +117,10 @@ public class ScenarioResults {
 			// charset=iso-8859-1\">");
 			ps.println(Utils.HTML_DEFAULT_CSS);
 			ps.println("<title>"+t.getScenarioName() + "("+configName+")"+"</title></head>"); //$NON-NLS-1$
-			ps.println("<h4>Scenario: " + t.getScenarioName() + "("+configName+")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
-			ps.println("Click measurement name to view line graph of measured values over release builds," +
-					" I builds and last seven N builds.<br>" +
-					"Click <a href=\"http://download.eclipse.org/downloads/performance/dimensions.html\">" +
-					"here</a> for measurement descriptions.<br>");
-			ps.println("Values in red and green indicate degradation > 10% and improvement > 10%,respectively.<br>");
+			ps.println("<h4>Scenario: " + t.getScenarioName() + " ("+configName+")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
+			ps.println("<b>Click measurement name to view line graph of measured values over builds. " +
+					"Magenta, black and yellow dots are used to denote release or milestone, integration, and nightly builds, respectively.</b><br><br>");
+					
 			ps.println("<table border=\"1\">"); //$NON-NLS-1$ //$NON-NLS-2$
 
 			Dim[] dimensions = filteredDimensions( t.getDimensions());
@@ -121,6 +133,7 @@ public class ScenarioResults {
 							+ "</a></td>");
 				}
 				ps.print("</tr>\n");
+
 
 				//store current and reference values for diff later
 				double [][] diffValues=new double [2][dimensions.length];
@@ -165,17 +178,20 @@ public class ScenarioResults {
 				ps.println(getDiffs(diffValues,dimensions,refValueExistance));
 				ps.println();
 				ps.println("</font></table>");
+				ps.println("*Delta values in red and green indicate degradation > 10% and improvement > 10%,respectively.<br><br>");
+				ps.println("<br><hr>\n");
 			
 				// print image maps of historical
 				for (int i = 0; i < dimensions.length; i++) {
 					Dim dim = dimensions[i];
 					String dimName=dim.getName();
 					
-					LineGraph lg=Utils.getLineGraph(t,dim.getName(),reference,current);
+					LineGraph lg=Utils.getLineGraph(t,dim.getName(),reference,current,pointsOfInterest);
 					String lgImg=resultsFolder+"/graphs/"+scenarioFileName+"_"+dimName+".gif";
 					Utils.printLineGraphGif(lg,lgImg);
-					ps.println("<a name=\""+configName+"_"+scenarioFileName+"_"+ dimName+"\"></a>");
-					ps.println("<h4>"+dimName+"</h4>");
+					ps.println("<br><br><a name=\""+configName+"_"+scenarioFileName+"_"+ dimName+"\"></a>");
+					ps.println("<br><b>"+dimName+"</b><br>");
+					ps.println(Utils.getDimensionDescription(dimName)+"<br><br>\n");
 					ps.println(Utils.getImageMap(lg,"graphs/"+scenarioFileName+"_"+dimName+".gif"));
 					// ps.println(new
 					// DimensionHistories(t,resultsFolder+"/graphs",reference,configName).getImageMap(dim));
@@ -205,8 +221,17 @@ public class ScenarioResults {
 		return indeces;
 	}
 	
+	private String getMostRecentMatchingBuildID(Scenario scenario,String buildIdPrefix){
+		String [] buildIds = scenario.getTimeSeriesLabels();
+		for (int i=buildIds.length-1;i>-1;i--){
+			if (buildIds[i].startsWith(buildIdPrefix))
+				return buildIds[i];
+		}
+		return null;
+	}
+	
 	private String getDiffs(double [][]values,Dim[] dimensions, boolean []refValueExistance){
-		String diffRow="<tr><td>Delta</td>";
+		String diffRow="<tr><td>*Delta</td>";
 		for (int j=0;j<dimensions.length;j++){
 			Dim dim = dimensions[j];
 			String dimName=dim.getName();

@@ -20,7 +20,7 @@ public class Main {
 	private String[] config;
 	private Hashtable configDescriptors;
 	private String currentBuildId;
-	private String buildIdPattern="%";
+	private ArrayList pointsOfInterest;
 	private Variations variations;
 	private Scenario[] scenarios;
 	private String jvm;
@@ -115,7 +115,7 @@ public class Main {
 			if (genScenarioSummaries || genAll) {
 				System.out.print(config
 						+ ": generating scenario summaries...");
-				new ScenarioResults(scenarios, baseline,dimensionHistoryOutput,config,currentBuildId,cd);
+				new ScenarioResults(scenarios, baseline,dimensionHistoryOutput,config,currentBuildId,cd, pointsOfInterest);
 				System.out.println("done.");
 			}
 
@@ -168,11 +168,15 @@ public class Main {
 				}
 				i++;
 			}
-			if (arg.equals("-buildid.pattern")) {
-				buildIdPattern = args[i + 1];
-				if (buildIdPattern.startsWith("-")) {
-					System.out.println("Missing value for -buildid.pattern parameter");
+			if (arg.equals("-highlight.latest")) {
+				if (args[i + 1].startsWith("-")) {
+					System.out.println("Missing value for -highlight.latest parameter");
 					printUsage();
+				}
+				String []ids=args[i + 1].split(",");
+				pointsOfInterest=new ArrayList();
+				for (int j=0;j<ids.length;j++){
+					pointsOfInterest.add(ids[j]);
 				}
 				i++;
 			}
@@ -285,11 +289,15 @@ public class Main {
 								+"\n\tCan also provide an optional output directory for raw data tables and line graphs for the config."
 								+"\n\tThe value should be specified in the following format:"
 								+"\n\tname1,description1,url1 [,outputdir1];name2,description2,url2 [,outputdir2];etc..\n\n"
-											
+
+						+ "[-highlight.latest]"
+								+"\n\tOptional.  Comma-separated list of build Id prefixes used to find most recent matching for each entry." +
+										"\n\tResult used to highlight points in line graphs.\n\n"
+
 						+ "[-scenario.pattern]"
 								+"\n\tOptional.  Scenario prefix pattern to query database.  If not specified,"
 								+"\n\tdefault of % used in query.\n\n"
-
+							
 						+ "[-fingerprints]" 
 								+"\n\tOptional.  Use to generate fingerprints only.\n\n"
 									
