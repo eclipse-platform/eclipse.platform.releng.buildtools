@@ -32,7 +32,7 @@ import org.eclipse.test.internal.performance.db.TimeSeries;
 /**
  * @author SDimitrov
  */
-public class Main extends Task {
+public class Main {
 
     private static final int GRAPH_HEIGHT= 300;
     private static final int GRAPH_WIDTH= 800;
@@ -41,11 +41,16 @@ public class Main extends Task {
     String outputDirectory;
     //String referenceBuildId= "3.0.0";
     String buildTypeFilter;
-
+    Scenario[] scenarios;
+    
     public Main() {
         super();
     }
-
+    public Main(Scenario [] scenarios,String output) {
+    	this.scenarios=scenarios;
+    	outputDirectory=output;
+    	run();
+    }
     public static void main(String args[]) {
 
         Main main= new Main();
@@ -60,10 +65,10 @@ public class Main extends Task {
             main.outputDirectory= args[1];
         }
 
-        main.execute();
+      //  main.start();
     }
 
-    public void execute() throws BuildException {
+    public void run() {
 
         Display display= Display.getDefault();
         Color black= display.getSystemColor(SWT.COLOR_BLACK);
@@ -71,7 +76,7 @@ public class Main extends Task {
 
         new File(outputDirectory).mkdirs();
 
-        Scenario[] scenarios= DB.queryScenarios("%", buildTypeFilter, "%"); // get all Scenarios
+     //   Scenario[] scenarios= DB.queryScenarios("%", buildTypeFilter, "%"); // get all Scenarios
 
         for (int s= 0; s < scenarios.length; s++) {
             Scenario t= scenarios[s];
@@ -83,6 +88,7 @@ public class Main extends Task {
                 LineGraph graph= new LineGraph(scenarioName + ": " + dimensionName, dim);
                 TimeSeries ts= t.getTimeSeries(dim);
                 int n= ts.getLength();
+                
                 if (n > 0) {
 	                for (int j= 0; j < n; j++) {
 	                    String buildID= ts.getLabel(j);
