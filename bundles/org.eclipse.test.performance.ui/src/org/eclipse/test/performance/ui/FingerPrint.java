@@ -154,8 +154,8 @@ public class FingerPrint {
 
     private void save(BarGraph bar, String output) {
 
-    	if (bar.getFItems().size()==0)
-    		return;
+    	//if (bar.getFItems().size()==0)
+    		//return;
     	
         Display display= Display.getDefault();
         
