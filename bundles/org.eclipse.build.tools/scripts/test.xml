@@ -13,7 +13,7 @@ Targets for setting up and running tests remotely
 It is assumed that keys are set up on test machines to permit connections without user name and password prompts.
 -->
 <target name="runtests-remote" depends="setRemoteLoginClient,setRemoteCopyClient">
-	<exec dir="." executable="${remoteLogin}">
+	<exec dir="." executable="${loginClient}">
 		<arg line="${testMachine} mkdir ${testDir}" />
 	</exec>
 	
@@ -21,20 +21,20 @@ It is assumed that keys are set up on test machines to permit connections withou
 	<antcall target="installVmForRemote" />
 	
 	<!--set up the automated testing framework-->
-	<exec dir="." executable="${remoteCopy}">
+	<exec dir="." executable="${copyClient}">
 		<arg line="${buildDirectory}/${buildLabel}/${testFramework} ${testMachine}:${testDir}" />
 	</exec>
-	<exec dir="." executable="${remoteLogin}">
+	<exec dir="." executable="${loginClient}">
 		<arg line="${testMachine} unzip -o -qq ${testDir}/${testFramework} -d ${testDir}" />
 	</exec>
-	<exec dir="." executable="${remoteCopy}">
+	<exec dir="." executable="${copyClient}">
 		<arg line="${buildDirectory}/${buildLabel}/${runtime} ${testMachine}:${testDir}/${executionDir}" />
 	</exec>
 	
 	<!--callback to custom script for post setup-->
 	<ant antfile="${customTest}" target="customSetup" dir="${basedir}" />
 	
-	<exec dir="." executable="${remoteLogin}">
+	<exec dir="." executable="${loginClient}">
 		<arg line="${testMachine} ${testScript} ${args}" />
 	</exec>
 	
@@ -42,18 +42,18 @@ It is assumed that keys are set up on test machines to permit connections withou
 	<mkdir dir="${buildDirectory}/${buildLabel}/testresults" />
 	<mkdir dir="${buildDirectory}/${buildLabel}/testresults/consolelogs" />
 	
-	<exec dir="." executable="${remoteCopy}">
+	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/results/html ${buildDirectory}/${buildLabel}/testresults"/>
 	</exec>
-	<exec dir="." executable="${remoteCopy}">
+	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/results/xml ${buildDirectory}/${buildLabel}/testresults"/>
 	</exec>
-	<exec dir="." executable="${remoteCopy}">
+	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/results/chkpii ${buildDirectory}/${buildLabel}/testresults"/>
 	</exec>
 
 	<!--  copy the console log from testing  -->
-	<exec dir="." executable="${remoteCopy}">
+	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/${consolelog} ${buildDirectory}/${buildLabel}/testresults/consolelogs"/>
 	</exec>
 	
@@ -61,20 +61,20 @@ It is assumed that keys are set up on test machines to permit connections withou
 
 <target name="setRemoteLoginClient">
 	<!--use rsh if rsh is set, otherwise use default, ssh-->
-	<condition property="remoteLogin" value="rsh">
+	<condition property="loginClient" value="rsh">
 		<isset property="rsh" />
 	</condition>
 	<!--default remote login client-->
-	<property name="remoteLogin" value="ssh" />	
+	<property name="loginClient" value="ssh" />	
 </target>
 
 <target name="setRemoteCopyClient">
 	<!--use rcp if rsh is set, otherwise use default, scp-->
-	<condition property="remoteCopy" value="rcp">
+	<condition property="copyClient" value="rcp">
 		<isset property="rsh" />
 	</condition>
 	<!--default remote copy client-->
-	<property name="remoteCopy" value="scp" />	
+	<property name="copyClient" value="scp" />	
 </target>
 
 <target name="installVmForRemote" unless="skipVmInstall">
