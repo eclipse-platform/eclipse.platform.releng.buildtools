@@ -13,6 +13,8 @@ Targets for setting up and running tests remotely
 It is assumed that keys are set up on test machines to permit connections without user name and password prompts.
 -->
 <target name="runtests-remote" depends="setRemoteLoginClient,setRemoteCopyClient">
+	<property name="testResults" value="${buildDirectory}/${buildLabel}/testresults" />
+	
 	<exec dir="." executable="${loginClient}">
 		<arg line="${testMachine} mkdir ${testDir}" />
 	</exec>
@@ -39,22 +41,22 @@ It is assumed that keys are set up on test machines to permit connections withou
 	</exec>
 	
 	<!--  this directory must exist before remote copy operation  -->
-	<mkdir dir="${buildDirectory}/${buildLabel}/testresults" />
-	<mkdir dir="${buildDirectory}/${buildLabel}/testresults/consolelogs" />
+	<mkdir dir="${testResults}" />
+	<mkdir dir="${testResults}/consolelogs" />
 	
 	<exec dir="." executable="${copyClient}">
-		<arg line="-r ${testMachine}:${executionDir}/results/html ${buildDirectory}/${buildLabel}/testresults"/>
+		<arg line="-r ${testMachine}:${executionDir}/results/html ${testResults}"/>
 	</exec>
 	<exec dir="." executable="${copyClient}">
-		<arg line="-r ${testMachine}:${executionDir}/results/xml ${buildDirectory}/${buildLabel}/testresults"/>
+		<arg line="-r ${testMachine}:${executionDir}/results/xml ${testResults}"/>
 	</exec>
 	<exec dir="." executable="${copyClient}">
-		<arg line="-r ${testMachine}:${executionDir}/results/chkpii ${buildDirectory}/${buildLabel}/testresults"/>
+		<arg line="-r ${testMachine}:${executionDir}/results/chkpii ${testResults}"/>
 	</exec>
 
 	<!--  copy the console log from testing  -->
 	<exec dir="." executable="${copyClient}">
-		<arg line="-r ${testMachine}:${executionDir}/${consolelog} ${buildDirectory}/${buildLabel}/testresults/consolelogs"/>
+		<arg line="-r ${testMachine}:${executionDir}/${consolelog} ${testResults}/consolelogs"/>
 	</exec>
 	
 </target>
@@ -99,7 +101,8 @@ Targets for setting up and running tests locally
 <target name="runtests-local">
 	<delete dir="${testDir}" quiet="true"/>
 	<mkdir dir="${testDir}" />
-
+	<property name="testResults" value="${buildDirectory}/${buildLabel}/testresults" />
+	
 	<!--set up testing directory-->
 	<unzip src="${buildDirectory}/${buildLabel}/${testFramework}" dest="${testDir}" />
 	
@@ -117,14 +120,14 @@ Targets for setting up and running tests locally
   		<arg line="${args}" />
 	</exec>
 
-	<mkdir dir="${buildDirectory}/${buildLabel}/testresults" />
-	<mkdir dir="${buildDirectory}/${buildLabel}/testresults/consolelogs" />
+	<mkdir dir="${testResults}" />
+	<mkdir dir="${testResults}/consolelogs" />
 
-	<copy todir="${buildDirectory}/${buildLabel}/testresults">
+	<copy todir="${testResults}">
 		<fileset dir="${executionDir}/results" />
 	</copy>
 
-	<copy todir="${buildDirectory}/${buildLabel}/testresults/consolelogs" file="${executionDir}/${consolelog}" />
+	<copy todir="${testResults}/consolelogs" file="${executionDir}/${consolelog}" />
 </target>
 
 <target name="installVmForLocal" unless="skipVmInstall">
