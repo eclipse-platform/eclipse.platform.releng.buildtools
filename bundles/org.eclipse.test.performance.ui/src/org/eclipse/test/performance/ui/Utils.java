@@ -46,9 +46,9 @@ public class Utils {
 	 *  JavaScript used for mouse over events on image maps.
 	 */
 	public static String HTML_MAP_MOUSE_OVER_JS="<script language=\"JavaScript\">\n" +
-    "if (!document.layers&&!document.getElementById)"+
-    "event=\"test\""+
-    "function showtip(current,e,text){"+
+    "if (!document.layers&&!document.getElementById)\n"+
+    "event=\"test\"\n"+
+    "function showtip(current,e,text){\n"+
     "if (document.getElementById){\n" +
     "thetitle=text.split('<br>')\n" +
     "if (thetitle.length>1){\n" +
