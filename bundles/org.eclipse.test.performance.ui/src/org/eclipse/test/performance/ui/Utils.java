@@ -91,12 +91,12 @@ public class Utils {
 	}
 	
 	/** 
-	 * HTML source used at beginning of html document.
+	 * @return "<html><head><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">"
 	 */
 	public static String HTML_OPEN = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">";
 
 	/**
-	 * Closing HTML tag </html>.
+	 * @return "</html>".
 	 */
 	public static String HTML_CLOSE = "</html>";
 
@@ -344,12 +344,15 @@ public class Utils {
 					int underscoreIndex = buildID.indexOf('_');
 					buildID = (buildID.indexOf('_') == -1) ? buildID : buildID
 							.substring(0, underscoreIndex);
-					if (ts.getLabel(j).equals(reference) || ts.getLabel(j).equals(current))
+					if (ts.getLabel(j).equals(reference) || ts.getLabel(j).equals(current)){
 						graph.addItem(buildID, dim.getDisplayValue(value),
 								value, c, true);
+					}
 					else if(buildID.startsWith("I")||pointsOfInterest.contains(ts.getLabel(j))||lastSevenNightlyBuildNames(t.getTimeSeriesLabels(),current).contains(buildID))
 						graph.addItem(ts.getLabel(j), dim.getDisplayValue(value),
 								value, c);
+					if (ts.getLabel(j).equals(current))
+						break;
 				}
 			}
 		} catch (AssertionFailedError e) {

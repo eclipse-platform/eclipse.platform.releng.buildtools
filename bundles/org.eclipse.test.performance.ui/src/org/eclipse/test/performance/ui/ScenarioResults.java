@@ -106,10 +106,7 @@ public class ScenarioResults {
 			}
 			if (ps == null)
 				ps = System.out;
-			ps.println(Utils.HTML_OPEN);// <html><head><meta
-			// http-equiv=\"Content-Type\"
-			// content=\"text/html;
-			// charset=iso-8859-1\">");
+			ps.println(Utils.HTML_OPEN);
 			ps.println(Utils.HTML_DEFAULT_CSS);
 			ps.println("<title>"+t.getScenarioName() + "("+configName+")"+"</title></head>"); //$NON-NLS-1$
 			ps.println("<h4>Scenario: " + t.getScenarioName() + " ("+configName+")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
