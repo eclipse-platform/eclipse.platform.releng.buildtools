@@ -11,7 +11,7 @@
   Although the program is currently geared to generating results for the Eclipse 
   Platform builds, the program may work for you given the following conditions:</p>
 <ul>
-  <li>The &quot;eclipse.perf.config&quot; system property used to run tests use 
+  <li>The &quot;eclipse.perf.config&quot; system property used to run tests used 
     three keys config, build and jvm 
     <ul>
       <li>for example, "eclipse.perf.config=config=relengbuildwin2;build=I20050219-1500;jvm=sun1.4.2_06". 
@@ -57,7 +57,7 @@
 <p><br>
   <b>Requirements</b> </p>
 <ul>
-  <li>Windows or Linux (x86)</li>
+  <li>Scripts currently written to run on Windows or Linux (x86)</li>
   <li>Cloudscape or Derby java libraries</li>
   <li>org.eclipse.releng.basebuilder</li>
   <li>1.4 level jvm</li>
@@ -106,7 +106,8 @@
 Parameter descriptions: 
 <blockquote>
   <p>-baseline &lt;baseline build id. A previous value used in the &quot;build&quot; 
-    key in the eclipse.perf.config system property.&gt; <br>
+    key in the eclipse.perf.config system property or the eclipse.perf.assertAgainst 
+    property. &gt; <br>
     -current &lt;current build id. The value used in the &quot;build&quot; key 
     in the eclipse.perf.config system property.&gt;<br>
     -config &lt;a comma-separated list of names of configurations for which to 
@@ -125,8 +126,8 @@ Parameter descriptions:
   <p>-config.properties &lt;semi-colon separated list of: config, alternate config 
     description, url to the directory containing the scenario result files for 
     the config, [output directory for config]&gt;<br>
-    -highlight.latest &lt;Comma-separated list of build Id prefixes, excluding 
-    'I' and 'N', which are used to add and highlight the most recent matching 
+    -highlight.latest &lt;Comma-separated list of build Id prefixes(excluding 
+    'I' and 'N'), which are used to add and highlight the most recent matching 
     buildId on line graphs.&quot;&gt;<br>
     -scenario.pattern &lt;Scenario prefix pattern used to query performance results 
     database. Can be used to generate results for a single component or subset 
