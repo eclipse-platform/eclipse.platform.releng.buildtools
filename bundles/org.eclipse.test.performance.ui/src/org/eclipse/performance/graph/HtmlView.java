@@ -16,10 +16,8 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import junit.framework.AssertionFailedError;
-
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
-import org.eclipse.test.internal.performance.db.Report;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 
@@ -55,35 +53,31 @@ public class HtmlView {
             ps.println("Scenario: " + t.getScenarioName()+"<br><br>"); //$NON-NLS-1$ //$NON-NLS-2$
             ps.println("<font size=\"-6\"><table>"); //$NON-NLS-1$ //$NON-NLS-2$
 
-            Report r= new Report(2);
             
             String[] timeSeriesLabels= t.getTimeSeriesLabels();
-            r.addCell("<tr><td>Builds:</td>"); //$NON-NLS-1$
+            ps.println("<tr><td>Builds:</td>"); //$NON-NLS-1$
             for (int j= 0; j < timeSeriesLabels.length; j++)
-                r.addCellRight("<td bgcolor="+bgColors[(j+3)%2] +">"+timeSeriesLabels[j]+"</td>");
-            ps.print("</tr>");
-            r.nextRow();
-                        
+                ps.println("<td bgcolor="+bgColors[(j+3)%2] +">"+timeSeriesLabels[j]+"</td>");
+            ps.println("</tr>");
+                                    
             Dim[] dimensions= t.getDimensions();
             for (int i= 0; i < dimensions.length; i++) {
                 Dim dim= dimensions[i];
                 try{
-                r.addCell("<tr><td><a href=\""+t.getScenarioName().replace('#','.').replace(':','_').replace('\\','_')+"_"+dim.getName()+".jpeg\">"+dim.getName() + ':'+"</a></td>");
+                ps.println("<tr><td><a href=\""+t.getScenarioName().replace('#','.').replace(':','_').replace('\\','_')+"_"+dim.getName()+".jpeg\">"+dim.getName() + ':'+"</a></td>");
                 TimeSeries ts= t.getTimeSeries(dim);
  
                 int n= ts.getLength();
                 for (int j= 0; j < n; j++) {
                     String stddev= " [" + dim.getDisplayValue(ts.getStddev(j)) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
-                    r.addCellRight("<td bgcolor="+bgColors[(j+3)%2] +">"+dim.getDisplayValue(ts.getValue(j)) + stddev+"</td>");
+                    ps.println("<td bgcolor="+bgColors[(j+3)%2] +">"+dim.getDisplayValue(ts.getValue(j)) + stddev+"</td>");
                 }
                 } catch (AssertionFailedError e){
                 	e.printStackTrace();
                 	continue;
                 }
                 ps.println("</tr>"); //$NON-NLS-1$ //$NON-NLS-2$            
-                r.nextRow();
             }
-            r.print(ps);
             ps.println();      
             ps.println("</font></table><br><br>");
             ps.println("</body></html>"); //$NON-NLS-1$
