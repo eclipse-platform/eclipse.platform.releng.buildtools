@@ -74,8 +74,8 @@ public class ScenarioStatusTable {
 			
 			String label=null;
 			htmlTable=htmlTable.concat("<br><h4>Scenario Status</h4>\n" +
-					"<img src=\"FAIL.gif\"> indicates performance degradation > 10% compared to reference value.  Hover over icon for error message.<br>\n" +
-					"<img src=\"OK.gif\"> indicates measurement used for assertion did not degrade > 10% compared to reference value.<br>\n" +
+					"The green/red indication is based on the assert condition in the test.  "+
+					"Hover over <img src=\"FAIL.gif\"> for error message.<br>\n" +
 					"Click on <img src=\"FAIL.gif\"> or <img src=\"OK.gif\"> for detailed results.<br>\n" +
 					"\"n/a\" - results not available.<br><br>\n");
 			
