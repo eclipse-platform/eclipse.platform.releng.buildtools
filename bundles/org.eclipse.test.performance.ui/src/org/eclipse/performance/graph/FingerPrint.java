@@ -73,8 +73,8 @@ public class FingerPrint {
         variations.put(PerformanceTestPlugin.CONFIG, config);
         variations.put(PerformanceTestPlugin.BUILD, thisBuildID);
         // only return summaries for "org.eclipse.jdt.text"; pass a null for all global scenarios
-        String scenarioPrefix= "org.eclipse.jdt.text.%";	//$NON-NLS-1$
-        SummaryEntry[] entries= DB.querySummaries(variations, scenarioPrefix);
+      //  String scenarioPrefix= "org.eclipse.jdt.%";	//$NON-NLS-1$
+        SummaryEntry[] entries= DB.querySummaries(variations,null);
         if (entries != null) {
             for (int i= 0; i < entries.length; i++) {
                 SummaryEntry se= entries[i];
