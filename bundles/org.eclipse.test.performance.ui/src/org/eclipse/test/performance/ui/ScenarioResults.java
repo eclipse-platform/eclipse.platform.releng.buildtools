@@ -117,8 +117,6 @@ public class ScenarioResults {
 				for (int i = 0; i < dimensions.length; i++) {
 					Dim dim = dimensions[i];
 					String dimName=dim.getName();
-					if (dimName.startsWith("Working Set")||dimName.startsWith("System Time"))
-						continue;
 					ps.println("<td><a href=\"#"+ configName+"_"+scenarioFileName+"_"+ dimName +"\">" + dimName
 							+ "</a></td>");
 				}
@@ -214,9 +212,9 @@ public class ScenarioResults {
 			String dimName=dim.getName();
 
 			double diffValue=values[0][j]-values[1][j];
-			int diffPercentage=0;
+			double diffPercentage=0;
 			if (values[1][j]!=0)
-				diffPercentage=(int)(((diffValue/values[1][j])*100)*100.0)/100;
+				diffPercentage=((int)(((diffValue/values[1][j])*1000)))/10.0;
 			String diffDisplayValue=dim.getDisplayValue(diffValue);
 			//green
 			String fontColor="";
