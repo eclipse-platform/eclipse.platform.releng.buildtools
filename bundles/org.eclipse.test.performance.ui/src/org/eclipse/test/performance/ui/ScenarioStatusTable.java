@@ -28,17 +28,18 @@ public class ScenarioStatusTable {
 			Scenario scenario= scenarios[0];
 
 			String[] labels= scenario.getTimeSeriesLabels();
-			htmlTable=htmlTable.concat("<table><tr><td><h3>All "+scenarios.length+" scenarios</h3></td>\n");
+			htmlTable=htmlTable.concat("<table border=\"1\"><tr><td><h4>All "+scenarios.length+" scenarios</h4></td>\n");
 			String label=null;
 			for (int i= 0; i < labels.length; i++){
 				label=labels[i];
-				htmlTable=htmlTable.concat("<td><h3>"+((Utils.ConfigDescriptor)configMaps.get(label)).description +"</h3></td>");
+				htmlTable=htmlTable.concat("<td><h5>"+((Utils.ConfigDescriptor)configMaps.get(label)).description +"</h5></td>");
 			}
 			htmlTable=htmlTable.concat("</tr>\n");
            
 			for (int i= 0; i < scenarios.length; i++) {
 				scenario= scenarios[i];
-				htmlTable=htmlTable.concat("<tr><td>"+scenario.getScenarioName()+"</td>");
+				String scenarioName=scenario.getScenarioName();
+				htmlTable=htmlTable.concat("<tr><td>"+scenarioName.substring(scenarioName.indexOf(".",scenarioName.indexOf(".test")+1)+1)+"</td>");
 
 				String[] failureMessages= scenario.getFailureMessages();
 				
