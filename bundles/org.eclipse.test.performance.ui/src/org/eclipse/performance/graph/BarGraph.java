@@ -143,17 +143,18 @@ public class BarGraph {
 
             gc.setForeground(fg);
 
-            String s3= Double.toString(-xx);
+            String s3= Double.toString(-xx) + "%"; //$NON-NLS-1$
             Point es3= gc.stringExtent(s3);
             gc.drawString(s3, center-x-es3.x/2, yy+TGAP, true);
             
-            String s4= Double.toString(xx);
+            String s4= Double.toString(xx) + "%"; //$NON-NLS-1$
             Point es4= gc.stringExtent(s4);
             gc.drawString(s4, center+x-es4.x/2, yy+TGAP, true);
         }
         gc.drawLine(0, yy, w, yy);
         
-        
+        // link color
+        Color blue= display.getSystemColor(SWT.COLOR_BLUE);        
         // draw bars
         Color green= display.getSystemColor(SWT.COLOR_GREEN);
         Color red= display.getSystemColor(SWT.COLOR_RED);
@@ -176,18 +177,29 @@ public class BarGraph {
             if (delta > 0.0) {
                 gc.drawString(label, labelxpos+TGAP, labelvpos, true);
             } else {
-                gc.drawString(label, labelxpos-TGAP-labelExtent.x, labelvpos, true);             
+                gc.drawString(label, labelxpos-TGAP-labelExtent.x, labelvpos, true);
             }
             
-            gc.drawString(bars[i].title, MARGIN+w+TGAP, labelvpos, true);
+            int x= MARGIN+w+TGAP;
+            String title= bars[i].title;
+            boolean hasURL= bars[i].url != null;
+            Color oldfg= gc.getForeground();
+            if (hasURL) {
+                gc.setForeground(blue);
+                Point e= gc.stringExtent(title);
+                gc.drawLine(x, labelvpos+e.y-2, x+e.x, labelvpos+e.y-2);
+            }
+            gc.drawString(title, x, labelvpos, true);
+            if (hasURL)
+                gc.setForeground(oldfg);            
                                 
             int y0= y;
             y+= BARHEIGHT+GAP;            
             
-            if (bars[i].url != null) {
+            if (hasURL) {
                 if (fAreaBuffer == null)
                     fAreaBuffer= new StringBuffer();
-                fAreaBuffer.append("<area shape=\"RECT\" coords=\"0,"+y0+','+width+','+y+"\" href=\""+ bars[i].url +"\">");
+                fAreaBuffer.append("<area shape=\"RECT\" coords=\"0,"+y0+','+width+','+y+"\" href=\""+ bars[i].url +"\">\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             }
         }
     }
