@@ -522,8 +522,12 @@ public class TestResultsGenerator extends Task {
 			int end = fileName.lastIndexOf(".xml");
 
 			String shortName = fileName.substring(begin + 1, end);
-
-			aString = aString + "<tr><td>";
+			
+			if (errorCount > 0)
+			   aString = aString + "<tr><td><b>";
+			else 
+				aString = aString + "<tr><td>";
+			
 			aString =
 				aString
 					+ "<a href="
@@ -536,14 +540,22 @@ public class TestResultsGenerator extends Task {
 					+ shortName
 					+ "</a>";
 
-			aString = aString + "</td><td>";
-
+			
+			if (errorCount > 0)
+				   aString = aString + "</td><td><b>";
+			else 
+				aString = aString + "</td><td>";
+							
 			if (errorCount == -1)
 				aString = aString + "DNF";
 
 			else
 				aString = aString + String.valueOf(errorCount);
-			aString = aString + "</td></tr>";
+				
+			if (errorCount > 0)
+				aString = aString + "</b></td></tr>";
+			else 	
+				aString = aString + "</td></tr>";
 		}
 
 		return aString;
