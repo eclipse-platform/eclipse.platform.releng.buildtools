@@ -9,8 +9,5 @@
       <extraClasspathEntry
             library="buildTools.jar">
       </extraClasspathEntry>
-    <extraClasspathEntry
-            library="j2ee.jar">
-      </extraClasspathEntry>
    </extension>
 </plugin>
