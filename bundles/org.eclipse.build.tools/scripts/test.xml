@@ -72,7 +72,7 @@
 
 
 <target name="runtests-local">
-	<delete dir="${testDir}" />
+	<delete dir="${testDir}" quiet="true"/>
 	<mkdir dir="${testDir}" />
 
 	<!--set up testing directory-->
