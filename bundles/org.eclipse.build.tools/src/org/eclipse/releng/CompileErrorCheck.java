@@ -51,7 +51,7 @@ public class CompileErrorCheck extends Task {
 
 		// basis case
 		if (aFile.isFile()) {
-			if (aFile.getAbsolutePath().endsWith(".jar.bin.log")){
+			if (aFile.getAbsolutePath().endsWith(".jar.bin.log")||aFile.getAbsolutePath().endsWith("dot.bin.log")){
 				read(aFile);
 			}
 		} else {
