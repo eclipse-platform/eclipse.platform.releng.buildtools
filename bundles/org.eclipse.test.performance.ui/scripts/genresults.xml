@@ -1,0 +1,35 @@
+<project default="run">
+
+	<target name="init">
+		<condition property="java.library.path" value="../../../plugins/org.eclipse.swt.win32_3.1.0/os/win32/x86">
+			<os family="windows" />
+		</condition>
+		<condition property="java.library.path" value="../../../plugins/org.eclipse.swt.motif_3.1.0/os/linux/x86">
+			<os family="Linux" />
+		</condition>
+		<condition property="swt.exclude" value="**/*swt.motif*/**/*.jar,**/*swt.gtk/**/*.jar">
+			<os family="windows" />
+		</condition>
+		<condition property="swt.exclude" value="**/*swt.win32*/**/*.jar">
+			<os family="Linux" />
+		</condition>
+	</target>
+
+	<target name="run">
+		<java classname="org.eclipse.test.performance.ui.Main" fork="true" maxmemory="256m">
+			<arg line="${args}" />
+			<classpath>
+				<fileset dir="../../../">
+					<include name="**/*.jar" />
+					<exclude name="${swt.exclude}" />
+				</fileset>
+				<fileset dir="${db.bin}" />
+			</classpath>
+
+			<env key="LD_LIBRARY_PATH" value="${basedir}/../org.eclipse.releng.basebuilder" />
+			<sysproperty key="java.library.path" value="${java.library.path}" />
+			<sysproperty key="eclipse.perf.dbloc" value="${dbloc}" />
+		</java>
+	</target>
+	
+</project>
