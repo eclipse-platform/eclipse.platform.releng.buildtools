@@ -15,15 +15,8 @@
       </extraClasspathEntry>
    </extension>
 	<!-- Tasks -->
-   <!--extension point="org.eclipse.ant.core.antTasks">
-      <antTask
-            library="buildTools.jar"
-            name="versionTrack"
-            class="org.eclipse.releng.generators.VersionTrackerTask">
-      </antTask>
-    </extension-->
-    <extension point="org.eclipse.ant.core.antTasks">
-      <antTask
+   <extension point="org.eclipse.ant.core.antTasks">
+       <antTask
             library="buildTools.jar"
             name="modifiedMaps"
             class="org.eclipse.releng.CvsDiffParser">
