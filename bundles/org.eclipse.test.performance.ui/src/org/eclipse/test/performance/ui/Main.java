@@ -20,13 +20,13 @@ public class Main {
 	private String[] config;
 	private Hashtable configDescriptors;
 	private String currentBuildId;
+	private String buildIdPattern="%";
 	private Variations variations;
 	private Scenario[] scenarios;
 	private String jvm;
 	private String scenarioFilter;
 	private boolean genFingerPrints = false;
-	private boolean genDimensionGraphs = false;
-	private boolean genDimensionHistories = false;
+	private boolean genScenarioSummaries =false;
 	private boolean genAll = true;
 	private Hashtable fingerPrints = new Hashtable();
 
@@ -37,22 +37,30 @@ public class Main {
 	}
 
 	private void run() {
-		//TODO make this work occur in parallel
+		String tmpDimensionOutput=dimensionHistoryOutput;
+
 		for (int i = 0; i < config.length; i++) {
-			Utils.ConfigDescriptor cd = (Utils.ConfigDescriptor) configDescriptors
+			Utils.ConfigDescriptor cd=null;
+			if (configDescriptors!=null){
+				cd = (Utils.ConfigDescriptor) configDescriptors
 					.get(config[i]);
-			dimensionHistoryUrl = cd.url;
-			if (cd.outputDir != null)
-				dimensionHistoryOutput = cd.outputDir;
-			new Worker(config[i]);
+				dimensionHistoryUrl = cd.url;
+				if (cd.outputDir != null)
+					dimensionHistoryOutput = cd.outputDir;
+			}
+			dimensionHistoryOutput=tmpDimensionOutput+"/"+config[i];
+			run(config[i],cd);
 		}
 
 		Enumeration components = fingerPrints.keys();
 
+		Utils.copyFile(Utils.class.getResource("FAIL.gif"),fpOutput+"/FAIL.gif");
+		Utils.copyFile(Utils.class.getResource("OK.gif"),fpOutput+"/OK.gif");
+
 		// print fingerprint/scenario status pages
 		while (components.hasMoreElements()) {
 			String component = components.nextElement().toString();
-			try {
+			try {		
 				File output = new File(fpOutput + '/' + component + ".php");
 				output.getParentFile().mkdirs();
 				PrintStream os = new PrintStream(new FileOutputStream(fpOutput
@@ -62,20 +70,23 @@ public class Main {
 				os.println("<body>");
 				Hashtable fps = (Hashtable) fingerPrints.get(component);
 				Enumeration configs = fps.keys();
+				
+				int underScoreIndex=baseline.indexOf("_");
+				String baselineName=(underScoreIndex!=-1)?baseline.substring(0, baseline.indexOf("_")):baseline;
 				String title = "<h3>Performance of " + component + ": "
-						+ currentBuildId + " relative to"
-						+ baseline.substring(0, baseline.indexOf("_"))
+						+ currentBuildId + " relative to "
+						+ baselineName
 						+ "</h3>";
 				if (component.equals("global"))
 					title = "<h3>Performance of " + currentBuildId
-							+ " relative to"
-							+ baseline.substring(0, baseline.indexOf("_"))
+							+ " relative to "
+							+ baselineName
 							+ "</h3>";
 				os.println(title);
 				while (configs.hasMoreElements()) {
 					String config = configs.nextElement().toString();
 					FingerPrint fp = (FingerPrint) fps.get(config);
-					os.println(Utils.printHtmlFingerPrint(fp));
+					os.println(Utils.getImageMap(fp));
 				}
 				if (component != "") {
 					char buildType = currentBuildId.charAt(0);
@@ -96,32 +107,15 @@ public class Main {
 		}
 	}
 
-	private class Worker{
-		String config;
-
-		Worker(String config) {
-			this.config = config;
-			run();
-		}
-
-		public void run() {
-
+	private void run(String config, Utils.ConfigDescriptor cd) {
+				
 			scenarios = Utils.getScenarios("%", scenarioFilter, config, jvm);
 			variations = Utils.getVariations("%", config, jvm);
 
-			if (genDimensionGraphs || genAll) {
+			if (genScenarioSummaries || genAll) {
 				System.out.print(config
-						+ ": generating dimension history graphs...");
-				new DimensionHistories(scenarios, dimensionHistoryOutput
-						+ "/graphs", baseline);
-				System.out.println("done.");
-			}
-
-			if (genDimensionHistories || genAll) {
-				System.out.print(config
-						+ ": generating dimension line tables...");
-				new DimensionsTables(scenarios, baseline,
-						dimensionHistoryOutput);
+						+ ": generating scenario summaries...");
+				new ScenarioResults(scenarios, baseline,dimensionHistoryOutput,config,currentBuildId,cd);
 				System.out.println("done.");
 			}
 
@@ -155,7 +149,7 @@ public class Main {
 				System.out.println("done.");
 			}
 		}
-	}
+	
 
 	private void parse(String args[]) {
 		int i = 0;
@@ -165,9 +159,19 @@ public class Main {
 
 		while (i < args.length) {
 			String arg = args[i];
+			
 			if (arg.equals("-baseline")) {
 				baseline = args[i + 1];
 				if (baseline.startsWith("-")) {
+					System.out.println("Missing value for -baseline parameter");
+					printUsage();
+				}
+				i++;
+			}
+			if (arg.equals("-buildid.pattern")) {
+				buildIdPattern = args[i + 1];
+				if (buildIdPattern.startsWith("-")) {
+					System.out.println("Missing value for -buildid.pattern parameter");
 					printUsage();
 				}
 				i++;
@@ -175,6 +179,7 @@ public class Main {
 			if (arg.equals("-current")) {
 				currentBuildId = args[i + 1];
 				if (currentBuildId.startsWith("-")) {
+					System.out.println("Missing value for -current parameter");
 					printUsage();
 				}
 				i++;
@@ -182,6 +187,7 @@ public class Main {
 			if (arg.equals("-jvm")) {
 				jvm = args[i + 1];
 				if (jvm.startsWith("-")) {
+					System.out.println("Missing value for -jvm parameter");
 					printUsage();
 				}
 				i++;
@@ -189,6 +195,7 @@ public class Main {
 			if (arg.equals("-fp.output")) {
 				fpOutput = args[i + 1];
 				if (fpOutput.startsWith("-")) {
+					System.out.println("Missing value for -fp.output parameter");
 					printUsage();
 				}
 				i++;
@@ -196,13 +203,7 @@ public class Main {
 			if (arg.equals("-dim.history.output")|| arg.equals("-dim.output")) {
 				dimensionHistoryOutput = args[i + 1];
 				if (dimensionHistoryOutput.startsWith("-")) {
-					printUsage();
-				}
-				i++;
-			}
-			if (arg.equals("-dim.history.url")) {
-				dimensionHistoryUrl = args[i + 1];
-				if (dimensionHistoryUrl.startsWith("-")) {
+					System.out.println("Missing value for -dim.output parameter");
 					printUsage();
 				}
 				i++;
@@ -210,6 +211,7 @@ public class Main {
 			if (arg.equals("-config")) {
 				String configs = args[i + 1];
 				if (configs.startsWith("-")) {
+					System.out.println("Missing value for -config parameter");
 					printUsage();
 				}
 				config = configs.split(",");
@@ -218,15 +220,17 @@ public class Main {
 			if (arg.equals("-config.properties")) {
 				String configProperties = args[i + 1];
 				if (configProperties.startsWith("-")) {
+					System.out.println("Missing value for -config.properties parameter");
 					printUsage();
 				}
 				configDescriptors = Utils
 						.getConfigDescriptors(configProperties);
 				i++;
 			}
-			if (arg.equals("-scenario.filter")) {
+			if (arg.equals("-scenario.filter")||arg.equals("-scenario.pattern")) {
 				scenarioFilter = args[i + 1];
 				if (scenarioFilter.startsWith("-")) {
+					System.out.println("Missing value for -baseline parameter");
 					printUsage();
 				}
 				i++;
@@ -235,23 +239,18 @@ public class Main {
 				genFingerPrints = true;
 				genAll = false;
 			}
-			if (arg.equals("-dimensiongraphs")) {
-				genDimensionGraphs = true;
-				genAll = false;
-			}
-			if (arg.equals("-dimensionhistories")) {
-				genDimensionHistories = true;
+			if (arg.equals("-scenariosummaries")) {
+				genScenarioSummaries = true;
 				genAll = false;
 			}
 			i++;
 		}
+		
 		if (baseline == null || fpOutput == null || config == null
-				|| configDescriptors == null || jvm == null
+				|| jvm == null
 				|| currentBuildId == null)
 			printUsage();
-
 	}
-
 	private void printUsage() {
 		System.out
 				.println("Usage:\n"
@@ -269,32 +268,34 @@ public class Main {
 						
 						+ "-config" 
 								+"\n\tComma separated list of config names."
-								+	"\n\tSame as values specified in \"config\" key in eclipse.perf.config system property.\n\n"
+								+"\n\tSame as values specified in \"config\" key in eclipse.perf.config system property.\n\n"
+
+						+ "-fp.output"
+								+" \n\tPath to output directory for fingerprints.\n\n"		
 
 						+ "-dim.output"
 								+"\n\tPath to output directory for raw data of dimensions presented in  html tables and line graphs."
 								+"\n\tOptional if information provided in config.properties (below)."
 								+"\n\tLine graphs produced in subdirectory called \"graphs\".\n\n"
 
-						+ "-config.properties" 
+						+ "[-config.properties]"
+								+"\n\tOptional.  Used by scenario status table to provide the following:"
+								+"\n\t\talternate descriptions of config values to use in columns."
+								+"\n\t\turl for hyperlinks from status icons for a scenario in each row."
+								+"\n\tCan also provide an optional output directory for raw data tables and line graphs for the config."
+								+"\n\tThe value should be specified in the following format:"
 								+"\n\tname1,description1,url1 [,outputdir1];name2,description2,url2 [,outputdir2];etc..\n\n"
-					
-						+ "-fp.output"
-								+" \n\tPath to output directory for fingerprints.\n\n"		
-						
-						+ "[-scenario.filter]"
-								+" \n\tOptional.  Scenario prefix pattern to query database.  If not specified,"
+											
+						+ "[-scenario.pattern]"
+								+"\n\tOptional.  Scenario prefix pattern to query database.  If not specified,"
 								+"\n\tdefault of % used in query.\n\n"
-									
+
 						+ "[-fingerprints]" 
 								+"\n\tOptional.  Use to generate fingerprints only.\n\n"
 									
-						+ "[-dimensiongraphs]"
-								+"\n\tOptional.  Use to generate dimension line graphs only.\n\n"
-								
-						+ "[-dimensiontables]"
-								+"\n\tOptional.  Use to generate dimension raw data tables only.\n\n");
-		
+						+ "[-scenarioresults]"
+								+"\n\tGenerates table of scenario reference and current data with line graphs.\n\n");
+										
 		System.exit(1);
 
 	}

@@ -67,7 +67,9 @@ public class FingerPrint {
         referenceBuildId= reference;
         currentBuildId= current;
         outputDirectory= outputDir;
-        linkUrl=((Utils.ConfigDescriptor)configDescriptors.get(config)).url+"/graphs";
+    	linkUrl=outputDir+"/"+config; 
+        if (configDescriptors!=null)
+        	linkUrl=((Utils.ConfigDescriptor)configDescriptors.get(config)).url;
         this.config=config;
         variations.put(PerformanceTestPlugin.BUILD, currentBuildId);
         if (component==null){
@@ -80,7 +82,7 @@ public class FingerPrint {
     }    
     
     /**
-     * Creates the fingerprint jpeg, image map and scenario status table for a specified component.
+     * Creates the fingerprint gif, image map and scenario status table for a specified component.
      * @param entries The result of a database query for summaries for a specified variation.
      * @param component The component name.  Typically the prefix of each scenario.  Used to filter entries
      * to include on fingerprint and scenario status table.
@@ -141,8 +143,10 @@ public class FingerPrint {
 	            }
 	            if (Math.abs(percent) < 200) {
 	                String n= name + " (" + dims[i].getName() + ")" + refData;
-	                
-	                bar.addItem(n, percent,linkUrl+"/"+(scenarioName+"_"+dims[i].getName()).replace('#','.').replace(':','_').replace('\\','_')+".html"); //$NON-NLS-1$ //$NON-NLS-2$
+	                if (linkUrl!=null)
+	                	bar.addItem(n, percent,linkUrl+"/"+(scenarioName.replace('#','.').replace(':','_').replace('\\','_'))+".html#"+dims[i].getName()); //$NON-NLS-1$ //$NON-NLS-2$
+	                else
+	                	bar.addItem(n, percent); //$NON-NLS-1$ //$NON-NLS-2$
 	            }
 	        }
         }
@@ -152,6 +156,9 @@ public class FingerPrint {
 
     private void save(BarGraph bar, String output) {
 
+    	if (bar.getFItems().size()==0)
+    		return;
+    	
         Display display= Display.getDefault();
         
         int height= bar.getHeight();
@@ -161,14 +168,15 @@ public class FingerPrint {
         bar.paint(display, GRAPH_WIDTH, height, gc);
         gc.dispose();
 
+        ImageData data = Utils.downSample(image);
         ImageLoader il= new ImageLoader();
-        il.data= new ImageData[] { image.getImageData()};
+        il.data= new ImageData[] { data };
 
         OutputStream out= null;
         try {
-            out= new BufferedOutputStream(new FileOutputStream(output + ".jpeg")); //$NON-NLS-1$
+            out= new BufferedOutputStream(new FileOutputStream(output + ".gif")); //$NON-NLS-1$
             //System.out.println("writing: " + output);
-            il.save(out, SWT.IMAGE_JPEG);
+            il.save(out, SWT.IMAGE_GIF);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {

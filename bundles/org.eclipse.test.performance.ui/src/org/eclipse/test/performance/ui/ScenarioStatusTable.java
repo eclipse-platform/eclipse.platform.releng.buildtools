@@ -62,10 +62,19 @@ public class ScenarioStatusTable {
 			}
 			
 			String label=null;
+			htmlTable=htmlTable.concat("<br><h4>Scenario Status</h4>\n" +
+					"<img src=\"FAIL.gif\"> indicates performance degradation > 10% compared to reference value.  Hover over icon for error message.<br>\n" +
+					"<img src=\"OK.gif\"> indicates measurement used for assertion did not degrade > 10% compared to reference value.<br>\n" +
+					"Click on <img src=\"FAIL.gif\"> or <img src=\"OK.gif\"> for detailed results.<br>\n" +
+					"\"n/a\" - results not available.<br><br>\n");
+			
 			htmlTable=htmlTable.concat("<table border=\"1\"><tr><td><h4>All "+scenarios.length+" scenarios</h4></td>\n");
 			for (int i= 0; i < configNames.size(); i++){
 				label=configNames.get(i).toString();
-				htmlTable=htmlTable.concat("<td><h5>"+((Utils.ConfigDescriptor)configMaps.get(label)).description +"</h5></td>");
+				String columnTitle=label;
+				if (configMaps!=null)
+					columnTitle=((Utils.ConfigDescriptor)configMaps.get(label)).description;
+				htmlTable=htmlTable.concat("<td><h5>"+columnTitle +"</h5></td>");
 			}
 			 
 			htmlTable=htmlTable.concat("</tr>\n");
@@ -77,19 +86,25 @@ public class ScenarioStatusTable {
 
 				for (int i=0;i<configNames.size();i++){
 					String message=null;
-					String aUrl=null;
 					String configName=configNames.get(i).toString();
+					String aUrl=configName;
 					if(status.statusMap.get(configName)!=null){
 						message=status.statusMap.get(configName).toString();
-					    aUrl=((Utils.ConfigDescriptor)configMaps.get(configName)).url;
+						if (configMaps!=null)
+							aUrl=((Utils.ConfigDescriptor)configMaps.get(configName)).url;
 					}
 
 					if (status.statusMap.containsKey(configName)){
-						htmlTable=htmlTable.concat(message != "" ?"<td><a title=\""+message+"\" href=\""
+						if (aUrl!=null){
+							htmlTable=htmlTable.concat(message != "" ?"<td><a title=\""+message+"\" href=\""
 								+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
-								+ ".html"+" \"><img border=\"0\" src=\"../FAIL.gif\"></a></td>" 
+								+ ".html"+" \"><img border=\"0\" src=\"FAIL.gif\"></a></td>" 
 								:"<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
-								+ ".html"+" \"><img border=\"0\" src=\"../OK.gif\"></a></td>");
+								+ ".html"+" \"><img border=\"0\" src=\"OK.gif\"></a></td>");
+						} else{
+							htmlTable=htmlTable.concat(message != "" ?"<td><img title=\""+message+"\" border=\"0\" src=\"FAIL.gif\"></td>" 
+									:"<td><img border=\"0\" src=\"OK.gif\"></td>");
+						}	
 					}else{
 						htmlTable=htmlTable.concat("<td>n/a</td>");
 					}

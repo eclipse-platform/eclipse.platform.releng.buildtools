@@ -217,4 +217,8 @@ public class BarGraph {
         }
         return null;
     }
+
+	public List getFItems() {
+		return fItems;
+	}
 }
