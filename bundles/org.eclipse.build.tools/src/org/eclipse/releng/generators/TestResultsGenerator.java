@@ -263,6 +263,7 @@ public class TestResultsGenerator extends Task {
 
 			anErrorTracker.registerError(testLogName);
 			replaceString = replaceString + formatRow(testLogName, -1, false);
+			testResultsWithProblems=testResultsWithProblems.concat("\n" + testLogName.substring(0,testLogName.length()-4) +" (file missing)");
 
 			
 		}
