@@ -91,12 +91,12 @@ public class Utils {
 	}
 	
 	/** 
-	 * @return "<html><head><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">"
+	 * @return &lt;html&gt;&lt;head&gt;&lt;meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"&gt;
 	 */
 	public static String HTML_OPEN = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">";
 
 	/**
-	 * @return "</html>".
+	 * @return "&lt;/html&gt;".
 	 */
 	public static String HTML_CLOSE = "</html>";
 
