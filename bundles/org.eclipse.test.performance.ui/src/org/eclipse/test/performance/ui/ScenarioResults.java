@@ -14,21 +14,12 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
 
 import junit.framework.AssertionFailedError;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.TimeSeries;
@@ -113,16 +104,22 @@ public class ScenarioResults {
 			ps.println(Utils.HTML_DEFAULT_CSS);
 			ps.println("<title>"+t.getScenarioName() + "("+configName+")"+"</title></head>"); //$NON-NLS-1$
 			ps.println("<h4>Scenario: " + t.getScenarioName() + "("+configName+")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
-			ps.println("Click measurement name to view line graph of measured values over builds.  Click <a href=\"http://download.eclipse.org/downloads/performance/dimensions.html\">here</a> for measurement descriptions.<br>");
+			ps.println("Click measurement name to view line graph of measured values over release builds," +
+					" I builds and last seven N builds.<br>" +
+					"Click <a href=\"http://download.eclipse.org/downloads/performance/dimensions.html\">" +
+					"here</a> for measurement descriptions.<br>");
 			ps.println("Values in red and green indicate degradation > 10% and improvement > 10%,respectively.<br>");
 			ps.println("<table border=\"1\">"); //$NON-NLS-1$ //$NON-NLS-2$
 
-			Dim[] dimensions = t.getDimensions();
+			Dim[] dimensions = filteredDimensions( t.getDimensions());
 			try {
 				ps.println("<tr><td>Build Id</td>"); //$NON-NLS-1$
 				for (int i = 0; i < dimensions.length; i++) {
 					Dim dim = dimensions[i];
-					ps.println("<td><a href=\"#"+ configName+"_"+scenarioFileName+"_"+ dim.getName() +"\">" + dim.getName()
+					String dimName=dim.getName();
+					if (dimName.startsWith("Working Set")||dimName.startsWith("System Time"))
+						continue;
+					ps.println("<td><a href=\"#"+ configName+"_"+scenarioFileName+"_"+ dimName +"\">" + dimName
 							+ "</a></td>");
 				}
 				ps.print("</tr>\n");
@@ -142,6 +139,8 @@ public class ScenarioResults {
 										
 					for (int i = 0; i < dimensions.length; i++) {
 						Dim dim = dimensions[i];
+						String dimName=dim.getName();
+						
 						TimeSeries ts = t.getTimeSeries(dim);
 						if (j==1&&buildNameIndeces[j]!=-1)
 							refValueExistance[i]=true;
@@ -173,6 +172,7 @@ public class ScenarioResults {
 				for (int i = 0; i < dimensions.length; i++) {
 					Dim dim = dimensions[i];
 					String dimName=dim.getName();
+					
 					LineGraph lg=Utils.getLineGraph(t,dim.getName(),reference,current);
 					String lgImg=resultsFolder+"/graphs/"+scenarioFileName+"_"+dimName+".gif";
 					Utils.printLineGraphGif(lg,lgImg);
@@ -211,6 +211,8 @@ public class ScenarioResults {
 		String diffRow="<tr><td>Delta</td>";
 		for (int j=0;j<dimensions.length;j++){
 			Dim dim = dimensions[j];
+			String dimName=dim.getName();
+
 			double diffValue=values[0][j]-values[1][j];
 			int diffPercentage=0;
 			if (values[1][j]!=0)
@@ -238,15 +240,39 @@ public class ScenarioResults {
 		return diffRow;
 	}
 	
-//	private Dim[] filteredDimensions(ArrayList dimensionNames,Dim[] dimensions){
-//		ArrayList list = new ArrayList();
-//		for (int i=0;i<dimensions.length;i++){
-//			Dim dim=dimensions[i];
-//			if (!dimensionNames.contains(dim.getName()))
-//				list.add(dim);
-//		}
-//		return list.toArray();
-//	}
+	private Dim [] filteredDimensions(Dim[] dimensions){
+		ArrayList list = new ArrayList();
+		ArrayList filtered=new ArrayList();
+		list.add(0,"Elapsed Process");
+		list.add(1,"CPU Time");
+		list.add(2,"Kernel time");
+		list.add(3,"Used Java Heap");
+		list.add(4,"Committed");
+		list.add(5,"Data Size");
+		list.add(6,"Library Size");
+		list.add(7,"GDI Objects");
+		list.add(8,"Text Size");
+		list.add(9,"Page Faults");
+		list.add(10,"Hard Page Faults");
+		list.add(11,"Soft Page Faults");
+		
+		for (int i=0;i<dimensions.length;i++){
+			String dimName=dimensions[i].getName();
+			if (list.contains(dimName))
+				list.set(list.indexOf(dimName),dimensions[i]);
+		}
+		Iterator iterator=list.iterator();
+		while (iterator.hasNext()){
+			Object tmp=iterator.next();
+			try {
+			if ((Dim)tmp instanceof Dim)
+				filtered.add(tmp);
+			}catch (ClassCastException e){
+				//silently ignore
+			}
+		}
+		return (Dim [])filtered.toArray(new Dim [filtered.size()]);
+	}
 
 
 }

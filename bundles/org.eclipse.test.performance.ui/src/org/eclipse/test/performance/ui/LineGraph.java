@@ -50,7 +50,7 @@ public class LineGraph {
         }
     }
     
-    static final int PADDING= 30;
+    static final int PADDING= 15;
     
 
     String fTitle;
@@ -88,7 +88,7 @@ public class LineGraph {
         
         int labelWidth= Math.max(emin.x, emax.x) + 2;
                 
-        int top= PADDING*2;
+        int top= PADDING;
         int bottom= bounds.height - titleHeight - PADDING;
         int left= PADDING + labelWidth;
 

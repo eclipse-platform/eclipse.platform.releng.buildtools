@@ -17,7 +17,6 @@ import java.util.StringTokenizer;
 import java.io.BufferedOutputStream;
 import junit.framework.AssertionFailedError;
 
-import org.apache.tomcat.core.IncludedResponse;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;

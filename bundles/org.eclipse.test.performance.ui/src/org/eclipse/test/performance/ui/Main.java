@@ -239,7 +239,7 @@ public class Main {
 				genFingerPrints = true;
 				genAll = false;
 			}
-			if (arg.equals("-scenariosummaries")) {
+			if (arg.equals("-scenarioresults")) {
 				genScenarioSummaries = true;
 				genAll = false;
 			}
