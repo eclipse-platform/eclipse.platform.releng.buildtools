@@ -131,6 +131,7 @@ public class CvsDiffParser extends Task {
 			componentProperties.load(
 				new FileInputStream(new File(mapOwnerProperties)));
 		} catch (IOException e) {
+			throw new BuildException("Unable to find component.properties");
 		}
 
 		Component[] components = new Component[componentProperties.size()];
