@@ -9,7 +9,7 @@ public class Main {
 
 	private String baseline;
 	private String dimensionHistoryOutput;
-	private String dimensionHistoryLinkUrl;
+	private String dimensionHistoryUrl;
 	private String fpOutput;
 	private String fpLinkUrl;
 	private String config;
@@ -112,9 +112,9 @@ public class Main {
 				}
 				i++;
 			}
-			if (arg.equals("-dim.history.link.url")) {
-				dimensionHistoryLinkUrl = args[i + 1];
-				if (dimensionHistoryLinkUrl.startsWith("-")) {
+			if (arg.equals("-dim.history.url")) {
+				dimensionHistoryUrl = args[i + 1];
+				if (dimensionHistoryUrl.startsWith("-")) {
 					printUsage();
 				}
 				i++;
@@ -155,7 +155,7 @@ public class Main {
 			i++;
 		}
 		if (baseline == null || dimensionHistoryOutput == null
-				|| dimensionHistoryLinkUrl == null || fpOutput == null
+				|| dimensionHistoryUrl == null || fpOutput == null
 				|| fpLinkUrl == null || config == null
 				|| configProperties == null || jvm == null || currentBuildId == null)
 			printUsage();
@@ -168,7 +168,7 @@ public class Main {
 						+ " -baseline <baseline build id>\n"
 						+ " -jvm <jvm name>\n"
 						+ " -dim.history.output <path to output directory for common html tables.  Line graphs produced in subdirectory called graphs>\n"
-						+ " -dim.history.link.url <url>\n"
+						+ " -dim.history.url <url>\n"
 						+ " -fp.output <path to output directory>\n"
 						+ " -fp.link.url <url>\n"
 						+ " -config <machine name>\n"
