@@ -405,7 +405,7 @@ public class TestResultsGenerator extends Task {
 			result = result + "&nbsp;&nbsp;<?php echo \"(<a href='ftp://$SERVER_NAME/@buildlabel@/"+aPlatform.getFileName() +"'>ftp</a>)</div></td>\" ?>\n";
 		}
 
-		result = result + "<td>" + aPlatform.getFileName() + " (<a href=\"checksum/"+aPlatform.getFileName()+".md5>md5</a>)</td>\n";
+		result = result + "<td>" + aPlatform.getFileName() + " (<a href=\"checksum/"+aPlatform.getFileName()+".md5\">md5</a>)</td>\n";
 		result = result + "</tr>\n";
 
 		return result;
