@@ -375,7 +375,7 @@ public class TestResultsGenerator extends Task {
 		return result;
 	}
 
-	private String processDropRow(PlatformStatus aPlatform) {
+	protected String processDropRow(PlatformStatus aPlatform) {
 
 		String imageName = "";
 
@@ -725,7 +725,7 @@ public class TestResultsGenerator extends Task {
 		this.dropTemplateFileName = dropTemplateFileName;
 	}
 
-	private void getDropTokensFromList(String list) {
+	protected void getDropTokensFromList(String list) {
 		int i = 0;
 		StringTokenizer tokenizer = new StringTokenizer(list, ",");
 		dropTokens = new Vector();
@@ -779,6 +779,38 @@ public class TestResultsGenerator extends Task {
 	 */
 	public void setUseNewFormat(boolean useNewFormat) {
 		this.useNewFormat = useNewFormat;
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean testsRan() {
+		return testsRan;
+	}
+
+	/**
+	 * @param b
+	 */
+	public void setTestsRan(boolean b) {
+		testsRan = b;
+	}
+
+	/**
+	 * @return
+	 */
+
+	/**
+	 * @return
+	 */
+	public Vector getDropTokens() {
+		return dropTokens;
+	}
+
+	/**
+	 * @param vector
+	 */
+	public void setDropTokens(Vector vector) {
+		dropTokens = vector;
 	}
 
 }
