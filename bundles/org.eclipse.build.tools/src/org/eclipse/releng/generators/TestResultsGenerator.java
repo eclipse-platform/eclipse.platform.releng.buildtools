@@ -163,6 +163,7 @@ public class TestResultsGenerator extends Task {
 		for (int i = 0; i < directories.length; i++) {
 			if (directories[i].isDirectory()) {
 				File[] logFiles = directories[i].listFiles();
+				Arrays.sort(logFiles);
 
 				for (int j = 0; j < logFiles.length; j++) {
 					String longName = logFiles[j].getPath();
