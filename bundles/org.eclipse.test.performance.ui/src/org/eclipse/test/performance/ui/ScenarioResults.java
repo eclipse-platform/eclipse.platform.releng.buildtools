@@ -27,7 +27,8 @@ import org.eclipse.test.internal.performance.db.TimeSeries;
 public class ScenarioResults {
 	private Scenario[] scenarios;
 
-	private String reference;
+	private String baseline;
+	private String baselinePrefix=null;
 
 	private String resultsFolder;
 
@@ -47,10 +48,11 @@ public class ScenarioResults {
 	 * @param configDescriptor - a ConfigDescriptor object.
 	 * @param pointsOfInterest - an ArrayList of buildId's to highlight on line graphs.
 	 */
-	public ScenarioResults(Scenario[] scenarios, String reference,
+	public ScenarioResults(Scenario[] scenarios, String baseline,String baselinePrefix,
 			String resultsFolder, String configName, String current, Utils.ConfigDescriptor configDescriptor,ArrayList pointsOfInterest) {
 		this.scenarios = scenarios;
-		this.reference = reference;
+		this.baseline = baseline;
+		this.baselinePrefix=baselinePrefix;
 		this.resultsFolder = resultsFolder;
 		this.configName = configName;
 
@@ -91,7 +93,7 @@ public class ScenarioResults {
 			
 			int []buildNameIndeces={-1,-1};
 			buildNameIndeces[0]=Utils.getBuildNameIndex(t.getTimeSeriesLabels(),current);
-			buildNameIndeces[1]=Utils.getBuildNameIndex(t.getTimeSeriesLabels(),reference);
+			buildNameIndeces[1]=Utils.getBuildNameIndex(t.getTimeSeriesLabels(),baseline);
 			//don't produce result if none exists for current build
 			if (Utils.getBuildNameIndex(t.getTimeSeriesLabels(),current)==-1) {
 				continue;
@@ -118,8 +120,7 @@ public class ScenarioResults {
 			ps.println(Utils.HTML_DEFAULT_CSS);
 			ps.println("<title>"+t.getScenarioName() + "("+configName+")"+"</title></head>"); //$NON-NLS-1$
 			ps.println("<h4>Scenario: " + t.getScenarioName() + " ("+configName+")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
-			ps.println("<b>Click measurement name to view line graph of measured values over builds. " +
-					"Magenta, black and yellow dots are used to denote release or milestone, integration, and nightly builds, respectively.</b><br><br>");
+			ps.println("<b>Click measurement name to view line graph of measured values over builds.</b><br><br>\n");
 					
 			ps.println("<table border=\"1\">"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -179,17 +180,24 @@ public class ScenarioResults {
 				ps.println();
 				ps.println("</font></table>");
 				ps.println("*Delta values in red and green indicate degradation > 10% and improvement > 10%,respectively.<br><br>");
-				ps.println("<br><hr>\n");
+				ps.println("<br><hr>\n\n");
 			
+				//print text legend.
+				ps.println(
+						"Black and yellow points plot integration and nightly builds measurements over time.<br>\n"+
+						"Magenta points plot the repeated baseline measurement over time.<br>\n"+
+						"Boxed points represent previous releases, milestone builds, current reference and current build.<br><br>\n"+
+						"Hover over any point for build id and value.\n");
+
 				// print image maps of historical
 				for (int i = 0; i < dimensions.length; i++) {
 					Dim dim = dimensions[i];
 					String dimName=dim.getName();
 					
-					LineGraph lg=Utils.getLineGraph(t,dim.getName(),reference,current,pointsOfInterest);
+					TimeLineGraph lg=Utils.getLineGraph(t,dim.getName(),baseline,baselinePrefix,current,pointsOfInterest);
 					String lgImg=resultsFolder+"/graphs/"+scenarioFileName+"_"+dimName+".gif";
 					Utils.printLineGraphGif(lg,lgImg);
-					ps.println("<br><br><a name=\""+configName+"_"+scenarioFileName+"_"+ dimName+"\"></a>");
+					ps.println("<br><a name=\""+configName+"_"+scenarioFileName+"_"+ dimName+"\"></a>");
 					ps.println("<br><b>"+dimName+"</b><br>");
 					ps.println(Utils.getDimensionDescription(dimName)+"<br><br>\n");
 					ps.println(Utils.getImageMap(lg,"graphs/"+scenarioFileName+"_"+dimName+".gif"));
@@ -234,7 +242,7 @@ public class ScenarioResults {
 		ArrayList result=new ArrayList();
 		String [] buildIds = scenario.getTimeSeriesLabels();
 		for (int i=buildIds.length-1;i>-1;i--){
-			if (buildIds[i].startsWith(buildIdPrefix)&&!buildIds[i].equals(reference))
+			if (buildIds[i].startsWith(buildIdPrefix)&&!buildIds[i].equals(baseline))
 				result.add(buildIds[i]);
 		}
 		return result;
@@ -278,17 +286,19 @@ public class ScenarioResults {
 		ArrayList filtered=new ArrayList();
 		list.add(0,"Elapsed Process");
 		list.add(1,"CPU Time");
-		list.add(2,"Kernel time");
-		list.add(3,"Used Java Heap");
-		list.add(4,"Committed");
-		list.add(5,"Data Size");
-		list.add(6,"Library Size");
-		list.add(7,"GDI Objects");
-		list.add(8,"Text Size");
-		list.add(9,"Page Faults");
-		list.add(10,"Hard Page Faults");
-		list.add(11,"Soft Page Faults");
-		list.add(11,"Invocation Count");
+		list.add(2,"Invocation Count");
+		list.add(3,"Kernel time");
+		list.add(4,"Data Size");
+		list.add(5,"Library Size");
+		list.add(6,"GDI Objects");
+		list.add(7,"Text Size");
+
+//		list.add(8,"Used Java Heap");
+//		list.add(9,"Committed");
+//		list.add(10,"Page Faults");
+//		list.add(11,"Hard Page Faults");
+//		list.add(12,"Soft Page Faults");
+
 			
 		for (int i=0;i<dimensions.length;i++){
 			String dimName=dimensions[i].getName();

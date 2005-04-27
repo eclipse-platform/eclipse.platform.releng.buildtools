@@ -1,16 +1,16 @@
 <project default="run">
 
 	<target name="init">
-		<condition property="java.library.path" value="${basedir}/../..//org.eclipse.swt.win32_3.1.0/os/win32/x86">
+		<condition property="java.library.path" value="${basedir}/../../swt-win32">
 			<os family="windows" />
 		</condition>
-		<condition property="swt.library.path" value="${basedir}/../../org.eclipse.swt.motif_3.1.0/os/linux/x86">
+		<condition property="swt.library.path" value="${basedir}/../../swt-linux-motif">
 			<os family="unix" />
 		</condition>
-		<condition property="swt.exclude" value="**/*swt.motif*/**/*.jar,**/*swt.gtk/**/*.jar">
+		<condition property="swt.exclude" value="**/*swt.motif*.jar">
 			<os family="windows" />
 		</condition>
-		<condition property="swt.exclude" value="**/*swt.win32*/**/*.jar">
+		<condition property="swt.exclude" value="**/*swt.win32*.jar">
 			<os family="unix" />
 		</condition>
 	</target>

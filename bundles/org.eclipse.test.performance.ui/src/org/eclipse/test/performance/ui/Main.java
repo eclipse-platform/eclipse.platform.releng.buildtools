@@ -14,6 +14,7 @@ import org.eclipse.test.internal.performance.db.Variations;
 public class Main {
 
 	private String baseline;
+	private String baselinePrefix=null;
 	private String dimensionHistoryOutput;
 	private String dimensionHistoryUrl;
 	private String output;
@@ -58,6 +59,8 @@ public class Main {
 		if (pluginImages!=null){
 			Utils.copyFile(new File(pluginImages,"FAIL.gif"),output+"/FAIL.gif");
 			Utils.copyFile(new File(pluginImages,"OK.gif"),output+"/OK.gif");
+			Utils.copyFile(new File(pluginImages+"/scripts","Tooltip.css"),output+"/Tooltip.css");
+			Utils.copyFile(new File(pluginImages+"/scripts","Tooltip.js"),output+"/Tooltip.js");
 		}
 		
 		// print fingerprint/scenario status pages
@@ -68,6 +71,8 @@ public class Main {
 				outputFile.getParentFile().mkdirs();
 				PrintStream os = new PrintStream(new FileOutputStream(outputFile));
 				os.println(Utils.HTML_OPEN);
+				os.println("<link href=\"ToolTip.css\" rel=\"stylesheet\" type=\"text/css\">"+
+				"<script src=\"ToolTip.js\"></script>");
 				os.println(Utils.HTML_DEFAULT_CSS);
 				os.println("<body>");
 				Hashtable fps = (Hashtable) fingerPrints.get(component);
@@ -119,7 +124,7 @@ public class Main {
 			if (genScenarioSummaries || genAll) {
 				System.out.print(config
 						+ ": generating scenario results...");
-				new ScenarioResults(scenarios, baseline,dimensionHistoryOutput,config,currentBuildId,cd, pointsOfInterest);
+				new ScenarioResults(scenarios, baseline,baselinePrefix,dimensionHistoryOutput,config,currentBuildId,cd, pointsOfInterest);
 				System.out.println("done.");
 			}
 
@@ -180,6 +185,15 @@ public class Main {
 				baseline = args[i + 1];
 				if (baseline.startsWith("-")) {
 					System.out.println("Missing value for -baseline parameter");
+					printUsage();
+				}
+				i++;
+				continue;
+			}
+			if (arg.equals("-baseline.prefix")) {
+				baselinePrefix = args[i + 1];
+				if (baselinePrefix.startsWith("-")) {
+					System.out.println("Missing value for -baseline.prefix parameter");
 					printUsage();
 				}
 				i++;
@@ -282,6 +296,10 @@ public class Main {
 						+ "-baseline"
 								+"\n\tBuild id against which to compare results."
 								+"\n\tSame as value specified for the \"build\" key in the eclipse.perf.config system property.\n\n"
+
+						+ "[-baseline.prefix]"
+								+"\n\tBuild id prefix used in baseline test builds and reruns.  Used to plot baseline historical data."
+								+"\n\tA common prefix used for the value of the \"build\" key in the eclipse.perf.config system property when rerunning baseline tests.\n\n"
 								
 						+ "-current" 
 								+"\n\tbuild id for which to generate results.  Compared to build id specified in -baseline parameter above."

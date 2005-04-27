@@ -107,14 +107,17 @@ public class ScenarioStatusTable {
 
 					if (status.statusMap.containsKey(configName)){
 						if (aUrl!=null){
-							htmlTable=htmlTable.concat(message != "" ?"<td><a title=\""+message+"\" href=\""
-								+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
-								+ ".html"+" \"><img border=\"0\" src=\"FAIL.gif\"></a></td>" 
-								:"<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
-								+ ".html"+" \"><img border=\"0\" src=\"OK.gif\"></a></td>");
+							htmlTable=htmlTable.concat(message != "" ?"<td><a " +
+									"class=\"tooltipSource\" onMouseover=\"show_element('toolTip"+i+"')\"" +
+									" onMouseout=\"hide_element('toolTip"+i+"')\" "+
+									"\nhref=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_')+".html"+"\">" +
+									"<img border=\"0\" src=\"FAIL.gif\"/>" +
+									"\n<span class=\"hidden_tooltip\" id=\"toolTip"+i+"\">"+message+"</span></a></td>"+ 
+									"":"\n<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
+								+ ".html"+"\">\n<img border=\"0\" src=\"OK.gif\"/></a></td>");
 						} else{
-							htmlTable=htmlTable.concat(message != "" ?"<td><img title=\""+message+"\" border=\"0\" src=\"FAIL.gif\"></td>" 
-									:"<td><img border=\"0\" src=\"OK.gif\"></td>");
+							htmlTable=htmlTable.concat(message != "" ?"<td><img title=\""+message+"\" border=\"0\" src=\"FAIL.gif\"/></td>" 
+									:"<td><img border=\"0\" src=\"OK.gif\"/></td>");
 						}	
 					}else{
 						htmlTable=htmlTable.concat("<td>n/a</td>");

@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -303,18 +304,19 @@ public class Utils {
 	 * Returns a LineGraph object representing measurements for a scenario over builds.
 	 * @param t - the scenario object.
 	 * @param dimensionName - the name of the measurement for which to generate graph.
-	 * @param reference - the reference build to label.
+	 * @param baseline - the reference build to label.
 	 * @param current - the current build to label.
 	 * @param pointsOfInterest - an array of buildIds.  Points for these are highlighted on graph.
 	 * @return a LineGraph object.
 	 */
-	public static LineGraph getLineGraph(Scenario t, String dimensionName,
-		String reference, String current,ArrayList pointsOfInterest) {
+	public static TimeLineGraph getLineGraph(Scenario t, String dimensionName,
+		String baseline, String baselinePrefix,String current,ArrayList pointsOfInterest) {
 		Display display = Display.getDefault();
 
 		Color black = display.getSystemColor(SWT.COLOR_BLACK);
 		Color yellow = display.getSystemColor(SWT.COLOR_DARK_YELLOW);
 		Color magenta = display.getSystemColor(SWT.COLOR_MAGENTA);
+		
 		String scenarioName = t.getScenarioName();
 		Dim[] dimensions = t.getDimensions();
 		Dim dim=null;
@@ -323,7 +325,7 @@ public class Utils {
 				dim = dimensions[i];
 		}
 
-		LineGraph graph = new LineGraph(scenarioName + ": " + dimensionName,
+		TimeLineGraph graph = new TimeLineGraph(scenarioName + ": " + dimensionName,
 				dim);
 		TimeSeries ts = null;
 		try {
@@ -334,25 +336,45 @@ public class Utils {
 			if (n > 0) {
 				for (int j = 0; j < n; j++) {
 					String buildID = ts.getLabel(j);
-					double value = ts.getValue(j);
-					Color c=yellow;
-					if (buildID.equals(reference)||pointsOfInterest.contains(buildID))
-						c =magenta;
-					else if (buildID.startsWith("I"))
-						c=black;
+					int underscoreIndex=buildID.indexOf('_');
+					String label = (underscoreIndex != -1 && buildID.equals(baseline)) ? buildID.substring(0, underscoreIndex):buildID;
 					
-					int underscoreIndex = buildID.indexOf('_');
-					String label = (buildID.indexOf('_') == -1) ? buildID : buildID
-							.substring(0, underscoreIndex);
-					if (buildID.equals(reference) || buildID.equals(current)){
-						graph.addItem(label, dim.getDisplayValue(value),
-								value, c, true);
-					}
-					else if(buildID.startsWith("I")||pointsOfInterest.contains(buildID)||lastSevenNightlyBuildNames(t.getTimeSeriesLabels(),current).contains(buildID))
-						graph.addItem(buildID, dim.getDisplayValue(value),
-								value, c);
-					if (buildID.equals(current))
+					double value = ts.getValue(j);
+											
+					if (buildID.equals(current)){
+						Color color=black;
+						if (buildID.startsWith("N"))
+							color=yellow;
+							
+						graph.addItem("main",label, dim.getDisplayValue(value),
+								value, color, true,getDateFromBuildID(buildID),true);
 						break;
+					}
+					if (pointsOfInterest.contains(buildID)){
+						graph.addItem("main",label, dim.getDisplayValue(value),value, black, false,getDateFromBuildID(buildID,false),true);
+						continue;
+					}
+					if (buildID.equals(baseline)){
+						boolean drawBaseline=(baselinePrefix != null)?false:true;
+						graph.addItem("reference",label, dim.getDisplayValue(value),value, magenta, true,getDateFromBuildID(buildID,true),true,drawBaseline);
+						continue;
+					}
+					if (baselinePrefix != null) {
+						if (buildID.startsWith(baselinePrefix) && !buildID.equals(baseline) &&
+								getDateFromBuildID(buildID,true)<getDateFromBuildID(baseline,true)) {
+							graph.addItem("reference", label, dim.getDisplayValue(value), value, magenta,false, getDateFromBuildID(buildID,true),false);
+							continue;
+						}
+					}
+					if(buildID.startsWith("I")){
+						graph.addItem("main",buildID, dim.getDisplayValue(value),value, black,false,getDateFromBuildID(buildID),false);
+						continue;
+					}
+					if(lastSevenNightlyBuildNames(t.getTimeSeriesLabels(), current).contains(buildID)){
+						graph.addItem("main",buildID, dim.getDisplayValue(value),value, yellow,false,getDateFromBuildID(buildID),false);
+						continue;
+					}
+					
 				}
 			}
 		} catch (AssertionFailedError e) {
@@ -529,4 +551,51 @@ public class Utils {
         }
         return newData;
 	}
+ 
+    
+    /**
+     * Returns the date/time from the build id in format yyyymmddhm
+     * @param buildId
+     * @return date/time in format YYYYMMDDHHMM, ie. 200504060010
+     */
+   	public static long getDateFromBuildID(String buildId){
+   		return Utils.getDateFromBuildID(buildId,false);
+   	}
+   	 
+    public static long getDateFromBuildID(String buildId,boolean matchLast){
+    		 Calendar calendar=Calendar.getInstance();
+    		 
+    		if (buildId.indexOf('_')!=-1){
+    			int buildIdSegment=1;
+    			if (matchLast)
+    				buildIdSegment=2;
+    			//if release build, expect <release>_<release date and timestamp>_<date and timestamp test ran>
+    			//use test date and time for plotting
+    			String[] buildIdParts=buildId.split("_");
+    			if (buildIdParts.length==3){
+    				int year=Integer.parseInt(buildIdParts[buildIdSegment].substring(0,4));
+    				int month=Integer.parseInt(buildIdParts[buildIdSegment].substring(4,6))-1;
+    				int date=Integer.parseInt(buildIdParts[buildIdSegment].substring(6,8));
+    				int hours=Integer.parseInt(buildIdParts[buildIdSegment].substring(8,10));
+    				int min=Integer.parseInt(buildIdParts[buildIdSegment].substring(10,12));
+
+    				calendar.set(year, month, date, hours, min);
+    				return calendar.getTimeInMillis();
+    			}
+    		} else if (buildId.indexOf('-')!=-1){
+    			//if regular build, expect <buildType><date>-<time> format
+    			String[] buildIdParts=buildId.split("-");
+    			int year=Integer.parseInt(buildIdParts[0].substring(1,5));
+    			int month=Integer.parseInt(buildIdParts[0].substring(5,7))-1;
+    			int date=Integer.parseInt(buildIdParts[0].substring(7,9));
+    			int hours=Integer.parseInt(buildIdParts[1].substring(0,2));
+    			int min=Integer.parseInt(buildIdParts[1].substring(2,4));
+    			calendar.set(year, month, date, hours, min);
+
+    			return calendar.getTimeInMillis();
+    		}
+
+    		return -1;
+    	}
+    	
 }
