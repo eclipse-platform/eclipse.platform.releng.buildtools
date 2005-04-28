@@ -284,8 +284,6 @@ public class TimeLineGraph extends LineGraph{
 			for (int i=0;i<fItemsArray.length;i++){
 				TimeLineGraphItem anItem=(TimeLineGraphItem)fItemsArray[i];
 				long timeDiff=thisItem.timestamp-anItem.timestamp;
-				if (closestPrecedingItem!=null)
-				if (closestFollowingItem!=null)
 
 				 if (timeDiff>0&&timeDiff<minimumTimeDiffPreceding){
 					 closestPrecedingItem=anItem;
@@ -306,9 +304,9 @@ public class TimeLineGraph extends LineGraph{
 				long timeRange=closestFollowingItem.timestamp-closestPrecedingItem.timestamp;
 			
 				int xRange=closestFollowingItem.x-closestPrecedingItem.x;
-				double increments=(double)xRange/timeRange;
+				double increments=(xRange*1.0)/timeRange;
 			
-				thisItem.setX((int)((thisItem.timestamp-closestPrecedingItem.timestamp)*increments)+closestPrecedingItem.x);
+				thisItem.setX((int)(Math.round((thisItem.timestamp-closestPrecedingItem.timestamp)*increments)+closestPrecedingItem.x));
 			}
 	}
 }
