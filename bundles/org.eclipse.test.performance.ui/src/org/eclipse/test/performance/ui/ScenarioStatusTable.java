@@ -89,12 +89,14 @@ public class ScenarioStatusTable {
 			}
 			 
 			htmlTable=htmlTable.concat("</tr>\n");
+			
+			//counter for js class Id's
+			int jsIdCount=0;
 			for (int j= 0; j < scenarioStatusList.size(); j++) {
 				
 				ScenarioStatus status=(ScenarioStatus)scenarioStatusList.get(j);
 
 				htmlTable=htmlTable.concat("<tr><td>"+status.name.substring(status.name.indexOf(".",status.name.indexOf(".test")+1)+1)+"</td>");
-
 				for (int i=0;i<configNames.size();i++){
 					String message=null;
 					String configName=configNames.get(i).toString();
@@ -107,14 +109,21 @@ public class ScenarioStatusTable {
 
 					if (status.statusMap.containsKey(configName)){
 						if (aUrl!=null){
-							htmlTable=htmlTable.concat(message != "" ?"<td><a " +
-									"class=\"tooltipSource\" onMouseover=\"show_element('toolTip"+i+"')\"" +
-									" onMouseout=\"hide_element('toolTip"+i+"')\" "+
-									"\nhref=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_')+".html"+"\">" +
-									"<img border=\"0\" src=\"FAIL.gif\"/>" +
-									"\n<span class=\"hidden_tooltip\" id=\"toolTip"+i+"\">"+message+"</span></a></td>"+ 
-									"":"\n<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
-								+ ".html"+"\">\n<img border=\"0\" src=\"OK.gif\"/></a></td>");
+							String html="\n<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
+							+ ".html"+"\">\n<img border=\"0\" src=\"OK.gif\"/></a></td>";
+							
+							if (message!=""){
+								jsIdCount+=1;
+								html="<td><a " +
+								"class=\"tooltipSource\" onMouseover=\"show_element('toolTip"+(jsIdCount)+"')\"" +
+								" onMouseout=\"hide_element('toolTip"+(jsIdCount)+"')\" "+
+								"\nhref=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_')+".html"+"\">" +
+								"<img border=\"0\" src=\"FAIL.gif\"/>" +
+								"\n<span class=\"hidden_tooltip\" id=\"toolTip"+jsIdCount+"\">"+message+"</span></a></td>"+ 
+								"";
+								
+							}
+							htmlTable=htmlTable.concat(html);
 						} else{
 							htmlTable=htmlTable.concat(message != "" ?"<td><img title=\""+message+"\" border=\"0\" src=\"FAIL.gif\"/></td>" 
 									:"<td><img border=\"0\" src=\"OK.gif\"/></td>");
