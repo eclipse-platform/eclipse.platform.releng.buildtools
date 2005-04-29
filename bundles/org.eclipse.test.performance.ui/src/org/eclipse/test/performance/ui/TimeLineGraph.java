@@ -41,8 +41,8 @@ public class TimeLineGraph extends LineGraph{
         double maxItem= getMaxItem();
         double minItem= getMinItem();
         
-        int max= (int) (Math.ceil(maxItem * (maxItem < 0 ? 0.9 : 1.2)));
-        int min= (int) (Math.floor(minItem * (minItem < 0 ? 1.2 : 0.9)));
+        int max= (int) (Math.ceil(maxItem * (maxItem < 0 ? 0.8 : 1.2)));
+        int min= (int) (Math.floor(minItem * (minItem < 0 ? 1.2 : 0.8)));
 
         String smin= fDimension.getDisplayValue(min);
         Point emin= g.stringExtent(smin);
@@ -72,7 +72,7 @@ public class TimeLineGraph extends LineGraph{
         Color oldbg= g.getBackground();
         Color oldfg= g.getForeground();
 
-        setCoordinates(right-left,left,bottom-top,bottom);
+        setCoordinates(right-left,left,bottom-top,bottom,max-min);
         
         Enumeration _enum=fItemGroups.elements();
         Comparator comparator=new TimeLineGraphItem.GraphItemComparator();
@@ -90,7 +90,6 @@ public class TimeLineGraph extends LineGraph{
 				TimeLineGraphItem thisItem = (TimeLineGraphItem) fItemsArray[i];
 
 				int yposition = thisItem.y;
-				//int xposition = left+(int)((thisItem.timestamp-earliestTimestamp) * xgraduations);
 				int xposition = thisItem.x;
 				g.setLineWidth(1);
 				
@@ -234,7 +233,7 @@ public class TimeLineGraph extends LineGraph{
 	}
 
     
-    private void setCoordinates(int width, int xOffset, int height, int yOffset){
+    private void setCoordinates(int width, int xOffset, int height, int yOffset, int yValueRange){
        
         List mainGroup=(ArrayList)fItemGroups.get("main");
         List referenceGroup=(ArrayList)fItemGroups.get("reference");
@@ -248,12 +247,17 @@ public class TimeLineGraph extends LineGraph{
 
 		int n = mainGroup.size();
 		int xIncrement=width/n;
-		double yValueRange=getMaxItem()-getMinItem();
-		
+		double max=getMaxItem();
+		double min=getMinItem();
+		if (max==min){
+			max=max*1.2;
+			min=min*0.8;
+		}
+
 		for (int i = 0; i < n; i++) {
 			TimeLineGraphItem thisItem = (TimeLineGraphItem) fItemsArray[i];
 			thisItem.setX(xOffset + ((i + 1) * xIncrement));
-			thisItem.setY((int) (yOffset - ((thisItem.value - getMinItem())
+			thisItem.setY((int) (yOffset - ((thisItem.value - min)
 					/ yValueRange * height)));
 		}
 		
@@ -264,7 +268,7 @@ public class TimeLineGraph extends LineGraph{
 		for (int i = 0; i < n; i++) {
 			 TimeLineGraphItem thisItem = (TimeLineGraphItem) referenceGroup.get(i);
 			 setRelativeXPosition(thisItem,mainGroup);
-			 thisItem.setY((int) (yOffset - ((thisItem.value - getMinItem())
+			 thisItem.setY((int) (yOffset - ((thisItem.value - min)
 					/ yValueRange * height)));
 		}
     }

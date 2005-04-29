@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -246,6 +247,7 @@ public class Main {
 					printUsage();
 				}
 				config = configs.split(",");
+				Arrays.sort(config);
 				i++;
 				continue;
 			}

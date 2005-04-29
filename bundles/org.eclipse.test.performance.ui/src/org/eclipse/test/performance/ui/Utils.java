@@ -169,6 +169,7 @@ public class Utils {
 			String labelDescriptor = tokenizer.nextToken();
 			int commaIndex = labelDescriptor.indexOf(",");
 			String[] elements = labelDescriptor.split(",");
+			Arrays.sort(elements);
 			String output = null;
 			if (elements.length == 4)
 				output = elements[3];
@@ -185,7 +186,7 @@ public class Utils {
 	 * @return Array of scenarios.
 	 */
 	public static Scenario[] getScenarios(String buildIdPattern,
-			String scenarioPattern, String config, String jvm) {
+		String scenarioPattern, String config, String jvm) {
 		Dim[] qd = null;
 		if (scenarioPattern == null)
 			scenarioPattern = "";
