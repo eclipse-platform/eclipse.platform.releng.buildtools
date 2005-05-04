@@ -169,7 +169,6 @@ public class Utils {
 			String labelDescriptor = tokenizer.nextToken();
 			int commaIndex = labelDescriptor.indexOf(",");
 			String[] elements = labelDescriptor.split(",");
-			Arrays.sort(elements);
 			String output = null;
 			if (elements.length == 4)
 				output = elements[3];
