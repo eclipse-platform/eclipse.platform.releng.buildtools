@@ -293,7 +293,7 @@ public class TimeLineGraph extends LineGraph{
 					 closestPrecedingItem=anItem;
 				 	minimumTimeDiffPreceding=thisItem.timestamp-anItem.timestamp;
 				 } 
-				 if (timeDiff<0&&Math.abs(timeDiff)<minimumTimeDiffFollowing){
+				 if (timeDiff<=0&&Math.abs(timeDiff)<=minimumTimeDiffFollowing){
 					 closestFollowingItem=anItem;
 					 minimumTimeDiffFollowing=thisItem.timestamp-anItem.timestamp;
 				 }
