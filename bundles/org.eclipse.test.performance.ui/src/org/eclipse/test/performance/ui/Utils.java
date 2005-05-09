@@ -271,7 +271,7 @@ public class Utils {
 		// print the component scenario table beneath the fingerprint
 		fp.variations.put("config", "%");
 		ScenarioStatusTable sst = new ScenarioStatusTable(fp.variations,
-				fp.component + "%", fp.configDescriptors);
+				fp.component + "%", fp.configDescriptors,fp.scenarioComments);
 		return sst.toString();
 	}
 

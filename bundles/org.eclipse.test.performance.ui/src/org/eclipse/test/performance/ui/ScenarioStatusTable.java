@@ -12,12 +12,14 @@ public class ScenarioStatusTable {
 	private Variations variations;
 	private String scenarioPattern;
 	private ArrayList configNames=new ArrayList();
+	private Hashtable scenarioComments;
 	
 	private class ScenarioStatus{
 		Hashtable statusMap;
 		String name;
 		Object [] configs;
-		
+		boolean hasSlowDownExplanation=false;
+				
 		public ScenarioStatus(String scenarioName){
 			name=scenarioName;
 			statusMap=new Hashtable();
@@ -33,10 +35,11 @@ public class ScenarioStatusTable {
 	 * @param scenarioPattern
 	 * @param configDescriptors
 	 */
-	public ScenarioStatusTable(Variations variations,String scenarioPattern,Hashtable configDescriptors){
+	public ScenarioStatusTable(Variations variations,String scenarioPattern,Hashtable configDescriptors,Hashtable scenarioComments){
 		configMaps=configDescriptors;
 		this.variations=variations;
 		this.scenarioPattern=scenarioPattern;
+		this.scenarioComments=scenarioComments;
 	}
 	
 	/**
@@ -65,8 +68,14 @@ public class ScenarioStatusTable {
 						configNames.add(configs[j]);
 					if (failureMessages[j]!=null){
 						//ensure correct failure message relates to config
-						if (failureMessages[j].indexOf(configs[j])!=-1)
+						if (failureMessages[j].indexOf(configs[j])!=-1){
 							failureMessage=failureMessages[j];
+							if (scenarioComments.containsKey(scenarioName)){
+								failureMessage=failureMessage.concat(";  "+scenarioComments.get(scenarioName));
+								scenarioStatus.hasSlowDownExplanation=true;
+							}
+							
+						}
 					}
 					scenarioStatus.statusMap.put(configs[j],failureMessage);		
 				}
@@ -108,17 +117,19 @@ public class ScenarioStatusTable {
 					}
 
 					if (status.statusMap.containsKey(configName)){
+						
 						if (aUrl!=null){
 							String html="\n<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
 							+ ".html"+"\">\n<img border=\"0\" src=\"OK.gif\"/></a></td>";
 							
 							if (message!=""){
+								String failImage=status.hasSlowDownExplanation?"FAIL_greyed.gif":"FAIL.gif";
 								jsIdCount+=1;
 								html="<td><a " +
 								"class=\"tooltipSource\" onMouseover=\"show_element('toolTip"+(jsIdCount)+"')\"" +
 								" onMouseout=\"hide_element('toolTip"+(jsIdCount)+"')\" "+
 								"\nhref=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_')+".html"+"\">" +
-								"<img border=\"0\" src=\"FAIL.gif\"/>" +
+								"<img border=\"0\" src=\""+failImage+"\"/>" +
 								"\n<span class=\"hidden_tooltip\" id=\"toolTip"+jsIdCount+"\">"+message+"</span></a></td>"+ 
 								"";
 								
