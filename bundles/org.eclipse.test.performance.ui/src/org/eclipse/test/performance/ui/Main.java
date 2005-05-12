@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.Variations;
 
@@ -32,7 +31,6 @@ public class Main {
 	private boolean genScenarioSummaries =false;
 	private boolean genAll = true;
 	private Hashtable fingerPrints = new Hashtable();
-	private Hashtable scenarioComments=new Hashtable();
 
 	public static void main(String args[]) {
 		Main main = new Main();
@@ -62,8 +60,8 @@ public class Main {
 		if (pluginImages!=null){
 			Utils.copyFile(new File(pluginImages,"FAIL.gif"),output+"/FAIL.gif");
 			Utils.copyFile(new File(pluginImages,"OK.gif"),output+"/OK.gif");
-			Utils.copyFile(new File(pluginImages+"/scripts","ToolTip.css"),output+"/Tooltip.css");
-			Utils.copyFile(new File(pluginImages+"/scripts","ToolTip.js"),output+"/Tooltip.js");
+			Utils.copyFile(new File(pluginImages+"/scripts","Tooltip.css"),output+"/Tooltip.css");
+			Utils.copyFile(new File(pluginImages+"/scripts","Tooltip.js"),output+"/Tooltip.js");
 		}
 		
 		// print fingerprint/scenario status pages
@@ -106,7 +104,7 @@ public class Main {
 				//print the component scenario status table beneath the fingerprint
 					variations.put("config", "%");
 					ScenarioStatusTable sst = new ScenarioStatusTable(
-							variations, component + "%", configDescriptors,scenarioComments);
+							variations, component + "%", configDescriptors);
 					os.println(sst.toString());
 				}
 
@@ -116,13 +114,20 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-
 	}
 
 	private void run(String config, Utils.ConfigDescriptor cd) {
-			
+				
 			scenarios = Utils.getScenarios("%", scenarioFilter, config, jvm);
 			variations = Utils.getVariations("%", config, jvm);
+
+			//generates scenario result pages and line graphs
+			if (genScenarioSummaries || genAll) {
+				System.out.print(config
+						+ ": generating scenario results...");
+				new ScenarioResults(scenarios, baseline,baselinePrefix,dimensionHistoryOutput,config,currentBuildId,cd, pointsOfInterest);
+				System.out.println("done.");
+			}
 
 			//creates and stores fingerprint objects
 			if (genFingerPrints || genAll) {
@@ -158,19 +163,7 @@ public class Main {
 						t = new Hashtable();
 					t.put(config, componentFp);
 					fingerPrints.put(component, t);
-					if (componentFp.scenarioComments!=null)
-						scenarioComments.putAll(componentFp.scenarioComments);
 				}
-				System.out.println("done.");
-			}
-			
-			variations.put(PerformanceTestPlugin.BUILD,"%");
-
-			//generates scenario result pages and line graphs
-			if (genScenarioSummaries || genAll) {
-				System.out.print(config
-						+ ": generating scenario results...");
-				new ScenarioResults(scenarios, baseline,baselinePrefix,dimensionHistoryOutput,config,currentBuildId,cd, pointsOfInterest,scenarioComments);
 				System.out.println("done.");
 			}
 		}

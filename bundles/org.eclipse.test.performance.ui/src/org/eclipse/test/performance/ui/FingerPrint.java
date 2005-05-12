@@ -55,7 +55,6 @@ public class FingerPrint {
     String outName;
     String linkUrl;
     String title;
-    Hashtable scenarioComments;
     
     public FingerPrint() {
     }
@@ -99,14 +98,7 @@ public class FingerPrint {
         if (entries != null) {
             for (int i= 0; i < entries.length; i++) {
                 SummaryEntry se= (SummaryEntry)entries[i];
-                if (se.comment==null)
-                	add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName);
-                else{
-                	if (scenarioComments==null)
-                		scenarioComments=new Hashtable();
-                	scenarioComments.put(se.scenarioName,se.comment);
-                	add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName,se.comment);
-                }
+                add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName);    
             }
         }
         
@@ -120,13 +112,10 @@ public class FingerPrint {
      
        }
 
-
+    
     private void add(BarGraph bar, String name, Dim[] dims, String scenarioName) {
-    	add (bar,name,dims,scenarioName,null);
-    }
-
-    private void add(BarGraph bar, String name, Dim[] dims, String scenarioName,String comment) {
-         String refData= "";
+        
+        String refData= "";
         Scenario scenario= DB.getScenarioSeries(scenarioName, variations, PerformanceTestPlugin.BUILD, referenceBuildId, currentBuildId, dims);
         String[] timeSeriesLabels= scenario.getTimeSeriesLabels();
         if (timeSeriesLabels.length == 2) {
@@ -153,9 +142,9 @@ public class FingerPrint {
 	            if (Math.abs(percent) < 200) {
 	                String n= name + " (" + dims[i].getName() + ")" + refData;
 	                if (linkUrl!=null)
-	                	bar.addItem(n, percent,linkUrl+"/"+(scenarioName.replace('#','.').replace(':','_').replace('\\','_'))+".html#"+dims[i].getName(),comment); //$NON-NLS-1$ //$NON-NLS-2$
+	                	bar.addItem(n, percent,linkUrl+"/"+(scenarioName.replace('#','.').replace(':','_').replace('\\','_'))+".html#"+dims[i].getName()); //$NON-NLS-1$ //$NON-NLS-2$
 	                else
-	                	bar.addItem(n, percent,comment); //$NON-NLS-1$ //$NON-NLS-2$
+	                	bar.addItem(n, percent); //$NON-NLS-1$ //$NON-NLS-2$
 	            }
 	        }
         }
