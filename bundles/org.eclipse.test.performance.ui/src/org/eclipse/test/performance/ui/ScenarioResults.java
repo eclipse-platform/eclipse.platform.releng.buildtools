@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import junit.framework.AssertionFailedError;
@@ -37,6 +38,7 @@ public class ScenarioResults {
 	private String current;
 	
 	private ArrayList pointsOfInterest;
+	private Hashtable scenarioComments;
 	
 	/**
 	 * Summary of results for a scenario for a given build compared to a reference.
@@ -49,14 +51,14 @@ public class ScenarioResults {
 	 * @param pointsOfInterest - an ArrayList of buildId's to highlight on line graphs.
 	 */
 	public ScenarioResults(Scenario[] scenarios, String baseline,String baselinePrefix,
-			String resultsFolder, String configName, String current, Utils.ConfigDescriptor configDescriptor,ArrayList pointsOfInterest) {
+			String resultsFolder, String configName, String current, Utils.ConfigDescriptor configDescriptor,ArrayList pointsOfInterest,Hashtable scenarioComments) {
 		this.scenarios = scenarios;
 		this.baseline = baseline;
 		this.baselinePrefix=baselinePrefix;
 		this.resultsFolder = resultsFolder;
 		this.configName = configName;
-
 		this.pointsOfInterest=pointsOfInterest;
+		this.scenarioComments=scenarioComments;
 		if (configDescriptor!=null){
 			this.configName=configDescriptor.description;
 			this.resultsFolder=configDescriptor.outputDir;
@@ -74,7 +76,7 @@ public class ScenarioResults {
 		for (int s = 0; s < scenarios.length; s++) {
 			ArrayList pointsOfInterest=new ArrayList();
 			Scenario t = scenarios[s];
-			
+				
 			//get latest points of interest matching
 			if (this.pointsOfInterest!=null){
 			Iterator iterator = this.pointsOfInterest.iterator();
@@ -120,8 +122,13 @@ public class ScenarioResults {
 			ps.println(Utils.HTML_DEFAULT_CSS);
 			ps.println("<title>"+t.getScenarioName() + "("+configName+")"+"</title></head>"); //$NON-NLS-1$
 			ps.println("<h4>Scenario: " + t.getScenarioName() + " ("+configName+")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
+			
+			if (scenarioComments.containsKey(t.getScenarioName())){
+				ps.println("<b>Notes</b><br>\n");
+				ps.println("<table><tr><td>"+scenarioComments.get(t.getScenarioName())+"</td></tr></table><br>\n");
+			}
+
 			ps.println("<b>Click measurement name to view line graph of measured values over builds.</b><br><br>\n");
-					
 			ps.println("<table border=\"1\">"); //$NON-NLS-1$ //$NON-NLS-2$
 
 			Dim[] dimensions = filteredDimensions( t.getDimensions());
