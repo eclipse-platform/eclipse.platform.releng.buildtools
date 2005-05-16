@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.Variations;
 
@@ -81,14 +80,17 @@ public class Main {
 				Hashtable fps = (Hashtable) fingerPrints.get(component);
 				Enumeration configs = fps.keys();
 				
-				int underScoreIndex=baseline.indexOf("_");
-				String baselineName=(underScoreIndex!=-1)?baseline.substring(0, baseline.indexOf("_")):baseline;
+				int baselineUnderScoreIndex=baseline.indexOf("_");
+				int currentUnderScoreIndex=currentBuildId.indexOf("_");
+
+				String baselineName=(baselineUnderScoreIndex!=-1)?baseline.substring(0, baseline.indexOf("_")):baseline;
+				String currentName=(currentUnderScoreIndex!=-1)?currentBuildId.substring(0, currentBuildId.indexOf("_")):currentBuildId;
 				String title = "<h3>Performance of " + component + ": "
-						+ currentBuildId + " relative to "
+						+ currentName + " relative to "
 						+ baselineName
 						+ "</h3>";
 				if (component.equals("global"))
-					title = "<h3>Performance of " + currentBuildId
+					title = "<h3>Performance of " + currentName
 							+ " relative to "
 							+ baselineName
 							+ "</h3>";

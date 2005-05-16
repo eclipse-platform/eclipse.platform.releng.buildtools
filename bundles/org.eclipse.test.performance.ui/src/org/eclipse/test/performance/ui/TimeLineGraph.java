@@ -301,7 +301,7 @@ public class TimeLineGraph extends LineGraph{
 			if (closestFollowingItem==null && closestPrecedingItem!=null)
 				thisItem.setX(closestPrecedingItem.x);
 
-			if (closestFollowingItem!=null && closestPrecedingItem==null)
+			else if (closestFollowingItem!=null && closestPrecedingItem==null)
 				thisItem.setX(closestFollowingItem.x);
 
 			else{	

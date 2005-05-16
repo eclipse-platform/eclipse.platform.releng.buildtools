@@ -337,7 +337,7 @@ public class Utils {
 				for (int j = 0; j < n; j++) {
 					String buildID = ts.getLabel(j);
 					int underscoreIndex=buildID.indexOf('_');
-					String label = (underscoreIndex != -1 && buildID.equals(baseline)) ? buildID.substring(0, underscoreIndex):buildID;
+					String label = (underscoreIndex != -1 && (buildID.equals(baseline)||buildID.equals(current))) ? buildID.substring(0, underscoreIndex):buildID;
 					
 					double value = ts.getValue(j);
 											

@@ -89,11 +89,16 @@ public class FingerPrint {
     public void run(Object[] entries) {
         new File(outputDirectory).mkdirs();
         String referenceName=referenceBuildId;
-        int underscoreIndex=referenceBuildId.indexOf('_');
+        String currentName=currentBuildId;
+        int referenceUnderscoreIndex=referenceBuildId.indexOf('_');
+        int currentUnderscoreIndex=currentBuildId.indexOf('_');
         
-        if (underscoreIndex!=-1)
-        	referenceName=referenceBuildId.substring(0,underscoreIndex);
-        title="Performance of " + component +" "+currentBuildId + " relative to " + referenceName;
+        if (referenceUnderscoreIndex!=-1)
+        	referenceName=referenceBuildId.substring(0,referenceUnderscoreIndex);
+        if (currentUnderscoreIndex!=-1)
+        	currentName=currentBuildId.substring(0,currentUnderscoreIndex);
+
+        title="Performance of " + component +" "+currentName + " relative to " + referenceName;
         bar= new BarGraph(null);
                 
         if (entries != null) {
