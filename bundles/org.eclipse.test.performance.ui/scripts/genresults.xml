@@ -1,37 +1,12 @@
 <project default="run">
 
-	<target name="init">
-		<condition property="java.library.path" value="${basedir}/../../swt-win32">
-			<os family="windows" />
-		</condition>
-		<condition property="swt.library.path" value="${basedir}/../../swt-linux-motif">
-			<os family="unix" />
-		</condition>
-		<condition property="swt.exclude" value="**/*swt.motif*.jar">
-			<os family="windows" />
-		</condition>
-		<condition property="swt.exclude" value="**/*swt.win32*.jar">
-			<os family="unix" />
-		</condition>
-	</target>
-
-	<target name="run" depends="init">
-		<java classname="org.eclipse.test.performance.ui.Main" fork="true" maxmemory="256m">
+	<target name="run">
+		
+		<java jar="${basedir}/../../../startup.jar" fork="true" maxmemory="256m">
+			<arg line="-application org.eclipse.test.performance.ui.resultGenerator" />
 			<arg line="${args}" />
-			<classpath>
-				<fileset dir="../../../">
-					<include name="**/*.jar" />
-					<exclude name="${swt.exclude}" />
-				</fileset>
-				<fileset dir="${dbbin}" />
-			</classpath>
-
 			<env key="LD_LIBRARY_PATH" value="${basedir}/../../.." />
-			<sysproperty key="java.library.path" value="${java.library.path}:${swt.library.path}" />
-			<sysproperty key="PLUGIN_PATH" value="${basedir}/.." />
 			<sysproperty key="eclipse.perf.dbloc" value="${dbloc}" />
 		</java>
-
 	</target>
-	
 </project>

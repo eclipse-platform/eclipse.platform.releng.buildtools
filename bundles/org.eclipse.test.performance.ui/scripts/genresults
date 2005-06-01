@@ -1,8 +1,5 @@
 # !/bin/sh
 
-#export db.bin=/home/user/Cloudscape_10.0/lib
 #export dbloc=net://trelenggtk.ottawa.ibm.com
 
-export bbplugins=./../../..
-
-java -jar ./../../../startup.jar -application org.eclipse.ant.core.antRunner -f genresults.xml -Dargs="$*" -Ddbloc=$dbloc -Ddbbin=$dbbin
+java -jar ./../../../startup.jar -application org.eclipse.ant.core.antRunner -f genresults.xml -Dargs="$*" -Ddbloc=$dbloc

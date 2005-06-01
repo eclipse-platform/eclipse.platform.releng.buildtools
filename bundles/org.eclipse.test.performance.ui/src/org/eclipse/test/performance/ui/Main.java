@@ -9,10 +9,12 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.eclipse.core.runtime.IPlatformRunnable;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.Variations;
 
-public class Main {
+public class Main implements IPlatformRunnable{
 
 	private String baseline;
 	private String baselinePrefix=null;
@@ -32,14 +34,11 @@ public class Main {
 	private boolean genAll = true;
 	private Hashtable fingerPrints = new Hashtable();
 	private Hashtable scenarioComments=new Hashtable();
+	private String ID="org.eclipse.test.performance.ui";
 
-	public static void main(String args[]) {
-		Main main = new Main();
-		main.parse(args);
-		main.run();
-	}
-
-	private void run() {
+	public Object run(Object args) throws Exception {
+		parse(args);
+		
 		String tmpDimensionOutput=output;
 		for (int i = 0; i < config.length; i++) {
 			Utils.ConfigDescriptor cd=null;
@@ -56,13 +55,18 @@ public class Main {
 		}
 
 		Enumeration components = fingerPrints.keys();
-		String pluginImages=System.getProperty("PLUGIN_PATH");
-		
-		if (pluginImages!=null){
-			Utils.copyFile(new File(pluginImages,"FAIL.gif"),output+"/FAIL.gif");
-			Utils.copyFile(new File(pluginImages,"OK.gif"),output+"/OK.gif");
-			Utils.copyFile(new File(pluginImages+"/scripts","ToolTip.css"),output+"/Tooltip.css");
-			Utils.copyFile(new File(pluginImages+"/scripts","ToolTip.js"),output+"/Tooltip.js");
+		String installLoc=Platform.getInstallLocation().getURL().getPath();
+		String images=installLoc+"/plugins/"+ID+"/"+Platform.getBundle(ID).getEntry("images").getPath();
+		String scripts=installLoc+"/plugins/"+ID+"/"+Platform.getBundle(ID).getEntry("scripts").getPath();
+	
+		if (images!=null){
+			Utils.copyFile(new File(images+"/FAIL.gif"),output+"/FAIL.gif");
+			Utils.copyFile(new File(images+"/FAIL_greyed.gif"),output+"/FAIL_greyed.gif");
+			Utils.copyFile(new File(images+"/OK.gif"),output+"/OK.gif");
+		}
+		if (scripts!=null){
+			Utils.copyFile(new File(scripts+"/ToolTip.css"),output+"/ToolTip.css");
+			Utils.copyFile(new File(scripts+"/ToolTip.js"),output+"/ToolTip.js");
 		}
 		
 		// print fingerprint/scenario status pages
@@ -119,7 +123,9 @@ public class Main {
 			}
 		}
 
+		return null;
 	}
+	
 
 	private void run(String config, Utils.ConfigDescriptor cd) {
 			
@@ -176,7 +182,8 @@ public class Main {
 		}
 	
 
-	private void parse(String args[]) {
+	private void parse(Object argsObject) {
+		String []args=(String[])argsObject;
 		int i = 0;
 		if (args.length == 0) {
 			printUsage();
@@ -349,5 +356,7 @@ public class Main {
 		System.exit(1);
 
 	}
+
+
 
 }
