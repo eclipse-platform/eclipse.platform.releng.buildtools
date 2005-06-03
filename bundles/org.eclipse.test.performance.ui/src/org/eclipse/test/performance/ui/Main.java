@@ -128,7 +128,9 @@ public class Main implements IPlatformRunnable{
 	
 
 	private void run(String config, Utils.ConfigDescriptor cd) {
-			
+
+			if (System.getProperty("eclipse.perf.dbloc")==null)
+				System.out.println("WARNING:  eclipse.perf.dbloc value set to null");
 			scenarios = Utils.getScenarios("%", scenarioFilter, config, jvm);
 			variations = Utils.getVariations("%", config, jvm);
 

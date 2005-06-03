@@ -1,5 +1,7 @@
 # !/bin/sh
 
 #export dbloc=net://trelenggtk.ottawa.ibm.com
+#required when running on Linux Motif
+export LD_LIBRARY_PATH=./../../..
 
-java -jar ./../../../startup.jar -application org.eclipse.ant.core.antRunner -f genresults.xml -Dargs="$*" -Ddbloc=$dbloc
+java -Declipse.perf.dbloc=$dbloc -jar ./../../../startup.jar -application org.eclipse.test.performance.ui.resultGenerator $*

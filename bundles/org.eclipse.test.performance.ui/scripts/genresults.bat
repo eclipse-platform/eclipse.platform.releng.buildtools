@@ -2,6 +2,5 @@
 
 REM set dbloc=net://trelenggtk.ottawa.ibm.com
 
-set args=%*
+java -Declipse.perf.dbloc=%dbloc% -jar .\..\..\..\startup.jar -application org.eclipse.test.performance.ui.resultGenerator %*
 
-java -jar .\..\..\..\startup.jar -application org.eclipse.ant.core.antRunner -f genresults.xml "-Dargs=%args%" "-Ddbloc=%dbloc%"
