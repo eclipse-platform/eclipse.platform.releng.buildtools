@@ -167,10 +167,16 @@ public class ScenarioResults {
 						if (buildNameIndeces[j] != -1)
 							diffValues[j][i]=ts.getValue(buildNameIndeces[j]);
 						
+						double currentValue=ts.getValue(buildNameIndeces[j]);
+						String currentDisplayPrefix=currentValue<0.0?"-":"";
+						
+						double currentSD=ts.getStddev(buildNameIndeces[j]);
+						String currentSDPrefix=currentSD<0.0?"-":"";
+						
 						String displayValue = (buildNameIndeces[j] == -1) ? "n/a"
-								: dim.getDisplayValue(ts
+								: currentDisplayPrefix+dim.getDisplayValue(ts
 										.getValue(buildNameIndeces[j]));
-						String stddev = (buildNameIndeces[j] == -1) ? "0" : dim
+						String stddev = (buildNameIndeces[j] == -1) ? "0" : currentSDPrefix+dim
 								.getDisplayValue(ts
 										.getStddev(buildNameIndeces[j]));
 
