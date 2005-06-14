@@ -81,8 +81,11 @@ public class CompileErrorCheck extends Task {
 
 		try {
 			while ((aLine = in.readLine()) != null) {
-				if ((aLine.indexOf("error", aLine.indexOf("problem (")) != -1)
-						&& ((aLine.indexOf("error", aLine.indexOf("problems ("))) != -1)){
+				int statusSummaryIndex=aLine.indexOf("problem (");
+				if (statusSummaryIndex==-1)
+					statusSummaryIndex=aLine.indexOf("problems (");
+				
+				if (statusSummaryIndex!=-1&&(aLine.indexOf("error", statusSummaryIndex) != -1)){
 					logsWithErrors.add(file);
 					System.out.println(file.getName()+" has compile errors.");
 					return;
