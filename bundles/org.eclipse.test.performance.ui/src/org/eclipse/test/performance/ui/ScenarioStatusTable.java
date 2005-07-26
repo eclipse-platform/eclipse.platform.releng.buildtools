@@ -24,9 +24,7 @@ public class ScenarioStatusTable {
 			name=scenarioName;
 			statusMap=new Hashtable();
 		}
-		private Object[] getConfigs(){
-			return statusMap.keySet().toArray();
-		}
+
 	}
 	
 	/**
