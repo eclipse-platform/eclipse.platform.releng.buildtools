@@ -24,6 +24,7 @@ public class Main implements IPlatformRunnable{
 	private String[] config;
 	private Hashtable configDescriptors;
 	private String currentBuildId;
+	private ArrayList currentBuildStreamIds;
 	private ArrayList pointsOfInterest;
 	private Variations variations;
 	private Scenario[] scenarios;
@@ -35,7 +36,8 @@ public class Main implements IPlatformRunnable{
 	private Hashtable fingerPrints = new Hashtable();
 	private Hashtable scenarioComments=new Hashtable();
 	private String ID="org.eclipse.test.performance.ui";
-
+	private Hashtable rawDataTables=new Hashtable();
+	
 	public Object run(Object args) throws Exception {
 		parse(args);
 		
@@ -50,10 +52,13 @@ public class Main implements IPlatformRunnable{
 					dimensionHistoryOutput = cd.outputDir;
 			} else
 				dimensionHistoryOutput=tmpDimensionOutput+"/"+config[i];			
-
+			
 			run(config[i],cd);
 		}
 
+		//print variability table
+		Utils.printVariabilityTable(rawDataTables,output+"/cvsummary.html",configDescriptors);
+		
 		Enumeration components = fingerPrints.keys();
 		String installLoc=Platform.getInstallLocation().getURL().getPath();
 		String images=installLoc+"/plugins/"+ID+"/"+Platform.getBundle(ID).getEntry("images").getPath();
@@ -178,7 +183,7 @@ public class Main implements IPlatformRunnable{
 			if (genScenarioSummaries || genAll) {
 				System.out.print(config
 						+ ": generating scenario results...");
-				new ScenarioResults(scenarios, baseline,baselinePrefix,dimensionHistoryOutput,config,currentBuildId,cd, pointsOfInterest,scenarioComments);
+				new ScenarioResults(scenarios, baseline,baselinePrefix,dimensionHistoryOutput,config,currentBuildId,cd, pointsOfInterest,scenarioComments,currentBuildStreamIds,rawDataTables);
 				System.out.println("done.");
 			}
 		}
@@ -212,6 +217,19 @@ public class Main implements IPlatformRunnable{
 				if (baselinePrefix.startsWith("-")) {
 					System.out.println("Missing value for -baseline.prefix parameter");
 					printUsage();
+				}
+				i++;
+				continue;
+			}
+			if (arg.equals("-currentBuildStreamIds")) {
+				String idPrefixList=args[i + 1];
+				if (idPrefixList.startsWith("-")) {
+					idPrefixList="I,N";
+				}
+				String []ids=idPrefixList.split(",");
+				currentBuildStreamIds=new ArrayList();
+				for (int j=0;j<ids.length;j++){
+					currentBuildStreamIds.add(ids[j]);
 				}
 				i++;
 				continue;
@@ -299,14 +317,21 @@ public class Main implements IPlatformRunnable{
 				i++;
 				continue;
 			}
+
 			i++;
 		}
-		
+		if (currentBuildStreamIds==null){
+			currentBuildStreamIds=new ArrayList();
+			currentBuildStreamIds.add("I");
+			currentBuildStreamIds.add("N");
+		}
+			
 		if (baseline == null || output == null || config == null
 				|| jvm == null
 				|| currentBuildId == null)
 			printUsage();
 	}
+	
 	private void printUsage() {
 		System.out
 				.println("Usage:\n"
