@@ -324,7 +324,7 @@ public class Utils {
 	 *            graph.
 	 * @return a LineGraph object.
 	 */
-	public static TimeLineGraph getLineGraph(Scenario t, String dimensionName, String baseline, String baselinePrefix, String current, ArrayList pointsOfInterest) {
+	public static TimeLineGraph getLineGraph(Scenario t, String dimensionName, String baseline, String baselinePrefix, String current, ArrayList pointsOfInterest,ArrayList currentBuildIdPrefixes) {
 		Display display = Display.getDefault();
 
 		Color black = display.getSystemColor(SWT.COLOR_BLACK);
@@ -376,15 +376,18 @@ public class Utils {
 							continue;
 						}
 					}
-					if (buildID.startsWith("I")) {
-						graph.addItem("main", buildID, dim.getDisplayValue(value), value, black, false, getDateFromBuildID(buildID), false);
-						continue;
-					}
 					if (lastSevenNightlyBuildNames(t.getTimeSeriesLabels(), current).contains(buildID)) {
 						graph.addItem("main", buildID, dim.getDisplayValue(value), value, yellow, false, getDateFromBuildID(buildID), false);
 						continue;
+					} else if (buildID.startsWith("N"))
+							continue;
+					
+					for (int i=0;i<currentBuildIdPrefixes.size();i++){
+						if (buildID.startsWith(currentBuildIdPrefixes.get(i).toString())) {
+							graph.addItem("main", buildID, dim.getDisplayValue(value), value, black, false, getDateFromBuildID(buildID), false);
+							break;
+						}
 					}
-
 				}
 			}
 		} catch (AssertionFailedError e) {
