@@ -204,7 +204,7 @@ public class ScenarioResults {
 					Dim dim = dimensions[i];
 					String dimName = dim.getName();
 
-					TimeLineGraph lg = Utils.getLineGraph(t, dim.getName(), baseline, baselinePrefix, current, pointsOfInterest);
+					TimeLineGraph lg = Utils.getLineGraph(t, dim.getName(), baseline, baselinePrefix, current, pointsOfInterest,buildIDStreamPatterns);
 
 					String lgImg = resultsFolder + "/graphs/" + scenarioFileName + "_" + dimName + ".gif";
 					Utils.printLineGraphGif(lg, lgImg);
