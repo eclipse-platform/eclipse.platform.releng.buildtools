@@ -320,7 +320,12 @@ public class Main implements IPlatformRunnable{
 
 			i++;
 		}
-		
+		if (currentBuildStreamIds==null){
+			currentBuildStreamIds=new ArrayList();
+			currentBuildStreamIds.add("I");
+			currentBuildStreamIds.add("N");
+		}
+			
 		if (baseline == null || output == null || config == null
 				|| jvm == null
 				|| currentBuildId == null)
