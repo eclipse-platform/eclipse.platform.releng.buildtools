@@ -636,19 +636,20 @@ public class Utils {
 			out.println(Utils.HTML_OPEN + "</head><body>\n");
 			out.println("<h3>Summary of Elapsed Process Variation Coefficients</h3>\n"+
 		"<p> This table provides a bird's eye view of variability in elapsed process times\n"+ 
-		  "for baseline and current build stream performance scenarios. The variability\n"+ 
-		  "for each scenario is expressed as a <a href=\"http://en.wikipedia.org/wiki/Coefficient_of_variation\">coefficient\n"+ 
+		  "for baseline and current build stream performance scenarios." +
+		  " This summary is provided to facilitate the identification of scenarios that should be examined due to high variability." +
+		  "The variability for each scenario is expressed as a <a href=\"http://en.wikipedia.org/wiki/Coefficient_of_variation\">coefficient\n"+ 
 		  "of varation</a> (CV). The CV is calculated by dividing the <b>standard deviation\n"+ 
 		  "of the elapse process time over builds</b> by the <b>average elapsed process\n"+ 
-		  "time over builds</b> and multiplying by 100. The intent of the table is to facilitate\n"+ 
-		  "the identification of scenarios that should be examined due to high variability.\n"+ 
-		"</p><p>High variability may be indicative of any of the following:<br></p>\n"+
+		  "time over builds</b> and multiplying by 100.\n"+ 
+		"</p><p>High CV values may be indicative of any of the following:<br></p>\n"+
 		"<ol><li> an unstable performance test. </li>\n"+
-		  "<ul><li>may be evidenced by erratic elapsed process line graph.<br><br></li></ul>\n"+
+		  "<ul><li>may be evidenced by an erratic elapsed process line graph.<br><br></li></ul>\n"+
 		  "<li>performance regressions or improvements at some time in the course of builds.</li>\n"+
 		  "<ul><li>may be evidenced by plateaus in elapsed process line graphs.<br><br></li></ul>\n"+
 		  "<li>unstable testing hardware.\n" +
-		  "<ul><li>consistent higher CV values for one test configuration as compared to others across scenarios.</li></ul></li></ol>\n"+
+		  "<ul><li>consistent higher CV values for one test configuration as compared to others across" +
+		  " scenarios may be related to hardward problems.</li></ul></li></ol>\n"+
 		"<p> Scenarios are listed in alphabetical order in the far right column. A scenario's\n"+ 
 		  "variation coefficients (CVs) are in columns to the left for baseline and current\n"+ 
 		  "build streams for each test configuration. Scenarios with CVs > 10% are highlighted\n"+ 
