@@ -13,18 +13,17 @@ import org.eclipse.core.runtime.IPlatformRunnable;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.Variations;
+import org.eclipse.test.performance.ui.Utils.ConfigDescriptor;
 
 public class Main implements IPlatformRunnable{
 
 	private String baseline;
 	private String baselinePrefix=null;
-	private String dimensionHistoryOutput;
-	private String dimensionHistoryUrl;
 	private String output;
-	private String[] config;
+	private String[] configNames;
 	private Hashtable configDescriptors;
 	private String currentBuildId;
-	private ArrayList currentBuildStreamIds;
+	private ArrayList currentBuildStreamIdPrefixes;
 	private ArrayList pointsOfInterest;
 	private Variations variations;
 	private Scenario[] scenarios;
@@ -41,22 +40,12 @@ public class Main implements IPlatformRunnable{
 	public Object run(Object args) throws Exception {
 		parse(args);
 		
-		String tmpDimensionOutput=output;
-		for (int i = 0; i < config.length; i++) {
-			Utils.ConfigDescriptor cd=null;
-			if (configDescriptors!=null){
-				cd = (Utils.ConfigDescriptor) configDescriptors
-					.get(config[i]);
-				dimensionHistoryUrl = cd.url;
-				if (cd.outputDir != null)
-					dimensionHistoryOutput = cd.outputDir;
-			} else
-				dimensionHistoryOutput=tmpDimensionOutput+"/"+config[i];			
-			
-			run(config[i],cd);
+		Enumeration configIds=configDescriptors.keys();
+		
+		while (configIds.hasMoreElements()){
+			generate((ConfigDescriptor)configDescriptors.get(configIds.nextElement()));
 		}
 
-		//print variability table
 		Utils.printVariabilityTable(rawDataTables,output+"/cvsummary.html",configDescriptors);
 		
 		Enumeration components = fingerPrints.keys();
@@ -112,8 +101,6 @@ public class Main implements IPlatformRunnable{
 					os.println(Utils.getImageMap(fp));
 				}
 				if (component != "") {
-					char buildType = currentBuildId.charAt(0);
-
 				//print the component scenario status table beneath the fingerprint
 					variations.put("config", "%");
 					ScenarioStatusTable sst = new ScenarioStatusTable(
@@ -132,20 +119,20 @@ public class Main implements IPlatformRunnable{
 	}
 	
 
-	private void run(String config, Utils.ConfigDescriptor cd) {
-
+	private void generate(Utils.ConfigDescriptor cd) {
+			//String config=cd.getName();
 			if (System.getProperty("eclipse.perf.dbloc").equals(""))
 				System.out.println("WARNING:  eclipse.perf.dbloc value set to null");
-			scenarios = Utils.getScenarios("%", scenarioFilter, config, jvm);
-			variations = Utils.getVariations("%", config, jvm);
+			scenarios = Utils.getScenarios("%", scenarioFilter, cd.name, jvm);
+			variations = Utils.getVariations("%", cd.name, jvm);
 
 			//creates and stores fingerprint objects
 			if (genFingerPrints || genAll) {
-				System.out.print(config + ": generating fingerprints and scenario status tables...");
+				System.out.print(cd.name + ": generating fingerprints and scenario status tables...");
 				
 				//global
-				FingerPrint global = new FingerPrint(null, config, baseline,
-						currentBuildId, variations, output, configDescriptors);
+				FingerPrint global = new FingerPrint(null, cd, baseline,
+						currentBuildId, variations, output);
 				
 				//store mappings of fingerprints per config for each component
 				Hashtable t;
@@ -154,7 +141,7 @@ public class Main implements IPlatformRunnable{
 				else
 					t = new Hashtable();
 
-				t.put(config, global);
+				t.put(cd.name, global);
 				fingerPrints.put("global", t);
 
 				//get unique component names from scenario names
@@ -163,15 +150,15 @@ public class Main implements IPlatformRunnable{
 				//store fingerprints for config for each component
 				for (int i = 0; i < components.size(); i++) {
 					String component = components.get(i).toString();
-					variations.put("config", config);
+					variations.put("config", cd.name);
 					FingerPrint componentFp = new FingerPrint(component,
-							config, baseline, currentBuildId, variations,
-							output, configDescriptors);
+							cd, baseline, currentBuildId, variations,
+							output);
 					if (fingerPrints.get(component) != null)
 						t = (Hashtable) fingerPrints.get(component);
 					else
 						t = new Hashtable();
-					t.put(config, componentFp);
+					t.put(cd.name, componentFp);
 					fingerPrints.put(component, t);
 					if (componentFp.scenarioComments!=null)
 						scenarioComments.putAll(componentFp.scenarioComments);
@@ -181,9 +168,9 @@ public class Main implements IPlatformRunnable{
 			
 			//generates scenario result pages and line graphs
 			if (genScenarioSummaries || genAll) {
-				System.out.print(config
+				System.out.print(cd.name
 						+ ": generating scenario results...");
-				new ScenarioResults(scenarios, baseline,baselinePrefix,dimensionHistoryOutput,config,currentBuildId,cd, pointsOfInterest,scenarioComments,currentBuildStreamIds,rawDataTables);
+				new ScenarioResults(cd,scenarios, baseline,baselinePrefix,currentBuildId,pointsOfInterest,scenarioComments,currentBuildStreamIdPrefixes,rawDataTables);
 				System.out.println("done.");
 			}
 		}
@@ -202,7 +189,10 @@ public class Main implements IPlatformRunnable{
 				i++;
 				continue;
 			}
-			
+			if (args.length==i+1){
+				System.out.println("Missing value for last parameter");
+				printUsage();
+			}
 			if (arg.equals("-baseline")) {
 				baseline = args[i + 1];
 				if (baseline.startsWith("-")) {
@@ -221,15 +211,16 @@ public class Main implements IPlatformRunnable{
 				i++;
 				continue;
 			}
-			if (arg.equals("-currentBuildStreamIds")) {
+			if (arg.equals("-current.prefix")) {
 				String idPrefixList=args[i + 1];
 				if (idPrefixList.startsWith("-")) {
-					idPrefixList="I,N";
+					System.out.println("Missing value for -current.prefix parameter");
+					printUsage();
 				}
 				String []ids=idPrefixList.split(",");
-				currentBuildStreamIds=new ArrayList();
+				currentBuildStreamIdPrefixes=new ArrayList();
 				for (int j=0;j<ids.length;j++){
-					currentBuildStreamIds.add(ids[j]);
+					currentBuildStreamIdPrefixes.add(ids[j]);
 				}
 				i++;
 				continue;
@@ -280,8 +271,8 @@ public class Main implements IPlatformRunnable{
 					System.out.println("Missing value for -config parameter");
 					printUsage();
 				}
-				config = configs.split(",");
-				Arrays.sort(config);
+				configNames = configs.split(",");
+				Arrays.sort(configNames);
 				i++;
 				continue;
 			}
@@ -320,16 +311,24 @@ public class Main implements IPlatformRunnable{
 
 			i++;
 		}
-		if (currentBuildStreamIds==null){
-			currentBuildStreamIds=new ArrayList();
-			currentBuildStreamIds.add("I");
-			currentBuildStreamIds.add("N");
-		}
-			
-		if (baseline == null || output == null || config == null
+		if (baseline == null || output == null || configNames == null
 				|| jvm == null
 				|| currentBuildId == null)
 			printUsage();
+		
+		if (currentBuildStreamIdPrefixes==null){
+			currentBuildStreamIdPrefixes=new ArrayList();
+			currentBuildStreamIdPrefixes.add("N");
+			currentBuildStreamIdPrefixes.add("I");
+		}
+		if (configDescriptors==null){
+			configDescriptors=new Hashtable();
+			for (int j=0;j<configNames.length;j++){
+				String configName=configNames[j];
+				configDescriptors.put(configName,new Utils.ConfigDescriptor(configName,configName,configName,output+"/"+configName));
+		
+			}
+		}
 	}
 	
 	private void printUsage() {
@@ -347,7 +346,12 @@ public class Main implements IPlatformRunnable{
 						+ "-current" 
 								+"\n\tbuild id for which to generate results.  Compared to build id specified in -baseline parameter above."
 								+"\n\tSame as value specified for the \"build\" key in the eclipse.perf.config system property. \n\n"
-							
+
+						+ "[-current.prefix]" 
+							+"\n\tComma separated list of build id prefixes used in current build stream." 
+							+"\n\tUsed to plot current build stream historical data.  Defaults to \"N,I\"."
+							+"\n\tPrefixes for values specified for the \"build\" key in the eclipse.perf.config system property. \n\n"
+			
 						+ "-jvm"
 								+"\n\tValue specified in \"jvm\" key in eclipse.perf.config system property for current build.\n\n"
 						

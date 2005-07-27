@@ -71,7 +71,6 @@ public class LineGraph {
         GC g= new GC(im);
 
         Point ee= g.stringExtent(fTitle);
-        int titleWidth= ee.x;
         int titleHeight= ee.y;
 
         double maxItem= getMaxItem();

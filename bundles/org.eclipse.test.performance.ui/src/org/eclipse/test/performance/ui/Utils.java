@@ -249,9 +249,7 @@ public class Utils {
 	 * @return - an html representation of the fingerprint.
 	 */
 	public static String getImageMap(FingerPrint fp) {
-		String componentDescription = fp.config;
-		if (fp.configDescriptors != null)
-			componentDescription = ((Utils.ConfigDescriptor) fp.configDescriptors.get(fp.config)).description;
+		String componentDescription = fp.configDescriptor.description;
 		String areas = fp.bar.getAreas();
 		if (areas == null)
 			areas = "";
@@ -263,20 +261,6 @@ public class Utils {
 			output = output.concat("<br><br>There is no fingerprint for " + componentDescription + "<br><br>\n");
 		}
 		return output;
-	}
-
-	/**
-	 * @param fp -
-	 *            a fingerprint object which provides variations, component name
-	 *            and configDescriptor information.
-	 * @return - HTML table of all scenarios for a component with red x or green
-	 *         check indicators.
-	 */
-	public static String printScenarioStatusTable(FingerPrint fp) {
-		// print the component scenario table beneath the fingerprint
-		fp.variations.put("config", "%");
-		ScenarioStatusTable sst = new ScenarioStatusTable(fp.variations, fp.component + "%", fp.configDescriptors, fp.scenarioComments);
-		return sst.toString();
 	}
 
 	/**
@@ -618,6 +602,15 @@ public class Utils {
 		}
 
 		return -1;
+	}
+	public static void printVariabilityTable(Hashtable rawDataTables, String outputFile, String[] configList) {
+		Hashtable configs=new Hashtable();
+		for (int i=0;i<configList.length;i++){
+			String configName=configList[i];
+			ConfigDescriptor cd=new ConfigDescriptor(configName,configName,configName,new File(outputFile).getParent()+"/"+configName);
+			configs.put(configName,cd);
+		}
+		printVariabilityTable(rawDataTables,outputFile,configs);
 	}
 
 	public static void printVariabilityTable(Hashtable rawDataTables, String outputFile, Hashtable configDescriptors) {

@@ -37,6 +37,7 @@ import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.SummaryEntry;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 import org.eclipse.test.internal.performance.db.Variations;
+import org.eclipse.test.performance.ui.Utils.ConfigDescriptor;
 
 
 public class FingerPrint {
@@ -47,13 +48,11 @@ public class FingerPrint {
     String referenceBuildId;
     String currentBuildId;
     String component;
-    String config;
-    Hashtable configDescriptors;
+    ConfigDescriptor configDescriptor;
     SummaryEntry [] entries;
     Variations variations;
     BarGraph bar;
     String outName;
-    String linkUrl;
     String title;
     Hashtable scenarioComments;
     
@@ -61,17 +60,13 @@ public class FingerPrint {
     }
 
 
-    public FingerPrint(String component,String config, String reference, String current,Variations variations, String outputDir, Hashtable configDescriptors) {
-    	this.configDescriptors=configDescriptors;
+    public FingerPrint(String component,ConfigDescriptor config, String reference, String current,Variations variations, String outputDir) {
         this.variations=variations;
         this.component=component;
         referenceBuildId= reference;
         currentBuildId= current;
         outputDirectory= outputDir;
-    	linkUrl=outputDir+"/"+config; 
-        if (configDescriptors!=null)
-        	linkUrl=((Utils.ConfigDescriptor)configDescriptors.get(config)).url;
-        this.config=config;
+        configDescriptor=config;
         variations.put(PerformanceTestPlugin.BUILD, currentBuildId);
         if (component==null){
         	entries= DB.querySummaries(variations,null);
@@ -115,10 +110,10 @@ public class FingerPrint {
             }
         }
         
-        outName= "FP_" + component+ '_'+referenceName + '_' + currentBuildId+"."+config;
+        outName= "FP_" + component+ '_'+referenceName + '_' + currentBuildId+"."+configDescriptor.name;
                
         if (component=="")
-        	outName= "FP_"+referenceName + '_' + currentBuildId+"."+config;
+        	outName= "FP_"+referenceName + '_' + currentBuildId+"."+configDescriptor.name;
         save(bar, outputDirectory + '/' + outName);
         
         //show(bar);
@@ -157,10 +152,7 @@ public class FingerPrint {
 	            }
 	            if (Math.abs(percent) < 200) {
 	                String n= name + " (" + dims[i].getName() + ")" + refData;
-	                if (linkUrl!=null)
-	                	bar.addItem(n, percent,linkUrl+"/"+(scenarioName.replace('#','.').replace(':','_').replace('\\','_'))+".html#"+dims[i].getName(),comment); //$NON-NLS-1$ //$NON-NLS-2$
-	                else
-	                	bar.addItem(n, percent,comment); //$NON-NLS-1$ //$NON-NLS-2$
+                	bar.addItem(n, percent,configDescriptor.url+"/"+(scenarioName.replace('#','.').replace(':','_').replace('\\','_'))+".html#"+dims[i].getName(),comment); //$NON-NLS-1$ //$NON-NLS-2$
 	            }
 	        }
         }

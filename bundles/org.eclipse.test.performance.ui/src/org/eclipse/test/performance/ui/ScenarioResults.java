@@ -24,24 +24,18 @@ import junit.framework.AssertionFailedError;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.TimeSeries;
+import org.eclipse.test.performance.ui.Utils.ConfigDescriptor;
 
 public class ScenarioResults {
 	private Scenario[] scenarios;
-
 	private String baseline;
-
 	private String baselinePrefix = null;
-
-	private String resultsFolder;
-
-	private String configName;
-
 	private String current;
-
 	private ArrayList pointsOfInterest;
 	private ArrayList buildIDStreamPatterns;
 	private Hashtable scenarioComments;
 	private Hashtable variabilityData;
+	private ConfigDescriptor configDescriptor;
 	/**
 	 * Summary of results for a scenario for a given build compared to a
 	 * reference.
@@ -50,10 +44,6 @@ public class ScenarioResults {
 	 *            the array of Scenario objects for which to generate results.
 	 * @param reference -
 	 *            the reference build ID
-	 * @param resultsFolder -
-	 *            the output directory.
-	 * @param configName -
-	 *            the config for which to generate results.
 	 * @param current -
 	 *            the current buildID
 	 * @param configDescriptor -
@@ -61,26 +51,21 @@ public class ScenarioResults {
 	 * @param pointsOfInterest -
 	 *            an ArrayList of buildId's to highlight on line graphs.
 	 */
-	public ScenarioResults(Scenario[] scenarios, String baseline, String baselinePrefix, String resultsFolder, String configName, String current, Utils.ConfigDescriptor configDescriptor,
+	public ScenarioResults(Utils.ConfigDescriptor configDescriptor, Scenario[] scenarios, String baseline, String baselinePrefix, String current, 
 			ArrayList pointsOfInterest, Hashtable scenarioComments, ArrayList buildIDPatterns, Hashtable variabilityTable) {
 		
 		this.scenarios = scenarios;
 		this.baseline = baseline;
 		this.baselinePrefix = baselinePrefix;
-		this.resultsFolder = resultsFolder;
-		this.configName = configName;
 		this.pointsOfInterest = pointsOfInterest;
 		this.scenarioComments = scenarioComments;
-		
-		if (configDescriptor != null) {
-			this.configName = configDescriptor.description;
-			this.resultsFolder = configDescriptor.outputDir;
-		}
+		this.configDescriptor=configDescriptor;
 		buildIDStreamPatterns=buildIDPatterns;
 		this.current = current;
 		variabilityData=variabilityTable;
 
 		printSummary();
+		
 		printDetails();
 	}
 
@@ -117,7 +102,7 @@ public class ScenarioResults {
 			}
 
 			String scenarioFileName = t.getScenarioName().replace('#', '.').replace(':', '_').replace('\\', '_');
-			outFile = resultsFolder + "/" + scenarioFileName + ".html";
+			outFile = configDescriptor.outputDir + "/" + scenarioFileName + ".html";
 			String rawDataFile=scenarioFileName+"_raw.html";
 			if (outFile != null) {
 				try {
@@ -131,8 +116,8 @@ public class ScenarioResults {
 				ps = System.out;
 			ps.println(Utils.HTML_OPEN);
 			ps.println(Utils.HTML_DEFAULT_CSS);
-			ps.println("<title>" + t.getScenarioName() + "(" + configName + ")" + "</title></head>"); //$NON-NLS-1$
-			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configName + ")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
+			ps.println("<title>" + t.getScenarioName() + "(" + configDescriptor.name + ")" + "</title></head>"); //$NON-NLS-1$
+			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configDescriptor.name + ")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
 
 			if (scenarioComments.containsKey(t.getScenarioName())) {
 				ps.println("<b>Notes</b><br>\n");
@@ -148,7 +133,7 @@ public class ScenarioResults {
 				for (int i = 0; i < dimensions.length; i++) {
 					Dim dim = dimensions[i];
 					String dimName = dim.getName();
-					ps.println("<td><a href=\"#" + configName + "_" + scenarioFileName + "_" + dimName + "\">" + dimName + "</a></td>");
+					ps.println("<td><a href=\"#" + configDescriptor.name + "_" + scenarioFileName + "_" + dimName + "\">" + dimName + "</a></td>");
 				}
 				ps.print("</tr>\n");
 
@@ -206,9 +191,9 @@ public class ScenarioResults {
 
 					TimeLineGraph lg = Utils.getLineGraph(t, dim.getName(), baseline, baselinePrefix, current, pointsOfInterest,buildIDStreamPatterns);
 
-					String lgImg = resultsFolder + "/graphs/" + scenarioFileName + "_" + dimName + ".gif";
+					String lgImg = configDescriptor.outputDir + "/graphs/" + scenarioFileName + "_" + dimName + ".gif";
 					Utils.printLineGraphGif(lg, lgImg);
-					ps.println("<br><a name=\"" + configName + "_" + scenarioFileName + "_" + dimName + "\"></a>");
+					ps.println("<br><a name=\"" + configDescriptor.name + "_" + scenarioFileName + "_" + dimName + "\"></a>");
 					ps.println("<br><b>" + dimName + "</b><br>");
 					ps.println(Utils.getDimensionDescription(dimName) + "<br><br>\n");
 					ps.println(Utils.getImageMap(lg, "graphs/" + scenarioFileName + "_" + dimName + ".gif",scenarioFileName+"_raw.html"));
@@ -248,11 +233,11 @@ public class ScenarioResults {
 				data=new Hashtable();
 				variabilityData.put(t.getScenarioName(),data);
 			}
-			data.put("cConfig-"+configName,currentResultsTable.getCV());
-			data.put("bConfig-"+configName,baselineResultsTable.getCV());
+			data.put("cConfig-"+configDescriptor.name,currentResultsTable.getCV());
+			data.put("bConfig-"+configDescriptor.name,baselineResultsTable.getCV());
 
 			String scenarioFileName = t.getScenarioName().replace('#', '.').replace(':', '_').replace('\\', '_');
-			outFile = resultsFolder + "/" + scenarioFileName + "_raw.html";
+			outFile = configDescriptor.outputDir + "/" + scenarioFileName + "_raw.html";
 			if (outFile != null) {
 				try {
 					new File(outFile).getParentFile().mkdirs();
@@ -265,8 +250,8 @@ public class ScenarioResults {
 				ps = System.out;
 			ps.println(Utils.HTML_OPEN);
 			ps.println(Utils.HTML_DEFAULT_CSS);
-			ps.println("<title>" + t.getScenarioName() + "(" + configName + ")" + " - Details</title></head>"); //$NON-NLS-1$
-			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configName + ")</h4>"); //$NON-NLS-1$
+			ps.println("<title>" + t.getScenarioName() + "(" + configDescriptor.name + ")" + " - Details</title></head>"); //$NON-NLS-1$
+			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configDescriptor.name + ")</h4>"); //$NON-NLS-1$
 			ps.println("<a href=\""+scenarioFileName+".html\">VIEW GRAPH</a><br><br>"); //$NON-NLS-1$
 			ps.println("<table><td><b>Current Stream Test Runs</b></td><td><b>Baseline Test Runs</b></td></tr>\n");
 			ps.println("<tr valign=\"top\">" +
