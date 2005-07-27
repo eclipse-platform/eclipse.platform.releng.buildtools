@@ -35,7 +35,6 @@ public class TimeLineGraph extends LineGraph{
         GC g= new GC(im);
 
         Point ee= g.stringExtent(fTitle);
-        int titleWidth= ee.x;
         int titleHeight= ee.y;
 
         double maxItem= getMaxItem();
@@ -213,26 +212,7 @@ public class TimeLineGraph extends LineGraph{
 		}
 		return mostRecentItem;
 	}
-    
-    private TimeLineGraphItem getLeastRecent(Hashtable lineGraphGroups) {
-		Enumeration _enum = lineGraphGroups.elements();
-		long leastRecentTimestamp = getMostRecent(lineGraphGroups).timestamp;
-		TimeLineGraphItem leastRecentItem = getMostRecent(lineGraphGroups);
-
-		while (_enum.hasMoreElements()) {
-			List fItems = (List) _enum.nextElement();
-			for (int i = 0; i < fItems.size(); i++) {
-				TimeLineGraphItem graphItem = (TimeLineGraphItem) fItems.get(i);
-				if (graphItem.timestamp < leastRecentTimestamp) {
-					leastRecentTimestamp = graphItem.timestamp;
-					leastRecentItem = (TimeLineGraphItem) fItems.get(i);
-				}
-			}
-		}
-		return leastRecentItem;
-	}
-
-    
+      
     private void setCoordinates(int width, int xOffset, int height, int yOffset, int yValueRange){
        
         List mainGroup=(ArrayList)fItemGroups.get("main");
@@ -242,8 +222,6 @@ public class TimeLineGraph extends LineGraph{
  
  		Object[] fItemsArray=mainGroup.toArray();
 		Arrays.sort(fItemsArray,comparator);
-		int lastx = 0;
-		int lasty = 0;
 
 		int n = mainGroup.size();
 		int xIncrement=width/n;
