@@ -116,8 +116,8 @@ public class ScenarioResults {
 				ps = System.out;
 			ps.println(Utils.HTML_OPEN);
 			ps.println(Utils.HTML_DEFAULT_CSS);
-			ps.println("<title>" + t.getScenarioName() + "(" + configDescriptor.name + ")" + "</title></head>"); //$NON-NLS-1$
-			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configDescriptor.name + ")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
+			ps.println("<title>" + t.getScenarioName() + "(" + configDescriptor.description + ")" + "</title></head>"); //$NON-NLS-1$
+			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configDescriptor.description + ")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
 
 			if (scenarioComments.containsKey(t.getScenarioName())) {
 				ps.println("<b>Notes</b><br>\n");

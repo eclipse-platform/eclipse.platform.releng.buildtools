@@ -614,15 +614,6 @@ public class Utils {
 	}
 
 	public static void printVariabilityTable(Hashtable rawDataTables, String outputFile, Hashtable configDescriptors) {
-		//map of config descriptions to their output locations
-		Hashtable configURLs=new Hashtable();
-		Enumeration keys=configDescriptors.keys();
-		
-		while (keys.hasMoreElements()){
-			ConfigDescriptor descriptor=(ConfigDescriptor)configDescriptors.get(keys.nextElement());
-			configURLs.put(descriptor.description,descriptor.url);
-		}
-		
 		String[] scenarios = (String[]) rawDataTables.keySet().toArray(new String[rawDataTables.size()]);
 		
 		Arrays.sort(scenarios);
@@ -667,7 +658,7 @@ public class Utils {
 			for (int i = 0; i < configNames.length; i++) {
 				//configNames here have prefix cConfig- or bConfig- depending on whether the data comes from 
 				//current build stream data or baseline data.
-				out.print("<td>" + configNames[i].substring(8) + "</td>");
+				out.print("<td>" + ((ConfigDescriptor)configDescriptors.get(configNames[i].substring(8))).description + "</td>");
 			}
 			out.println("</tr><tr>\n");
 
@@ -677,7 +668,8 @@ public class Utils {
 				String scenarioFile=scenario.replace('#', '.').replace(':', '_').replace('\\', '_')+".html";
 				
 				for (int j = 0; j < configNames.length; j++) {
-					String url=configURLs.get(configNames[j].split("Config-")[1])+"/"+scenarioFile;
+					ConfigDescriptor configDescriptor=(ConfigDescriptor)configDescriptors.get(configNames[j].substring(8));
+					String url=configDescriptor.url+"/"+scenarioFile;
 					if (aCvTable.get(configNames[j]) == null) {
 						out.print("<td>n/a</td>");
 						continue;
