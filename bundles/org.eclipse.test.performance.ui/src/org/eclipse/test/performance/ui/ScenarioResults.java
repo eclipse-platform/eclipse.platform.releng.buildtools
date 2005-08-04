@@ -250,8 +250,8 @@ public class ScenarioResults {
 				ps = System.out;
 			ps.println(Utils.HTML_OPEN);
 			ps.println(Utils.HTML_DEFAULT_CSS);
-			ps.println("<title>" + t.getScenarioName() + "(" + configDescriptor.name + ")" + " - Details</title></head>"); //$NON-NLS-1$
-			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configDescriptor.name + ")</h4>"); //$NON-NLS-1$
+			ps.println("<title>" + t.getScenarioName() + "(" + configDescriptor.description + ")" + " - Details</title></head>"); //$NON-NLS-1$
+			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configDescriptor.description + ")</h4>"); //$NON-NLS-1$
 			ps.println("<a href=\""+scenarioFileName+".html\">VIEW GRAPH</a><br><br>"); //$NON-NLS-1$
 			ps.println("<table><td><b>Current Stream Test Runs</b></td><td><b>Baseline Test Runs</b></td></tr>\n");
 			ps.println("<tr valign=\"top\">" +
