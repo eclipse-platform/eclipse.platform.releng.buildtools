@@ -54,7 +54,7 @@ public class Mailer {
 
 
 	public static void main(String args[]) {
-		Mailer myMailer = new Mailer();
+		new Mailer();
 	}
 
 	public void sendMessage(String aSubject, String aMessage) {

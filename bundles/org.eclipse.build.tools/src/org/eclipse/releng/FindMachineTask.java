@@ -53,12 +53,9 @@ public class FindMachineTask extends Task {
 	}
 	public FindMachineTask() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 	public void execute() throws BuildException {
-		BuildMachineManager manager= new BuildMachineManager(cfg,markerContainer,waitInterval,markerName,markerKey,cfgKey);
-	
-		//BuildMachineManager manager= new BuildMachineManager("d:/junk/machines","ab,cd,ef");
+		new BuildMachineManager(cfg,markerContainer,waitInterval,markerName,markerKey,cfgKey);
 	}
 	/**
 	 * @return Returns the cfg.

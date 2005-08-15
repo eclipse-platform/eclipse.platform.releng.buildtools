@@ -141,7 +141,7 @@ public class BuildProperties {
 
 
 	public static void main(String args[]) {
-		BuildProperties buildProperties = new BuildProperties();
+		new BuildProperties();
 	}
 
 

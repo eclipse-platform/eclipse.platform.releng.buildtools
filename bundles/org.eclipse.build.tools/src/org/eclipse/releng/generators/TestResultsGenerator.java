@@ -258,7 +258,6 @@ public class TestResultsGenerator extends Task {
 	}
 
 	private String verifyAllTestsRan(String directory) {
-		Vector missingTestLogs = new Vector();
 		Enumeration enumeration = (anErrorTracker.getTestLogs()).elements();
 
 		String replaceString="";
@@ -710,7 +709,6 @@ public class TestResultsGenerator extends Task {
 	}
 
 	protected void getDropTokensFromList(String list) {
-		int i = 0;
 		StringTokenizer tokenizer = new StringTokenizer(list, ",");
 		dropTokens = new Vector();
 

@@ -71,7 +71,6 @@ public class ErrorTracker {
 			Document document = parser.parse(fileName);
 			NodeList elements = document.getElementsByTagName("platform");
 			int elementCount = elements.getLength();
-			int errorCount = 0;
 			for (int i = 0; i < elementCount; i++) {
 				PlatformStatus aPlatform = new PlatformStatus((Element) elements.item(i));
 				// System.out.println("ID: " + aPlatform.getId());

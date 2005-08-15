@@ -71,7 +71,6 @@ public class CompileErrorCheck extends Task {
 		
 		BufferedReader in = null;
 		String aLine;
-		String contents = "";
 
 		try {
 			in = new BufferedReader(new FileReader(file));

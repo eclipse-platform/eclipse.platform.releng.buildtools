@@ -33,7 +33,6 @@ import java.io.IOException;
 public class CvsDiffParser extends Task {
 
 	private String mapDiffFile;
-	private String mapOwnerProperties;
 	private Vector updatedMaps;
 	
 	/**
@@ -80,8 +79,7 @@ public class CvsDiffParser extends Task {
 
 		BufferedReader in = null;
 		String aLine;
-		String contents = "";
-
+		
 		try {
 			in = new BufferedReader(new FileReader(mapDiffFile));
 		} catch (FileNotFoundException e) {
