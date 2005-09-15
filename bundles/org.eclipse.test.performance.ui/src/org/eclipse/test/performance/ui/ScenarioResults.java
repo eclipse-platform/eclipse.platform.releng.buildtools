@@ -319,12 +319,11 @@ public class ScenarioResults {
 		list.add(0, "Elapsed Process");
 		list.add(1, "CPU Time");
 		list.add(2, "Invocation Count");
-		list.add(3, "Kernel time");
-		list.add(4, "Data Size");
-		list.add(5, "Library Size");
-		list.add(6, "GDI Objects");
-		list.add(7, "Text Size");
-
+		list.add(3, "GDI Objects");
+		//list.add(4, "Kernel time");
+		//list.add(5, "Data Size");
+		//list.add(6, "Library Size");
+		//list.add(7, "Text Size");
 		// list.add(8,"Used Java Heap");
 		// list.add(9,"Committed");
 		// list.add(10,"Page Faults");
