@@ -81,8 +81,8 @@ It is assumed that keys are set up on test machines to permit connections withou
 </target>
 
 <target name="installVmForRemote" unless="skipVmInstall">
-	<!--get and install the vm to test with-->
-	<get src="${vmUrl}" dest="${vmDest}"/>
+	<available file="${vmDest}" property="vmExists" />
+	<antcall target="getVM" />
 	
 	<exec dir="." executable="${copyClient}">
 		<arg line="${vmDest} ${testMachine}:${testDir}" />
@@ -132,11 +132,15 @@ Targets for setting up and running tests locally
 </target>
 
 <target name="installVmForLocal" unless="skipVmInstall">
-	<get src="${vmUrl}" dest="${vmDest}" usetimestamp="true"/>
+	<available file="${vmDest}" property="vmExists" />
+	<antcall target="getVM" />
 	<exec dir="${testDir}" executable="${vmInstallExecutable}">	
 		<arg line="${vmInstallCommand}" />
 	</exec>
 </target>
 
+<target name="getVM" unless="vmExists">
+	<get src="${vmUrl}" dest="${vmDest}" usetimestamp="true"/>
+</target>
 
 </project>
