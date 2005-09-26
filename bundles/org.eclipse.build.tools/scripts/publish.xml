@@ -37,19 +37,31 @@
 	
 	
 -->
+	
+	<property name="xmlDirectoryName" value="${result}/testresults/xml" />
+	<property name="dropDirectoryName" value="${result}" />
+	<property name="testResultsTemplateFileName" value="${basedir}/templateFiles/testResults.php.template" />
+	<property name="dropTemplateFileName" value="${basedir}/templateFiles/index.html.template" />
+	<property name="testResultsHtmlFileName" value="testResults.php" />
+	<property name="hrefTestResultsTargetPath" value="testresults/html" />
+	<property name="hrefCompileLogsTargetPath" value="compilelogs" />
+	<property name="compileLogsDirectoryName" value="${result}/compilelogs" />
+	<property name="testManifestFileName" value="${basedir}/testManifest.xml" />
+
+	
   <indexResults 
     isBuildTested="${isBuildTested}"
     dropTokenList="${dropTokenList}"
-    xmlDirectoryName="${result}/testresults/xml"
-    dropDirectoryName="${result}"
-    testResultsTemplateFileName="${basedir}/templateFiles/testResults.php.template"
-    dropTemplateFileName="${basedir}/templateFiles/index.html.template"
-    testResultsHtmlFileName="testResults.php"
-    dropHtmlFileName="${indexFileName}"
-    hrefTestResultsTargetPath="testresults/html"
-    hrefCompileLogsTargetPath="compilelogs"
-    compileLogsDirectoryName="${result}/compilelogs"
-    testManifestFileName="${basedir}/testManifest.xml"
+    xmlDirectoryName="${xmlDirectoryName}"
+    dropDirectoryName="${dropDirectoryName}"
+    testResultsTemplateFileName="${testResultsTemplateFileName}"
+    dropTemplateFileName="${dropTemplateFileName}"
+    testResultsHtmlFileName="${testResultsHtmlFileName}"
+    dropHtmlFileName="${dropHtmlFileName}"
+    hrefTestResultsTargetPath="${hrefTestResultsTargetPath}"
+    hrefCompileLogsTargetPath="${hrefCompileLogsTargetPath}"
+    compileLogsDirectoryName="${compileLogsDirectoryName}"
+    testManifestFileName="${testManifestFileName}"
   />
 
 	<tstamp>

@@ -16,6 +16,12 @@
    </extension>
 	<!-- Tasks -->
    <extension point="org.eclipse.ant.core.antTasks">
+       <antTask
+            library="buildTools.jar"
+            name="sysProp"
+            class="org.eclipse.releng.SystemProperty">
+      </antTask>
+ 
       <antTask
             library="buildTools.jar"
             name="generateTestProperties"
