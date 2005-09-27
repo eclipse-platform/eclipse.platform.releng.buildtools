@@ -57,7 +57,7 @@
     testResultsTemplateFileName="${testResultsTemplateFileName}"
     dropTemplateFileName="${dropTemplateFileName}"
     testResultsHtmlFileName="${testResultsHtmlFileName}"
-    dropHtmlFileName="${dropHtmlFileName}"
+    dropHtmlFileName="${indexFileName}"
     hrefTestResultsTargetPath="${hrefTestResultsTargetPath}"
     hrefCompileLogsTargetPath="${hrefCompileLogsTargetPath}"
     compileLogsDirectoryName="${compileLogsDirectoryName}"
