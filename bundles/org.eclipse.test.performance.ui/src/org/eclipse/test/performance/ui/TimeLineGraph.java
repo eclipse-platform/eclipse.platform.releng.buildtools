@@ -57,7 +57,9 @@ public class TimeLineGraph extends LineGraph{
 
         //getMostRecent
         TimeLineGraphItem lastItem= getMostRecent(fItemGroups);
-        int right= bounds.width - lastItem.getSize(g).x - PADDING/2;
+        int right=bounds.width - PADDING/2;
+        if (lastItem!=null)
+        	right= bounds.width - lastItem.getSize(g).x - PADDING/2;
              
         // draw the max and min values
         g.drawString(smin, PADDING/2+labelWidth-emin.x, bottom-titleHeight, true);
@@ -203,10 +205,14 @@ public class TimeLineGraph extends LineGraph{
 		while (_enum.hasMoreElements()) {
 			List fItems = (List) _enum.nextElement();
 			for (int i = 0; i < fItems.size(); i++) {
-				TimeLineGraphItem graphItem = (TimeLineGraphItem) fItems.get(i);
-				if (graphItem.timestamp > mostRecentTimestamp) {
-					mostRecentTimestamp = graphItem.timestamp;
-					mostRecentItem = (TimeLineGraphItem) fItems.get(i);
+				if (fItems.size() == 1)
+					return (TimeLineGraphItem) fItems.get(i);
+				else {
+					TimeLineGraphItem graphItem = (TimeLineGraphItem) fItems.get(i);
+					if (graphItem.timestamp > mostRecentTimestamp) {
+						mostRecentTimestamp = graphItem.timestamp;
+						mostRecentItem = (TimeLineGraphItem) fItems.get(i);
+					}
 				}
 			}
 		}

@@ -58,7 +58,10 @@ public class RawDataTable {
 				boolean buildIDmatches=false;
 				Iterator iterator=buildIDPatterns.iterator();
 				while (iterator.hasNext()){
-					if (buildID.startsWith(iterator.next().toString())){
+					Object tmp=iterator.next();
+					if (tmp==null)
+						continue;
+					if (buildID.startsWith(tmp.toString())){
 							buildIDmatches=true;
 							break;
 					}
