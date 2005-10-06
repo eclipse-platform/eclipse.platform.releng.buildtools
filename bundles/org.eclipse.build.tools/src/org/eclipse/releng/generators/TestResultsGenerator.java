@@ -57,7 +57,7 @@ public class TestResultsGenerator extends Task {
 	private boolean isBuildTested;
 
 	// buildType, I, N
-	private String buildType;
+	public String buildType;
 	
 	// Comma separated list of drop tokens
 	public String dropTokenList;
