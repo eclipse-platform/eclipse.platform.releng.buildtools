@@ -36,6 +36,7 @@ public class ScenarioResults {
 	private Hashtable scenarioComments;
 	private Hashtable variabilityData;
 	private ConfigDescriptor configDescriptor;
+	private String outputDir;
 	/**
 	 * Summary of results for a scenario for a given build compared to a
 	 * reference.
@@ -52,7 +53,7 @@ public class ScenarioResults {
 	 *            an ArrayList of buildId's to highlight on line graphs.
 	 */
 	public ScenarioResults(Utils.ConfigDescriptor configDescriptor, Scenario[] scenarios, String baseline, String baselinePrefix, String current, 
-			ArrayList pointsOfInterest, Hashtable scenarioComments, ArrayList buildIDPatterns, Hashtable variabilityTable) {
+			ArrayList pointsOfInterest, Hashtable scenarioComments, ArrayList buildIDPatterns, Hashtable variabilityTable, String outputDir) {
 		
 		this.scenarios = scenarios;
 		this.baseline = baseline;
@@ -62,6 +63,7 @@ public class ScenarioResults {
 		this.configDescriptor=configDescriptor;
 		buildIDStreamPatterns=buildIDPatterns;
 		this.current = current;
+		this.outputDir=outputDir+"/"+configDescriptor.name;
 		variabilityData=variabilityTable;
 
 		printSummary();
@@ -102,7 +104,7 @@ public class ScenarioResults {
 			}
 
 			String scenarioFileName = t.getScenarioName().replace('#', '.').replace(':', '_').replace('\\', '_');
-			outFile = configDescriptor.outputDir + "/" + scenarioFileName + ".html";
+			outFile=outputDir+"/"+ scenarioFileName + ".html";
 			String rawDataFile=scenarioFileName+"_raw.html";
 			if (outFile != null) {
 				try {
@@ -191,7 +193,7 @@ public class ScenarioResults {
 
 					TimeLineGraph lg = Utils.getLineGraph(t, dim.getName(), baseline, baselinePrefix, current, pointsOfInterest,buildIDStreamPatterns);
 
-					String lgImg = configDescriptor.outputDir + "/graphs/" + scenarioFileName + "_" + dimName + ".gif";
+					String lgImg = outputDir + "/graphs/" + scenarioFileName + "_" + dimName + ".gif";
 					Utils.printLineGraphGif(lg, lgImg);
 					ps.println("<br><a name=\"" + configDescriptor.name + "_" + scenarioFileName + "_" + dimName + "\"></a>");
 					ps.println("<br><b>" + dimName + "</b><br>");
@@ -222,22 +224,28 @@ public class ScenarioResults {
 				continue;
 			}
 			Dim[] dimensions = filteredDimensions(t.getDimensions());
-			RawDataTable currentResultsTable=new RawDataTable(t,dimensions,buildIDStreamPatterns,current);
-			
-			//create table for baseline data
-			RawDataTable baselineResultsTable=new RawDataTable(t,dimensions,baselinePrefix,baseline);
-			
 			//store cv for aggregate data
 			Hashtable data=(Hashtable)variabilityData.get(t.getScenarioName());
 			if (data==null){
 				data=new Hashtable();
 				variabilityData.put(t.getScenarioName(),data);
 			}
+			
+			RawDataTable currentResultsTable=new RawDataTable(t,dimensions,buildIDStreamPatterns,current);
 			data.put("cConfig-"+configDescriptor.name,currentResultsTable.getCV());
+			
+			//create table for baseline data
+			RawDataTable baselineResultsTable;
+			if (baselinePrefix!=null)
+				baselineResultsTable=new RawDataTable(t,dimensions,baselinePrefix,baseline);
+			else
+				baselineResultsTable=new RawDataTable(t,dimensions,baseline,baseline);
+			
 			data.put("bConfig-"+configDescriptor.name,baselineResultsTable.getCV());
+		
 
 			String scenarioFileName = t.getScenarioName().replace('#', '.').replace(':', '_').replace('\\', '_');
-			outFile = configDescriptor.outputDir + "/" + scenarioFileName + "_raw.html";
+			outFile = outputDir + "/" + scenarioFileName + "_raw.html";
 			if (outFile != null) {
 				try {
 					new File(outFile).getParentFile().mkdirs();

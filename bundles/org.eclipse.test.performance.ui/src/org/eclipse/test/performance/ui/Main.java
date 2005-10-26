@@ -170,7 +170,7 @@ public class Main implements IPlatformRunnable{
 			if (genScenarioSummaries || genAll) {
 				System.out.print(cd.name
 						+ ": generating scenario results...");
-				new ScenarioResults(cd,scenarios, baseline,baselinePrefix,currentBuildId,pointsOfInterest,scenarioComments,currentBuildStreamIdPrefixes,rawDataTables);
+				new ScenarioResults(cd,scenarios, baseline,baselinePrefix,currentBuildId,pointsOfInterest,scenarioComments,currentBuildStreamIdPrefixes,rawDataTables,output);
 				System.out.println("done.");
 			}
 		}
@@ -189,7 +189,7 @@ public class Main implements IPlatformRunnable{
 				i++;
 				continue;
 			}
-			if (args.length==i+1){
+			if (args.length==i+1&&i!=args.length-1){
 				System.out.println("Missing value for last parameter");
 				printUsage();
 			}
@@ -325,7 +325,7 @@ public class Main implements IPlatformRunnable{
 			configDescriptors=new Hashtable();
 			for (int j=0;j<configNames.length;j++){
 				String configName=configNames[j];
-				configDescriptors.put(configName,new Utils.ConfigDescriptor(configName,configName,configName,output+"/"+configName));
+				configDescriptors.put(configName,new Utils.ConfigDescriptor(configName,configName));
 		
 			}
 		}
@@ -365,10 +365,8 @@ public class Main implements IPlatformRunnable{
 						+ "[-config.properties]"
 								+"\n\tOptional.  Used by scenario status table to provide the following:"
 								+"\n\t\talternate descriptions of config values to use in columns."
-								+"\n\t\turl for hyperlinks from status icons for a scenario in each row."
-								+"\n\tCan also provide an optional output directory for raw data tables and line graphs for the config."
 								+"\n\tThe value should be specified in the following format:"
-								+"\n\tname1,description1,url1 [,outputdir1];name2,description2,url2 [,outputdir2];etc..\n\n"
+								+"\n\tname1,description1;name2,description2;etc..\n\n"
 
 						+ "[-highlight]"
 								+"\n\tOptional.  Comma-separated list of build Id prefixes used to find most recent matching for each entry." +

@@ -46,7 +46,7 @@ running on Linux, execute &quot;chmod 755 genresults&quot;</LI><LI>Execute the
 following command:<b><br> <br> genresults -baseline &lt;baseline build id&gt; 
 -current &lt;current build id&gt; -config &lt;comma-separated list of configs&gt; 
 -jvm &lt;jvm name&gt; -output &lt;output dir&gt; [-config.properties &lt;properties&gt;] 
-[highlight.latest &lt;buildid patterns&gt;] [scenario.pattern &lt;scenario prefix 
+[highlight &lt;buildid patterns&gt;] [scenario.pattern &lt;scenario prefix 
 patterns&gt;] [-fingerprints][-scenarioresults]</b></LI></OL><br> Parameter descriptions: 
 <blockquote> <p>-baseline &lt;baseline build id. A previous value used in the 
 &quot;build&quot; key in the eclipse.perf.config system property or the eclipse.perf.assertAgainst 
@@ -61,8 +61,7 @@ in -config parameter. Fingerprint gifs and html files are generated in the direc
 specified, configuration specific subdirectories are created to store scenario 
 results and line graphs.&gt;</p></blockquote><p><br> Optional arguments:</p><blockquote> 
 <p>-config.properties &lt;semi-colon separated list of: config, alternate config 
-description, url to the directory containing the scenario result files for the 
-config, [output directory for config]&gt;<br> -highlight.latest &lt;Comma-separated 
+description&gt;<BR>-baseline.prefix &lt;semi-colon separated list of: build id prefixes used in eclipse.perf.assertAgainst property or eclipse.perf.config system property.  Values used to generate a second line graph of builds which match any prefix in this list.  When omitted, a magenta line is draw on the graph which represents the baseline value specified in the -baseline parameter.&gt;<br> -highlight &lt;Comma-separated 
 list of build Id prefixes(excluding 'I' and 'N'), which are used to add and highlight 
 the most recent matching buildId on line graphs.&quot;&gt;<br> -scenario.pattern 
 &lt;Scenario prefix pattern used to query performance results database. Can be 

@@ -13,7 +13,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -128,12 +127,7 @@ public class Utils {
 	 */
 	public static class ConfigDescriptor {
 		String name;
-
 		String description;
-
-		String url;
-
-		String outputDir;
 
 		/**
 		 * 
@@ -144,17 +138,12 @@ public class Utils {
 		 * @param description
 		 *            a meaningful description to further describe the config.
 		 *            ie. win32-win32-x86 Sun 1.4.2_06
-		 * @param url
-		 *            a url to results for this config. Used in hyperlinks from
-		 *            graphs or tables.
 		 */
-		public ConfigDescriptor(String name, String description, String url, String outputDir) {
+		public ConfigDescriptor(String name, String description) {
 			this.name = name;
 			this.description = description;
-			this.url = url;
-			this.outputDir = outputDir;
 		}
-
+		
 		public String getName() {
 			return name;
 		}
@@ -180,10 +169,7 @@ public class Utils {
 		while (tokenizer.hasMoreTokens()) {
 			String labelDescriptor = tokenizer.nextToken();
 			String[] elements = labelDescriptor.split(",");
-			String output = null;
-			if (elements.length == 4)
-				output = elements[3];
-			ConfigDescriptor descriptor = new ConfigDescriptor(elements[0], elements[1], elements[2], output);
+			ConfigDescriptor descriptor = new ConfigDescriptor(elements[0], elements[1]);
 			configMap.put(elements[0], descriptor);
 		}
 		return configMap;
@@ -330,6 +316,7 @@ public class Utils {
 			int n = ts.getLength();
 
 			if (n > 0) {
+				boolean currentFound=false;
 				for (int j = 0; j < n; j++) {
 					String buildID = ts.getLabel(j);
 					int underscoreIndex = buildID.indexOf('_');
@@ -341,11 +328,11 @@ public class Utils {
 						Color color = black;
 						if (buildID.startsWith("N"))
 							color = yellow;
-
+						
 						graph.addItem("main", label, dim.getDisplayValue(value), value, color, true, getDateFromBuildID(buildID), true);
-						break;
+						continue;
 					}
-					if (pointsOfInterest.contains(buildID)) {
+					if (pointsOfInterest.contains(buildID)&&!currentFound) {
 						graph.addItem("main", label, dim.getDisplayValue(value), value, black, false, getDateFromBuildID(buildID, false), true);
 						continue;
 					}
@@ -355,7 +342,7 @@ public class Utils {
 						continue;
 					}
 					if (baselinePrefix != null) {
-						if (buildID.startsWith(baselinePrefix) && !buildID.equals(baseline) && getDateFromBuildID(buildID, true) < getDateFromBuildID(baseline, true)) {
+						if (buildID.startsWith(baselinePrefix) && !buildID.equals(baseline) && getDateFromBuildID(buildID, true) <= getDateFromBuildID(baseline, true)) {
 							graph.addItem("reference", label, dim.getDisplayValue(value), value, magenta, false, getDateFromBuildID(buildID, true), false);
 							continue;
 						}
@@ -367,9 +354,9 @@ public class Utils {
 							continue;
 					
 					for (int i=0;i<currentBuildIdPrefixes.size();i++){
-						if (buildID.startsWith(currentBuildIdPrefixes.get(i).toString())) {
+						if (buildID.startsWith(currentBuildIdPrefixes.get(i).toString())&&!currentFound) {
 							graph.addItem("main", buildID, dim.getDisplayValue(value), value, black, false, getDateFromBuildID(buildID), false);
-							break;
+							continue;
 						}
 					}
 				}
@@ -607,7 +594,7 @@ public class Utils {
 		Hashtable configs=new Hashtable();
 		for (int i=0;i<configList.length;i++){
 			String configName=configList[i];
-			ConfigDescriptor cd=new ConfigDescriptor(configName,configName,configName,new File(outputFile).getParent()+"/"+configName);
+			ConfigDescriptor cd=new ConfigDescriptor(configName,configName);
 			configs.put(configName,cd);
 		}
 		printVariabilityTable(rawDataTables,outputFile,configs);
@@ -615,7 +602,8 @@ public class Utils {
 
 	public static void printVariabilityTable(Hashtable rawDataTables, String outputFile, Hashtable configDescriptors) {
 		String[] scenarios = (String[]) rawDataTables.keySet().toArray(new String[rawDataTables.size()]);
-		
+		if (scenarios.length==0)
+			return;
 		Arrays.sort(scenarios);
 		PrintWriter out=null;
 		try {
@@ -626,7 +614,7 @@ public class Utils {
 		  "for baseline and current build stream performance scenarios." +
 		  " This summary is provided to facilitate the identification of scenarios that should be examined due to high variability." +
 		  "The variability for each scenario is expressed as a <a href=\"http://en.wikipedia.org/wiki/Coefficient_of_variation\">coefficient\n"+ 
-		  "of varation</a> (CV). The CV is calculated by dividing the <b>standard deviation\n"+ 
+		  "of variation</a> (CV). The CV is calculated by dividing the <b>standard deviation\n"+ 
 		  "of the elapse process time over builds</b> by the <b>average elapsed process\n"+ 
 		  "time over builds</b> and multiplying by 100.\n"+ 
 		"</p><p>High CV values may be indicative of any of the following:<br></p>\n"+
@@ -644,16 +632,18 @@ public class Utils {
 		"<p> Each CV value links to the scenario's detailed results to allow viewers to\n"+ 
 		  "investigate the variability.</p>\n");
 			
-		  	int configColumns=configDescriptors.size();
+			Hashtable cvTable = (Hashtable) rawDataTables.get(scenarios[0]);
+			String[] configNames = (String[]) cvTable.keySet().toArray(new String[cvTable.size()]);
+			Arrays.sort(configNames);
+
+			
+		  	int configColumns=configNames.length/2;
 			out.println("<table border=\"1\"><tr>" +
 					    "<td colspan=\""+configColumns+"\"><b>Baseline CVs</b></td>"+
 					    "<td colspan=\""+configColumns+"\"><b>Current Build Stream CVs</b></td>"+
 					    "<td rowspan=\"2\"><b>Scenario Name</b></td>"+
 					    "</tr><tr>");
 	
-			Hashtable cvTable = (Hashtable) rawDataTables.get(scenarios[0]);
-			String[] configNames = (String[]) cvTable.keySet().toArray(new String[cvTable.size()]);
-			Arrays.sort(configNames);
 
 			for (int i = 0; i < configNames.length; i++) {
 				//configNames here have prefix cConfig- or bConfig- depending on whether the data comes from 
@@ -668,8 +658,7 @@ public class Utils {
 				String scenarioFile=scenario.replace('#', '.').replace(':', '_').replace('\\', '_')+".html";
 				
 				for (int j = 0; j < configNames.length; j++) {
-					ConfigDescriptor configDescriptor=(ConfigDescriptor)configDescriptors.get(configNames[j].substring(8));
-					String url=configDescriptor.url+"/"+scenarioFile;
+					String url=configNames[j].substring(8)+"/"+scenarioFile;
 					if (aCvTable.get(configNames[j]) == null) {
 						out.print("<td>n/a</td>");
 						continue;

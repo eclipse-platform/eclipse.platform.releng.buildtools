@@ -126,7 +126,10 @@ public class RawDataTable {
 		String[] result = new String[buildIDs.length];
 
 		for (int i = 0; i < buildIDs.length; i++) {
-			tmp.put("" + Utils.getDateFromBuildID(buildIDs[i], true), buildIDs[i]);
+			String date=Utils.getDateFromBuildID(buildIDs[i], true)+"";
+			if (date.equals("-1"))
+				date=buildIDs[i];
+			tmp.put(date, buildIDs[i]);
 		}
 		String[] dates = (String[]) tmp.keySet().toArray(new String[tmp.size()]);
 		Arrays.sort(dates);

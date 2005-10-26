@@ -110,8 +110,6 @@ public class ScenarioStatusTable {
 					String aUrl=configName;
 					if(status.statusMap.get(configName)!=null){
 						message=status.statusMap.get(configName).toString();
-						if (configMaps!=null)
-							aUrl=((Utils.ConfigDescriptor)configMaps.get(configName)).url;
 					}
 
 					if (status.statusMap.containsKey(configName)){
