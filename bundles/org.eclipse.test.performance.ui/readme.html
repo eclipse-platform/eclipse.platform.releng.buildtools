@@ -1,5 +1,5 @@
 <title>org.eclipse.test.performance.ui readme</title> 
-<p><b><font size="+2">README</font></b><br> </p><p>last updated: June 3, 2005<br> 
+<p><b><font size="+2">README</font></b><br> </p><p>last updated: October 26, 2005<br> 
 </p><p><b>Introduction</b><br> <br> This readme describes how to create performance 
 charts and tables similar to those available on the eclipse platform download 
 pages using the stand-alone java program <b>org.eclipse.test.performance.ui.Main</b> 
@@ -11,7 +11,7 @@ used to run tests used three keys config, build and jvm <ul> <li>for example,
 <br> <br> </li></ul></li><li>Values for the "build" key begin with either an 'I' 
 or 'N' with the exception of the reference builds (for example, 3.0). <ul> <li>The 
 line graphs plot the reference build, all builds starting with 'I' and the seven 
-'N' builds preceding the current build.<br> <br> </li></ul></li><li>Scenario names 
+'N' builds preceding the current build.</li><li>This can be overriden with the use of the &quot;-current.prefix&quot; parameter where you can specify prefixes for build ids to include in the main line graph.<br> <br> </li></ul></li><li>Scenario names 
 all contain a prefix &quot;&lt;component&gt;.test&quot; <ul> <li>For example, 
 it is assumed that the scenario &quot;org.eclipse.help.tests.performance.appserver.TestAppserver#testAppserverCycle()&quot; 
 belongs to the &quot;org.eclipse.help&quot; component. </li><li>Unique scenario 
@@ -47,7 +47,7 @@ following command:<b><br> <br> genresults -baseline &lt;baseline build id&gt;
 -current &lt;current build id&gt; -config &lt;comma-separated list of configs&gt; 
 -jvm &lt;jvm name&gt; -output &lt;output dir&gt; [-config.properties &lt;properties&gt;] 
 [highlight &lt;buildid patterns&gt;] [scenario.pattern &lt;scenario prefix 
-patterns&gt;] [-fingerprints][-scenarioresults]</b></LI></OL><br> Parameter descriptions: 
+patterns&gt;] [-fingerprints][-scenarioresults][-current.prefix &lt;comma-separated list of build id prefixes&gt;][-baseline.prefix &lt;comma-separated list of build id prefixes&gt;]</b></LI></OL><br> Parameter descriptions: 
 <blockquote> <p>-baseline &lt;baseline build id. A previous value used in the 
 &quot;build&quot; key in the eclipse.perf.config system property or the eclipse.perf.assertAgainst 
 property. &gt; <br> -current &lt;current build id. The value used in the &quot;build&quot; 
@@ -61,10 +61,10 @@ in -config parameter. Fingerprint gifs and html files are generated in the direc
 specified, configuration specific subdirectories are created to store scenario 
 results and line graphs.&gt;</p></blockquote><p><br> Optional arguments:</p><blockquote> 
 <p>-config.properties &lt;semi-colon separated list of: config, alternate config 
-description&gt;<BR>-baseline.prefix &lt;semi-colon separated list of: build id prefixes used in eclipse.perf.assertAgainst property or eclipse.perf.config system property.  Values used to generate a second line graph of builds which match any prefix in this list.  When omitted, a magenta line is draw on the graph which represents the baseline value specified in the -baseline parameter.&gt;<br> -highlight &lt;Comma-separated 
+description.  The value should be quoted if there are spaces in the value.&gt;<BR>of builds which match any prefix in this list.  When omitted, a magenta line is draw on the graph which represents the baseline value specified in the -baseline parameter.&gt;<br> -highlight &lt;Comma-separated 
 list of build Id prefixes(excluding 'I' and 'N'), which are used to add and highlight 
 the most recent matching buildId on line graphs.&quot;&gt;<br> -scenario.pattern 
 &lt;Scenario prefix pattern used to query performance results database. Can be 
 used to generate results for a single component or subset of scenarios.&gt;<br> 
 -fingerprints or -scenarioresults &lt;use one or the other to generate fingerprints 
-or scenario results only. Not specifying either will execute both.&gt;</p></blockquote><p>&nbsp;</p>
+or scenario results only. Not specifying either will execute both.&gt;<BR>-baseline.prefix &lt;semi-colon separated list of: build id prefixes used in eclipse.perf.assertAgainst property or eclipse.perf.config system property.  Values used to generate a second line graph representing changes in repeated baseline test runs&gt;.<BR>-current.prefix &lt;semi-colon separated list of: build id prefixes used in eclipse.perf.config system property.  Values here used to override default of &quot;N,I&quot;.  Used to select build id's to include in main line graph.&gt;</p></blockquote>
