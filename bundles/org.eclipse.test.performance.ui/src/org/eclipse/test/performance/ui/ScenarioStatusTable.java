@@ -90,8 +90,10 @@ public class ScenarioStatusTable {
 			for (int i= 0; i < configNames.size(); i++){
 				label=configNames.get(i).toString();
 				String columnTitle=label;
-				if (configMaps!=null)
-					columnTitle=((Utils.ConfigDescriptor)configMaps.get(label)).description;
+				if (configMaps!=null){
+					if (configMaps.get(label)!=null)
+						columnTitle=((Utils.ConfigDescriptor)configMaps.get(label)).description;
+				}
 				htmlTable=htmlTable.concat("<td><h5>"+columnTitle +"</h5></td>");
 			}
 			 
