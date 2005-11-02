@@ -4,4 +4,43 @@
 #required when running on Linux Motif
 export LD_LIBRARY_PATH=./../../..
 
-java -Declipse.perf.dbloc=$dbloc -jar ./../../../startup.jar -application org.eclipse.test.performance.ui.resultGenerator $*
+usage="usage: $0 [-os linux] -ws gtk|motif -arch x86|ppc(with -ws gtk only)"
+
+# operating system, windowing system and architecture variables
+os=linux
+ws=
+arch=
+
+# message printed to console
+
+# proces command line arguments
+while [ $# -gt 0 ]
+do
+	case "$1" in
+		-os) os="$2"; shift;;
+		-ws) ws="$2"; shift;;
+		-arch) arch="$2"; shift;;
+	esac
+	shift
+done
+
+# for *nix systems, os, ws and arch values must be specified
+if [ "x$os" = "x" ]
+then
+	echo >&2 "$usage"
+	exit 1
+fi
+
+if [ "x$ws" = "x" ]
+then
+	echo >&2 "$usage"
+	exit 1
+fi
+
+if [ "x$arch" = "x" ]
+then
+	echo >&2 "$usage"
+	exit 1
+fi
+
+java -Declipse.perf.dbloc=$dbloc -jar ./../../../startup.jar -os $os -ws $ws -arch $arch -application org.eclipse.test.performance.ui.resultGenerator $*
