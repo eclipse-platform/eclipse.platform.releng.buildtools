@@ -51,6 +51,7 @@
 	
   <indexResults 
     isBuildTested="${isBuildTested}"
+    buildType="${buildType}"
     dropTokenList="${dropTokenList}"
     xmlDirectoryName="${xmlDirectoryName}"
     dropDirectoryName="${dropDirectoryName}"
