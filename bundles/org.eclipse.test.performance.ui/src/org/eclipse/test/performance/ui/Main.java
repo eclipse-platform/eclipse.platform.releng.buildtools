@@ -4,13 +4,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.osgi.framework.Bundle;
+
 import org.eclipse.core.runtime.IPlatformRunnable;
 import org.eclipse.core.runtime.Platform;
+
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.Variations;
 import org.eclipse.test.performance.ui.Utils.ConfigDescriptor;
@@ -34,7 +38,6 @@ public class Main implements IPlatformRunnable{
 	private boolean genAll = true;
 	private Hashtable fingerPrints = new Hashtable();
 	private Hashtable scenarioComments=new Hashtable();
-	private String ID="org.eclipse.test.performance.ui";
 	private Hashtable rawDataTables=new Hashtable();
 	
 	public Object run(Object args) throws Exception {
@@ -49,18 +52,21 @@ public class Main implements IPlatformRunnable{
 		Utils.printVariabilityTable(rawDataTables,output+"/cvsummary.html",configDescriptors);
 		
 		Enumeration components = fingerPrints.keys();
-		String installLoc=Platform.getInstallLocation().getURL().getPath();
-		String images=installLoc+"/plugins/"+ID+"/"+Platform.getBundle(ID).getEntry("images").getPath();
-		String scripts=installLoc+"/plugins/"+ID+"/"+Platform.getBundle(ID).getEntry("scripts").getPath();
-	
-		if (images!=null){
-			Utils.copyFile(new File(images+"/FAIL.gif"),output+"/FAIL.gif");
-			Utils.copyFile(new File(images+"/FAIL_greyed.gif"),output+"/FAIL_greyed.gif");
-			Utils.copyFile(new File(images+"/OK.gif"),output+"/OK.gif");
+		Bundle bundle= UiPlugin.getDefault().getBundle();
+		URL images=bundle.getEntry("images");
+		URL scripts=bundle.getEntry("scripts");
+
+		if (images!=null) {
+			images= Platform.resolve(images);
+			Utils.copyFile(new File(images.getPath(), "FAIL.gif"), output + "/FAIL.gif");
+			Utils.copyFile(new File(images.getPath(), "FAIL_greyed.gif"), output+"/FAIL_greyed.gif");
+			Utils.copyFile(new File(images.getPath(), "OK.gif"),output + "/OK.gif");
+			Utils.copyFile(new File(images.getPath(), "OK_greyed.gif"),output + "/OK_greyed.gif");
 		}
 		if (scripts!=null){
-			Utils.copyFile(new File(scripts+"/ToolTip.css"),output+"/ToolTip.css");
-			Utils.copyFile(new File(scripts+"/ToolTip.js"),output+"/ToolTip.js");
+			scripts= Platform.resolve(scripts);
+			Utils.copyFile(new File(scripts.getPath(), "ToolTip.css"),output+"/ToolTip.css");
+			Utils.copyFile(new File(scripts.getPath(), "ToolTip.js"),output+"/ToolTip.js");
 		}
 		
 		// print fingerprint/scenario status pages
@@ -104,7 +110,7 @@ public class Main implements IPlatformRunnable{
 				//print the component scenario status table beneath the fingerprint
 					variations.put("config", "%");
 					ScenarioStatusTable sst = new ScenarioStatusTable(
-							variations, component + "%", configDescriptors,scenarioComments);
+							variations, component + "%", configDescriptors,scenarioComments, baseline);
 					os.println(sst.toString());
 				}
 
@@ -121,7 +127,8 @@ public class Main implements IPlatformRunnable{
 
 	private void generate(Utils.ConfigDescriptor cd) {
 			//String config=cd.getName();
-			if (System.getProperty("eclipse.perf.dbloc").equals(""))
+			String dbloc_property= System.getProperty("eclipse.perf.dbloc");
+			if (dbloc_property == null || dbloc_property.equals(""))
 				System.out.println("WARNING:  eclipse.perf.dbloc value set to null");
 			scenarios = Utils.getScenarios("%", scenarioFilter, cd.name, jvm);
 			variations = Utils.getVariations("%", cd.name, jvm);

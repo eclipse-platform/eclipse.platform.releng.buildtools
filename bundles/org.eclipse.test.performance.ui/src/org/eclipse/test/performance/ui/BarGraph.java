@@ -43,12 +43,14 @@ public class BarGraph {
 		double value;
 		String url;
 		String slowdownExpected;
+		boolean significant;
 
-		BarItem(String t, double v, String u, String slow) {
+		BarItem(String t, double v, String u, String slow, boolean sig) {
 			title= t;
 			value= v;
 			url= u;
 			slowdownExpected= slow;
+			significant= sig;
 		}
 	}
 
@@ -61,15 +63,15 @@ public class BarGraph {
 	}
 
 	public void addItem(String name, double value) {
-		fItems.add(new BarItem(name, value, null, null));
+		fItems.add(new BarItem(name, value, null, null, true));
 	}
 
 	public void addItem(String name, double value, String url) {
-		fItems.add(new BarItem(name, value, url, null));
+		fItems.add(new BarItem(name, value, url, null, true));
 	}
 
-	public void addItem(String name, double value, String url, String slow) {
-		fItems.add(new BarItem(name, value, url, slow));
+	public void addItem(String name, double value, String url, String slow, boolean significant) {
+		fItems.add(new BarItem(name, value, url, slow, significant));
 	}
 
 	public int getHeight() {
@@ -209,12 +211,17 @@ public class BarGraph {
 
 			int barLength= (int) (delta / max * w2);
 
-			if (delta > 0.0)
-				gc.setBackground(green);
-			else if (bar.slowdownExpected == null)
-				gc.setBackground(red);
-			else
+			if (bar.significant) {
+				if (delta > 0.0)
+					gc.setBackground(green);
+				else if (bar.slowdownExpected == null)
+					gc.setBackground(red);
+				else
+					gc.setBackground(gray);
+			} else {
 				gc.setBackground(gray);
+			}
+
 			gc.fillRectangle(center, y + (GAP / 2), barLength, BARHEIGHT);
 			gc.drawRectangle(center, y + (GAP / 2), barLength, BARHEIGHT);
 

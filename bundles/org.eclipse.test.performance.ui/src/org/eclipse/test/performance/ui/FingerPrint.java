@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.NumberFormat;
 import java.util.Hashtable;
 
 import org.eclipse.swt.SWT;
@@ -37,6 +38,8 @@ import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.SummaryEntry;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 import org.eclipse.test.internal.performance.db.Variations;
+import org.eclipse.test.internal.performance.eval.StatisticsUtil;
+import org.eclipse.test.internal.performance.eval.StatisticsUtil.Percentile;
 import org.eclipse.test.performance.ui.Utils.ConfigDescriptor;
 
 
@@ -102,9 +105,7 @@ public class FingerPrint {
                 if (se.comment==null)
                 	add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName);
                 else{
-                	if (scenarioComments==null)
-                		scenarioComments=new Hashtable();
-                	scenarioComments.put(se.scenarioName,se.comment);
+                	setComment(se.scenarioName, se.comment);
                 	add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName,se.comment);
                 }
             }
@@ -120,6 +121,11 @@ public class FingerPrint {
      
        }
 
+    private void setComment(String scenario, String comment) {
+    	if (scenarioComments==null)
+    		scenarioComments=new Hashtable();
+    	scenarioComments.put(scenario,comment);
+    }
 
     private void add(BarGraph bar, String name, Dim[] dims, String scenarioName) {
     	add (bar,name,dims,scenarioName,null);
@@ -142,19 +148,32 @@ public class FingerPrint {
         
         for (int i= 0; i < dims.length; i++) {
             TimeSeries timeSeries= scenario.getTimeSeries(dims[i]);
-	        int l= timeSeries.getLength();
-	        if (l >= 1) {
-	            double percent= 0.0;
-	            if (l > 1) {
-	                double ref= timeSeries.getValue(0);
-	                double val= timeSeries.getValue(1);
-	            	percent= 100.0 - ((val / ref) * 100.0);
-	            }
-	            if (Math.abs(percent) < 200) {
-	                String n= name + " (" + dims[i].getName() + ")" + refData;
-                	bar.addItem(n, percent,configDescriptor.name+"/"+(scenarioName.replace('#','.').replace(':','_').replace('\\','_'))+".html#"+dims[i].getName(),comment); //$NON-NLS-1$ //$NON-NLS-2$
-	            }
-	        }
+            int l= timeSeries.getLength();
+            if (l >= 1) {
+            	double percent= 0.0;
+            	boolean rejectNullHypothesis= true;
+            	if (l > 1) {
+            		Percentile percentile= StatisticsUtil.T90;
+            		rejectNullHypothesis= StatisticsUtil.hasSignificantDifference(timeSeries, 0, timeSeries, 1, percentile);
+            		if (!rejectNullHypothesis) {
+            			NumberFormat percentFormatter= NumberFormat.getPercentInstance();
+            			String statisticsComment= "There is not enough evidence to reject the null hypothesis at the " + percentFormatter.format(percentile.inside()) + "level";
+            			if (comment == null)
+            				comment= statisticsComment;
+            			else
+            				comment+= statisticsComment;
+            			setComment(scenarioName, comment);
+            		}
+
+            		double ref= timeSeries.getValue(0);
+            		double val= timeSeries.getValue(1);
+            		percent= 100.0 - ((val / ref) * 100.0);
+            	}
+            	if (Math.abs(percent) < 200) {
+            		String n= name + " (" + dims[i].getName() + ")" + refData;
+            		bar.addItem(n, percent,configDescriptor.name+"/"+(scenarioName.replace('#','.').replace(':','_').replace('\\','_'))+".html#"+dims[i].getName(),comment, rejectNullHypothesis); //$NON-NLS-1$ //$NON-NLS-2$
+            	}
+            }
         }
         //scenario.dump(System.out);
 	         
