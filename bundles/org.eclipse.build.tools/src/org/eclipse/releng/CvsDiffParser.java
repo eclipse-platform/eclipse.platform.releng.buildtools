@@ -94,9 +94,9 @@ public class CvsDiffParser extends Task {
 							.substring(aLine.indexOf(":"), aLine.indexOf(",")))
 							.trim();
 					
-					//verification for actual changes in tags
+					//verification for actual changes in tags base.plugin
 					while ((aLine = in.readLine()) != null && !aLine.startsWith("===")){
-						if (aLine.startsWith("< plugin")||aLine.startsWith("< fragment")||aLine.startsWith("< feature")){
+						if (aLine.startsWith("< plugin")||aLine.startsWith("< fragment")||aLine.startsWith("< feature")||aLine.startsWith("< base.plugin")){
 							updatedMaps.add(new File(mapPath).getName());
 							break;
 						}

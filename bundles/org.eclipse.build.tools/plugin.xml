@@ -21,8 +21,12 @@
             name="sysProp"
             class="org.eclipse.releng.SystemProperty">
       </antTask>
- 
       <antTask
+            library="buildTools.jar"
+            name="generateBaseFetchScript"
+            class="org.eclipse.releng.generators.FetchBaseTask">
+      </antTask>
+       <antTask
             library="buildTools.jar"
             name="generateTestProperties"
             class="org.eclipse.releng.generators.TestVersionTracker">
