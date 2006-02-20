@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="/org.eclipse.releng.basebuilder/plugins/org.eclipse.test.performance_3.2.0.200602141724.jar"/>
 	<classpathentry kind="lib" path="/org.eclipse.releng.basebuilder/plugins/org.eclipse.core.runtime_3.2.0.v20060216.jar"/>
 	<classpathentry kind="lib" path="/org.eclipse.releng.basebuilder/plugins/org.eclipse.osgi_3.2.0.v20060214.jar"/>
+	<classpathentry kind="lib" path="/org.eclipse.releng.basebuilder/plugins/org.eclipse.swt_3.2.0.v3224m.jar"/>
 	<classpathentry kind="output" path="src"/>
 </classpath>
