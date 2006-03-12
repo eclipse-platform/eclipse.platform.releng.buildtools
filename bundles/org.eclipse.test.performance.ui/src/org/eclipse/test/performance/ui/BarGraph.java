@@ -190,11 +190,11 @@ public class BarGraph {
 		Color green= display.getSystemColor(SWT.COLOR_GREEN);
 		Color red= display.getSystemColor(SWT.COLOR_RED);
 		Color gray= display.getSystemColor(SWT.COLOR_GRAY);
+		Color yellow= display.getSystemColor(SWT.COLOR_YELLOW);
 		Color white= display.getSystemColor(SWT.COLOR_WHITE);
 		for (int i= 0; i < bars.length; i++) {
 
 			BarItem bar= bars[i];
-
 			double delta= bar.value;
 			double orgDelta= delta;
 
@@ -219,7 +219,7 @@ public class BarGraph {
 				else
 					gc.setBackground(gray);
 			} else {
-				gc.setBackground(gray);
+				gc.setBackground(yellow);
 			}
 
 			gc.fillRectangle(center, y + (GAP / 2), barLength, BARHEIGHT);

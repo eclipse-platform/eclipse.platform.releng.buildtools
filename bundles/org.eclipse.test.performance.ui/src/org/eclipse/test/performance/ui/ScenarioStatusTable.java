@@ -165,12 +165,13 @@ public class ScenarioStatusTable {
 					if (status.statusMap.containsKey(configName)){
 						
 						if (aUrl!=null){
-							String successImage= status.significant ? "OK.gif" : "OK_greyed.gif";
+							String successImage= status.significant ? "OK.gif" : "OK_caution.gif";
 							String html="\n<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
 							+ ".html"+"\">\n<img border=\"0\" src=\"" + successImage + "\"/></a></td>";
 							
+							String failImage="FAIL.gif";
 							if (message!=""){
-								String failImage=status.hasSlowDownExplanation || !status.significant ?"FAIL_greyed.gif":"FAIL.gif";
+								failImage=status.significant&&status.hasSlowDownExplanation?"FAIL_greyed.gif":"FAIL_caution.gif";
 								jsIdCount+=1;
 								html="<td><a " +
 								"class=\"tooltipSource\" onMouseover=\"show_element('toolTip"+(jsIdCount)+"')\"" +

@@ -70,8 +70,10 @@ public class Main implements IPlatformRunnable{
 			images= Platform.resolve(images);
 			Utils.copyFile(new File(images.getPath(), "FAIL.gif"), output + "/FAIL.gif");
 			Utils.copyFile(new File(images.getPath(), "FAIL_greyed.gif"), output+"/FAIL_greyed.gif");
+			Utils.copyFile(new File(images.getPath(), "FAIL_caution.gif"), output+"/FAIL_caution.gif");
 			Utils.copyFile(new File(images.getPath(), "OK.gif"),output + "/OK.gif");
 			Utils.copyFile(new File(images.getPath(), "OK_greyed.gif"),output + "/OK_greyed.gif");
+			Utils.copyFile(new File(images.getPath(), "OK_caution.gif"),output + "/OK_caution.gif");
 		}
 		if (scripts!=null){
 			scripts= Platform.resolve(scripts);
