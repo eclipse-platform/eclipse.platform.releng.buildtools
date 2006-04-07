@@ -41,10 +41,15 @@
             name="findMachine"
             class="org.eclipse.releng.FindMachineTask">
       </antTask>
-          <antTask
+      <antTask
             library="buildTools.jar"
             name="modifiedMaps"
             class="org.eclipse.releng.CvsDiffParser">
+      </antTask>
+      <antTask
+            library="buildTools.jar"
+            name="unpackUpdateJars"
+            class="org.eclipse.releng.UnpackUpdateJars">
       </antTask>
     </extension>
 </plugin>

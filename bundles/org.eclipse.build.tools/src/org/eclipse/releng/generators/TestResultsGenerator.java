@@ -1,19 +1,21 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2003 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials 
- * are made available under the terms of the Common Public License v1.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/cpl-v10.html
- * 
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package org.eclipse.releng.generators;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.StringTokenizer;
@@ -30,6 +32,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 
@@ -99,7 +102,7 @@ public class TestResultsGenerator extends Task {
 	public static void main(String[] args) {
 		TestResultsGenerator test = new TestResultsGenerator();
 		test.setDropTokenList(
-			"%sdk%,%tests%,%runtime%,%jdt%,%teamextras%,%rcpsdk%,%pde%,%pdesdk%,%swt%");
+			"%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%icubase%,%runtime%,%platformsdk%,%jdt%,%jdtsdk%,%pde%,%pdesdk%,%teamextras%,%swt%,%relengtools%");
 		test.getDropTokensFromList(test.dropTokenList);
 		test.setIsBuildTested(true);
 		test.setXmlDirectoryName("D:\\junk\\testresults\\xml");
@@ -153,41 +156,22 @@ public class TestResultsGenerator extends Task {
 
 	}
 
-	private String processCompileLogsDirectory(
-		String directoryName,
-		String aString) {
-
+	private String processCompileLogsDirectory(String directoryName, String aString) {
 		File sourceDirectory = new File(directoryName);
-		String replaceString = aString;
-
-		File[] directories = sourceDirectory.listFiles();
-		Arrays.sort(directories);
-
-		for (int i = 0; i < directories.length; i++) {
-			if (directories[i].isDirectory()) {
-				File[] logFiles = directories[i].listFiles();
-				Arrays.sort(logFiles);
-
-				for (int j = 0; j < logFiles.length; j++) {
-					String longName = logFiles[j].getPath();
-					if (logFiles[j].isDirectory()) {
-						replaceString =
-							replaceString
-								+ processCompileLogsDirectory(longName, aString);
-					} else {
-						if (longName.endsWith(".log")) {
-							replaceString =
-								replaceString + readCompileLog(longName);
-						}
-					}
-				}
-			} else
-				replaceString =
-					replaceString
-						+ readCompileLog(directories[i].getAbsolutePath());
-
+		if (sourceDirectory.isFile()) {
+			if (sourceDirectory.getName().endsWith(".log"))
+				aString=aString + readCompileLog(sourceDirectory.getAbsolutePath());
+			if (sourceDirectory.getName().endsWith(".xml"))
+				aString=aString + parseCompileLog(sourceDirectory.getAbsolutePath());
 		}
-		return replaceString;
+		if (sourceDirectory.isDirectory()) {
+			File[] logFiles = sourceDirectory.listFiles();
+			Arrays.sort(logFiles);
+			for (int j = 0; j < logFiles.length; j++) {
+				aString= processCompileLogsDirectory(logFiles[j].getAbsolutePath(), aString);
+			}
+		}
+		return aString;
 	}
 
 	private String readCompileLog(String log) {
@@ -212,7 +196,70 @@ public class TestResultsGenerator extends Task {
 		return formatCompileErrorRow(log, errorCount, warningCount);
 
 	}
+	
+	private String parseCompileLog(String log) {
+		int errorCount = 0;
+		int warningCount = 0;
 
+		File file=new File(log);
+		Document aDocument=null;
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(file));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		InputSource inputSource = new InputSource(reader);
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = null;
+
+		try {
+			builder = factory.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			aDocument = builder.parse(inputSource);
+		} catch (SAXException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// Get summary of problems
+		NodeList nodeList = aDocument.getElementsByTagName("problem_summary");
+		if (nodeList == null ||nodeList.getLength()==0)
+			return "";
+		
+		Node problemSummaryNode = nodeList.item(0);
+		NamedNodeMap aNamedNodeMap = problemSummaryNode.getAttributes();
+		Node errorNode = aNamedNodeMap.getNamedItem("errors");
+		Node warningNode = aNamedNodeMap.getNamedItem("warnings");
+		if (errorNode != null) {
+			errorCount = Integer.parseInt(errorNode.getNodeValue());
+		}
+		if (warningNode != null) {
+			warningCount = Integer.parseInt(warningNode.getNodeValue());
+		}
+		if (errorCount != 0) {
+			//use wildcard in place of version number on directory names
+			String logName =
+				log.substring(getCompileLogsDirectoryName().length() + 1);
+			StringBuffer buffer = new StringBuffer(logName);
+			buffer.replace(
+				logName.indexOf("_") + 1,
+				logName.indexOf(File.separator, logName.indexOf("_") + 1),
+				"*");
+			logName = new String(buffer);
+
+			anErrorTracker.registerError(logName);
+		}
+		return formatCompileErrorRow(log.replaceAll(".xml", ".html"), errorCount, warningCount);
+
+	}
+	
 	public String readFile(String fileName) {
 
 		try {

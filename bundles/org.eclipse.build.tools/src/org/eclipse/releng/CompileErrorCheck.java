@@ -1,10 +1,10 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2003 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials 
- * are made available under the terms of the Common Public License v1.0
+ * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/cpl-v10.html
- * 
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
@@ -18,9 +18,20 @@ package org.eclipse.releng;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import java.util.Vector;
 import java.util.Enumeration;
 import java.io.*;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 public class CompileErrorCheck extends Task {
 
@@ -42,7 +53,7 @@ public class CompileErrorCheck extends Task {
 	// test
 	public static void main(String[] args) {
 		CompileErrorCheck checker = new CompileErrorCheck();
-		checker.install="d:/junk/compilelogs";
+		checker.install="d:/compilelogs";
 		checker.execute();
 	}
 
@@ -53,6 +64,8 @@ public class CompileErrorCheck extends Task {
 		if (aFile.isFile()) {
 			if (aFile.getAbsolutePath().endsWith(".jar.bin.log")||aFile.getAbsolutePath().endsWith("dot.bin.log")){
 				read(aFile);
+			}else if(aFile.getAbsolutePath().endsWith(".xml")){
+				parse(aFile);
 			}
 		} else {
 			//recurse into directories looking for and reading compile logs
@@ -95,6 +108,50 @@ public class CompileErrorCheck extends Task {
 		}
 	}
 
+	private void parse(File file) {
+		Document aDocument=null;
+			BufferedReader reader = null;
+			try {
+				reader = new BufferedReader(new FileReader(file));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+
+			InputSource inputSource = new InputSource(reader);
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = null;
+
+			try {
+				builder = factory.newDocumentBuilder();
+			} catch (ParserConfigurationException e) {
+				e.printStackTrace();
+			}
+
+			try {
+				aDocument = builder.parse(inputSource);
+			} catch (SAXException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			// Get summary of problems
+			NodeList nodeList=aDocument.getElementsByTagName("problem_summary");
+			if (nodeList==null)
+				return;
+			
+			for (int i = 0; i < nodeList.getLength(); i++) {
+				Node problemSummaryNode = nodeList.item(i);
+				NamedNodeMap aNamedNodeMap = problemSummaryNode.getAttributes();
+				Node errorNode = aNamedNodeMap.getNamedItem("errors");;
+				if (errorNode!= null&&!errorNode.getNodeValue().equals("0")) {
+					logsWithErrors.add(new File(file.getParentFile(),file.getName().replaceAll(".xml", ".html")));
+					System.out.println(file.getName()+" has compile errors.");
+					return;
+				}
+			}
+	}
+	
 	private void sendNotice() {
 		//send email notification that there are compile errors in the build
 		//send the logs as attachments
@@ -115,7 +172,9 @@ public class CompileErrorCheck extends Task {
 			mailer.sendMultiPartMessage("Compile errors in build", "Compile errors in build.  See attached compile logs.", logFiles);
 			} catch (NoClassDefFoundError e){
 				while (enumeration.hasMoreElements()) {
-					System.out.println("Compile errors detected in "+((File) enumeration.nextElement()).getName());
+					String path=((File) enumeration.nextElement()).getAbsolutePath();
+					String nameWithPlugin=path.substring(path.indexOf("plugins"),path.length());
+					System.out.println("Compile errors detected in "+nameWithPlugin);
 				}
 
 				System.out.println("Unable to send email notice of compile errors.");
