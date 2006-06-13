@@ -73,6 +73,7 @@ public class ScenarioStatusTable {
 		Variations referenceVariations= (Variations) variations.clone();
 		referenceVariations.put(PerformanceTestPlugin.BUILD, baseline);
 		Scenario[] refScenarios= DB.queryScenarios(referenceVariations, scenarioPattern, OS, null);
+		NumberFormat percentFormatter= NumberFormat.getPercentInstance();
 
 		Map references= new HashMap();
 		for (int i= 0; i < refScenarios.length; i++) {
@@ -106,13 +107,13 @@ public class ScenarioStatusTable {
 				}
 			
 				for (int j=0;j<configs.length;j++){
-					String failureMessage="";
+					String failureMessage=scenarioStatus.significant?"":"This result is statistically insignificant at the " + percentFormatter.format(1.0 - percentile.inside()) + " level (Student's t-test).  ";
 					if (!configNames.contains(configs[j]))
 						configNames.add(configs[j]);
 					if (failureMessages[j]!=null){
 						//ensure correct failure message relates to config
 						if (failureMessages[j].indexOf(configs[j])!=-1){
-							failureMessage=failureMessages[j];
+							failureMessage=failureMessage.concat(failureMessages[j]);
 							if (scenarioComments.containsKey(scenarioName)){
 								failureMessage=failureMessage.concat(";  "+scenarioComments.get(scenarioName));
 								scenarioStatus.hasSlowDownExplanation=true;
@@ -125,12 +126,12 @@ public class ScenarioStatusTable {
 			}
 			
 			String label=null;
-			NumberFormat percentFormatter= NumberFormat.getPercentInstance();
 			htmlTable=htmlTable.concat("<br><h4>Scenario Status</h4>\n" +
 					"The green/red indication is based on the assert condition in the test.  "+
 					"Hover over <img src=\"FAIL.gif\"> for error message.<br>\n" +
-					"Click on <img src=\"FAIL.gif\"> or <img src=\"OK.gif\"> for detailed results. " +
-					"Grayed images mark explainable degradations or differences that are statistically insignificant at the " + percentFormatter.format(1.0 - percentile.inside()) + " level.<br>\n" +
+					"Click on <img src=\"FAIL.gif\"> or <img src=\"OK.gif\"> for detailed results. <br>\n " +
+					"Grayed images mark explainable degradations. <br>\n "+
+					"Yellow images mark differences that are statistically insignificant at the " + percentFormatter.format(1.0 - percentile.inside()) + " level.<br>\n" +
 					"\"n/a\" - results not available.<br><br>\n");
 			
 			htmlTable=htmlTable.concat("<table border=\"1\"><tr><td><h4>All "+scenarios.length+" scenarios</h4></td>\n");
@@ -169,9 +170,12 @@ public class ScenarioStatusTable {
 							String html="\n<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
 							+ ".html"+"\">\n<img border=\"0\" src=\"" + successImage + "\"/></a></td>";
 							
-							String failImage="FAIL.gif";
+							String failImage=status.significant ?"FAIL.gif":"FAIL_caution.gif";
+							
 							if (message!=""){
-								failImage=status.significant&&status.hasSlowDownExplanation?"FAIL_greyed.gif":"FAIL_caution.gif";
+								if (status.hasSlowDownExplanation) 
+									failImage="FAIL_greyed.gif";
+								
 								jsIdCount+=1;
 								html="<td><a " +
 								"class=\"tooltipSource\" onMouseover=\"show_element('toolTip"+(jsIdCount)+"')\"" +
