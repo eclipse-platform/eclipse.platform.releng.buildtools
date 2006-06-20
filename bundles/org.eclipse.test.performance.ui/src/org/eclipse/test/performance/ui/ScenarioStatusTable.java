@@ -12,19 +12,13 @@ package org.eclipse.test.performance.ui;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 
-import org.eclipse.test.internal.performance.PerformanceTestPlugin;
-import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
-import org.eclipse.test.internal.performance.db.TimeSeries;
 import org.eclipse.test.internal.performance.db.Variations;
 import org.eclipse.test.internal.performance.eval.StatisticsUtil;
 import org.eclipse.test.internal.performance.eval.StatisticsUtil.Percentile;
-import org.eclipse.test.performance.Dimension;
 
 public class ScenarioStatusTable {
 	
@@ -38,19 +32,21 @@ public class ScenarioStatusTable {
 	private class ScenarioStatus{
 		Hashtable statusMap;
 		String name;
-		Object [] configs;
+		Hashtable configStatus;
 		boolean hasSlowDownExplanation=false;
-		boolean significant= true;
-				
+						
 		public ScenarioStatus(String scenarioName){
 			name=scenarioName;
 			statusMap=new Hashtable();
+			configStatus=new Hashtable();
 		}
 
 	}
 	
 	/**
-	 * Creates an HTML table of red x/green check for a scenario for each configuration.
+	 * Creates an HTML table of red x/green check for a scenario for each
+	 * configuration.
+	 * 
 	 * @param variations
 	 * @param scenarioPattern
 	 * @param configDescriptors
@@ -70,17 +66,7 @@ public class ScenarioStatusTable {
 		String OS="config";
 		String htmlTable="";
         Scenario[] scenarios= DB.queryScenarios(variations, scenarioPattern, OS, null);
-		Variations referenceVariations= (Variations) variations.clone();
-		referenceVariations.put(PerformanceTestPlugin.BUILD, baseline);
-		Scenario[] refScenarios= DB.queryScenarios(referenceVariations, scenarioPattern, OS, null);
 		NumberFormat percentFormatter= NumberFormat.getPercentInstance();
-
-		Map references= new HashMap();
-		for (int i= 0; i < refScenarios.length; i++) {
-			Scenario scenario= refScenarios[i];
-			String name= scenario.getScenarioName();
-			references.put(name, scenario);
-		}
 	
 		if (scenarios != null && scenarios.length > 0) {
 			ArrayList scenarioStatusList=new ArrayList();
@@ -89,39 +75,31 @@ public class ScenarioStatusTable {
 			for (int i= 0; i < scenarios.length; i++) {
 				Scenario scenario= scenarios[i];
 				String scenarioName=scenario.getScenarioName();
-				//returns the config names.  Making assumption that indices  in the configs array map to the indeces of the failure messages.
+				// returns the config names. Making assumption that indices in
+				// the configs array map to the indeces of the failure messages.
 				String[] configs=scenario.getTimeSeriesLabels();
 				String[] failureMessages= scenario.getFailureMessages();
 				ScenarioStatus scenarioStatus=new ScenarioStatus(scenarioName);
 				scenarioStatusList.add(scenarioStatus);
-
-				Scenario reference= (Scenario) references.get(scenarioName);
-				if (reference != null) {
-					// XXX have to find out the relevant dimension
-					Dim significanceDimension= (Dim) Dimension.ELAPSED_PROCESS;
-					TimeSeries currentScenario= scenario.getTimeSeries(significanceDimension);
-					TimeSeries baselineScenario= reference.getTimeSeries(significanceDimension);
-					if (currentScenario.getLength() > 0 && baselineScenario.getLength() > 0) {
-						scenarioStatus.significant= StatisticsUtil.hasSignificantDifference(baselineScenario, 0, currentScenario, 0, percentile);
-					}
-				}
-			
+				
 				for (int j=0;j<configs.length;j++){
-					String failureMessage=scenarioStatus.significant?"":"This result is statistically insignificant at the " + percentFormatter.format(1.0 - percentile.inside()) + " level (Student's t-test).  ";
+					
+					boolean rejectNullHypothesis= Utils.rejectNullHypothesis(variations, scenarioName, baseline, configs[j]);
+					scenarioStatus.configStatus.put(configs[j],new Boolean(rejectNullHypothesis));
+					String failureMessage=rejectNullHypothesis?"":Utils.TTEST_FAILURE_MESSAGE;
 					if (!configNames.contains(configs[j]))
 						configNames.add(configs[j]);
 					if (failureMessages[j]!=null){
-						//ensure correct failure message relates to config
+						// ensure correct failure message relates to config
 						if (failureMessages[j].indexOf(configs[j])!=-1){
 							failureMessage=failureMessage.concat(failureMessages[j]);
 							if (scenarioComments.containsKey(scenarioName)){
 								failureMessage=failureMessage.concat(";  "+scenarioComments.get(scenarioName));
 								scenarioStatus.hasSlowDownExplanation=true;
 							}
-							
 						}
 					}
-					scenarioStatus.statusMap.put(configs[j],failureMessage);		
+					scenarioStatus.statusMap.put(configs[j],failureMessage);
 				}
 			}
 			
@@ -131,7 +109,7 @@ public class ScenarioStatusTable {
 					"Hover over <img src=\"FAIL.gif\"> for error message.<br>\n" +
 					"Click on <img src=\"FAIL.gif\"> or <img src=\"OK.gif\"> for detailed results. <br>\n " +
 					"Grayed images mark explainable degradations. <br>\n "+
-					"Yellow images mark differences that are statistically insignificant at the " + percentFormatter.format(1.0 - percentile.inside()) + " level.<br>\n" +
+					"Yellow images mark results where there is not enough evidence to reject the null hypothesis at the " + percentFormatter.format(percentile.inside()) + "level (Student's t-test).<br>\n" +
 					"\"n/a\" - results not available.<br><br>\n");
 			
 			htmlTable=htmlTable.concat("<table border=\"1\"><tr><td><h4>All "+scenarios.length+" scenarios</h4></td>\n");
@@ -148,7 +126,7 @@ public class ScenarioStatusTable {
 			 
 			htmlTable=htmlTable.concat("</tr>\n");
 			
-			//counter for js class Id's
+			// counter for js class Id's
 			int jsIdCount=0;
 			for (int j= 0; j < scenarioStatusList.size(); j++) {
 				
@@ -164,32 +142,38 @@ public class ScenarioStatusTable {
 					}
 
 					if (status.statusMap.containsKey(configName)){
+						//the scenario has failed if is has a message other than the t-test message
+						boolean scenarioFailed=!message.equals("")&&!message.equals(Utils.TTEST_FAILURE_MESSAGE);
+						boolean isSignificant=((Boolean)status.configStatus.get(configName)).booleanValue();
+						String image=null;			
+						String successImage=isSignificant? Utils.OK_IMAGE : Utils.OK_IMAGE_WARN;
+						String failImage=scenarioFailed&&isSignificant?Utils.FAIL_IMAGE:Utils.FAIL_IMAGE_WARN;
 						
+						if(scenarioFailed)
+							image=failImage;
+						else if(status.hasSlowDownExplanation)
+							image=Utils.FAIL_IMAGE_EXPLAINED;
+						else 
+							image=successImage;
 						if (aUrl!=null){
-							String successImage= status.significant ? "OK.gif" : "OK_caution.gif";
 							String html="\n<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
-							+ ".html"+"\">\n<img border=\"0\" src=\"" + successImage + "\"/></a></td>";
+							+ ".html"+"\">\n<img border=\"0\" src=\"" + image + "\"/></a></td>";
 							
-							String failImage=status.significant ?"FAIL.gif":"FAIL_caution.gif";
-							
+							//create message with tooltip text if there is a corresponding message
 							if (message!=""){
-								if (status.hasSlowDownExplanation) 
-									failImage="FAIL_greyed.gif";
-								
 								jsIdCount+=1;
 								html="<td><a " +
 								"class=\"tooltipSource\" onMouseover=\"show_element('toolTip"+(jsIdCount)+"')\"" +
 								" onMouseout=\"hide_element('toolTip"+(jsIdCount)+"')\" "+
 								"\nhref=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_')+".html"+"\">" +
-								"<img border=\"0\" src=\""+failImage+"\"/>" +
+								"<img border=\"0\" src=\""+image+"\"/>" +
 								"\n<span class=\"hidden_tooltip\" id=\"toolTip"+jsIdCount+"\">"+message+"</span></a></td>"+ 
 								"";
-								
 							}
 							htmlTable=htmlTable.concat(html);
 						} else{
-							htmlTable=htmlTable.concat(message != "" ?"<td><img title=\""+message+"\" border=\"0\" src=\"FAIL.gif\"/></td>" 
-									:"<td><img border=\"0\" src=\"OK.gif\"/></td>");
+							htmlTable=htmlTable.concat(scenarioFailed ?"<td><img title=\""+message+"\" border=\"0\" src=\""+failImage+"\"/></td>" 
+									:"<td><img border=\"0\" src=\""+successImage+"\"/></td>");
 						}	
 					}else{
 						htmlTable=htmlTable.concat("<td>n/a</td>");

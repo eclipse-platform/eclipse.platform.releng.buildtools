@@ -16,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.NumberFormat;
 import java.util.Hashtable;
 
 import org.eclipse.swt.SWT;
@@ -40,6 +39,7 @@ import org.eclipse.test.internal.performance.db.TimeSeries;
 import org.eclipse.test.internal.performance.db.Variations;
 import org.eclipse.test.internal.performance.eval.StatisticsUtil;
 import org.eclipse.test.internal.performance.eval.StatisticsUtil.Percentile;
+import org.eclipse.test.performance.Dimension;
 import org.eclipse.test.performance.ui.Utils.ConfigDescriptor;
 
 
@@ -153,9 +153,8 @@ public class FingerPrint {
             	double percent= 0.0;
             	boolean rejectNullHypothesis= true;
             	if (l > 1) {
-            		Percentile percentile= StatisticsUtil.T90;
-            		rejectNullHypothesis= StatisticsUtil.hasSignificantDifference(timeSeries, 0, timeSeries, 1, percentile);
-            		if (!rejectNullHypothesis) {
+            		rejectNullHypothesis= Utils.rejectNullHypothesis(variations, scenario.getScenarioName(),referenceBuildId,configDescriptor.name);
+            		/*if (!rejectNullHypothesis) {
             			NumberFormat percentFormatter= NumberFormat.getPercentInstance();
             			String statisticsComment= "There is not enough evidence to reject the null hypothesis at the " + percentFormatter.format(percentile.inside()) + "level";
             			if (comment == null)
@@ -164,7 +163,7 @@ public class FingerPrint {
             				comment+= statisticsComment;
             			setComment(scenarioName, comment);
             		}
-
+            		 */
             		double ref= timeSeries.getValue(0);
             		double val= timeSeries.getValue(1);
             		percent= 100.0 - ((val / ref) * 100.0);
@@ -172,7 +171,7 @@ public class FingerPrint {
             	if (Math.abs(percent) < 200) {
             		String n= name + " (" + dims[i].getName() + ")" + refData;
             		bar.addItem(n, percent,configDescriptor.name+"/"+(scenarioName.replace('#','.').replace(':','_').replace('\\','_'))+".html#"+dims[i].getName(),comment, rejectNullHypothesis); //$NON-NLS-1$ //$NON-NLS-2$
-            	}
+               	}
             }
         }
         //scenario.dump(System.out);

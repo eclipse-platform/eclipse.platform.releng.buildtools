@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import junit.framework.AssertionFailedError;
@@ -43,8 +44,19 @@ import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 import org.eclipse.test.internal.performance.db.Variations;
+import org.eclipse.test.internal.performance.eval.StatisticsUtil;
+import org.eclipse.test.internal.performance.eval.StatisticsUtil.Percentile;
+import org.eclipse.test.performance.Dimension;
+
 
 public class Utils {
+
+	public static String TTEST_FAILURE_MESSAGE="There is not enough evidence to reject the null hypothesis at the 90% level (Student's t-test).";
+	public static String OK_IMAGE="OK.gif";
+	public static String OK_IMAGE_WARN="OK_caution.gif";
+	public static String FAIL_IMAGE="FAIL.gif";
+	public static String FAIL_IMAGE_WARN="FAIL_caution.gif";
+	public static String FAIL_IMAGE_EXPLAINED="FAIL_greyed.gif";
 
 	/**
 	 * @param dimension
@@ -701,5 +713,50 @@ public class Utils {
 			out.flush();
 			out.close();
 		}
+	}
+	
+	public static boolean rejectNullHypothesis(Variations variations, String scenarioName, String baseline, String config) {
+		String OS = "config";
+				
+		Variations tmpVariations=(Variations)variations.clone();
+		tmpVariations.put(OS,config);
+		Scenario[] currentScenarios = DB.queryScenarios(tmpVariations, scenarioName,OS, null);
+		Variations referenceVariations = (Variations) variations.clone();
+		referenceVariations.put(PerformanceTestPlugin.BUILD, baseline);
+		referenceVariations.put(OS, config);
+		Scenario[] refScenarios = DB.queryScenarios(referenceVariations,
+				scenarioName, OS, null);
+
+		Map referenceScenariosMap = new HashMap();
+		Map currentScenariosMap = new HashMap();
+		for (int i = 0; i < refScenarios.length; i++) {
+			Scenario scenario = refScenarios[i];
+			String name = scenario.getScenarioName();
+			referenceScenariosMap.put(name, scenario);
+		}
+
+		for (int i = 0; i < currentScenarios.length; i++) {
+			Scenario scenario = currentScenarios[i];
+			String name = scenario.getScenarioName();
+			currentScenariosMap.put(name, scenario);
+		}
+		Percentile percentile = StatisticsUtil.T90;
+		Scenario scenario = (Scenario) currentScenariosMap.get(scenarioName);
+
+		Scenario reference = (Scenario) referenceScenariosMap.get(scenarioName);
+		if (reference != null) {
+			// XXX have to find out the relevant dimension
+			Dim significanceDimension = (Dim) Dimension.ELAPSED_PROCESS;
+			TimeSeries currentScenario = scenario
+					.getTimeSeries(significanceDimension);
+			TimeSeries baselineScenario = reference
+					.getTimeSeries(significanceDimension);
+			if (currentScenario.getLength() > 0
+					&& baselineScenario.getLength() > 0) {
+				return StatisticsUtil.hasSignificantDifference(
+						baselineScenario, 0, currentScenario, 0, percentile);
+			}
+		}
+		return true;
 	}
 }

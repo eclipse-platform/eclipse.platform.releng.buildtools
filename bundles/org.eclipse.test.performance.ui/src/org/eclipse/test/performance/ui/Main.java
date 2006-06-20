@@ -189,7 +189,7 @@ public class Main implements IPlatformRunnable{
 			if (genScenarioSummaries || genAll) {
 				System.out.print(cd.name
 						+ ": generating scenario results...");
-				new ScenarioResults(cd,scenarios, baseline,baselinePrefix,currentBuildId,pointsOfInterest,scenarioComments,currentBuildStreamIdPrefixes,rawDataTables,output);
+				new ScenarioResults(cd,scenarios, baseline,baselinePrefix,currentBuildId,pointsOfInterest,scenarioComments,currentBuildStreamIdPrefixes,rawDataTables,output,variations);
 				System.out.println("done.");
 			}
 		}

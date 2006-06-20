@@ -15,7 +15,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -24,6 +26,10 @@ import junit.framework.AssertionFailedError;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.TimeSeries;
+import org.eclipse.test.internal.performance.db.Variations;
+import org.eclipse.test.internal.performance.eval.StatisticsUtil;
+import org.eclipse.test.internal.performance.eval.StatisticsUtil.Percentile;
+import org.eclipse.test.performance.Dimension;
 import org.eclipse.test.performance.ui.Utils.ConfigDescriptor;
 
 public class ScenarioResults {
@@ -37,6 +43,8 @@ public class ScenarioResults {
 	private Hashtable variabilityData;
 	private ConfigDescriptor configDescriptor;
 	private String outputDir;
+	private HashMap scenarioMap;
+	private Variations variations;
 	/**
 	 * Summary of results for a scenario for a given build compared to a
 	 * reference.
@@ -53,9 +61,14 @@ public class ScenarioResults {
 	 *            an ArrayList of buildId's to highlight on line graphs.
 	 */
 	public ScenarioResults(Utils.ConfigDescriptor configDescriptor, Scenario[] scenarios, String baseline, String baselinePrefix, String current, 
-			ArrayList pointsOfInterest, Hashtable scenarioComments, ArrayList buildIDPatterns, Hashtable variabilityTable, String outputDir) {
+			ArrayList pointsOfInterest, Hashtable scenarioComments, ArrayList buildIDPatterns, Hashtable variabilityTable, String outputDir,Variations variations) {
 		
 		this.scenarios = scenarios;
+		this.variations=variations;
+		scenarioMap=new HashMap();
+		for (int i=0;i<scenarios.length;i++){
+			scenarioMap.put(scenarios[i].getScenarioName(),scenarios[i]);
+		}
 		this.baseline = baseline;
 		this.baselinePrefix = baselinePrefix;
 		this.pointsOfInterest = pointsOfInterest;
@@ -120,12 +133,19 @@ public class ScenarioResults {
 			ps.println(Utils.HTML_DEFAULT_CSS);
 			ps.println("<title>" + t.getScenarioName() + "(" + configDescriptor.description + ")" + "</title></head>"); //$NON-NLS-1$
 			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configDescriptor.description + ")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
+			
+			boolean rejectNullHypothesis= Utils.rejectNullHypothesis(variations, t.getScenarioName(),baseline,configDescriptor.name);
+     		if (!rejectNullHypothesis){
+     			ps.println("<table><tr><td><b>*** WARNING ***  "+Utils.TTEST_FAILURE_MESSAGE+"</td></tr></table>\n");
+     		}
 
 			if (scenarioComments.containsKey(t.getScenarioName())) {
+				
 				ps.println("<b>Notes</b><br>\n");
 				ps.println("<table><tr><td>" + scenarioComments.get(t.getScenarioName()) + "</td></tr></table><br>\n");
 			}
-
+     		//print link to raw data.
+			ps.println("<br><br><b><a href=\""+rawDataFile+"\">Raw data and Stats</a></b><br><br>\n");
 			ps.println("<b>Click measurement name to view line graph of measured values over builds.</b><br><br>\n");
 			ps.println("<table border=\"1\">"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -181,11 +201,7 @@ public class ScenarioResults {
 				ps.println("Black and yellow points plot values measured in integration and last seven nightly builds.<br>\n" + "Magenta points plot the repeated baseline measurement over time.<br>\n"
 						+ "Boxed points represent previous releases, milestone builds, current reference and current build.<br><br>\n" 
 						+ "Hover over any point for build id and value.\n");
-
-				//print link to raw data.
-				ps.println("<br><br><b>Click <a href=\""+rawDataFile+"\">here</a> to view raw data and stats.</b>" +
-						"<br>The raw data and stats include data for all current stream builds and all baseline test runs.<br>\n");
-
+					
 				// print image maps of historical
 				for (int i = 0; i < dimensions.length; i++) {
 					Dim dim = dimensions[i];
