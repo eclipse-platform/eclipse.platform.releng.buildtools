@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<project name="Build feedTools.jar" default="buildFeedToolsJar" basedir="../">
+	<target name="buildFeedToolsJar">
+	  <echo message="Compiling feedTools ..."/>
+	  <delete file="feedTools.jar"/>
+	  <delete dir="bin/"/>
+  	  <mkdir dir="bin"/>
+	  <javac 
+	  	source="1.5"
+	  	target="1.5"
+		srcdir="."
+	    destdir="bin/"
+	    classpath="../org.eclipse.releng.basebuilder/plugins/org.apache.ant_1.6.5/lib/ant.jar"
+		includes="src_rss/**/*.java, src_rss/**/messages.properties"/>
+	  <echo message="Jarring feedTools.jar ..."/>
+	  <jar 
+		destfile="feedTools.jar" 
+		includes="**/*.class" 
+		basedir="bin"
+	    update="true"/>
+	  <jar 
+		destfile="feedTools.jar" 
+		includes="**/messages.properties" 
+		basedir="src_rss"
+	    update="true"/>
+	</target>
+</project>

@@ -191,14 +191,14 @@ public class UnpackUpdateJars extends Task {
 			if (unpackNode == null) {
 				if (!unpackedPlugins.contains(pluginDirName)) {
 					unpackedPlugins.add(pluginDirName);
-					continue;
 				}
+				continue;
 			}
 			if (unpackNode.getNodeValue() == "true") {
 				if (!unpackedPlugins.contains(pluginDirName)){
 					unpackedPlugins.add(pluginDirName);
-					continue;
 				}
+				continue;
 			}
 			//copy file to new location
 			File jardPlugin=new File(site,"plugins/"+pluginDirName+".jar");

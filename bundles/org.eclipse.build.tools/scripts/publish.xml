@@ -53,12 +53,14 @@
     isBuildTested="${isBuildTested}"
     buildType="${buildType}"
     dropTokenList="${dropTokenList}"
+  	platformIdentifierToken="${platformIdentifierToken}"
+  	platformSpecificTemplateList="${platformSpecificTemplateList}"
+    dropHtmlFileName="${indexFileName}"
     xmlDirectoryName="${xmlDirectoryName}"
     dropDirectoryName="${dropDirectoryName}"
     testResultsTemplateFileName="${testResultsTemplateFileName}"
     dropTemplateFileName="${dropTemplateFileName}"
     testResultsHtmlFileName="${testResultsHtmlFileName}"
-    dropHtmlFileName="${indexFileName}"
     hrefTestResultsTargetPath="${hrefTestResultsTargetPath}"
     hrefCompileLogsTargetPath="${hrefCompileLogsTargetPath}"
     compileLogsDirectoryName="${compileLogsDirectoryName}"
@@ -74,12 +76,27 @@
   	
   	<!--  Insert Build Date  -->
 	<replace file="${result}/${indexFileName}" token="@date@" value="${TODAY}"/>
+	<replace dir="${result}" value="${TODAY}">
+	  <include name="**/*.php"/>
+	  <replacetoken><![CDATA[@date@]]></replacetoken>
+	</replace>
 	
   	<!--  Insert Build Name  -->
 	<replace file="${result}/${indexFileName}" token="@build@" value="${buildId}"/>
+	<replace dir="${result}" value="${buildId}">
+	  <include name="**/*.php"/>
+	  <replacetoken><![CDATA[@build@]]></replacetoken>
+	</replace>
+
 
   	<!--  Update timestamp on file to permit overwrite through Ant copy task  -->
 	<touch file="${result}/${indexFileName}" />
+	<touch>
+	    <fileset dir="${result}">
+	    	<include name="**/*.php"/>
+	    </fileset>
+	</touch>
+		
 </target>
 
 
@@ -113,26 +130,50 @@
 <!--Build type descriptors-->
 <target name="I">
 	<replace file="${result}/${indexFileName}" token="@type@" value="Integration"/>
+	<replace dir="${result}" value="Integration">
+	  <include name="**/*.php"/>
+	  <replacetoken><![CDATA[@type@]]></replacetoken>
+	</replace>
 </target>
 	
 <target name="N">
 	<replace file="${result}/${indexFileName}" token="@type@" value="Nightly"/>
+	<replace dir="${result}" value="Nightly">
+	  <include name="**/*.php"/>
+	  <replacetoken><![CDATA[@type@]]></replacetoken>
+	</replace>
 </target>
 	
 <target name="M">
 	<replace file="${result}/${indexFileName}" token="@type@" value="Maintenance"/>
+	<replace dir="${result}" value="Maintenance">
+	  <include name="**/*.php"/>
+	  <replacetoken><![CDATA[@type@]]></replacetoken>
+	</replace>
 </target>
 
 <target name="R">
 	<replace file="${result}/${indexFileName}" token="@type@" value="Release"/>
+	<replace dir="${result}" value="Release">
+	  <include name="**/*.php"/>
+	  <replacetoken><![CDATA[@type@]]></replacetoken>
+	</replace>
 </target>
 	
 <target name="S">
 	<replace file="${result}/${indexFileName}" token="@type@" value="Stable"/>
+	<replace dir="${result}" value="Stable">
+	  <include name="**/*.php"/>
+	  <replacetoken><![CDATA[@type@]]></replacetoken>
+	</replace>
 </target>
 
 <target name="T">
 	<replace file="${result}/${indexFileName}" token="@type@" value="Test"/>
+	<replace dir="${result}" value="Test">
+	  <include name="**/*.php"/>
+	  <replacetoken><![CDATA[@type@]]></replacetoken>
+	</replace>
 </target>
 	
 </project>

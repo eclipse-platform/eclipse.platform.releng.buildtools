@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="http://www.blogger.com/styles/atom.css" type="text/css"?>
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>UML2 Builds</title>
+  <link href="http://www.eclipse.org/uml2/feeds/builds.xml" rel="self" type="application/atom+xml"/>
+  <updated>2006-05-31T19:48:44Z</updated>
+  <author>
+    <name>UML2 Build Team</name>
+  </author>
+  <id>http://www.eclipse.org/uml2/feeds/builds.xml</id>
+  <entry>
+    <title>[announce] UML2 2.2.0RC3 (2.0.0.S200607082345) is available</title>
+    <link href="http://download.eclipse.org/tools/uml2/scripts/downloads-viewer.php?s=2.0.0/S200607082345"/>
+    <id>http://download.eclipse.org/tools/uml2/scripts/downloads-viewer.php?s=2.0.0/S200607082345</id>
+    <updated>2006-05-31T19:48:44Z</updated>
+    <summary>
+      <build xmlns="http://www.eclipse.org/2006/BuildFeed" callisto="COMPLETE" href="http://download.eclipse.org/tools/uml2/scripts/downloads-viewer.php?s=2.0.0/S200607082345" jars="SIGNED" type="SC">
+        <update>http://download.eclipse.org/tools/uml2/updates/</update>
+        <downloads>http://download.eclipse.org/tools/uml2/scripts/downloads.php</downloads>
+        <releasenotes>http://www.eclipse.org/uml2/news/release-notes.php?version=2.0.0
+          </releasenotes>
+        <releases>
+          <release arch="ALL" os="ALL" type="SDK" ws="ALL">uml2-SDK-2.2.0RC3.zip</release>
+        </releases>
+        <tests>
+          <test href="http://download.eclipse.org/tools/uml2/downloads/drops/2.0.0/S200607082345/testResults.php" type="junit">
+            <result arch="ALL" os="ALL" ws="ALL">PASS</result>
+          </test>
+        </tests>
+        <dependencies>
+          <dependency>http://download.eclipse.org/downloads/drops/S-3.2M2-200509231000/eclipse-SDK-3.2M6-linux-gtk.tar.gz</dependency>
+          <dependency>http://download.eclipse.org/tools/emf/downloads/drops/2.2.0/S200607081234/emf-sdo-xsd-SDK-2.2.0M6.tar.gz</dependency>
+        </dependencies>
+      </build>
+    </summary>
+  </entry>
+</feed>

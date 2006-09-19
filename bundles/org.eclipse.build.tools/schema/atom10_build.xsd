@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:atom="http://www.w3.org/2005/Atom" xmlns:bf="http://www.eclipse.org/2006/BuildFeed" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.w3.org/2005/Atom">
+  <xs:import namespace="http://www.eclipse.org/2006/BuildFeed" schemaLocation="build.xsd"/> 
+  <xs:element name="feed">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="atom:title"/>
+        <xs:element ref="atom:link"/>
+        <xs:element ref="atom:updated"/>
+        <xs:element ref="atom:author"/>
+        <xs:element ref="atom:id"/>
+        <xs:element maxOccurs="unbounded" ref="atom:entry"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="author">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="atom:name"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="name" type="xs:string"/>
+  <xs:element name="entry">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="atom:title"/>
+        <xs:element ref="atom:link"/>
+        <xs:element ref="atom:id"/>
+        <xs:element ref="atom:updated"/>
+        <xs:element ref="atom:summary"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="summary">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="1" minOccurs="1" ref="bf:build"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="title" type="xs:string"/>
+  <xs:element name="link">
+    <xs:complexType>
+      <xs:attribute name="href" type="xs:anyURI" use="required"/>
+      <xs:attribute name="rel" type="xs:NCName"/>
+      <xs:attribute name="type"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="updated" type="xs:NMTOKEN"/>
+  <xs:element name="id" type="xs:anyURI"/>
+</xs:schema>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="http://www.blogger.com/styles/atom.css" type="text/css"?>
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>EMF Builds</title>
+  <link href="http://www.eclipse.org/emf/feeds/builds.xml" rel="self" type="application/atom+xml"/>
+  <updated>2006-05-31T19:48:37Z</updated>
+  <author>
+    <name>EMF Build Team</name>
+  </author>
+  <id>http://www.eclipse.org/emf/feeds/builds.xml</id>
+  <entry>
+    <title>[announce] EMF 2.2.0RC7 (S200607081234) is available</title>
+    <link href="http://download.eclipse.org/tools/emf/scripts/downloads-viewer.php?s=2.2.0/S200607081234"/>
+    <id>http://download.eclipse.org/tools/emf/scripts/downloads-viewer.php?s=2.2.0/S200607081234</id>
+    <updated>2006-05-31T19:48:37Z</updated>
+    <summary>
+      <build xmlns="http://www.eclipse.org/2006/BuildFeed" callisto="COMPLETE" href="http://download.eclipse.org/tools/emf/scripts/downloads-viewer.php?s=2.2.0/S200607081234" jars="SIGNED" type="SC">
+        <update>http://download.eclipse.org/tools/emf/updates/</update>
+        <downloads>http://download.eclipse.org/tools/emf/scripts/downloads.php</downloads>
+        <releasenotes>http://www.eclipse.org/emf/news/release-notes.php?version=2.2.0
+          </releasenotes>
+        <releases>
+          <release arch="ALL" os="ALL" type="SDK" ws="ALL">emf-sdo-xsd-SDK-2.2.0RC7.zip</release>
+        </releases>
+        <tests>
+          <test href="http://download.eclipse.org/tools/emf/downloads/drops/2.2.0/S200607081234/testResults.php" type="junit">
+            <result arch="ALL" os="ALL" ws="ALL">PASS</result>
+          </test>
+          <test href="http://download.eclipse.org/tools/emf/downloads/drops/2.2.0/S200607081234/testResults.php" type="performance"/>
+          <test href="http://download.eclipse.org/tools/emf/downloads/drops/2.2.0/S200607081234/testResults.php" type="api"/>
+        </tests>
+        <dependencies>
+          <dependency>http://download.eclipse.org/downloads/drops/S-3.2M2-200509231000/eclipse-SDK-3.2M2-linux-gtk.tar.gz</dependency>
+        </dependencies>
+      </build>
+    </summary>
+  </entry>
+</feed>

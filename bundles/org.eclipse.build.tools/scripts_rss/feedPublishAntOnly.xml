@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+
+<project name="Publish Feed" default="doAll">
+
+	<target name="doAll">
+		<antcall target="publishFeedToCVS"/>
+		<antcall target="publishFeedWithSCP"/>
+	</target>
+	
+	<!-- 1. Define property file -->
+	<target name="init">
+		<property file="../properties/updater.emf.properties"/>
+		<!-- <property file="../properties/updater.uml2.properties"/> -->
+		<!-- <property file="../properties/updater.eclipse.properties"/> -->
+	</target>
+
+	<!-- 2. Publish feed: commit file into CVS - overwrite existing and add if necessary -->
+	<target name="publishFeedToCVS" depends="init" description="Publish feed: commit file into CVS - overwrite existing and add if necessary">
+
+		<!-- 3. get filename (eg., builds.xml) from file (which could include a path, eg. ./data/news/builds.xml) -->
+		<pathconvert property="filename"><path path="${file}"/><mapper type="flatten"/></pathconvert>
+
+		<!-- 4. create target temp folder & check out existing version from CVS -->
+		<mkdir dir="${cvsTemp}"/>
+
+		<!-- NOTE: make sure you have ssh access (without password prompt) to the cvsRoot server you're connecting to or this will fail -->
+		<!-- for a quick primer on how to set up ssh access: http://wiki.eclipse.org/index.php/EMFT_Procedures#SSH_Key_Setup -->
+		<exec executable="${cvsExec}" dir="${cvsTemp}"><arg line="-d ${cvsRoot} co -d checkoutDir ${cvsPath}"/></exec>
+
+		<!-- 5. check if the file already exists in CVS to see if we need to add it -->
+		<available file="${cvsTemp}/checkoutDir/${filename}" type="file" property="fileInCVS"/>
+		
+		<!-- 6. overwrite CVS copy with new version; or if new, copy file to destination for add then check-in -->
+		<copy file="${file}" overwrite="true" todir="${cvsTemp}/checkoutDir"/>
+
+		<!-- 7. add to CVS (if new) -->
+		<antcall target="addFileToCVS"/>
+
+		<!-- 8. check in file -->
+		<exec executable="${cvsExec}" dir="${cvsTemp}/checkoutDir"><arg line="-d ${cvsRoot} ci -m '' ${filename}"/></exec>
+
+		<!-- 9. clean up temp -->
+		<delete dir="${cvsTemp}"/>
+		
+	</target>
+
+	<!-- 7. Add file to CVS (if file is new) -->
+	<target name="addFileToCVS" depends="init" unless="fileInCVS" description="Add file to CVS (if file is new)">
+		<exec executable="${cvsExec}" dir="${cvsTemp}/checkoutDir"><arg line="-d ${cvsRoot} add ${filename}"/></exec>
+	</target>
+	
+	<!-- 10. Publish feed: SCP file to remote server, overwriting existing if exists -->
+	<target name="publishFeedWithSCP" depends="init" description="Publish feed: SCP file to remote server, overwriting existing if exists">
+		<!-- NOTE: make sure you have ssh access (without password prompt) to the cvsRoot server you're connecting to or this will fail -->
+		<!-- for a quick primer on how to set up ssh access: http://wiki.eclipse.org/index.php/EMFT_Procedures#SSH_Key_Setup -->
+		<antcall target="createRemoteDir"/>
+		<exec executable="${scpExec}" dir="."><arg line="${file} ${scpTarget}"/></exec>
+	</target>
+
+	<!-- 11. if necessary create a remote directory so that scp will not fail -->
+	<target name="createRemoteDir" depends="init" if="sshMakeDirCommand">
+		<!-- if necessary, you can use ssh to create a target folder if it doesn't exist -->
+		<!-- define sshMakeDirCommand in a property file like this:
+		     sshMakeDirCommand=username@server \"mkdir -p /path/to/scpTargetFolder\"
+		-->
+		<exec executable="${sshExec}"><arg line="${sshMakeDirCommand}"/></exec>
+	</target>
+	
+</project>

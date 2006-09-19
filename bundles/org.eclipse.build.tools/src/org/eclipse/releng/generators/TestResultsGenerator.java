@@ -46,14 +46,25 @@ public class TestResultsGenerator extends Task {
 	static final String testResultsToken = "%testresults%";
 	static final String compileLogsToken = "%compilelogs%";
 	public Vector dropTokens;
+	public Vector platformSpecs;
+	public Vector differentPlatforms;
 	public String testResultsWithProblems = "\n";
 
 	private DocumentBuilder parser =null;
 	public ErrorTracker anErrorTracker;
 	public String testResultsTemplateString = "";
 	public String dropTemplateString = "";
-	private boolean testsRan = true;
+	
+	public Vector platformDescription;
+	public Vector platformTemplateString;
+	public Vector platformDropFileName;
+
+	//Status of tests results (pending, successful, failed), used to specify the color
+	//of the test Results link on the build pages (standard, green, red), once failures
+	//are encountered, this is set to failed
+	protected String testResultsStatus = "successful";
 	//assume tests ran.  If no html files are found, this is set to false
+	private boolean testsRan = true;
 
 	// Parameters
 	// build runs JUnit automated tests
@@ -64,6 +75,9 @@ public class TestResultsGenerator extends Task {
 	
 	// Comma separated list of drop tokens
 	public String dropTokenList;
+	
+	// Token in platform.php.template to be replaced by the desired platform ID
+	public String platformIdentifierToken;
 
 	// Location of the xml files
 	public String xmlDirectoryName;
@@ -76,6 +90,10 @@ public class TestResultsGenerator extends Task {
 
 	// Location and name of the template index.php file.
 	public String testResultsTemplateFileName;
+	
+	// Platform specific template and output list (colon separated) in the following format:
+	// <descriptor, ie. OS name>,path to template file, path to output file
+	public String platformSpecificTemplateList="";
 
 	// Location and name of the template drop index.php file.
 	public String dropTemplateFileName;
@@ -99,46 +117,91 @@ public class TestResultsGenerator extends Task {
 	// Location and name of test manifest file
 	public String testManifestFileName;
 
+	//Initialize the prefix to a default string
+	private String prefix = "default";
+	private String testShortName = "";
+	private int counter = 0;
+	//The four configurations, add new configurations to test results here + update
+	//testResults.php.template for changes
+	private String[] testsConfig = {"linux.gtk.x86.xml",
+			"linux.gtk.x86_5.0.xml",
+			"macosx.carbon.ppc.xml",
+			"win32.win32.x86.xml"};
+
+	
 	public static void main(String[] args) {
 		TestResultsGenerator test = new TestResultsGenerator();
 		test.setDropTokenList(
 			"%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%icubase%,%runtime%,%platformsdk%,%jdt%,%jdtsdk%,%pde%,%pdesdk%,%teamextras%,%swt%,%relengtools%");
+		test.setPlatformIdentifierToken("%platform%");
 		test.getDropTokensFromList(test.dropTokenList);
 		test.setIsBuildTested(true);
-		test.setXmlDirectoryName("D:\\junk\\testresults\\xml");
-		test.setHtmlDirectoryName("D:\\junk\\testresults");
-		test.setDropDirectoryName("D:\\junk");
+		test.setXmlDirectoryName("C:\\junk\\testresults\\xml");
+		test.setHtmlDirectoryName("C:\\junk\\testresults");
+		test.setDropDirectoryName("C:\\junk");
 		test.setTestResultsTemplateFileName(
-			"D:\\junk\\templateFiles\\testResults.php.template");
+			"C:\\junk\\templateFiles\\testResults.php.template");
+		test.setPlatformSpecificTemplateList(
+				"Windows,C:\\junk\\templateFiles\\platform.php.template,winPlatform.php;Linux,C:\\junk\\templateFiles\\platform.php.template,linPlatform.php;Solaris,C:\\junk\\templateFiles\\platform.php.template,solPlatform.php;AIX,C:\\junk\\templateFiles\\platform.php.template,aixPlatform.php;HP-UX,C:\\junk\\templateFiles\\platform.php.template,hpuxPlatform.php;Macintosh,C:\\junk\\templateFiles\\platform.php.template,macPlatform.php;Source Build,C:\\junk\\templateFiles\\sourceBuilds.php.template,sourceBuilds.php");
 		test.setDropTemplateFileName(
-			"D:\\junk\\templateFiles\\index.php.template");
+			"C:\\junk\\templateFiles\\index.php.template");
 		test.setTestResultsHtmlFileName("testResults.php");
-//		test.setDropHtmlFileName("index.php");
+		//test.setDropHtmlFileName("index.php");
 		test.setDropHtmlFileName("index.html");
-
+		
 		test.setHrefTestResultsTargetPath("testresults");
 		test.setCompileLogsDirectoryName(
-			"D:\\junk\\compilelogs");
+			"C:\\junk\\compilelogs\\plugins");
 		test.setHrefCompileLogsTargetPath("compilelogs");
-		test.setTestManifestFileName("D:\\junk\\testManifest.xml");
+		test.setTestManifestFileName("C:\\junk\\testManifest.xml");
 		test.execute();
 	}
 
 	public void execute() {
 
 		anErrorTracker = new ErrorTracker();
+		platformDescription = new Vector();
+		platformTemplateString = new Vector();
+		platformDropFileName = new Vector();
 		anErrorTracker.loadFile(testManifestFileName);
 		getDropTokensFromList(dropTokenList);
 		testResultsTemplateString = readFile(testResultsTemplateFileName);
 		dropTemplateString = readFile(dropTemplateFileName);
+		
+		//Specific to the platform build-page
+		if(platformSpecificTemplateList!="") {
+			String description, platformTemplateFile, platformDropFile;
+			//Retrieve the different platforms and their info
+			getDifferentPlatformsFromList(platformSpecificTemplateList);
+			//Parses the platform info and retrieves the platform name,
+			//template file, and drop file
+			for(int i=0; i<differentPlatforms.size(); i++) {
+				getPlatformSpecsFromList(differentPlatforms.get(i).toString());
+				description = platformSpecs.get(0).toString();
+				platformTemplateFile = platformSpecs.get(1).toString();
+				platformDropFile = platformSpecs.get(2).toString();
+				platformDescription.add(description);
+				platformTemplateString.add(readFile(platformTemplateFile));
+				platformDropFileName.add(platformDropFile);
+				
+			}
+			
+		}
+
 		System.out.println("Begin: Generating test results index page");
 		System.out.println("Parsing XML files");
 		parseXml();
 		System.out.println("Parsing compile logs");
 		parseCompileLogs();
-		System.out.println("End: Generating test results indx page");
+		System.out.println("End: Generating test results index page");
 		writeTestResultsFile();
-		writeDropIndexFile();
+		//For the platform build-page, write platform files, in addition to the index file
+		if(platformSpecificTemplateList!="") {
+			writeDropFiles();
+		}
+		else {
+			writeDropIndexFile();
+		}
 	}
 
 	public void parseCompileLogs() {
@@ -245,6 +308,7 @@ public class TestResultsGenerator extends Task {
 		}
 		if (errorCount != 0) {
 			//use wildcard in place of version number on directory names
+			//System.out.println(log + "/n");
 			String logName =
 				log.substring(getCompileLogsDirectoryName().length() + 1);
 			StringBuffer buffer = new StringBuffer(logName);
@@ -306,7 +370,8 @@ public class TestResultsGenerator extends Task {
 		}
 
 	}
-
+	
+	private int missingCount = 0;
 	private String verifyAllTestsRan(String directory) {
 		Enumeration enumeration = (anErrorTracker.getTestLogs()).elements();
 
@@ -319,10 +384,15 @@ public class TestResultsGenerator extends Task {
 				continue;
 
 			anErrorTracker.registerError(testLogName);
-			replaceString = replaceString + formatRow(testLogName, -1, false);
-			testResultsWithProblems=testResultsWithProblems.concat("\n" + testLogName.substring(0,testLogName.length()-4) +" (file missing)");
-
-			
+			String tmp=((platformSpecificTemplateList=="")?formatRow(testLogName, -1, false):formatRowReleng(testLogName, -1, false));
+			if(missingCount==0) {
+				replaceString=replaceString+"</table></br>"+"\n"+
+				"<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"+
+				"<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\"> Missing Files </th><th  align=\"center\"> Status </th></tr>";
+			}
+			replaceString=replaceString+tmp;
+			testResultsWithProblems=testResultsWithProblems.concat("\n" + testLogName.substring(0,testLogName.length()-4) +" (file missing)");	
+			missingCount++;
 		}
 		return replaceString;
 	}
@@ -354,9 +424,11 @@ public class TestResultsGenerator extends Task {
 								getXmlDirectoryName().length() + 1));
 					}
 
-					replaceString =
-						replaceString
-							+ formatRow(xmlFileNames[i].getPath(), errorCount,true);
+					
+					String tmp=((platformSpecificTemplateList=="")?formatRow(xmlFileNames[i].getPath(), errorCount,true):formatRowReleng(xmlFileNames[i].getPath(), errorCount,true));
+					replaceString=replaceString+tmp;
+					
+				
 				}
 			}
 			//check for missing test logs
@@ -398,6 +470,14 @@ public class TestResultsGenerator extends Task {
 
 	}
 
+	protected void writeDropFiles() {
+		writeDropIndexFile();
+		//Write all the platform files
+		for(int i=0; i<platformDescription.size(); i++) {
+			writePlatformFile(platformDescription.get(i).toString(), platformTemplateString.get(i).toString(), platformDropFileName.get(i).toString());
+		}
+	}
+	
 	protected void writeDropIndexFile() {
 
 		String[] types = anErrorTracker.getTypes();
@@ -410,11 +490,80 @@ public class TestResultsGenerator extends Task {
 					dropTokens.get(i).toString(),
 					replaceString);
 			}
-
+		//Replace the token %testsStatus% with the status of the test results
+		dropTemplateString = replace(dropTemplateString,"%testsStatus%",testResultsStatus);
 		String outputFileName =
 			dropDirectoryName + File.separator + dropHtmlFileName;
 		writeFile(outputFileName, dropTemplateString);
+	}
+	
+	//Writes the platform file (dropFileName) specific to "desiredPlatform"
+	protected void writePlatformFile(String desiredPlatform, String templateString, String dropFileName) {
 
+		String[] types = anErrorTracker.getTypes();
+		for (int i = 0; i < types.length; i++) {
+			PlatformStatus[] platforms = anErrorTracker.getPlatforms(types[i]);
+			//Call processPlatformDropRows passing the platform's name
+			String replaceString = processPlatformDropRows(platforms, desiredPlatform);
+			templateString =
+				replace(
+					templateString,
+					dropTokens.get(i).toString(),
+					replaceString);
+		}
+		//Replace the platformIdentifierToken with the platform's name and the testsStatus
+		//token with the status of the test results
+		templateString = replace(templateString, platformIdentifierToken, desiredPlatform);
+		templateString = replace(templateString,"%testsStatus%",testResultsStatus);
+		String outputFileName =
+			dropDirectoryName + File.separator + dropFileName;
+		writeFile(outputFileName, templateString);
+	}
+	
+	//Process drop rows specific to each of the platforms
+	protected String processPlatformDropRows(PlatformStatus[] platforms, String name) {
+
+		String result = "";
+		boolean found = false;
+		for (int i = 0; i < platforms.length; i++) {
+			//If the platform description indicates the platform's name, or "All",
+			//call processDropRow
+			if(platforms[i].getName().startsWith(name.substring(0, 3)) || platforms[i].getName().equals("All")) {
+				result = result + processDropRow(platforms[i]);
+				found = true;
+			}
+			//If the platform description indicates "All Other Platforms", process
+			//the row locally
+			else if(platforms[i].getName().equals("All Other Platforms") && !found)
+			{
+				String imageName = "";
+
+				if (platforms[i].hasErrors()) {
+					imageName =
+						"<a href=\"testResults.php\"><img src = \"FAIL.gif\" width=19 height=23></a>";
+				} else {
+					if (testsRan) {
+						imageName = "<img src = \"OK.gif\" width=19 height=23>";
+					} else {
+						if (isBuildTested) {
+							imageName =
+								"<font size=\"-1\" color=\"#FF0000\">pending</font>";
+						} else {
+							imageName = "<img src = \"OK.gif\" width=19 height=23>";
+						}
+					}
+				}
+
+				result = result + "<tr>";
+				result = result + "<td><div align=left>" + imageName + "</div></td>\n";
+				result = result + "<td>All " + name + "</td>";
+				//generate ftp, http, md5 and sha1 links by calling php functions in the template		
+				result = result + "<td><?php genLinks($HTTP_SERVER_VARS[\"SERVER_NAME\"],\"@buildlabel@\",\"" + platforms[i].getFileName() +"\"); ?></td>\n";		
+				result = result + "</tr>\n";
+			}
+		}
+
+		return result;
 	}
 
 	protected String processDropRows(PlatformStatus[] platforms) {
@@ -434,6 +583,8 @@ public class TestResultsGenerator extends Task {
 		if (aPlatform.hasErrors()) {
 			imageName =
 				"<a href=\"testResults.php\"><img src = \"FAIL.gif\" width=19 height=23></a>";
+			//Failure in tests
+			testResultsStatus = "failed";
 		} else {
 			if (testsRan) {
 				imageName = "<img src = \"OK.gif\" width=19 height=23>";
@@ -441,6 +592,8 @@ public class TestResultsGenerator extends Task {
 				if (isBuildTested) {
 					imageName =
 						"<font size=\"-1\" color=\"#FF0000\">pending</font>";
+					//Tests are pending
+					testResultsStatus = "pending";
 				} else {
 					imageName = "<img src = \"OK.gif\" width=19 height=23>";
 				}
@@ -546,10 +699,9 @@ public class TestResultsGenerator extends Task {
 				+ shortName
 				+ "</a>";
 
-		// aString = aString + fileName;
-		aString = aString + "</td><td>";
+		aString = aString + "</td><td align=\"center\">";
 		aString = aString + errorCount;
-		aString = aString + "</td><td>";
+		aString = aString + "</td><td align=\"center\">";
 		aString = aString + warningCount;
 		aString = aString + "</td></tr>";
 
@@ -618,6 +770,156 @@ public class TestResultsGenerator extends Task {
 
 	}
 
+	//Specific to the RelEng test results page
+	private String formatRowReleng(String fileName, int errorCount, boolean link) {
+
+		//If the file name doesn't end with any of the set test configurations, do nothing
+		boolean endsWithConfig = false;
+		for(int i=0; i<4; i++) {
+			if(fileName.endsWith(testsConfig[i]))
+				endsWithConfig = true;
+		}
+		if(!endsWithConfig)
+			return "";
+		
+		String aString = "";
+		if (!link) {
+			return "<tr><td>" + fileName + "</td><td align=\"center\">" + "DNF </tr>";
+		}
+
+		if (fileName.endsWith(".xml")) {
+
+			int begin = fileName.lastIndexOf(File.separatorChar);
+
+			//Get org.eclipse. out of the component name
+			String shortName = fileName.substring(begin + 13, fileName.indexOf('_'));
+			String displayName = shortName;
+			
+			//If the short name does not start with this prefix
+			if(!shortName.startsWith(prefix)) {
+				//If the prefix is not yet set
+				if(prefix=="default"){
+					//Set the testShortName variable to the current short name
+					testShortName = shortName;
+					counter=0;
+					//Set new prefix
+					prefix = shortName.substring(0, shortName.indexOf(".tests") + 6);
+					aString = aString + "<tbody><tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
+					aString = aString + "<tr><td><P>" + shortName;
+					
+					//Loop until the matching string postfix(test config.) is found
+					while(counter<4 && !fileName.endsWith(testsConfig[counter])) {
+						aString = aString + "<td align=\"center\">-</td>";
+						counter++;
+					}
+				}
+				else {
+					//Set new prefix
+					prefix = shortName.substring(0, shortName.indexOf(".tests") + 6);
+	
+					//Loop until the matching string postfix(test config.) is found
+					while(counter<4 && !fileName.endsWith(testsConfig[counter])) {
+						aString = aString + "<td align=\"center\">-</td>";
+						counter++;
+					}
+					
+					//In this case, the new prefix should be set with the short name under it,
+					//since this would mean that the team has more than one component test
+					if(!shortName.endsWith("tests")) {
+						aString = aString + "<tbody><tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
+						aString = aString + "<tr><td><P>" + shortName;
+					}
+					//The team has only one component test
+					else
+						aString = aString + "<tbody><tr><td><b>" + shortName;
+					testShortName = shortName;
+					
+					counter = 0;
+				}
+			}
+			//If the file's short name starts with the current prefix
+			if(shortName.startsWith(prefix)) {
+				//If the new file has a different short name than the current one
+				if(!shortName.equals(testShortName)){
+					//Fill the remaining cells with '-'. These files will later be listed as
+					//missing
+					while(counter<4) {
+						aString = aString + "<td align=\"center\">-</td>";
+						counter++;
+					}
+					counter = 0;
+					//Print the component name
+					aString = aString + "<tr><td><P>" + shortName;
+					//Loop until the matching string postfix(test config.) is found
+					while(counter<4 && !fileName.endsWith(testsConfig[counter])) {
+						aString = aString + "<td align=\"center\">-</td>";
+						counter++;
+					}
+				}
+				else {
+					//Loop until the matching string postfix(test config.) is found
+					while(counter<4 && !fileName.endsWith(testsConfig[counter])) {
+						aString = aString + "<td align=\"center\">-</td>";
+						counter++;
+					}
+					//If the previous component has no more test files left
+					if(counter==4) {
+						counter = 0;
+						//Print the new component name
+						aString = aString + "<tr><td><P>" + shortName;
+						//Loop until the matching string postfix(test config.) is found
+						while(counter<4 && !fileName.endsWith(testsConfig[counter])) {
+							aString = aString + "<td align=\"center\">-</td>";
+							counter++;
+						}
+					}
+				}
+				
+				testShortName = shortName;
+				
+				if (errorCount != 0)
+					aString = aString + "<td align=\"center\"><b>";
+				else 
+					aString = aString + "<td align=\"center\">";
+			
+				//Print number of errors
+				if (errorCount!=0){
+					displayName="<font color=\"#ff0000\">"+ "(" + String.valueOf(errorCount) + ")" +"</font>";
+				}
+				else {
+					displayName="(0)";
+				}
+				
+				//Reference
+				if (errorCount==-1){
+					aString=aString.concat(displayName);
+				}else {
+					aString=aString
+						+ "<a href="
+						+ "\""
+						+ hrefTestResultsTargetPath
+						+ "/"
+						+ fileName.substring(begin+1, fileName.length()-4)
+						+ ".html"
+						+ "\">"
+						+ displayName
+						+ "</a>";
+				}
+							
+				if (errorCount == -1)
+					aString = aString + "<font color=\"#ff0000\">DNF";
+				
+				if (errorCount != 0)
+					aString = aString + "</font></b></td>";
+				else 	
+					aString = aString + "</td>";
+				counter++;
+			}
+		}
+
+		return aString;
+	}
+	
 	private int countErrors(String fileName) {
 		int errorCount = 0;
 		
@@ -766,6 +1068,24 @@ public class TestResultsGenerator extends Task {
 			dropTokens.add(tokenizer.nextToken());
 		}
 	}
+	
+	protected void getDifferentPlatformsFromList(String list) {
+		StringTokenizer tokenizer = new StringTokenizer(list, ";");
+		differentPlatforms = new Vector();
+
+		while (tokenizer.hasMoreTokens()) {
+			differentPlatforms.add(tokenizer.nextToken());
+		}
+	}
+	
+	protected void getPlatformSpecsFromList(String list) {
+		StringTokenizer tokenizer = new StringTokenizer(list, ",");
+		platformSpecs = new Vector();
+
+		while (tokenizer.hasMoreTokens()) {
+			platformSpecs.add(tokenizer.nextToken());
+		}
+	}
 
 	public String getDropTokenList() {
 		return dropTokenList;
@@ -832,6 +1152,22 @@ public class TestResultsGenerator extends Task {
 
 	public void setBuildType(String buildType) {
 		this.buildType = buildType;
+	}
+
+	public String getPlatformSpecificTemplateList() {
+		return platformSpecificTemplateList;
+	}
+
+	public void setPlatformSpecificTemplateList(String platformSpecificTemplateList) {
+		this.platformSpecificTemplateList = platformSpecificTemplateList;
+	}
+	
+	public void setPlatformIdentifierToken(String platformIdentifierToken) {
+		this.platformIdentifierToken = platformIdentifierToken;
+	}
+	
+	public String getPlatformIdentifierToken() {
+		return platformIdentifierToken;
 	}
 
 }

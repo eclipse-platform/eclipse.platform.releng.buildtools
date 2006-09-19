@@ -47,7 +47,7 @@ public class ErrorTracker {
 		// For testing only.  Should not be invoked
 		
 		ErrorTracker anInstance = new ErrorTracker();
-		anInstance.loadFile("D:\\workspaces\\builder_rework\\org.eclipse.releng.eclipsebuilder\\testManifest.xml");
+		anInstance.loadFile("C:\\junk\\testManifest.xml");
 		String[] theTypes = anInstance.getTypes();
 		for (int i=0; i < theTypes.length; i++) {
 			// System.out.println("Type: " + theTypes[i]);
@@ -73,7 +73,7 @@ public class ErrorTracker {
 			int elementCount = elements.getLength();
 			for (int i = 0; i < elementCount; i++) {
 				PlatformStatus aPlatform = new PlatformStatus((Element) elements.item(i));
-				// System.out.println("ID: " + aPlatform.getId());
+				//System.out.println("ID: " + aPlatform.getId());
 				platforms.put(aPlatform.getId(), aPlatform);
 				
 				Node zipType = elements.item(i).getParentNode();
