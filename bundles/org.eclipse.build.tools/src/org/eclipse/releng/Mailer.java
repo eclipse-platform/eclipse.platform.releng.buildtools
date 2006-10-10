@@ -17,6 +17,8 @@ package org.eclipse.releng;
 
 import javax.mail.*;
 import javax.mail.internet.*;
+
+import java.io.File;
 import java.util.StringTokenizer;
 import javax.activation.*;
 import java.util.Properties;
@@ -164,7 +166,8 @@ public class Mailer {
 				// attach the file to the message 
 				FileDataSource attachment = new FileDataSource(attachments[i]);
 				attachmentPart.setDataHandler(new DataHandler(attachment));
-				attachmentPart.setFileName(attachments[i]);
+				File attachmentFile=new File(attachments[i]);							
+				attachmentPart.setFileName(attachmentFile.getParent()+"-"+attachmentFile.getName());
 				mp.addBodyPart(attachmentPart);
 			}
 
