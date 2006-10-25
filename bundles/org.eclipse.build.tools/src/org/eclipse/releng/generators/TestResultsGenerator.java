@@ -776,7 +776,8 @@ public class TestResultsGenerator extends Task {
 
 		//If the file name doesn't end with any of the set test configurations, do nothing
 		boolean endsWithConfig = false;
-		for(int i=0; i<4; i++) {
+		int len = testsConfig.length;
+		for(int i=0; i<len; i++) {
 			if(fileName.endsWith(testsConfig[i]))
 				endsWithConfig = true;
 		}
