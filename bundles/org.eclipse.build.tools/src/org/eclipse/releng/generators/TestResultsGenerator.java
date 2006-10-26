@@ -776,8 +776,8 @@ public class TestResultsGenerator extends Task {
 
 		//If the file name doesn't end with any of the set test configurations, do nothing
 		boolean endsWithConfig = false;
-		int len = testsConfig.length;
-		for(int i=0; i<len; i++) {
+		int card = testsConfig.length;
+		for(int i=0; i<card; i++) {
 			if(fileName.endsWith(testsConfig[i]))
 				endsWithConfig = true;
 		}
@@ -810,7 +810,7 @@ public class TestResultsGenerator extends Task {
 					aString = aString + "<tr><td><P>" + shortName;
 					
 					//Loop until the matching string postfix(test config.) is found
-					while(counter<4 && !fileName.endsWith(testsConfig[counter])) {
+					while(counter<card && !fileName.endsWith(testsConfig[counter])) {
 						aString = aString + "<td align=\"center\">-</td>";
 						counter++;
 					}
@@ -820,7 +820,7 @@ public class TestResultsGenerator extends Task {
 					prefix = shortName.substring(0, shortName.indexOf(".tests") + 6);
 	
 					//Loop until the matching string postfix(test config.) is found
-					while(counter<4 && !fileName.endsWith(testsConfig[counter])) {
+					while(counter<card && !fileName.endsWith(testsConfig[counter])) {
 						aString = aString + "<td align=\"center\">-</td>";
 						counter++;
 					}
@@ -845,7 +845,7 @@ public class TestResultsGenerator extends Task {
 				if(!shortName.equals(testShortName)){
 					//Fill the remaining cells with '-'. These files will later be listed as
 					//missing
-					while(counter<4) {
+					while(counter<card) {
 						aString = aString + "<td align=\"center\">-</td>";
 						counter++;
 					}
@@ -853,24 +853,24 @@ public class TestResultsGenerator extends Task {
 					//Print the component name
 					aString = aString + "<tr><td><P>" + shortName;
 					//Loop until the matching string postfix(test config.) is found
-					while(counter<4 && !fileName.endsWith(testsConfig[counter])) {
+					while(counter<card && !fileName.endsWith(testsConfig[counter])) {
 						aString = aString + "<td align=\"center\">-</td>";
 						counter++;
 					}
 				}
 				else {
 					//Loop until the matching string postfix(test config.) is found
-					while(counter<4 && !fileName.endsWith(testsConfig[counter])) {
+					while(counter<card && !fileName.endsWith(testsConfig[counter])) {
 						aString = aString + "<td align=\"center\">-</td>";
 						counter++;
 					}
 					//If the previous component has no more test files left
-					if(counter==4) {
+					if(counter==card) {
 						counter = 0;
 						//Print the new component name
 						aString = aString + "<tr><td><P>" + shortName;
 						//Loop until the matching string postfix(test config.) is found
-						while(counter<4 && !fileName.endsWith(testsConfig[counter])) {
+						while(counter<card && !fileName.endsWith(testsConfig[counter])) {
 							aString = aString + "<td align=\"center\">-</td>";
 							counter++;
 						}
