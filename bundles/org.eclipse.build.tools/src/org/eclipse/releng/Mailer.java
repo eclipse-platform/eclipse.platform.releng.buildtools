@@ -32,9 +32,9 @@ public class Mailer {
 	private BuildProperties buildProperties;
 
 	//convert the comma separated list of email addressed into an array of Address objects
-	private Address[] getAddresses() {
+	private Address[] getAddresses(String recipientList) {
 		int i = 0;
-		StringTokenizer recipients = new StringTokenizer(buildProperties.getRecipientList(), ",");
+		StringTokenizer recipients = new StringTokenizer(recipientList, ",");
 		Address[] addresses = new Address[recipients.countTokens()];
 
 		while (recipients.hasMoreTokens()) {
@@ -49,16 +49,18 @@ public class Mailer {
 
 	public Mailer(){
 		buildProperties = new BuildProperties();
-		if (buildProperties.getHost().equals("")||buildProperties.getSender().equals("")||buildProperties.getRecipientList().equals("")){
+		if (buildProperties.getHost().equals("")||buildProperties.getSender().equals("")||buildProperties.getToRecipientList().equals("")){
 			sendMail=false;
 		}
 	}
 
 
 	public static void main(String args[]) {
-		new Mailer();
+		new Mailer().sendTextMessage("Happy Halloween!", "BOO");
 	}
 
+
+	
 	public void sendMessage(String aSubject, String aMessage) {
 		if (aSubject == null || aMessage == null || sendMail == false){
 			printEmailFailureNotice(aSubject,aMessage);
@@ -82,7 +84,7 @@ public class Mailer {
 			message.setFrom(new InternetAddress(buildProperties.getSender()));
 
 			// Set the to address
-			message.addRecipients(Message.RecipientType.TO, getAddresses());
+			message.addRecipients(Message.RecipientType.TO, getAddresses(buildProperties.getToRecipientList()));
 
 			// Set the subject
 			message.setSubject(buildProperties.getBuildSubjectPrefix()+
@@ -101,6 +103,51 @@ public class Mailer {
 					+ buildProperties.getTimestamp()
 					+ "):  "
 					+ aMessage);
+
+			// Send message
+			Transport.send(message);
+
+		} catch (AddressException e) {
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void sendTextMessage(String aSubject, String aMessage) {
+		if (aSubject == null || aMessage == null || sendMail == false){
+			printEmailFailureNotice(aSubject,aMessage);
+		}
+
+		// Get system properties
+		Properties props = System.getProperties();
+
+		// Setup mail server
+		props.put("mail.smtp.host", buildProperties.getHost());
+
+		// Get session
+		Session session = Session.getDefaultInstance(props, null);
+
+		// Define message
+		MimeMessage message = new MimeMessage(session);
+
+		try {
+			
+			// Set the from address
+			message.setFrom(new InternetAddress(buildProperties.getSender()));
+
+			// Set the to address
+			message.addRecipients(Message.RecipientType.BCC, getAddresses(buildProperties.getTextRecipientList()));
+
+			// Set the subject
+			message.setSubject(buildProperties.getBuildSubjectPrefix()+
+						"Build "
+							+ buildProperties.getBuildid()
+							+ ":"
+							+ aSubject);
+
+			// Set the content
+			message.setText(aMessage);
 
 			// Send message
 			Transport.send(message);
@@ -138,7 +185,7 @@ public class Mailer {
 			message.setFrom(new InternetAddress(buildProperties.getSender()));
 
 			// Set the to address
-			message.addRecipients(Message.RecipientType.TO, getAddresses());
+			message.addRecipients(Message.RecipientType.TO, getAddresses(buildProperties.getToRecipientList()));
 
 			// Set the subject
 			message.setSubject(buildProperties.getBuildSubjectPrefix()+
@@ -183,7 +230,7 @@ public class Mailer {
 
 	private void printEmailFailureNotice(String aSubject, String aMessage){
 		System.out.println("Email failed.  Settings:");
-		System.out.println("\nhost="+buildProperties.getHost()+"\nsender="+buildProperties.getSender()+"\nrecipients="+buildProperties.getRecipientList());
+		System.out.println("\nhost="+buildProperties.getHost()+"\nsender="+buildProperties.getSender()+"\nrecipients="+buildProperties.getToRecipientList());
 		System.out.println("\nSubject="+aSubject+"\nMessage="+aMessage);
 		return;
 	}

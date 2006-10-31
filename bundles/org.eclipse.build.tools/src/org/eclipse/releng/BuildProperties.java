@@ -20,7 +20,10 @@ import java.util.Properties;
 public class BuildProperties {
 	// recipients key value setting.  Comma separated list of email addresses of those who should
 	// receive build information
-	private String recipientList = "";
+	private String toRecipientList = "";
+
+	// text message notification list
+	private String textRecipientList = "";
 
 	// email address of the sender
 	private String sender = "";
@@ -102,10 +105,18 @@ public class BuildProperties {
 			}
 
 			try {
-				recipientList = buildProperties.get("recipients").toString();
+				toRecipientList = buildProperties.get("to_recipients").toString();
 			} catch (NullPointerException e) {
 				System.out.println(
-					"Value for recipients not found in monitor.properties");
+					"Value for TO recipients not found in monitor.properties");
+
+			}
+
+			try {
+				textRecipientList = buildProperties.get("textRecipients").toString();
+			} catch (NullPointerException e) {
+				System.out.println(
+					"Value for textRecipients not found in monitor.properties");
 
 			}
 
@@ -221,8 +232,8 @@ public class BuildProperties {
 	 * Returns the recipientList.
 	 * @return String
 	 */
-	public String getRecipientList() {
-		return recipientList;
+	public String getToRecipientList() {
+		return toRecipientList;
 	}
 
 	/**
@@ -246,7 +257,7 @@ public class BuildProperties {
 	 * @param recipientList The recipientList to set
 	 */
 	public void setRecipientList(String recipientList) {
-		this.recipientList = recipientList;
+		this.toRecipientList = recipientList;
 	}
 
 	/**
@@ -303,6 +314,16 @@ public class BuildProperties {
 	 */
 	public void setftpUrl(String downloadUrl) {
 		this.ftpUrl = downloadUrl;
+	}
+
+
+	public String getTextRecipientList() {
+		return textRecipientList;
+	}
+
+
+	public void setTextRecipientList(String textRecipientList) {
+		this.textRecipientList = textRecipientList;
 	}
 	
 }
