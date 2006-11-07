@@ -105,10 +105,10 @@ public class BuildProperties {
 			}
 
 			try {
-				toRecipientList = buildProperties.get("to_recipients").toString();
+				toRecipientList = buildProperties.get("recipients").toString();
 			} catch (NullPointerException e) {
 				System.out.println(
-					"Value for TO recipients not found in monitor.properties");
+					"Value for recipients not found in monitor.properties");
 
 			}
 
