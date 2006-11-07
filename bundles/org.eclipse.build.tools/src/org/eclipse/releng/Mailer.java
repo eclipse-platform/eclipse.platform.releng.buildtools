@@ -31,11 +31,6 @@ public class Mailer {
 	// the Object that holds the key value pairs in monitor.properties
 	private BuildProperties buildProperties;
 
-	private Address[] getAddresses() {
-		return getAddresses(buildProperties.getToRecipientList());
-		
-	}
-
 	//convert the comma separated list of email addressed into an array of Address objects
 	private Address[] getAddresses(String recipientList) {
 		int i = 0;
