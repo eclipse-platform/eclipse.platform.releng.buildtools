@@ -56,11 +56,15 @@ public class Mailer {
 
 
 	public static void main(String args[]) {
-		new Mailer().sendTextMessage("Happy Halloween!", "BOO");
+		Mailer mailer=new Mailer();
+		mailer.sendTextMessage(args[0],args[1],args[2]);
 	}
 
-
-	
+	public void sendTextMessage(String monitorProperties,String aSubject, String aMessage) {
+		buildProperties=new BuildProperties();
+		sendTextMessage(aSubject, aMessage);
+	}
+		
 	public void sendMessage(String aSubject, String aMessage) {
 		if (aSubject == null || aMessage == null || sendMail == false){
 			printEmailFailureNotice(aSubject,aMessage);

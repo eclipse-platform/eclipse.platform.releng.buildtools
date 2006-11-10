@@ -52,13 +52,18 @@ public class BuildProperties {
 	// the Object that holds the key value pairs in monitor.properties
 	private Properties buildProperties;
 
-	public BuildProperties() {
+	public BuildProperties (){
+		this("monitor.properties");
+	}
+	
+		
+	public BuildProperties(String monitorProperties) {
 		buildProperties = new Properties();
 		// retrieve information from monitor.properties file.
 		//  This file should reside in the same directory as the startup.jar at build time.
 		try {
 			buildProperties.load(
-				new FileInputStream(new File("monitor.properties")));
+				new FileInputStream(new File(monitorProperties)));
 
 			try {
 					buildSubjectPrefix = buildProperties.get("buildSubjectPrefix").toString();
