@@ -48,7 +48,10 @@ public class Mailer {
 	}
 
 	public Mailer(){
-		buildProperties = new BuildProperties();
+		this("monitor.properties");
+	}
+	public Mailer(String buildPropertiesPath){
+		buildProperties = new BuildProperties(buildPropertiesPath);
 		if (buildProperties.getHost().equals("")||buildProperties.getSender().equals("")||buildProperties.getToRecipientList().equals("")){
 			sendMail=false;
 		}
@@ -56,15 +59,10 @@ public class Mailer {
 
 
 	public static void main(String args[]) {
-		Mailer mailer=new Mailer();
-		mailer.sendTextMessage(args[0],args[1],args[2]);
+		Mailer mailer=new Mailer(args[0]);
+		mailer.sendTextMessage(args[1],args[2]);
 	}
-
-	public void sendTextMessage(String monitorProperties,String aSubject, String aMessage) {
-		buildProperties=new BuildProperties();
-		sendTextMessage(aSubject, aMessage);
-	}
-		
+	
 	public void sendMessage(String aSubject, String aMessage) {
 		if (aSubject == null || aMessage == null || sendMail == false){
 			printEmailFailureNotice(aSubject,aMessage);
