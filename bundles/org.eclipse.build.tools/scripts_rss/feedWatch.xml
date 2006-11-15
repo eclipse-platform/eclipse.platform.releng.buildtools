@@ -8,8 +8,8 @@
 
 	<!-- 1. Define property file -->
 	<target name="init">
-		<!-- <property file="../properties/watcher.emf.properties"/> -->
-		<property file="../properties/watcher.emf.properties"/>
+		<!-- <property file="../properties/feedWatch.emf.properties"/> -->
+		<property file="../properties/feedWatch.uml2.properties"/>
 	</target>
 
 	<!-- 2. Watch feed for certain change conditions and respond if necessary -->

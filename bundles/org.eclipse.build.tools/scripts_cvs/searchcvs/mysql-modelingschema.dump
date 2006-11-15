@@ -90,7 +90,7 @@ CREATE TABLE `cvsfiles` (
   `project` varchar(50) NOT NULL,
   PRIMARY KEY  (`fid`),
   KEY `project` (`project`),
-  KEY `cvsname` (`cvsname`(333))
+  UNIQUE KEY `cvsname` (`cvsname`(333))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --

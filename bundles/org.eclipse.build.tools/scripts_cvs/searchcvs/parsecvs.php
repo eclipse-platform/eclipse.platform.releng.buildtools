@@ -49,6 +49,15 @@ $percommit_regex = "#^\-{28}$\\n
 	^(.+?)$\\n
 	^(?:\-{28}|={77})#smx";
 
+$bugs_regex = "@(?:
+        \[\#?(\d+)\]
+        |
+        (?:Bugzilla)?\#(\d+)
+        |
+        https?\Q://bugs.eclipse.org/bugs/show_bug.cgi?id=\E(\d+)
+        )@x";
+
+include_once "includes/parsecvs-dbaccess.php";
 $connect = mysql_connect($dbhost, $dbuser, $dbpass) or die("Couldn't connect to database!\n");
 mysql_select_db($db, $connect) or die(mysql_error());
 $file = file_get_contents(($argv[1] ? $argv[1] : "php://stdin"));
@@ -61,7 +70,11 @@ foreach ($regs[0] as $z)
 	/* parse each file's info */
 	if (preg_match($perfile_regex, $z, $props))
 	{
-		#print $props[1] . "\n";
+		$esc = array(1, 3, 9);
+		foreach ($esc as $y)
+		{
+			$props[$y] = mysql_real_escape_string($props[$y], $connect);
+		}
 		preg_match("/^\/cvsroot\/[^\/]+\/([^\/]+)\//", $props[1], $proj);
 		$q = "`project` = '$proj[1]', `head` = '$props[3]', `keyword_subs` = '$props[9]'";
 		wmysql_query("INSERT INTO `cvsfiles` SET `cvsname` = '$props[1]', $q ON DUPLICATE KEY UPDATE $q");
@@ -79,7 +92,7 @@ foreach ($regs[0] as $z)
 		}
 		if ($count > 0)
 		{
-			$syms[1] = preg_replace("/^(.+)$/e", "fixup($1)", $syms[1]);
+			$syms[1] = preg_replace("/^(.+)$/e", "fixup('$1')", $syms[1]);
 			wmysql_query("INSERT INTO `tags` (`tagname`, `tagdate`) VALUES " . join($syms[1], ",") . " ON DUPLICATE KEY UPDATE `tid` = `tid`");
 			wmysql_query("INSERT INTO `tmptags` (`tagname`, `revision`) VALUES " . join($filetags, ","));
 			wmysql_query("INSERT INTO `filetags` SELECT $row[0], `tid`, `revision` FROM `tmptags` NATURAL JOIN `tags` ON DUPLICATE KEY UPDATE `filetags`.`revision` = `tmptags`.`revision`");
@@ -91,15 +104,17 @@ foreach ($regs[0] as $z)
 		while (preg_match($percommit_regex, $commits, $revs))
 		{
 			$commits = substr($commits, strlen($revs[0]) - 28); //leave the \-{28} in tact
-			$revs[8] = addslashes($revs[8]);
+			$revs[8] = mysql_real_escape_string($revs[8], $connect);
 			$q = "`date` = STR_TO_DATE('$revs[2]', '%Y/%m/%d %T'), `author` = '$revs[3]', `state` = '$revs[4]', `linesplus` = '$revs[5]', `linesminus` = '$revs[6]', `message` = '$revs[8]'";
 			wmysql_query("INSERT INTO `commits` SET `fid` = '$row[0]', `revision` = '$revs[1]', $q ON DUPLICATE KEY UPDATE $q");
 
 			/* parse bug numbers */
-			if (preg_match_all("/\[(\d+)\]/", $revs[8], $bugs))
+			if (preg_match_all($bugs_regex, $revs[8], $ubugs))
 			{
-				$bugs[1] = preg_replace("/^(.+)$/", "('$row[0]', '$revs[1]', '$1')", $bugs[1]);
-				wmysql_query("INSERT INTO `bugs` (`fid`, `revision`, `bugid`) VALUES " . join($bugs[1], ",") . " ON DUPLICATE KEY UPDATE `bugid` = `bugid`");
+				unset($ubugs[0]);
+				$bugs = extract_bugs($ubugs);
+				$bugs = preg_replace("/^(.+)$/", "('$row[0]', '$revs[1]', '$1')", $bugs);
+				wmysql_query("INSERT INTO `bugs` (`fid`, `revision`, `bugid`) VALUES " . join($bugs, ",") . " ON DUPLICATE KEY UPDATE `bugid` = `bugid`");
 			}
 		}
 	}
@@ -128,5 +143,21 @@ function wmysql_query($sql)
 {
 	$res = mysql_query($sql) or die("$sql\n" . mysql_error() . "\n");
 	return $res;
+}
+
+function extract_bugs($regs)
+{
+        foreach ($regs as $z)
+        {
+                foreach ($z as $y)
+                {
+                        if (preg_match("/^\d+$/", $y))
+                        {
+                                $bugs[] = $y;
+                        }
+                }
+        }
+
+        return $bugs;
 }
 ?>

@@ -17,6 +17,8 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -150,6 +152,26 @@ public class UpdateBugStateTask extends Task
 
   private static final String EMPTY = ""; //$NON-NLS-1$
 
+  private static final String LT = "<"; //$NON-NLS-1$
+
+  private static final String GT = ">"; //$NON-NLS-1$
+
+  private static final String QUOT = "\""; //$NON-NLS-1$
+
+  private static final String APOS = "'"; //$NON-NLS-1$
+
+  private static final String HTML_APOS = "&apos;"; //$NON-NLS-1$
+
+  private static final String HTML_QUOT = "&quot;"; //$NON-NLS-1$
+
+  private static final String HTML_LT = "&lt;"; //$NON-NLS-1$
+
+  private static final String HTML_GT = "&gt;"; //$NON-NLS-1$
+
+  private static final String HTML_NBSP = "&nbsp;"; //$NON-NLS-1$
+
+  private static final String HTML_AMP = "&amp;"; //$NON-NLS-1$
+
   private int debug;
 
   private int login;
@@ -172,6 +194,8 @@ public class UpdateBugStateTask extends Task
 
   private String endDate;
 
+  private LinkedHashMap trans;
+
   public UpdateBugStateTask()
   {
     debug = 1;
@@ -186,6 +210,14 @@ public class UpdateBugStateTask extends Task
     milestone = EMPTY;
     bugList = EMPTY;
     resolution = BZ_FX;
+
+    trans = new LinkedHashMap(8, 0.75f, false);
+    trans.put(HTML_APOS, APOS);
+    trans.put(HTML_QUOT, QUOT);
+    trans.put(HTML_LT, LT);
+    trans.put(HTML_GT, GT);
+    trans.put(HTML_NBSP, SP);
+    trans.put(HTML_AMP, AMP);
   }
 
   public void setDebug(int d)
@@ -522,6 +554,8 @@ public void execute() throws BuildException
 
   private String urlEncode(String elem)
   {
+    elem = htmlDecode(elem);
+
     try
     {
       elem = URLEncoder.encode(elem, UTF_8);
@@ -651,6 +685,18 @@ public void execute() throws BuildException
     }
 
     return pxml;
+  }
+
+  private String htmlDecode(String str)
+  {
+    for (Iterator i = trans.keySet().iterator(); i.hasNext();)
+    {
+      String elem = i.next().toString();
+
+      str = Pattern.compile(elem).matcher(str).replaceAll(trans.get(elem).toString());
+    }
+
+    return str;
   }
 
   public static void main(String args[])

@@ -14,8 +14,8 @@
 				scripts_rss/**/*,
                 schema/**/*,
 		    	data/**/*,
-                properties/updater.*.properties, 
-                properties/watcher.*.properties, 
+                properties/feedPublish.*.properties, 
+                properties/feedWatch.*.properties, 
                 properties/_README.txt"
 			basedir="."
 			update="true"/>
