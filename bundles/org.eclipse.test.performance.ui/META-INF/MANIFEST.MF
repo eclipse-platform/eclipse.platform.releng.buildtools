@@ -10,7 +10,8 @@ Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.test.performance,
  org.eclipse.swt,
- org.junit,
  org.apache.derby;resolution:=optional,
- org.apache.derby.core;resolution:=optional
+ org.apache.derby.core;resolution:=optional,
+ Cloudscape;resolution:=optional,
+ org.junit
 Eclipse-LazyStart: true
