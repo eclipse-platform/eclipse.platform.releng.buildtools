@@ -54,7 +54,9 @@ It is assumed that keys are set up on test machines to permit connections withou
 	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/results/chkpii ${testResults}"/>
 	</exec>
-
+	<exec dir="." executable="${copyClient}">
+			<arg line="-r ${testMachine}:${executionDir}/results/results.xml ${testResults}/versiontool/results.xml"/>
+		</exec>
 	<!--  copy the console log from testing  -->
 	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/${consolelog} ${testResults}/consolelogs"/>
