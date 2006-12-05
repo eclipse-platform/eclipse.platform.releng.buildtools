@@ -541,7 +541,7 @@ public class TestResultsGenerator extends Task {
 
 				if (platforms[i].hasErrors()) {
 					imageName =
-						"<a href=\"testResults.php\"><img src = \"FAIL.gif\" width=19 height=23></a>";
+						"<a href=\"" + getTestResultsHtmlFileName() + "\"><img src = \"FAIL.gif\" width=19 height=23></a>";
 				} else {
 					if (testsRan) {
 						imageName = "<img src = \"OK.gif\" width=19 height=23>";
@@ -583,7 +583,7 @@ public class TestResultsGenerator extends Task {
 
 		if (aPlatform.hasErrors()) {
 			imageName =
-				"<a href=\"testResults.php\"><img src = \"FAIL.gif\" width=19 height=23></a>";
+				"<a href=\"" + getTestResultsHtmlFileName()+ "\"><img src = \"FAIL.gif\" width=19 height=23></a>";
 			//Failure in tests
 			testResultsStatus = "failed";
 		} else {
