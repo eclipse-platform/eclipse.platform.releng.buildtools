@@ -44,6 +44,7 @@ It is assumed that keys are set up on test machines to permit connections withou
 	<!--  this directory must exist before remote copy operation  -->
 	<mkdir dir="${testResults}" />
 	<mkdir dir="${testResults}/consolelogs" />
+	<mkdir dir="${testResults}/versiontool" />
 	
 	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/results/html ${testResults}"/>
@@ -53,10 +54,10 @@ It is assumed that keys are set up on test machines to permit connections withou
 	</exec>
 	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/results/chkpii ${testResults}"/>
-	</exec>
+	</exec>	
 	<exec dir="." executable="${copyClient}">
 			<arg line="-r ${testMachine}:${executionDir}/results/results.xml ${testResults}/versiontool/results.xml"/>
-		</exec>
+	</exec>
 	<!--  copy the console log from testing  -->
 	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/${consolelog} ${testResults}/consolelogs"/>
