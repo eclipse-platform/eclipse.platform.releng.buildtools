@@ -44,8 +44,8 @@ public class UnpackUpdateJars extends Task {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		UnpackUpdateJars up=new UnpackUpdateJars();
-		up.site="D:\\master\\site";
-		up.output="D:\\master\\newsite";
+		up.site="C:\\updatejars\\eclipse";
+		up.output="C:\\updatejars\\newsite";
 		up.execute();
 	}
 
@@ -194,8 +194,10 @@ public class UnpackUpdateJars extends Task {
 				}
 				continue;
 			}
-			if (unpackNode.getNodeValue() == "true") {
+			
+			if (unpackNode.getNodeValue().toString().trim().toLowerCase().equals("true")) {
 				if (!unpackedPlugins.contains(pluginDirName)){
+					System.out.println(pluginDirName);
 					unpackedPlugins.add(pluginDirName);
 				}
 				continue;
