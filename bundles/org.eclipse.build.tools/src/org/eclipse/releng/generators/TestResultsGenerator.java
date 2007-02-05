@@ -17,7 +17,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -42,12 +41,6 @@ import org.xml.sax.SAXException;
  * @author Dean Roberts
  */
 public class TestResultsGenerator extends Task {
-	private static final String WARNING_SEVERITY = "WARNING";
-	private static final String ERROR_SEVERITY = "ERROR";
-	private static final String ForbiddenReferenceID = "ForbiddenReference";
-	private static final String DiscouragedReferenceID = "DiscouragedReference";
-
-	private static final int DEFAULT_READING_SIZE = 8192;
 
 	static final String elementName = "testsuite";
 	static final String testResultsToken = "%testresults%";
@@ -214,114 +207,105 @@ public class TestResultsGenerator extends Task {
 
 	public void parseCompileLogs() {
 
-		StringBuffer replaceString = new StringBuffer();
-		processCompileLogsDirectory(
-			compileLogsDirectoryName,
-			replaceString);
-		if (replaceString.length() == 0) {
-			replaceString.append("None");
+		String replaceString = "";
+		replaceString =
+			processCompileLogsDirectory(
+				compileLogsDirectoryName,
+				replaceString);
+		if (replaceString == "") {
+			replaceString = "None";
 		}
 		testResultsTemplateString =
-			replace(testResultsTemplateString, compileLogsToken, String.valueOf(replaceString));
+			replace(testResultsTemplateString, compileLogsToken, replaceString);
 
 	}
 
-	private void processCompileLogsDirectory(String directoryName, StringBuffer buffer) {
+	private String processCompileLogsDirectory(String directoryName, String aString) {
 		File sourceDirectory = new File(directoryName);
 		if (sourceDirectory.isFile()) {
 			if (sourceDirectory.getName().endsWith(".log"))
-				readCompileLog(sourceDirectory.getAbsolutePath(), buffer);
+				aString=aString + readCompileLog(sourceDirectory.getAbsolutePath());
 			if (sourceDirectory.getName().endsWith(".xml"))
-				parseCompileLog(sourceDirectory.getAbsolutePath(), buffer);
+				aString=aString + parseCompileLog(sourceDirectory.getAbsolutePath());
 		}
 		if (sourceDirectory.isDirectory()) {
 			File[] logFiles = sourceDirectory.listFiles();
 			Arrays.sort(logFiles);
 			for (int j = 0; j < logFiles.length; j++) {
-				processCompileLogsDirectory(logFiles[j].getAbsolutePath(), buffer);
+				aString= processCompileLogsDirectory(logFiles[j].getAbsolutePath(), aString);
 			}
 		}
+		return aString;
 	}
 
-	private void readCompileLog(String log, StringBuffer buffer) {
+	private String readCompileLog(String log) {
 		String fileContents = readFile(log);
 
 		int errorCount = countCompileErrors(fileContents);
 		int warningCount = countCompileWarnings(fileContents);
-		int accessRulesWarningCount = countAccessRuleWarnings(fileContents);
 		if (errorCount != 0) {
+
 			//use wildcard in place of version number on directory names
 			String logName =
 				log.substring(getCompileLogsDirectoryName().length() + 1);
-			StringBuffer stringBuffer = new StringBuffer(logName);
-			stringBuffer.replace(
+			StringBuffer buffer = new StringBuffer(logName);
+			buffer.replace(
 				logName.indexOf("_") + 1,
 				logName.indexOf(File.separator, logName.indexOf("_") + 1),
 				"*");
-			logName = new String(stringBuffer);
+			logName = new String(buffer);
 
 			anErrorTracker.registerError(logName);
 		}
-		formatCompileErrorRow(log, errorCount, warningCount, accessRulesWarningCount, buffer);
+		return formatCompileErrorRow(log, errorCount, warningCount);
+
 	}
 	
-	private void parseCompileLog(String log, StringBuffer stringBuffer) {
+	private String parseCompileLog(String log) {
 		int errorCount = 0;
 		int warningCount = 0;
-		int accessRuleWarningCount = 0;
 
 		File file=new File(log);
 		Document aDocument=null;
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(file));
-			InputSource inputSource = new InputSource(reader);
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		InputSource inputSource = new InputSource(reader);
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = null;
+
+		try {
+			builder = factory.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		}
+
+		try {
 			aDocument = builder.parse(inputSource);
 		} catch (SAXException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		} finally {
-			if (reader != null) {
-				try {
-					reader.close();
-				} catch(IOException e) {
-					// ignore
-				}
-			}
 		}
-
-		if (aDocument == null) return;
+		
 		// Get summary of problems
-		NodeList nodeList = aDocument.getElementsByTagName("problem");
+		NodeList nodeList = aDocument.getElementsByTagName("problem_summary");
 		if (nodeList == null ||nodeList.getLength()==0)
-			return;
-
-		int length = nodeList.getLength();
-		for (int i = 0; i < length; i++) {
-			Node problemNode = nodeList.item(i);
-			NamedNodeMap aNamedNodeMap = problemNode.getAttributes();
-			Node severityNode = aNamedNodeMap.getNamedItem("severity");
-			Node idNode = aNamedNodeMap.getNamedItem("id");
-			if (severityNode != null) {
-				if (WARNING_SEVERITY.equals(severityNode)) {
-					// this is a warning
-					// need to check the id
-					if (ForbiddenReferenceID.equals(idNode)
-							|| DiscouragedReferenceID.equals(idNode)) {
-						accessRuleWarningCount++;
-					} else {
-						warningCount++;
-					}
-				} else if (ERROR_SEVERITY.equals(severityNode)) {
-					// this is an error
-					errorCount++;
-				}
-			}
+			return "";
+		
+		Node problemSummaryNode = nodeList.item(0);
+		NamedNodeMap aNamedNodeMap = problemSummaryNode.getAttributes();
+		Node errorNode = aNamedNodeMap.getNamedItem("errors");
+		Node warningNode = aNamedNodeMap.getNamedItem("warnings");
+		if (errorNode != null) {
+			errorCount = Integer.parseInt(errorNode.getNodeValue());
+		}
+		if (warningNode != null) {
+			warningCount = Integer.parseInt(warningNode.getNodeValue());
 		}
 		if (errorCount != 0) {
 			//use wildcard in place of version number on directory names
@@ -337,102 +321,25 @@ public class TestResultsGenerator extends Task {
 
 			anErrorTracker.registerError(logName);
 		}
-		formatCompileErrorRow(
-				log.replaceAll(".xml", ".html"),
-				errorCount,
-				warningCount,
-				accessRuleWarningCount,
-				stringBuffer);
+		return formatCompileErrorRow(log.replaceAll(".xml", ".html"), errorCount, warningCount);
+
 	}
 	
-	public static byte[] getFileByteContent(String fileName) throws IOException {
-		InputStream stream = null;
-		try {
-			File file = new File(fileName);
-			stream = new FileInputStream(file);
-			return getInputStreamAsByteArray(stream, (int) file.length());
-		} finally {
-			if (stream != null) {
-				try {
-					stream.close();
-				} catch (IOException e) {
-					// ignore
-				}
-			}
-		}
-	}
-
-	/**
-	 * Returns the given input stream's contents as a byte array.
-	 * If a length is specified (ie. if length != -1), only length bytes
-	 * are returned. Otherwise all bytes in the stream are returned.
-	 * Note this doesn't close the stream.
-	 * @throws IOException if a problem occured reading the stream.
-	 */
-	public static byte[] getInputStreamAsByteArray(InputStream stream, int length)
-		throws IOException {
-		byte[] contents;
-		if (length == -1) {
-			contents = new byte[0];
-			int contentsLength = 0;
-			int amountRead = -1;
-			do {
-				int amountRequested = Math.max(stream.available(), DEFAULT_READING_SIZE);  // read at least 8K
-				
-				// resize contents if needed
-				if (contentsLength + amountRequested > contents.length) {
-					System.arraycopy(
-						contents,
-						0,
-						contents = new byte[contentsLength + amountRequested],
-						0,
-						contentsLength);
-				}
-
-				// read as many bytes as possible
-				amountRead = stream.read(contents, contentsLength, amountRequested);
-
-				if (amountRead > 0) {
-					// remember length of contents
-					contentsLength += amountRead;
-				}
-			} while (amountRead != -1); 
-
-			// resize contents if necessary
-			if (contentsLength < contents.length) {
-				System.arraycopy(
-					contents,
-					0,
-					contents = new byte[contentsLength],
-					0,
-					contentsLength);
-			}
-		} else {
-			contents = new byte[length];
-			int len = 0;
-			int readSize = 0;
-			while ((readSize != -1) && (len != length)) {
-				// See PR 1FMS89U
-				// We record first the read size. In this case len is the actual read size.
-				len += readSize;
-				readSize = stream.read(contents, len, length - len);
-			}
-		}
-
-		return contents;
-	}
-
 	public String readFile(String fileName) {
-		byte[] aByteArray = null;
+
 		try {
-			aByteArray = getFileByteContent(fileName);
+			FileInputStream aStream = new FileInputStream(fileName);
+			byte[] aByteArray = new byte[aStream.available()];
+			aStream.read(aByteArray);
+			aStream.close();
+			return new String(aByteArray);
+		} catch (FileNotFoundException e) {
+			System.out.println("File not found: " + fileName);
+			return "";
 		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		if (aByteArray == null) {
+			System.out.println("IOException: " + fileName);
 			return "";
 		}
-		return new String(aByteArray);
 	}
 
 	private int countCompileErrors(String aString) {
@@ -441,10 +348,6 @@ public class TestResultsGenerator extends Task {
 
 	private int countCompileWarnings(String aString) {
 		return extractNumber(aString, "warning");
-	}
-	
-	private int countAccessRuleWarnings(String aString) {
-		return extractNumber(aString, "Discouraged access:") + extractNumber(aString, "Access restriction:");
 	}
 
 	private int extractNumber(String aString, String endToken) {
@@ -458,7 +361,7 @@ public class TestResultsGenerator extends Task {
 			&& aString.charAt(startIndex) != '('
 			&& aString.charAt(startIndex) != ',') {
 			startIndex--;
-		}
+		};
 
 		String count = aString.substring(startIndex + 1, endIndex).trim();
 		try {
@@ -716,24 +619,18 @@ public class TestResultsGenerator extends Task {
 	}
 
 	private void writeFile(String outputFileName, String contents) {
-		FileOutputStream outputStream = null;
 		try {
-			outputStream = new FileOutputStream(outputFileName);
+			FileOutputStream outputStream =
+				new FileOutputStream(outputFileName);
 			outputStream.write(contents.getBytes());
+			outputStream.close();
 		} catch (FileNotFoundException e) {
 			System.out.println(
 				"File not found exception writing: " + outputFileName);
 		} catch (IOException e) {
 			System.out.println("IOException writing: " + outputFileName);
-		} finally {
-			if (outputStream != null) {
-				try {
-					outputStream.close();
-				} catch(IOException e) {
-					// ignore
-				}
-			}
 		}
+
 	}
 
 	public void setTestResultsHtmlFileName(String aString) {
@@ -776,15 +673,14 @@ public class TestResultsGenerator extends Task {
 		return dropDirectoryName;
 	}
 
-	private void formatCompileErrorRow(
+	private String formatCompileErrorRow(
 		String fileName,
 		int errorCount,
-		int warningCount,
-		int accessRuleWarningCount,
-		StringBuffer buffer) {
+		int warningCount) {
 
-		if (errorCount == 0 && warningCount == 0 && accessRuleWarningCount == 0) {
-			return;
+		String aString = "";
+		if (errorCount == 0 && warningCount == 0) {
+			return aString;
 		}
 
 		int i = fileName.indexOf(getHrefCompileLogsTargetPath());
@@ -792,22 +688,25 @@ public class TestResultsGenerator extends Task {
 		String shortName =
 			fileName.substring(i + getHrefCompileLogsTargetPath().length());
 
-		buffer
-			.append("<tr><td>")
-			.append("<a href=")
-			.append("\"")
-			.append(getHrefCompileLogsTargetPath())
-			.append(shortName)
-			.append("\">")
-			.append(shortName)
-			.append("</a>")
-			.append("</td><td align=\"center\">")
-			.append(errorCount)
-			.append("</td><td align=\"center\">")
-			.append(accessRuleWarningCount)
-			.append("</td><td align=\"center\">")
-			.append(warningCount)
-			.append("</td></tr>");
+		aString = aString + "<tr><td>";
+
+		aString =
+			aString
+				+ "<a href="
+				+ "\""
+				+ getHrefCompileLogsTargetPath()
+				+ shortName
+				+ "\">"
+				+ shortName
+				+ "</a>";
+
+		aString = aString + "</td><td align=\"center\">";
+		aString = aString + errorCount;
+		aString = aString + "</td><td align=\"center\">";
+		aString = aString + warningCount;
+		aString = aString + "</td></tr>";
+
+		return aString;
 	}
 
 	private String formatRow(String fileName, int errorCount, boolean link) {
