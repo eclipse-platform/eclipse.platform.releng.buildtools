@@ -322,7 +322,7 @@ public class TestVersionTracker extends Task{
     	
     	public String toString(){
     		String keyPrefix=id+"_"+version;
-    		String performanceProperty=hasPerformanceTarget?keyPrefix+".has.performance.target="+hasPerformanceTarget+"\n":"";
+    		String performanceProperty=hasPerformanceTarget?id+".has.performance.target="+hasPerformanceTarget+"\n":"";
     		return id+"="+keyPrefix+"\n"+
     			performanceProperty+
     			id+".prerequisite.testplugins="+getPrerequisiteList()+"\n";
