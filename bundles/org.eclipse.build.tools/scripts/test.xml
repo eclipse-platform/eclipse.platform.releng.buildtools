@@ -23,46 +23,38 @@ It is assumed that keys are set up on test machines to permit connections withou
 	<!--install the vm used for testing-->
 	<antcall target="installVmForRemote" />
 	
-	<!--set up the automated testing framework-->
-	<exec dir="." executable="${copyClient}">
+	<!--Default set up for testing.  Set failonerror to false if callers have a customSetup script.-->
+	<exec dir="." executable="${copyClient}" failonerror="false">
 		<arg line="${dropLocation}/${buildLabel}/${testFramework} ${testMachine}:${testDir}" />
 	</exec>
-	<exec dir="." executable="${loginClient}">
+	<exec dir="." executable="${loginClient}" failonerror="false">
 		<arg line="${testMachine} unzip -o -qq ${testDir}/${testFramework} -d ${testDir}" />
 	</exec>
-	<exec dir="." executable="${copyClient}">
+	<exec dir="." executable="${copyClient}" failonerror="false">
 		<arg line="${dropLocation}/${buildLabel}/${runtime} ${testMachine}:${executionDir}" />
 	</exec>
 	
-	<!--callback to custom script for post setup-->
-	<ant antfile="${customTest}" target="customSetup" dir="${basedir}" />
-	
+	<!--Run additional setup operations, when available-->
+	<subant antfile="${customTest}" target="customSetup" dir="${basedir}" failonerror="false"/>
+
+	<!--Executes script which runs all tests.-->
 	<exec dir="." executable="${loginClient}">
 		<arg line="${testMachine} ${testScript} ${args}" />
 	</exec>
 	
 	<!--  this directory must exist before remote copy operation  -->
-	<mkdir dir="${testResults}" />
 	<mkdir dir="${testResults}/consolelogs" />
-	<mkdir dir="${testResults}/versiontool" />
 	
 	<exec dir="." executable="${copyClient}">
-		<arg line="-r ${testMachine}:${executionDir}/results/html ${testResults}"/>
+		<arg line="-r ${testMachine}:${executionDir}/results/* ${testResults}"/>
 	</exec>
-	<exec dir="." executable="${copyClient}">
-		<arg line="-r ${testMachine}:${executionDir}/results/xml ${testResults}"/>
-	</exec>
-	<exec dir="." executable="${copyClient}">
-		<arg line="-r ${testMachine}:${executionDir}/results/chkpii ${testResults}"/>
-	</exec>	
-	<exec dir="." executable="${copyClient}">
-			<arg line="-r ${testMachine}:${executionDir}/results/versiontool/results.xml ${testResults}/versiontool/results.xml"/>
-	</exec>
-	<!--  copy the console log from testing  -->
-	<exec dir="." executable="${copyClient}">
+	
+	<exec dir="." executable="${copyClient}" failonerror="false">
 		<arg line="-r ${testMachine}:${executionDir}/${consolelog} ${testResults}/consolelogs"/>
 	</exec>
-	
+
+	<!--callback to custom script for post test operations-->
+	<subant antfile="${customTest}" target="customTeardown" dir="${basedir}" failonerror="false"/>
 </target>
 
 <target name="setRemoteLoginClient">
