@@ -1,5 +1,12 @@
 <project name="Targets to run Automated Tests Locally and Remotely" default="main" basedir=".">
 
+<!--
+This script must be called with the ${tester} property set.
+
+The testing.properties file must contain definitions for all other properties in this script if they are not
+set in a calling script or command line.  See test.properties.template for property descriptions.
+-->
+
 <property name="customTest" value="${tester}/customTest.xml" />
 <property name="testing.properties" value="${tester}/testing.properties" />
 <property file="${testing.properties}" />
@@ -35,34 +42,23 @@ It is assumed that keys are set up on test machines to permit connections withou
 	</exec>
 	
 	<!--callback to custom script for post setup-->
-	<ant antfile="${customTest}" target="customSetup" dir="${basedir}" />
+	<subant antfile="${customTest}" target="customSetup" dir="${basedir}" failonerror="false"/>
 	
 	<exec dir="." executable="${loginClient}">
 		<arg line="${testMachine} ${testScript} ${args}" />
 	</exec>
 	
-	<!--  this directory must exist before remote copy operation  -->
-	<mkdir dir="${testResults}" />
+	<!--${testResults} and ${testResults}/consolelogs must exist before rcp and scp copy operations.
+	  Directories contents are copied flattened if the destination directories don't exist.-->
 	<mkdir dir="${testResults}/consolelogs" />
-	<mkdir dir="${testResults}/versiontool" />
 	
 	<exec dir="." executable="${copyClient}">
-		<arg line="-r ${testMachine}:${executionDir}/results/html ${testResults}"/>
-	</exec>
-	<exec dir="." executable="${copyClient}">
-		<arg line="-r ${testMachine}:${executionDir}/results/xml ${testResults}"/>
-	</exec>
-	<exec dir="." executable="${copyClient}">
-		<arg line="-r ${testMachine}:${executionDir}/results/chkpii ${testResults}"/>
-	</exec>	
-	<exec dir="." executable="${copyClient}">
-			<arg line="-r ${testMachine}:${executionDir}/results/versiontool/results.xml ${testResults}/versiontool/results.xml"/>
+		<arg line="-r ${testMachine}:${executionDir}/results/* ${testResults}"/>
 	</exec>
 	<!--  copy the console log from testing  -->
 	<exec dir="." executable="${copyClient}">
 		<arg line="-r ${testMachine}:${executionDir}/${consolelog} ${testResults}/consolelogs"/>
 	</exec>
-	
 </target>
 
 <target name="setRemoteLoginClient">
