@@ -143,7 +143,7 @@ public class TestResultsGenerator extends Task {
 		test.setTestResultsTemplateFileName(
 			"C:\\junk\\templateFiles\\testResults.php.template");
 		test.setPlatformSpecificTemplateList(
-				"Windows,C:\\junk\\templateFiles\\platform.php.template,winPlatform.php;Linux,C:\\junk\\templateFiles\\platform.php.template,linPlatform.php;Solaris,C:\\junk\\templateFiles\\platform.php.template,solPlatform.php;AIX,C:\\junk\\templateFiles\\platform.php.template,aixPlatform.php;HP-UX,C:\\junk\\templateFiles\\platform.php.template,hpuxPlatform.php;Macintosh,C:\\junk\\templateFiles\\platform.php.template,macPlatform.php;Source Build,C:\\junk\\templateFiles\\sourceBuilds.php.template,sourceBuilds.php");
+				"Windows,C:\\junk\\templateFiles\\platform.php.template,winPlatform.php;Linux,C:\\junk\\templateFiles\\platform.php.template,linPlatform.php;Solaris,C:\\junk\\templateFiles\\platform.php.template,solPlatform.php;AIX,C:\\junk\\templateFiles\\platform.php.template,aixPlatform.php;Macintosh,C:\\junk\\templateFiles\\platform.php.template,macPlatform.php;Source Build,C:\\junk\\templateFiles\\sourceBuilds.php.template,sourceBuilds.php");
 		test.setDropTemplateFileName(
 			"C:\\junk\\templateFiles\\index.php.template");
 		test.setTestResultsHtmlFileName("testResults.php");
