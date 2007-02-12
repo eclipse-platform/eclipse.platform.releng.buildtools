@@ -143,7 +143,7 @@ public class CompileErrorCheck extends Task {
 			for (int i = 0; i < nodeList.getLength(); i++) {
 				Node problemSummaryNode = nodeList.item(i);
 				NamedNodeMap aNamedNodeMap = problemSummaryNode.getAttributes();
-				Node errorNode = aNamedNodeMap.getNamedItem("errors");;
+				Node errorNode = aNamedNodeMap.getNamedItem("errors");
 				if (errorNode!= null&&!errorNode.getNodeValue().equals("0")) {
 					logsWithErrors.add(new File(file.getParentFile(),file.getName().replaceAll(".xml", ".html")));
 					System.out.println(file.getName()+" has compile errors.");
