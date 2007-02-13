@@ -42,7 +42,7 @@ It is assumed that keys are set up on test machines to permit connections withou
 	</exec>
 	
 	<!--callback to custom script for post setup-->
-	<subant antfile="${customTest}" target="customSetup" dir="${basedir}" failonerror="false"/>
+	<ant antfile="${customTest}" target="customSetup" dir="${basedir}"/>
 	
 	<exec dir="." executable="${loginClient}">
 		<arg line="${testMachine} ${testScript} ${args}" />
