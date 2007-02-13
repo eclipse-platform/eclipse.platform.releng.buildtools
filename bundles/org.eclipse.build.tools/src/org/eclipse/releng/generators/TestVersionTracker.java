@@ -135,7 +135,8 @@ public class TestVersionTracker extends Task{
     				//get pluginIDs and versions from generated build.xml.  Create TestPlugin objects
     				StringTokenizer tokenizer= new StringTokenizer(pluginIds,",");
     				while (tokenizer.hasMoreTokens()){
-    					String id=tokenizer.nextToken();
+    					String idtmp=tokenizer.nextToken();
+    					String id=idtmp.substring(0, idtmp.indexOf(":"));
     					String version=tokenizer.nextToken();
     					TestPlugin testPlugin=new TestPlugin(id,version);
     					elements.put(id,testPlugin);	
