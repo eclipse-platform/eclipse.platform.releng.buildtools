@@ -793,7 +793,7 @@ public class TestResultsGenerator extends Task {
 			fileName.substring(i + getHrefCompileLogsTargetPath().length());
 
 		buffer
-			.append("<tr><td>")
+			.append("<tr>\n<td>\n")
 			.append("<a href=")
 			.append("\"")
 			.append(getHrefCompileLogsTargetPath())
@@ -802,12 +802,33 @@ public class TestResultsGenerator extends Task {
 			.append(shortName)
 			.append("</a>")
 			.append("</td><td align=\"center\">")
+			.append("<a href=")
+			.append("\"")
+			.append(getHrefCompileLogsTargetPath())
+			.append(shortName)
+			.append("#ERRORS")
+			.append("\">")
 			.append(errorCount)
+			.append("</a>")
 			.append("</td><td align=\"center\">")
+			.append("<a href=")
+			.append("\"")
+			.append(getHrefCompileLogsTargetPath())
+			.append(shortName)
+			.append("#ACCESSRULES_WARNINGS")
+			.append("\">")
 			.append(accessRuleWarningCount)
+			.append("</a>")
 			.append("</td><td align=\"center\">")
+			.append("<a href=")
+			.append("\"")
+			.append(getHrefCompileLogsTargetPath())
+			.append(shortName)
+			.append("#OTHER_WARNINGS")
+			.append("\">")
 			.append(warningCount)
-			.append("</td></tr>");
+			.append("</a>")
+			.append("</td>\n</tr>\n");
 	}
 
 	private String formatRow(String fileName, int errorCount, boolean link) {
