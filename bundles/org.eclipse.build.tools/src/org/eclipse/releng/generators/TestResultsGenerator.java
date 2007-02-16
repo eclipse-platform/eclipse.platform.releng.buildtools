@@ -308,16 +308,18 @@ public class TestResultsGenerator extends Task {
 			Node severityNode = aNamedNodeMap.getNamedItem("severity");
 			Node idNode = aNamedNodeMap.getNamedItem("id");
 			if (severityNode != null) {
-				if (WARNING_SEVERITY.equals(severityNode.getNodeValue())) {
+				String severityNodeValue = severityNode.getNodeValue();
+				if (WARNING_SEVERITY.equals(severityNodeValue)) {
 					// this is a warning
 					// need to check the id
-					if (ForbiddenReferenceID.equals(idNode)
-							|| DiscouragedReferenceID.equals(idNode.getNodeValue())) {
+					String nodeValue = idNode.getNodeValue();
+					if (ForbiddenReferenceID.equals(nodeValue)
+							|| DiscouragedReferenceID.equals(nodeValue)) {
 						accessRuleWarningCount++;
 					} else {
 						warningCount++;
 					}
-				} else if (ERROR_SEVERITY.equals(severityNode.getNodeValue())) {
+				} else if (ERROR_SEVERITY.equals(severityNodeValue)) {
 					// this is an error
 					errorCount++;
 				}
