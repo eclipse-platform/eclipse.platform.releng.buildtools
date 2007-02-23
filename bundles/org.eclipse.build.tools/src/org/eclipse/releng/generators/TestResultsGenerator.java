@@ -61,7 +61,7 @@ public class TestResultsGenerator extends Task {
 	public ErrorTracker anErrorTracker;
 	public String testResultsTemplateString = "";
 	public String dropTemplateString = "";
-	
+
 	public Vector platformDescription;
 	public Vector platformTemplateString;
 	public Vector platformDropFileName;
@@ -79,10 +79,10 @@ public class TestResultsGenerator extends Task {
 
 	// buildType, I, N
 	public String buildType;
-	
+
 	// Comma separated list of drop tokens
 	public String dropTokenList;
-	
+
 	// Token in platform.php.template to be replaced by the desired platform ID
 	public String platformIdentifierToken;
 
@@ -97,7 +97,7 @@ public class TestResultsGenerator extends Task {
 
 	// Location and name of the template index.php file.
 	public String testResultsTemplateFileName;
-	
+
 	// Platform specific template and output list (colon separated) in the following format:
 	// <descriptor, ie. OS name>,path to template file, path to output file
 	public String platformSpecificTemplateList="";
@@ -136,7 +136,7 @@ public class TestResultsGenerator extends Task {
 			"win32.win32.x86.xml",
 			"win32.win32.x86_5.0.xml"};
 
-	
+
 	public static void main(String[] args) {
 		TestResultsGenerator test = new TestResultsGenerator();
 		test.setDropTokenList(
@@ -156,7 +156,7 @@ public class TestResultsGenerator extends Task {
 		test.setTestResultsHtmlFileName("testResults.php");
 		//test.setDropHtmlFileName("index.php");
 		test.setDropHtmlFileName("index.html");
-		
+
 		test.setHrefTestResultsTargetPath("testresults");
 		test.setCompileLogsDirectoryName(
 			"C:\\junk\\compilelogs\\plugins");
@@ -175,7 +175,7 @@ public class TestResultsGenerator extends Task {
 		getDropTokensFromList(dropTokenList);
 		testResultsTemplateString = readFile(testResultsTemplateFileName);
 		dropTemplateString = readFile(dropTemplateFileName);
-		
+
 		//Specific to the platform build-page
 		if(platformSpecificTemplateList!="") {
 			String description, platformTemplateFile, platformDropFile;
@@ -191,9 +191,9 @@ public class TestResultsGenerator extends Task {
 				platformDescription.add(description);
 				platformTemplateString.add(readFile(platformTemplateFile));
 				platformDropFileName.add(platformDropFile);
-				
+
 			}
-			
+
 		}
 
 		System.out.println("Begin: Generating test results index page");
@@ -248,7 +248,8 @@ public class TestResultsGenerator extends Task {
 
 		int errorCount = countCompileErrors(fileContents);
 		int warningCount = countCompileWarnings(fileContents);
-		int accessRulesWarningCount = countAccessRuleWarnings(fileContents);
+		int forbiddenWarningCount = countForbiddenWarnings(fileContents);
+		int discouragedWarningCount = countDiscouragedWarnings(fileContents);
 		if (errorCount != 0) {
 			//use wildcard in place of version number on directory names
 			String logName =
@@ -262,13 +263,14 @@ public class TestResultsGenerator extends Task {
 
 			anErrorTracker.registerError(logName);
 		}
-		formatCompileErrorRow(log, errorCount, warningCount, accessRulesWarningCount, buffer);
+		formatCompileErrorRow(log, errorCount, warningCount, forbiddenWarningCount, discouragedWarningCount, buffer);
 	}
-	
+
 	private void parseCompileLog(String log, StringBuffer stringBuffer) {
 		int errorCount = 0;
 		int warningCount = 0;
-		int accessRuleWarningCount = 0;
+		int forbiddenWarningCount = 0;
+		int discouragedWarningCount = 0;
 
 		File file=new File(log);
 		Document aDocument=null;
@@ -313,9 +315,10 @@ public class TestResultsGenerator extends Task {
 					// this is a warning
 					// need to check the id
 					String nodeValue = idNode.getNodeValue();
-					if (ForbiddenReferenceID.equals(nodeValue)
-							|| DiscouragedReferenceID.equals(nodeValue)) {
-						accessRuleWarningCount++;
+					if (ForbiddenReferenceID.equals(nodeValue)) {
+						forbiddenWarningCount++;
+					} else if (DiscouragedReferenceID.equals(nodeValue)) {
+						discouragedWarningCount++;
 					} else {
 						warningCount++;
 					}
@@ -343,10 +346,11 @@ public class TestResultsGenerator extends Task {
 				log.replaceAll(".xml", ".html"),
 				errorCount,
 				warningCount,
-				accessRuleWarningCount,
+				forbiddenWarningCount,
+				discouragedWarningCount,
 				stringBuffer);
 	}
-	
+
 	public static byte[] getFileByteContent(String fileName) throws IOException {
 		InputStream stream = null;
 		try {
@@ -380,7 +384,7 @@ public class TestResultsGenerator extends Task {
 			int amountRead = -1;
 			do {
 				int amountRequested = Math.max(stream.available(), DEFAULT_READING_SIZE);  // read at least 8K
-				
+
 				// resize contents if needed
 				if (contentsLength + amountRequested > contents.length) {
 					System.arraycopy(
@@ -398,7 +402,7 @@ public class TestResultsGenerator extends Task {
 					// remember length of contents
 					contentsLength += amountRead;
 				}
-			} while (amountRead != -1); 
+			} while (amountRead != -1);
 
 			// resize contents if necessary
 			if (contentsLength < contents.length) {
@@ -444,9 +448,13 @@ public class TestResultsGenerator extends Task {
 	private int countCompileWarnings(String aString) {
 		return extractNumber(aString, "warning");
 	}
-	
-	private int countAccessRuleWarnings(String aString) {
-		return extractNumber(aString, "Discouraged access:") + extractNumber(aString, "Access restriction:");
+
+	private int countForbiddenWarnings(String aString) {
+		return extractNumber(aString, "Access restriction:");
+	}
+
+	private int countDiscouragedWarnings(String aString) {
+		return extractNumber(aString, "Discouraged access:");
 	}
 
 	private int extractNumber(String aString, String endToken) {
@@ -470,7 +478,7 @@ public class TestResultsGenerator extends Task {
 		}
 
 	}
-	
+
 	private int missingCount = 0;
 	private String verifyAllTestsRan(String directory) {
 		Enumeration enumeration = (anErrorTracker.getTestLogs()).elements();
@@ -480,7 +488,7 @@ public class TestResultsGenerator extends Task {
 			String testLogName = enumeration.nextElement().toString();
 
 			if (new File(directory + File.separator + testLogName)
-				.exists()) 
+				.exists())
 				continue;
 
 			anErrorTracker.registerError(testLogName);
@@ -491,7 +499,7 @@ public class TestResultsGenerator extends Task {
 				"<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\"> Missing Files </th><th  align=\"center\"> Status </th></tr>";
 			}
 			replaceString=replaceString+tmp;
-			testResultsWithProblems=testResultsWithProblems.concat("\n" + testLogName.substring(0,testLogName.length()-4) +" (file missing)");	
+			testResultsWithProblems=testResultsWithProblems.concat("\n" + testLogName.substring(0,testLogName.length()-4) +" (file missing)");
 			missingCount++;
 		}
 		return replaceString;
@@ -506,7 +514,7 @@ public class TestResultsGenerator extends Task {
 			String replaceString = "";
 
 			File[] xmlFileNames = sourceDirectory.listFiles();
-			Arrays.sort(xmlFileNames)	;	
+			Arrays.sort(xmlFileNames)	;
 
 			for (int i = 0; i < xmlFileNames.length; i++) {
 				if (xmlFileNames[i].getPath().endsWith(".xml")) {
@@ -524,16 +532,16 @@ public class TestResultsGenerator extends Task {
 								getXmlDirectoryName().length() + 1));
 					}
 
-					
+
 					String tmp=((platformSpecificTemplateList=="")?formatRow(xmlFileNames[i].getPath(), errorCount,true):formatRowReleng(xmlFileNames[i].getPath(), errorCount,true));
 					replaceString=replaceString+tmp;
-					
-				
+
+
 				}
 			}
 			//check for missing test logs
 			replaceString=replaceString+verifyAllTestsRan(xmlDirectoryName);
-			
+
 			testResultsTemplateString =
 				replace(
 					testResultsTemplateString,
@@ -577,7 +585,7 @@ public class TestResultsGenerator extends Task {
 			writePlatformFile(platformDescription.get(i).toString(), platformTemplateString.get(i).toString(), platformDropFileName.get(i).toString());
 		}
 	}
-	
+
 	protected void writeDropIndexFile() {
 
 		String[] types = anErrorTracker.getTypes();
@@ -596,7 +604,7 @@ public class TestResultsGenerator extends Task {
 			dropDirectoryName + File.separator + dropHtmlFileName;
 		writeFile(outputFileName, dropTemplateString);
 	}
-	
+
 	//Writes the platform file (dropFileName) specific to "desiredPlatform"
 	protected void writePlatformFile(String desiredPlatform, String templateString, String dropFileName) {
 
@@ -619,7 +627,7 @@ public class TestResultsGenerator extends Task {
 			dropDirectoryName + File.separator + dropFileName;
 		writeFile(outputFileName, templateString);
 	}
-	
+
 	//Process drop rows specific to each of the platforms
 	protected String processPlatformDropRows(PlatformStatus[] platforms, String name) {
 
@@ -657,8 +665,8 @@ public class TestResultsGenerator extends Task {
 				result = result + "<tr>";
 				result = result + "<td><div align=left>" + imageName + "</div></td>\n";
 				result = result + "<td>All " + name + "</td>";
-				//generate ftp, http, md5 and sha1 links by calling php functions in the template		
-				result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"@buildlabel@\",\"" + platforms[i].getFileName() +"\"); ?></td>\n";		
+				//generate ftp, http, md5 and sha1 links by calling php functions in the template
+				result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"@buildlabel@\",\"" + platforms[i].getFileName() +"\"); ?></td>\n";
 				result = result + "</tr>\n";
 			}
 		}
@@ -782,9 +790,11 @@ public class TestResultsGenerator extends Task {
 		String fileName,
 		int errorCount,
 		int warningCount,
-		int accessRuleWarningCount,
+		int forbiddenAccessWarningCount,
+		int discouragedAccessWarningCount,
 		StringBuffer buffer) {
 
+		int accessRuleWarningCount = forbiddenAccessWarningCount + discouragedAccessWarningCount;
 		if (errorCount == 0 && warningCount == 0 && accessRuleWarningCount == 0) {
 			return;
 		}
@@ -821,6 +831,11 @@ public class TestResultsGenerator extends Task {
 			.append("\">")
 			.append(accessRuleWarningCount)
 			.append("</a>")
+			.append("(")
+			.append(forbiddenAccessWarningCount)
+			.append("/")
+			.append(discouragedAccessWarningCount)
+			.append(")")
 			.append("</td><td align=\"center\">")
 			.append("<a href=")
 			.append("\"")
@@ -851,9 +866,9 @@ public class TestResultsGenerator extends Task {
 			String displayName = shortName;
 			if (errorCount != 0)
 			   aString = aString + "<tr><td><b>";
-			else 
+			else
 				aString = aString + "<tr><td>";
-			
+
 
 			if (errorCount!=0){
 				displayName="<font color=\"#ff0000\">"+displayName+"</font>";
@@ -874,9 +889,9 @@ public class TestResultsGenerator extends Task {
 			}
 			if (errorCount > 0)
 				   aString = aString + "</td><td><b>";
-			else 
+			else
 				aString = aString + "</td><td>";
-							
+
 			if (errorCount == -1)
 				aString = aString + "<font color=\"#ff0000\">DNF";
 
@@ -884,10 +899,10 @@ public class TestResultsGenerator extends Task {
 				aString = aString + "<font color=\"#ff0000\">"+String.valueOf(errorCount);
 			else
 				aString = aString +String.valueOf(errorCount);
-				
+
 			if (errorCount != 0)
 				aString = aString + "</font></b></td></tr>";
-			else 	
+			else
 				aString = aString + "</td></tr>";
 		}
 
@@ -907,7 +922,7 @@ public class TestResultsGenerator extends Task {
 		}
 		if(!endsWithConfig)
 			return "";
-		
+
 		String aString = "";
 		if (!link) {
 			return "<tr><td>" + fileName + "</td><td align=\"center\">" + "DNF </tr>";
@@ -920,7 +935,7 @@ public class TestResultsGenerator extends Task {
 			//Get org.eclipse. out of the component name
 			String shortName = fileName.substring(begin + 13, fileName.indexOf('_'));
 			String displayName = shortName;
-			
+
 			//If the short name does not start with this prefix
 			if(!shortName.startsWith(prefix)) {
 				//If the prefix is not yet set
@@ -932,7 +947,7 @@ public class TestResultsGenerator extends Task {
 					prefix = shortName.substring(0, shortName.indexOf(".tests") + 6);
 					aString = aString + "<tbody><tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
 					aString = aString + "<tr><td><P>" + shortName;
-					
+
 					//Loop until the matching string postfix(test config.) is found
 					while(counter<card && !fileName.endsWith(testsConfig[counter])) {
 						aString = aString + "<td align=\"center\">-</td>";
@@ -942,13 +957,13 @@ public class TestResultsGenerator extends Task {
 				else {
 					//Set new prefix
 					prefix = shortName.substring(0, shortName.indexOf(".tests") + 6);
-	
+
 					//Loop until the matching string postfix(test config.) is found
 					while(counter<card && !fileName.endsWith(testsConfig[counter])) {
 						aString = aString + "<td align=\"center\">-</td>";
 						counter++;
 					}
-					
+
 					//In this case, the new prefix should be set with the short name under it,
 					//since this would mean that the team has more than one component test
 					if(!shortName.endsWith("tests")) {
@@ -959,7 +974,7 @@ public class TestResultsGenerator extends Task {
 					else
 						aString = aString + "<tbody><tr><td><b>" + shortName;
 					testShortName = shortName;
-					
+
 					counter = 0;
 				}
 			}
@@ -1000,14 +1015,14 @@ public class TestResultsGenerator extends Task {
 						}
 					}
 				}
-				
+
 				testShortName = shortName;
-				
+
 				if (errorCount != 0)
 					aString = aString + "<td align=\"center\"><b>";
-				else 
+				else
 					aString = aString + "<td align=\"center\">";
-			
+
 				//Print number of errors
 				if (errorCount!=0){
 					displayName="<font color=\"#ff0000\">"+ "(" + String.valueOf(errorCount) + ")" +"</font>";
@@ -1015,7 +1030,7 @@ public class TestResultsGenerator extends Task {
 				else {
 					displayName="(0)";
 				}
-				
+
 				//Reference
 				if (errorCount==-1){
 					aString=aString.concat(displayName);
@@ -1031,13 +1046,13 @@ public class TestResultsGenerator extends Task {
 						+ displayName
 						+ "</a>";
 				}
-							
+
 				if (errorCount == -1)
 					aString = aString + "<font color=\"#ff0000\">DNF";
-				
+
 				if (errorCount != 0)
 					aString = aString + "</font></b></td>";
-				else 	
+				else
 					aString = aString + "</td>";
 				counter++;
 			}
@@ -1045,17 +1060,17 @@ public class TestResultsGenerator extends Task {
 
 		return aString;
 	}
-	
+
 	private int countErrors(String fileName) {
 		int errorCount = 0;
-		
+
 		if (new File(fileName).length()==0)
 			return -1;
-		
+
 		try {
 			DocumentBuilderFactory docBuilderFactory=DocumentBuilderFactory.newInstance();
 			parser=docBuilderFactory.newDocumentBuilder();
-			
+
 			Document document = parser.parse(fileName);
 			NodeList elements = document.getElementsByTagName(elementName);
 
@@ -1073,7 +1088,7 @@ public class TestResultsGenerator extends Task {
 					errorCount + Integer.parseInt(aNode.getNodeValue());
 
 			}
-			
+
 		} catch (IOException e) {
 			System.out.println("IOException: " + fileName);
 			// e.printStackTrace();
@@ -1088,7 +1103,7 @@ public class TestResultsGenerator extends Task {
 		return errorCount;
 	}
 
-	
+
 
 	/**
 	 * Gets the hrefTestResultsTargetPath.
@@ -1194,7 +1209,7 @@ public class TestResultsGenerator extends Task {
 			dropTokens.add(tokenizer.nextToken());
 		}
 	}
-	
+
 	protected void getDifferentPlatformsFromList(String list) {
 		StringTokenizer tokenizer = new StringTokenizer(list, ";");
 		differentPlatforms = new Vector();
@@ -1203,7 +1218,7 @@ public class TestResultsGenerator extends Task {
 			differentPlatforms.add(tokenizer.nextToken());
 		}
 	}
-	
+
 	protected void getPlatformSpecsFromList(String list) {
 		StringTokenizer tokenizer = new StringTokenizer(list, ",");
 		platformSpecs = new Vector();
@@ -1287,11 +1302,11 @@ public class TestResultsGenerator extends Task {
 	public void setPlatformSpecificTemplateList(String platformSpecificTemplateList) {
 		this.platformSpecificTemplateList = platformSpecificTemplateList;
 	}
-	
+
 	public void setPlatformIdentifierToken(String platformIdentifierToken) {
 		this.platformIdentifierToken = platformIdentifierToken;
 	}
-	
+
 	public String getPlatformIdentifierToken() {
 		return platformIdentifierToken;
 	}
