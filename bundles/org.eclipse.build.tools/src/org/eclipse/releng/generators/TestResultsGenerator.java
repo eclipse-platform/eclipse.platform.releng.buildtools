@@ -809,42 +809,43 @@ public class TestResultsGenerator extends Task {
 			return;
 		}
 
-		int i = fileName.indexOf(getHrefCompileLogsTargetPath());
+		String hrefCompileLogsTargetPath2 = getHrefCompileLogsTargetPath();
+		int i = fileName.indexOf(hrefCompileLogsTargetPath2);
 
 		String shortName =
-			fileName.substring(i + getHrefCompileLogsTargetPath().length());
+			fileName.substring(i + hrefCompileLogsTargetPath2.length());
 
 		buffer
 			.append("<tr>\n<td>\n")
 			.append("<a href=")
 			.append("\"")
-			.append(getHrefCompileLogsTargetPath())
+			.append(hrefCompileLogsTargetPath2)
 			.append(shortName)
 			.append("\">")
 			.append(shortName)
 			.append("</a>")
-			.append("</td>")
+			.append("</td>\n")
 			.append("<td align=\"center\">")
 			.append("<a href=")
 			.append("\"")
-			.append(getHrefCompileLogsTargetPath())
+			.append(hrefCompileLogsTargetPath2)
 			.append(shortName)
 			.append("#ERRORS")
 			.append("\">")
 			.append(errorCount)
 			.append("</a>")
-			.append("</td>")
+			.append("</td>\n")
 			.append("<td align=\"center\">")
 			.append("<a href=")
 			.append("\"")
-			.append(getHrefCompileLogsTargetPath())
+			.append(hrefCompileLogsTargetPath2)
 			.append(shortName)
 			.append("#OTHER_WARNINGS")
 			.append("\">")
 			.append(warningCount)
 			.append("</a>")
-			.append("</td>)")
-			.append("\n</tr>\n");
+			.append("</td>\n")
+			.append("</tr>\n");
 	}
 
 	private void formatAccessesErrorRow(
@@ -857,42 +858,43 @@ public class TestResultsGenerator extends Task {
 			return;
 		}
 
-		int i = fileName.indexOf(getHrefCompileLogsTargetPath());
+		String hrefCompileLogsTargetPath2 = getHrefCompileLogsTargetPath();
+		int i = fileName.indexOf(hrefCompileLogsTargetPath2);
 
 		String shortName =
-			fileName.substring(i + getHrefCompileLogsTargetPath().length());
+			fileName.substring(i + hrefCompileLogsTargetPath2.length());
 
 		buffer
 			.append("<tr>\n<td>\n")
 			.append("<a href=")
 			.append("\"")
-			.append(getHrefCompileLogsTargetPath())
+			.append(hrefCompileLogsTargetPath2)
 			.append(shortName)
 			.append("\">")
 			.append(shortName)
 			.append("</a>")
-			.append("</td>")
+			.append("</td>\n")
 			.append("<td align=\"center\">")
 			.append("<a href=")
 			.append("\"")
-			.append(getHrefCompileLogsTargetPath())
+			.append(hrefCompileLogsTargetPath2)
 			.append(shortName)
 			.append("#FORBIDDEN_WARNINGS")
 			.append("\">")
 			.append(forbiddenAccessesWarningsCount)
 			.append("</a>")
-			.append("</td>")
+			.append("</td>\n")
 			.append("<td align=\"center\">")
 			.append("<a href=")
 			.append("\"")
-			.append(getHrefCompileLogsTargetPath())
+			.append(hrefCompileLogsTargetPath2)
 			.append(shortName)
 			.append("#DISCOURAGED_WARNINGS")
 			.append("\">")
 			.append(discouragedAccessesWarningsCount)
 			.append("</a>")
-			.append("</td>")
-			.append("\n</tr>\n");
+			.append("</td>\n")
+			.append("</tr>\n");
 		}
 
 	private String formatRow(String fileName, int errorCount, boolean link) {
