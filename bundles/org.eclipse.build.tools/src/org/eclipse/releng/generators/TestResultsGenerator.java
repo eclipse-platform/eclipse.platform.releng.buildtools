@@ -52,6 +52,7 @@ public class TestResultsGenerator extends Task {
 	static final String elementName = "testsuite";
 	static final String testResultsToken = "%testresults%";
 	static final String compileLogsToken = "%compilelogs%";
+	static final String accessesLogsToken = "%accesseslogs%";
 	public Vector dropTokens;
 	public Vector platformSpecs;
 	public Vector differentPlatforms;
@@ -214,36 +215,43 @@ public class TestResultsGenerator extends Task {
 
 	public void parseCompileLogs() {
 
-		StringBuffer replaceString = new StringBuffer();
+		StringBuffer compilerString = new StringBuffer();
+		StringBuffer accessesString = new StringBuffer();
 		processCompileLogsDirectory(
 			compileLogsDirectoryName,
-			replaceString);
-		if (replaceString.length() == 0) {
-			replaceString.append("None");
+			compilerString,
+			accessesString);
+		if (compilerString.length() == 0) {
+			compilerString.append("None");
+		}
+		if (accessesString.length() == 0) {
+			accessesString.append("None");
 		}
 		testResultsTemplateString =
-			replace(testResultsTemplateString, compileLogsToken, String.valueOf(replaceString));
+			replace(testResultsTemplateString, compileLogsToken, String.valueOf(compilerString));
 
+		testResultsTemplateString =
+			replace(testResultsTemplateString, accessesLogsToken, String.valueOf(accessesString));
 	}
 
-	private void processCompileLogsDirectory(String directoryName, StringBuffer buffer) {
+	private void processCompileLogsDirectory(String directoryName, StringBuffer compilerLog, StringBuffer accessesLog) {
 		File sourceDirectory = new File(directoryName);
 		if (sourceDirectory.isFile()) {
 			if (sourceDirectory.getName().endsWith(".log"))
-				readCompileLog(sourceDirectory.getAbsolutePath(), buffer);
+				readCompileLog(sourceDirectory.getAbsolutePath(), compilerLog, accessesLog);
 			if (sourceDirectory.getName().endsWith(".xml"))
-				parseCompileLog(sourceDirectory.getAbsolutePath(), buffer);
+				parseCompileLog(sourceDirectory.getAbsolutePath(), compilerLog, accessesLog);
 		}
 		if (sourceDirectory.isDirectory()) {
 			File[] logFiles = sourceDirectory.listFiles();
 			Arrays.sort(logFiles);
 			for (int j = 0; j < logFiles.length; j++) {
-				processCompileLogsDirectory(logFiles[j].getAbsolutePath(), buffer);
+				processCompileLogsDirectory(logFiles[j].getAbsolutePath(), compilerLog, accessesLog);
 			}
 		}
 	}
 
-	private void readCompileLog(String log, StringBuffer buffer) {
+	private void readCompileLog(String log, StringBuffer compilerLog, StringBuffer accessesLog) {
 		String fileContents = readFile(log);
 
 		int errorCount = countCompileErrors(fileContents);
@@ -263,10 +271,11 @@ public class TestResultsGenerator extends Task {
 
 			anErrorTracker.registerError(logName);
 		}
-		formatCompileErrorRow(log, errorCount, warningCount, forbiddenWarningCount, discouragedWarningCount, buffer);
+		formatCompileErrorRow(log, errorCount, warningCount, compilerLog);
+		formatAccessesErrorRow(log, forbiddenWarningCount, discouragedWarningCount, accessesLog);
 	}
 
-	private void parseCompileLog(String log, StringBuffer stringBuffer) {
+	private void parseCompileLog(String log, StringBuffer compilerLog, StringBuffer accessesLog) {
 		int errorCount = 0;
 		int warningCount = 0;
 		int forbiddenWarningCount = 0;
@@ -342,13 +351,17 @@ public class TestResultsGenerator extends Task {
 
 			anErrorTracker.registerError(logName);
 		}
+		String logName = log.replaceAll(".xml", ".html");
 		formatCompileErrorRow(
-				log.replaceAll(".xml", ".html"),
+				logName,
 				errorCount,
 				warningCount,
+				compilerLog);
+		formatAccessesErrorRow(
+				logName,
 				forbiddenWarningCount,
 				discouragedWarningCount,
-				stringBuffer);
+				accessesLog);
 	}
 
 	public static byte[] getFileByteContent(String fileName) throws IOException {
@@ -790,12 +803,9 @@ public class TestResultsGenerator extends Task {
 		String fileName,
 		int errorCount,
 		int warningCount,
-		int forbiddenAccessWarningCount,
-		int discouragedAccessWarningCount,
 		StringBuffer buffer) {
 
-		int accessRuleWarningCount = forbiddenAccessWarningCount + discouragedAccessWarningCount;
-		if (errorCount == 0 && warningCount == 0 && accessRuleWarningCount == 0) {
+		if (errorCount == 0 && warningCount == 0) {
 			return;
 		}
 
@@ -813,7 +823,8 @@ public class TestResultsGenerator extends Task {
 			.append("\">")
 			.append(shortName)
 			.append("</a>")
-			.append("</td><td align=\"center\">")
+			.append("</td>")
+			.append("<td align=\"center\">")
 			.append("<a href=")
 			.append("\"")
 			.append(getHrefCompileLogsTargetPath())
@@ -822,21 +833,8 @@ public class TestResultsGenerator extends Task {
 			.append("\">")
 			.append(errorCount)
 			.append("</a>")
-			.append("</td><td align=\"center\">")
-			.append("<a href=")
-			.append("\"")
-			.append(getHrefCompileLogsTargetPath())
-			.append(shortName)
-			.append("#ACCESSRULES_WARNINGS")
-			.append("\">")
-			.append(accessRuleWarningCount)
-			.append("</a>")
-			.append("(")
-			.append(forbiddenAccessWarningCount)
-			.append("/")
-			.append(discouragedAccessWarningCount)
-			.append(")")
-			.append("</td><td align=\"center\">")
+			.append("</td>")
+			.append("<td align=\"center\">")
 			.append("<a href=")
 			.append("\"")
 			.append(getHrefCompileLogsTargetPath())
@@ -845,8 +843,57 @@ public class TestResultsGenerator extends Task {
 			.append("\">")
 			.append(warningCount)
 			.append("</a>")
-			.append("</td>\n</tr>\n");
+			.append("</td>)")
+			.append("\n</tr>\n");
 	}
+
+	private void formatAccessesErrorRow(
+			String fileName,
+			int forbiddenAccessesWarningsCount,
+			int discouragedAccessesWarningsCount,
+			StringBuffer buffer) {
+
+		if (forbiddenAccessesWarningsCount == 0 && discouragedAccessesWarningsCount == 0) {
+			return;
+		}
+
+		int i = fileName.indexOf(getHrefCompileLogsTargetPath());
+
+		String shortName =
+			fileName.substring(i + getHrefCompileLogsTargetPath().length());
+
+		buffer
+			.append("<tr>\n<td>\n")
+			.append("<a href=")
+			.append("\"")
+			.append(getHrefCompileLogsTargetPath())
+			.append(shortName)
+			.append("\">")
+			.append(shortName)
+			.append("</a>")
+			.append("</td>")
+			.append("<td align=\"center\">")
+			.append("<a href=")
+			.append("\"")
+			.append(getHrefCompileLogsTargetPath())
+			.append(shortName)
+			.append("#FORBIDDEN_WARNINGS")
+			.append("\">")
+			.append(forbiddenAccessesWarningsCount)
+			.append("</a>")
+			.append("</td>")
+			.append("<td align=\"center\">")
+			.append("<a href=")
+			.append("\"")
+			.append(getHrefCompileLogsTargetPath())
+			.append(shortName)
+			.append("#DISCOURAGED_WARNINGS")
+			.append("\">")
+			.append(discouragedAccessesWarningsCount)
+			.append("</a>")
+			.append("</td>")
+			.append("\n</tr>\n");
+		}
 
 	private String formatRow(String fileName, int errorCount, boolean link) {
 
