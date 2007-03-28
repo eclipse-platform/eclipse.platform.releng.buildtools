@@ -133,7 +133,7 @@ public class TestResultsGenerator extends Task {
 	//testResults.php.template for changes
 	private String[] testsConfig = {"linux.gtk.x86.xml",
 			"linux.gtk.x86_5.0.xml",
-			"macosx.carbon.ppc.xml",
+			"macosx.carbon.ppc_5.0.xml",
 			"win32.win32.x86.xml"};
 			//"win32.win32.x86_5.0.xml"};
 
