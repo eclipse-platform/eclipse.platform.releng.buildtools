@@ -505,7 +505,7 @@ public class TestResultsGenerator extends Task {
 				continue;
 
 			anErrorTracker.registerError(testLogName);
-			String tmp=((platformSpecificTemplateList=="")?formatRow(testLogName, -1, false):formatRowReleng(testLogName, -1, false));
+			String tmp=((platformSpecificTemplateList.equals(""))?formatRow(testLogName, -1, false):formatRowReleng(testLogName, -1, false));
 			if(missingCount==0) {
 				replaceString=replaceString+"</table></br>"+"\n"+
 				"<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"+
@@ -546,7 +546,7 @@ public class TestResultsGenerator extends Task {
 					}
 
 
-					String tmp=((platformSpecificTemplateList=="")?formatRow(xmlFileNames[i].getPath(), errorCount,true):formatRowReleng(xmlFileNames[i].getPath(), errorCount,true));
+					String tmp=((platformSpecificTemplateList.equals(""))?formatRow(xmlFileNames[i].getPath(), errorCount,true):formatRowReleng(xmlFileNames[i].getPath(), errorCount,true));
 					replaceString=replaceString+tmp;
 
 
