@@ -678,7 +678,7 @@ public class TestResultsGenerator extends Task {
 				result = result + "<tr>";
 				result = result + "<td><div align=left>" + imageName + "</div></td>\n";
 				result = result + "<td>All " + name + "</td>";
-				//generate ftp, http, md5 and sha1 links by calling php functions in the template
+				//generate http, md5 and sha1 links by calling php functions in the template
 				result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"@buildlabel@\",\"" + platforms[i].getFileName() +"\"); ?></td>\n";
 				result = result + "</tr>\n";
 			}

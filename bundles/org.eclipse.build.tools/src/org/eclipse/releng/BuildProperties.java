@@ -47,7 +47,7 @@ public class BuildProperties {
 	private String httpUrl;
 
 	// the ftp download URL
-	private String ftpUrl;
+//	private String ftpUrl;
 	
 	// the Object that holds the key value pairs in monitor.properties
 	private Properties buildProperties;
@@ -82,12 +82,12 @@ public class BuildProperties {
 						"Value for httpUrl not found in monitor.properties");
 				}
 				
-			try {
+			/*try {
 				ftpUrl = buildProperties.get("ftpUrl").toString();
 			} catch (NullPointerException e) {
 				System.out.println(
 				"Value for ftpUrl not found in monitor.properties");
-			}
+			}*/
 				
 			try {
 				buildid = buildProperties.get("buildId").toString();
@@ -308,18 +308,18 @@ public class BuildProperties {
 	/**
 	 * Returns the ftpUrl.
 	 * @return String
-	 */
+	 *//*
 	public String getftpUrl() {
 		return ftpUrl;
-	}
+	}*/
 
 	/**
 	 * Sets the ftpUrl.
 	 * @param ftpUrl The httpUrl to set
-	 */
+	 *//*
 	public void setftpUrl(String downloadUrl) {
 		this.ftpUrl = downloadUrl;
-	}
+	}*/
 
 
 	public String getTextRecipientList() {
