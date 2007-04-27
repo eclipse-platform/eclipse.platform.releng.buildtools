@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2006 IBM Corporation and others.
+ * Copyright (c) 2004, 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,9 +27,6 @@ import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 import org.eclipse.test.internal.performance.db.Variations;
-import org.eclipse.test.internal.performance.eval.StatisticsUtil;
-import org.eclipse.test.internal.performance.eval.StatisticsUtil.Percentile;
-import org.eclipse.test.performance.Dimension;
 import org.eclipse.test.performance.ui.Utils.ConfigDescriptor;
 
 public class ScenarioResults {
@@ -134,17 +131,18 @@ public class ScenarioResults {
 			ps.println("<title>" + t.getScenarioName() + "(" + configDescriptor.description + ")" + "</title></head>"); //$NON-NLS-1$
 			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configDescriptor.description + ")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
 			
-			boolean rejectNullHypothesis= Utils.rejectNullHypothesis(variations, t.getScenarioName(),baseline,configDescriptor.name);
-     		if (!rejectNullHypothesis){
-     			ps.println("<table><tr><td><b>*** WARNING ***  "+Utils.TTEST_FAILURE_MESSAGE+"</td></tr></table>\n");
+			String failureMessage = Utils.failureMessage(variations, t.getScenarioName(),baseline,configDescriptor.name, true/*prefix*/);
+     		if (failureMessage != null){
+	   			ps.println("<table><tr><td><b>"+failureMessage+"</td></tr></table>\n");
      		}
 
-			if (scenarioComments.containsKey(t.getScenarioName())) {
-				
-				ps.println("<b>Notes</b><br>\n");
-				ps.println("<table><tr><td>" + scenarioComments.get(t.getScenarioName()) + "</td></tr></table><br>\n");
+     		String comment= (String)scenarioComments.get(t.getScenarioName());
+			if (comment != null) {
+				ps.println("<p><b>Note:</b><br>\n");
+				ps.println(comment + "</p>");
 			}
-     		//print link to raw data.
+
+			//print link to raw data.
 			ps.println("<br><br><b><a href=\""+rawDataFile+"\">Raw data and Stats</a></b><br><br>\n");
 			ps.println("<b>Click measurement name to view line graph of measured values over builds.</b><br><br>\n");
 			ps.println("<table border=\"1\">"); //$NON-NLS-1$ //$NON-NLS-2$

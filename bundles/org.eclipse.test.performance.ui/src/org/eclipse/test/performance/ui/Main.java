@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2005, 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -69,10 +69,13 @@ public class Main implements IPlatformRunnable{
 		if (images!=null) {
 			images= Platform.resolve(images);
 			Utils.copyFile(new File(images.getPath(), "FAIL.gif"), output + "/FAIL.gif");
+			Utils.copyFile(new File(images.getPath(), "FAIL_ttest.gif"), output + "/FAIL_ttest.gif");
+			Utils.copyFile(new File(images.getPath(), "FAIL_err.gif"), output + "/FAIL_err.gif");
 			Utils.copyFile(new File(images.getPath(), "FAIL_greyed.gif"), output+"/FAIL_greyed.gif");
 			Utils.copyFile(new File(images.getPath(), "FAIL_caution.gif"), output+"/FAIL_caution.gif");
 			Utils.copyFile(new File(images.getPath(), "OK.gif"),output + "/OK.gif");
-			Utils.copyFile(new File(images.getPath(), "OK_greyed.gif"),output + "/OK_greyed.gif");
+			Utils.copyFile(new File(images.getPath(), "OK_err.gif"),output + "/OK_err.gif");
+			Utils.copyFile(new File(images.getPath(), "OK_ttest.gif"),output + "/OK_ttest.gif");
 			Utils.copyFile(new File(images.getPath(), "OK_caution.gif"),output + "/OK_caution.gif");
 		}
 		if (scripts!=null){
@@ -121,14 +124,14 @@ public class Main implements IPlatformRunnable{
 				if (component != "") {
 				//print the component scenario status table beneath the fingerprint
 					variations.put("config", "%");
-					ScenarioStatusTable sst = new ScenarioStatusTable(
-							variations, component + "%", configDescriptors,scenarioComments, baseline);
+					ScenarioStatusTable sst = new ScenarioStatusTable(variations, component + "%", configDescriptors,scenarioComments, baseline);
 					os.println(sst.toString());
 				}
 
 				os.println(Utils.HTML_CLOSE);
 				os.close();
-			} catch (FileNotFoundException e) {
+			} catch (Exception e) {
+				// Need to print any unexpected exception otherwise the failure will be completely silent...
 				e.printStackTrace();
 			}
 		}
@@ -150,8 +153,7 @@ public class Main implements IPlatformRunnable{
 				System.out.print(cd.name + ": generating fingerprints and scenario status tables...");
 				
 				//global
-				FingerPrint global = new FingerPrint(null, cd, baseline,
-						currentBuildId, variations, output);
+				FingerPrint global = new FingerPrint(null, cd, baseline, currentBuildId, variations, output);
 				
 				//store mappings of fingerprints per config for each component
 				Hashtable t;
@@ -170,9 +172,7 @@ public class Main implements IPlatformRunnable{
 				for (int i = 0; i < components.size(); i++) {
 					String component = components.get(i).toString();
 					variations.put("config", cd.name);
-					FingerPrint componentFp = new FingerPrint(component,
-							cd, baseline, currentBuildId, variations,
-							output);
+					FingerPrint componentFp = new FingerPrint(component, cd, baseline, currentBuildId, variations, output);
 					if (fingerPrints.get(component) != null)
 						t = (Hashtable) fingerPrints.get(component);
 					else

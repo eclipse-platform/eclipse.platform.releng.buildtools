@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -51,12 +52,28 @@ import org.eclipse.test.performance.Dimension;
 
 public class Utils {
 
-	public static String TTEST_FAILURE_MESSAGE="There is not enough evidence to reject the null hypothesis at the 90% level (Student's t-test).";
-	public static String OK_IMAGE="OK.gif";
-	public static String OK_IMAGE_WARN="OK_caution.gif";
-	public static String FAIL_IMAGE="FAIL.gif";
-	public static String FAIL_IMAGE_WARN="FAIL_caution.gif";
-	public static String FAIL_IMAGE_EXPLAINED="FAIL_greyed.gif";
+	public final static String TTEST_FAILURE_MESSAGE="There is not enough evidence to reject the null hypothesis at the 90% level (Student's t-test).";
+	public final static double STANDARD_ERROR_THRESHOLD = 0.02; // 2%
+	static final NumberFormat PERCENT_FORMAT = NumberFormat.getPercentInstance();
+	static {
+		PERCENT_FORMAT.setMaximumFractionDigits(1);
+	}
+	public final static String TTEST_MODERATION_MESSAGE="Student's t-test failed at the 90% level but it's moderated with standard error lower than "+PERCENT_FORMAT.format(STANDARD_ERROR_THRESHOLD);
+	public final static String STANDARD_ERROR_MESSAGE="Standard error on this test is higher than "+PERCENT_FORMAT.format(STANDARD_ERROR_THRESHOLD);
+	public final static String OK_IMAGE="OK.gif";
+	public final static String OK_IMAGE_ERR="OK_err.gif";
+	public final static String OK_IMAGE_TTEST="OK_ttest.gif";
+	public final static String OK_IMAGE_WARN="OK_caution.gif";
+	public final static String FAIL_IMAGE="FAIL.gif";
+	public final static String FAIL_IMAGE_TTEST="FAIL_ttest.gif";
+	public final static String FAIL_IMAGE_ERR="FAIL_err.gif";
+	public final static String FAIL_IMAGE_WARN="FAIL_caution.gif";
+	public final static String FAIL_IMAGE_EXPLAINED="FAIL_greyed.gif";
+	public final static int OK = 0;
+	public final static int ERR = 0x1;
+	public final static int TTEST = 0x2;
+	public final static int DEV = 0x4;
+	private final static int NOT_SIGNIFICANT = ERR | TTEST;
 
 	/**
 	 * @param dimension
@@ -715,7 +732,7 @@ public class Utils {
 		}
 	}
 	
-	public static boolean rejectNullHypothesis(Variations variations, String scenarioName, String baseline, String config) {
+	public static double[] resultStats(Variations variations, String scenarioName, String baseline, String config) {
 		String OS = "config";
 				
 		Variations tmpVariations=(Variations)variations.clone();
@@ -747,16 +764,135 @@ public class Utils {
 		if (reference != null) {
 			// XXX have to find out the relevant dimension
 			Dim significanceDimension = (Dim) Dimension.ELAPSED_PROCESS;
-			TimeSeries currentScenario = scenario
-					.getTimeSeries(significanceDimension);
-			TimeSeries baselineScenario = reference
-					.getTimeSeries(significanceDimension);
-			if (currentScenario.getLength() > 0
-					&& baselineScenario.getLength() > 0) {
-				return StatisticsUtil.hasSignificantDifference(
-						baselineScenario, 0, currentScenario, 0, percentile);
+			TimeSeries currentSeries = scenario.getTimeSeries(significanceDimension);
+			TimeSeries baselineSeries = reference.getTimeSeries(significanceDimension);
+			if (currentSeries.getLength() > 0 && baselineSeries.getLength() > 0) {
+				return StatisticsUtil.statisticsForTimeSeries(baselineSeries, 0, currentSeries, 0, percentile);
 			}
 		}
-		return true;
+		return null;
 	}
+
+	public static boolean hasConfidentResult(Variations variations, String scenarioName, String baseline, String config) {
+	    double[] resultStats = resultStats(variations, scenarioName, baseline, config);
+	    if (resultStats != null) {
+	    	return resultStats[1] < 0 || resultStats[0] < resultStats[1] || resultStats[2] < STANDARD_ERROR_THRESHOLD;
+	    }
+	    return true;
+    }
+	public static String failureMessage(Variations variations, String scenarioName, String baseline, String config, boolean prefix) {
+		return failureMessage(resultStats(variations, scenarioName, baseline, config), prefix);
+	}
+	public static String failureMessage(double[] resultStats, boolean prefix) {
+		StringBuffer buffer = null;
+		switch (confidenceLevel(resultStats)) {
+			case ERR:
+				buffer = new StringBuffer();
+				if (prefix) buffer.append("*** INFO ***  ");
+     			buffer.append(STANDARD_ERROR_MESSAGE);
+     			buffer.append(" (");
+     			buffer.append(PERCENT_FORMAT.format(resultStats[2]));
+     			buffer.append(")");
+				break;
+			case TTEST:
+				buffer = new StringBuffer();
+				if (prefix) buffer.append("*** INFO ***  ");
+     			buffer.append(TTEST_MODERATION_MESSAGE);
+     			buffer.append(" (");
+     			buffer.append(PERCENT_FORMAT.format(resultStats[2]));
+     			buffer.append(")");
+				break;
+			case TTEST|ERR:
+				buffer = new StringBuffer();
+				if (prefix) buffer.append("*** WARNING ***  ");
+     			buffer.append(TTEST_FAILURE_MESSAGE);
+				break;
+			default:
+				return null;
+		}
+		return buffer.toString();
+	}
+	public static int confidenceLevel(double[] resultStats) {
+		int level = OK;
+ 		if (resultStats != null){
+ 			if (resultStats[1] >= 0 && resultStats[0] >= resultStats[1]) { // invalid t-test
+ 				level |= TTEST;
+ 			}
+ 			if (resultStats[2] >= Utils.STANDARD_ERROR_THRESHOLD) { // standard error higher than the authorized threshold
+ 				level |= ERR;
+ 			}
+ 		}
+		return level;
+	}
+	public static boolean matchPattern(String name, String pattern) {
+		if (pattern.equals("%")) return true;
+		if (pattern.indexOf('%') >= 0 || pattern.indexOf('_') >= 0) {
+			StringTokenizer tokenizer = new StringTokenizer(pattern, "%_", true);
+			int start = 0;
+			String previous = "";
+			while (tokenizer.hasMoreTokens()) {
+				String token = tokenizer.nextToken();
+				if (token.equals("%")) {
+					start += previous.length();
+				} else if (token.equals("_")) {
+					start++;
+				} else {
+					if (previous.equals("%")) {
+						if (name.substring(start).indexOf(token) < 0) return false;
+					} else if (previous.equals("_")) {
+						if (!name.substring(start).startsWith(token)) return false;
+					}
+					start += token.length();
+				}
+				previous = token;
+			}
+			if (previous.equals("%")) {
+				return true;
+			} else if (previous.equals("_")) {
+				return name.length() == start;
+			}
+			return name.endsWith(previous);
+		}
+		return name.equals(pattern);
+	}
+
+	public static String getImage(int confidence, boolean hasExplanation) {
+	    boolean scenarioFailed = (confidence & DEV) != 0;
+	    String image = null;
+	    
+	    if (hasExplanation) {
+	    	image = FAIL_IMAGE_EXPLAINED;
+	    } else if (scenarioFailed) {
+	    	switch (confidence) {
+	    		default:
+	    			image = FAIL_IMAGE;
+	    			break;
+	    		case TTEST:
+	    			image = FAIL_IMAGE_TTEST;
+	    			break;
+	    		case ERR:
+	    			image = FAIL_IMAGE_ERR;
+	    			break;
+	    		case NOT_SIGNIFICANT:
+	    			image = FAIL_IMAGE_WARN;
+	    			break;
+	    	}
+	    } else  {
+	    	switch (confidence) {
+	    		default:
+	    			image = OK_IMAGE;
+	    			break;
+	    		case TTEST:
+	    			image = OK_IMAGE_TTEST;
+	    			break;
+	    		case ERR:
+	    			image = OK_IMAGE_ERR;
+	    			break;
+	    		case NOT_SIGNIFICANT:
+	    			image = OK_IMAGE_WARN;
+	    			break;
+	    	}
+	    }
+	    return image;
+    }
 }

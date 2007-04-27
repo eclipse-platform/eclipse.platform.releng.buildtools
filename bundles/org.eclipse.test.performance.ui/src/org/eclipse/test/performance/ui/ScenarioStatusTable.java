@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2005, 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -76,30 +76,46 @@ public class ScenarioStatusTable {
 				Scenario scenario= scenarios[i];
 				String scenarioName=scenario.getScenarioName();
 				// returns the config names. Making assumption that indices in
-				// the configs array map to the indeces of the failure messages.
+				// the configs array map to the indices of the failure messages.
 				String[] configs=scenario.getTimeSeriesLabels();
 				String[] failureMessages= scenario.getFailureMessages();
 				ScenarioStatus scenarioStatus=new ScenarioStatus(scenarioName);
 				scenarioStatusList.add(scenarioStatus);
+
+				String scenarioComment= (String)scenarioComments.get(scenarioName);
+				if (scenarioComment != null)
+					scenarioStatus.hasSlowDownExplanation= true;
 				
 				for (int j=0;j<configs.length;j++){
-					
-					boolean rejectNullHypothesis= Utils.rejectNullHypothesis(variations, scenarioName, baseline, configs[j]);
-					scenarioStatus.configStatus.put(configs[j],new Boolean(rejectNullHypothesis));
-					String failureMessage=rejectNullHypothesis?"":Utils.TTEST_FAILURE_MESSAGE;
 					if (!configNames.contains(configs[j]))
 						configNames.add(configs[j]);
-					if (failureMessages[j]!=null){
-						// ensure correct failure message relates to config
-						if (failureMessages[j].indexOf(configs[j])!=-1){
-							failureMessage=failureMessage.concat(failureMessages[j]);
-							if (scenarioComments.containsKey(scenarioName)){
-								failureMessage=failureMessage.concat(";  "+scenarioComments.get(scenarioName));
-								scenarioStatus.hasSlowDownExplanation=true;
-							}
+
+					double[] resultStats = Utils.resultStats(variations, scenarioName, baseline, configs[j]);
+					String failureMessage = Utils.failureMessage(resultStats, false);
+					int confidenceLevel = Utils.confidenceLevel(resultStats);
+					
+					boolean hasScenarioFailure = failureMessages[j] != null && failureMessages[j].indexOf(configs[j]) != -1; // ensure correct failure message relates to config
+					if (hasScenarioFailure || failureMessage != null){
+						StringBuffer buf= new StringBuffer();
+						if (hasScenarioFailure) {
+							buf.append(failureMessages[j]);
+							confidenceLevel |= Utils.DEV;
 						}
+						if (failureMessage != null) {
+							if (buf.length() > 0) buf.append('\n');
+							buf.append(failureMessage);
+						}
+						if (scenarioStatus.hasSlowDownExplanation) {
+							buf.append("\nExplanation comment: ");
+							buf.append(scenarioComment);
+						}
+						failureMessage = buf.toString();
+					} else {
+						failureMessage = "";
 					}
-					scenarioStatus.statusMap.put(configs[j],failureMessage);
+
+					scenarioStatus.configStatus.put(configs[j], new Integer(confidenceLevel));
+					scenarioStatus.statusMap.put(configs[j], failureMessage);
 				}
 			}
 			
@@ -142,25 +158,14 @@ public class ScenarioStatusTable {
 					}
 
 					if (status.statusMap.containsKey(configName)){
-						//the scenario has failed if is has a message other than the t-test message
-						boolean scenarioFailed=!message.equals("")&&!message.equals(Utils.TTEST_FAILURE_MESSAGE);
-						boolean isSignificant=((Boolean)status.configStatus.get(configName)).booleanValue();
-						String image=null;			
-						String successImage=isSignificant? Utils.OK_IMAGE : Utils.OK_IMAGE_WARN;
-						String failImage=scenarioFailed&&isSignificant?Utils.FAIL_IMAGE:Utils.FAIL_IMAGE_WARN;
-						
-						if(scenarioFailed)
-							image=failImage;
-						else if(status.hasSlowDownExplanation)
-							image=Utils.FAIL_IMAGE_EXPLAINED;
-						else 
-							image=successImage;
+						int confidence = ((Integer) status.configStatus.get(configName)).intValue();
+						String image = Utils.getImage(confidence, status.hasSlowDownExplanation);
 						if (aUrl!=null){
 							String html="\n<td><a href=\""+aUrl+"/"+status.name.replace('#', '.').replace(':', '_').replace('\\', '_') 
 							+ ".html"+"\">\n<img border=\"0\" src=\"" + image + "\"/></a></td>";
 							
 							//create message with tooltip text if there is a corresponding message
-							if (message!=""){
+							if (message.length() > 0){
 								jsIdCount+=1;
 								html="<td><a " +
 								"class=\"tooltipSource\" onMouseover=\"show_element('toolTip"+(jsIdCount)+"')\"" +
@@ -172,8 +177,7 @@ public class ScenarioStatusTable {
 							}
 							htmlTable=htmlTable.concat(html);
 						} else{
-							htmlTable=htmlTable.concat(scenarioFailed ?"<td><img title=\""+message+"\" border=\"0\" src=\""+failImage+"\"/></td>" 
-									:"<td><img border=\"0\" src=\""+successImage+"\"/></td>");
+							htmlTable=htmlTable.concat("<td><img title=\""+message+"\" border=\"0\" src=\""+image+"\"/></td>");
 						}	
 					}else{
 						htmlTable=htmlTable.concat("<td>n/a</td>");

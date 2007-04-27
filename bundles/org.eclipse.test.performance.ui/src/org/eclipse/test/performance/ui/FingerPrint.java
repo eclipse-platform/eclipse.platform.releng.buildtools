@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2006 IBM Corporation and others.
+ * Copyright (c) 2004, 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -151,9 +151,9 @@ public class FingerPrint {
             int l= timeSeries.getLength();
             if (l >= 1) {
             	double percent= 0.0;
-            	boolean rejectNullHypothesis= true;
+            	boolean hasConfidentResult= true;
             	if (l > 1) {
-            		rejectNullHypothesis= Utils.rejectNullHypothesis(variations, scenario.getScenarioName(),referenceBuildId,configDescriptor.name);
+            		hasConfidentResult= Utils.hasConfidentResult(variations, scenario.getScenarioName(),referenceBuildId,configDescriptor.name);
             		/*if (!rejectNullHypothesis) {
             			NumberFormat percentFormatter= NumberFormat.getPercentInstance();
             			String statisticsComment= "There is not enough evidence to reject the null hypothesis at the " + percentFormatter.format(percentile.inside()) + "level";
@@ -170,7 +170,7 @@ public class FingerPrint {
             	}
             	if (Math.abs(percent) < 200) {
             		String n= name + " (" + dims[i].getName() + ")" + refData;
-            		bar.addItem(n, percent,configDescriptor.name+"/"+(scenarioName.replace('#','.').replace(':','_').replace('\\','_'))+".html#"+dims[i].getName(),comment, rejectNullHypothesis); //$NON-NLS-1$ //$NON-NLS-2$
+            		bar.addItem(n, percent,configDescriptor.name+"/"+(scenarioName.replace('#','.').replace(':','_').replace('\\','_'))+".html#"+dims[i].getName(),comment, hasConfidentResult); //$NON-NLS-1$ //$NON-NLS-2$
                	}
             }
         }
