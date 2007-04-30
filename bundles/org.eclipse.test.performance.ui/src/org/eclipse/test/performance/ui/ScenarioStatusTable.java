@@ -10,15 +10,12 @@
  *******************************************************************************/
 package org.eclipse.test.performance.ui;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.Variations;
-import org.eclipse.test.internal.performance.eval.StatisticsUtil;
-import org.eclipse.test.internal.performance.eval.StatisticsUtil.Percentile;
 
 public class ScenarioStatusTable {
 	
@@ -66,15 +63,14 @@ public class ScenarioStatusTable {
 		String OS="config";
 		String htmlTable="";
         Scenario[] scenarios= DB.queryScenarios(variations, scenarioPattern, OS, null);
-		NumberFormat percentFormatter= NumberFormat.getPercentInstance();
 	
 		if (scenarios != null && scenarios.length > 0) {
 			ArrayList scenarioStatusList=new ArrayList();
 
-			Percentile percentile= StatisticsUtil.T90;
 			for (int i= 0; i < scenarios.length; i++) {
 				Scenario scenario= scenarios[i];
 				String scenarioName=scenario.getScenarioName();
+//				if (!Utils.matchPattern(scenarioName, scenarioPattern)) continue;
 				// returns the config names. Making assumption that indices in
 				// the configs array map to the indices of the failure messages.
 				String[] configs=scenario.getTimeSeriesLabels();
@@ -99,15 +95,15 @@ public class ScenarioStatusTable {
 						StringBuffer buf= new StringBuffer();
 						if (hasScenarioFailure) {
 							buf.append(failureMessages[j]);
+							if (scenarioStatus.hasSlowDownExplanation) {
+								buf.append("\n - Explanation comment: ");
+								buf.append(scenarioComment);
+							}
 							confidenceLevel |= Utils.DEV;
 						}
 						if (failureMessage != null) {
-							if (buf.length() > 0) buf.append('\n');
+							if (buf.length() > 0) buf.append("\n - ");
 							buf.append(failureMessage);
-						}
-						if (scenarioStatus.hasSlowDownExplanation) {
-							buf.append("\nExplanation comment: ");
-							buf.append(scenarioComment);
 						}
 						failureMessage = buf.toString();
 					} else {
@@ -121,12 +117,17 @@ public class ScenarioStatusTable {
 			
 			String label=null;
 			htmlTable=htmlTable.concat("<br><h4>Scenario Status</h4>\n" +
-					"The green/red indication is based on the assert condition in the test.  "+
-					"Hover over <img src=\"FAIL.gif\"> for error message.<br>\n" +
-					"Click on <img src=\"FAIL.gif\"> or <img src=\"OK.gif\"> for detailed results. <br>\n " +
-					"Grayed images mark explainable degradations. <br>\n "+
-					"Yellow images mark results where there is not enough evidence to reject the null hypothesis at the " + percentFormatter.format(percentile.inside()) + "level (Student's t-test).<br>\n" +
-					"\"n/a\" - results not available.<br><br>\n");
+				"Click on test box corresponding image (<img src=\"FAIL.gif\"> or <img src=\"OK.gif\">) for detailed results.<br>\n" +
+				"For all other images than  <img src=\"OK.gif\">, fly over it to get corresponding error/warning/info message.<br>\n" +
+				"The images color legend is:\n" +
+				"<ul>\n" +
+				"<li>Red (<img src=\"FAIL.gif\">): indicates that the assert condition failed for the test</li>\n" +
+				"<li>Grayed (<img src=\"FAIL_greyed.gif\">): mark explainable degradations.</li>\n" +
+				"<li>Light (<img src=\"FAIL_err.gif\"> or <img src=\"OK_err.gif\">): mark results with standard error higher than "+Utils.STANDARD_ERROR_THRESHOLD_STRING+"</li>\n" +
+				"<li>Blue (<img src=\"FAIL_ttest.gif\"> or <img src=\"OK_ttest.gif\">): mark results where Student's t-test failed (see below) but was moderated by the fact that the error is less than "+Utils.STANDARD_ERROR_THRESHOLD_STRING+"</li>\n" +
+				"<li>Yellow (<img src=\"FAIL_caution.gif\"> or <img src=\"OK_caution.gif\">): mark results where Student's t-test failed which means that there is not enough evidence to reject the null hypothesis at the 90% level.<br>\n" +
+				"<li>\"n/a\": mark not available results.</li>\n" +
+				"</ul><br>\n");
 			
 			htmlTable=htmlTable.concat("<table border=\"1\"><tr><td><h4>All "+scenarios.length+" scenarios</h4></td>\n");
 			for (int i= 0; i < configNames.size(); i++){

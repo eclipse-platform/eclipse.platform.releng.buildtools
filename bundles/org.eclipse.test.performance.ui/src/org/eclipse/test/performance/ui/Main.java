@@ -125,6 +125,7 @@ public class Main implements IPlatformRunnable{
 				//print the component scenario status table beneath the fingerprint
 					variations.put("config", "%");
 					ScenarioStatusTable sst = new ScenarioStatusTable(variations, component + "%", configDescriptors,scenarioComments, baseline);
+//					ScenarioStatusTable sst = new ScenarioStatusTable(variations, this.scenarioFilter, configDescriptors,scenarioComments, baseline);
 					os.println(sst.toString());
 				}
 

@@ -58,8 +58,9 @@ public class Utils {
 	static {
 		PERCENT_FORMAT.setMaximumFractionDigits(1);
 	}
-	public final static String TTEST_MODERATION_MESSAGE="Student's t-test failed at the 90% level but it's moderated with standard error lower than "+PERCENT_FORMAT.format(STANDARD_ERROR_THRESHOLD);
-	public final static String STANDARD_ERROR_MESSAGE="Standard error on this test is higher than "+PERCENT_FORMAT.format(STANDARD_ERROR_THRESHOLD);
+	public final static String STANDARD_ERROR_THRESHOLD_STRING =PERCENT_FORMAT.format(STANDARD_ERROR_THRESHOLD);
+	public final static String TTEST_MODERATION_MESSAGE="Student's t-test failed at the 90% level but it's moderated with standard error lower than "+STANDARD_ERROR_THRESHOLD_STRING;
+	public final static String STANDARD_ERROR_MESSAGE="Standard error on this test is higher than "+STANDARD_ERROR_THRESHOLD_STRING;
 	public final static String OK_IMAGE="OK.gif";
 	public final static String OK_IMAGE_ERR="OK_err.gif";
 	public final static String OK_IMAGE_TTEST="OK_ttest.gif";
@@ -860,23 +861,25 @@ public class Utils {
 	    boolean scenarioFailed = (confidence & DEV) != 0;
 	    String image = null;
 	    
-	    if (hasExplanation) {
-	    	image = FAIL_IMAGE_EXPLAINED;
-	    } else if (scenarioFailed) {
-	    	switch (confidence) {
-	    		default:
-	    			image = FAIL_IMAGE;
-	    			break;
-	    		case TTEST:
-	    			image = FAIL_IMAGE_TTEST;
-	    			break;
-	    		case ERR:
-	    			image = FAIL_IMAGE_ERR;
-	    			break;
-	    		case NOT_SIGNIFICANT:
-	    			image = FAIL_IMAGE_WARN;
-	    			break;
-	    	}
+	    if (scenarioFailed) {
+	    	if (hasExplanation) {
+		    	image = FAIL_IMAGE_EXPLAINED;
+		    } else {
+		    	switch (confidence) {
+		    		default:
+		    			image = FAIL_IMAGE;
+		    			break;
+		    		case TTEST:
+		    			image = FAIL_IMAGE_TTEST;
+		    			break;
+		    		case ERR:
+		    			image = FAIL_IMAGE_ERR;
+		    			break;
+		    		case NOT_SIGNIFICANT:
+		    			image = FAIL_IMAGE_WARN;
+		    			break;
+		    	}
+		    }
 	    } else  {
 	    	switch (confidence) {
 	    		default:
