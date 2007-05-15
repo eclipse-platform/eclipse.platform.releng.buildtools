@@ -131,7 +131,7 @@ public class ScenarioResults {
 			ps.println("<title>" + t.getScenarioName() + "(" + configDescriptor.description + ")" + "</title></head>"); //$NON-NLS-1$
 			ps.println("<h4>Scenario: " + t.getScenarioName() + " (" + configDescriptor.description + ")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
 			
-			String failureMessage = Utils.failureMessage(variations, t.getScenarioName(),baseline,configDescriptor.name, true/*prefix*/);
+			String failureMessage = Utils.failureMessage(variations, t.getScenarioName(),baseline,configDescriptor.name);
      		if (failureMessage != null){
 	   			ps.println("<table><tr><td><b>"+failureMessage+"</td></tr></table>\n");
      		}

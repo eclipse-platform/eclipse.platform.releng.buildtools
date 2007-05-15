@@ -11,7 +11,6 @@
 package org.eclipse.test.performance.ui;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.net.URL;
@@ -68,20 +67,11 @@ public class Main implements IPlatformRunnable{
 
 		if (images!=null) {
 			images= Platform.resolve(images);
-			Utils.copyFile(new File(images.getPath(), "FAIL.gif"), output + "/FAIL.gif");
-			Utils.copyFile(new File(images.getPath(), "FAIL_ttest.gif"), output + "/FAIL_ttest.gif");
-			Utils.copyFile(new File(images.getPath(), "FAIL_err.gif"), output + "/FAIL_err.gif");
-			Utils.copyFile(new File(images.getPath(), "FAIL_greyed.gif"), output+"/FAIL_greyed.gif");
-			Utils.copyFile(new File(images.getPath(), "FAIL_caution.gif"), output+"/FAIL_caution.gif");
-			Utils.copyFile(new File(images.getPath(), "OK.gif"),output + "/OK.gif");
-			Utils.copyFile(new File(images.getPath(), "OK_err.gif"),output + "/OK_err.gif");
-			Utils.copyFile(new File(images.getPath(), "OK_ttest.gif"),output + "/OK_ttest.gif");
-			Utils.copyFile(new File(images.getPath(), "OK_caution.gif"),output + "/OK_caution.gif");
+			Utils.copyImages(new File(images.getPath()), new File(output));
 		}
 		if (scripts!=null){
 			scripts= Platform.resolve(scripts);
-			Utils.copyFile(new File(scripts.getPath(), "ToolTip.css"),output+"/ToolTip.css");
-			Utils.copyFile(new File(scripts.getPath(), "ToolTip.js"),output+"/ToolTip.js");
+			Utils.copyScripts(new File(scripts.getPath()), new File(output));
 		}
 		
 		// print fingerprint/scenario status pages

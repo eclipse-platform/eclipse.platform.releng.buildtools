@@ -52,29 +52,28 @@ import org.eclipse.test.performance.Dimension;
 
 public class Utils {
 
-	public final static String TTEST_FAILURE_MESSAGE="There is not enough evidence to reject the null hypothesis at the 90% level (Student's t-test).";
-	public final static double STANDARD_ERROR_THRESHOLD = 0.02; // 2%
+	public final static double STANDARD_ERROR_THRESHOLD = 0.03; // 3%
 	static final NumberFormat PERCENT_FORMAT = NumberFormat.getPercentInstance();
 	static {
 		PERCENT_FORMAT.setMaximumFractionDigits(1);
 	}
-	public final static String STANDARD_ERROR_THRESHOLD_STRING =PERCENT_FORMAT.format(STANDARD_ERROR_THRESHOLD);
-	public final static String TTEST_MODERATION_MESSAGE="Student's t-test failed at the 90% level but it's moderated with standard error lower than "+STANDARD_ERROR_THRESHOLD_STRING;
+	static final NumberFormat DOUBLE_FORMAT = NumberFormat.getNumberInstance();
+	static {
+		DOUBLE_FORMAT.setMaximumIntegerDigits(2);
+		DOUBLE_FORMAT.setMaximumFractionDigits(1);
+	}
+	public final static String STANDARD_ERROR_THRESHOLD_STRING = PERCENT_FORMAT.format(STANDARD_ERROR_THRESHOLD);
 	public final static String STANDARD_ERROR_MESSAGE="Standard error on this test is higher than "+STANDARD_ERROR_THRESHOLD_STRING;
 	public final static String OK_IMAGE="OK.gif";
-	public final static String OK_IMAGE_ERR="OK_err.gif";
-	public final static String OK_IMAGE_TTEST="OK_ttest.gif";
 	public final static String OK_IMAGE_WARN="OK_caution.gif";
 	public final static String FAIL_IMAGE="FAIL.gif";
-	public final static String FAIL_IMAGE_TTEST="FAIL_ttest.gif";
-	public final static String FAIL_IMAGE_ERR="FAIL_err.gif";
 	public final static String FAIL_IMAGE_WARN="FAIL_caution.gif";
 	public final static String FAIL_IMAGE_EXPLAINED="FAIL_greyed.gif";
 	public final static int OK = 0;
-	public final static int ERR = 0x1;
-	public final static int TTEST = 0x2;
+	public final static int SIGN = 0x1;
+	public final static int ERR = 0x2;
+//	public final static int TTEST = 0x2;
 	public final static int DEV = 0x4;
-	private final static int NOT_SIGNIFICANT = ERR | TTEST;
 
 	/**
 	 * @param dimension
@@ -139,13 +138,13 @@ public class Utils {
 	}
 
 	/**
-	 * @return &lt;html&gt;&lt;head&gt;&lt;meta http-equiv="Content-Type"
+	 * Return &lt;html&gt;&lt;head&gt;&lt;meta http-equiv="Content-Type"
 	 *         content="text/html; charset=iso-8859-1"&gt;
 	 */
 	public static String HTML_OPEN = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">";
 
 	/**
-	 * @return "&lt;/html&gt;".
+	 * Return "&lt;/html&gt;".
 	 */
 	public static String HTML_CLOSE = "</html>";
 
@@ -170,7 +169,7 @@ public class Utils {
 		String description;
 
 		/**
-		 * 
+		 *
 		 * @param name
 		 *            the value specifed for the key config in the
 		 *            eclipse.perf.config system.property key value listings.
@@ -183,13 +182,13 @@ public class Utils {
 			this.name = name;
 			this.description = description;
 		}
-		
+
 		public String getName() {
 			return name;
 		}
 
-		public boolean descriptionMatches(String description) {
-			return description.equals(this.description);
+		public boolean descriptionMatches(String descr) {
+			return descr.equals(this.description);
 		}
 	}
 
@@ -218,7 +217,7 @@ public class Utils {
 	/**
 	 * Queries database with variation composed of buildIdPattern, config and
 	 * jvm.
-	 * 
+	 *
 	 * @return Array of scenarios.
 	 */
 	public static Scenario[] getScenarios(String buildIdPattern, String scenarioPattern, String config, String jvm) {
@@ -232,7 +231,7 @@ public class Utils {
 
 	/**
 	 * Creates a Variations object using build id pattern, config and jvm.
-	 * 
+	 *
 	 * @param buildIdPattern
 	 * @param config
 	 * @param jvm
@@ -291,13 +290,11 @@ public class Utils {
 
 	/**
 	 * Utility method to copy a file.
-	 * 
-	 * @param src -
-	 *            the source file.
-	 * @param dest -
-	 *            the destination.
+	 *
+	 * @param src the source file.
+	 * @param dest the destination.
 	 */
-	public static void copyFile(File src, String dest) {
+	private static void copyFile(File src, File dest) {
 
 		try {
 			InputStream in = new FileInputStream(src);
@@ -316,11 +313,22 @@ public class Utils {
 			e.printStackTrace();
 		}
 	}
+	public static void copyImages(File images, File output) {
+		copyFile(new File(images, Utils.FAIL_IMAGE), new File(output, Utils.FAIL_IMAGE));
+		copyFile(new File(images, Utils.FAIL_IMAGE_EXPLAINED), new File(output, Utils.FAIL_IMAGE_EXPLAINED));
+		copyFile(new File(images, Utils.FAIL_IMAGE_WARN), new File(output, Utils.FAIL_IMAGE_WARN));
+		copyFile(new File(images, Utils.OK_IMAGE), new File(output, Utils.OK_IMAGE));
+		copyFile(new File(images, Utils.OK_IMAGE_WARN), new File(output, Utils.OK_IMAGE_WARN));
+	}
+	public static void copyScripts(File scripts, File output) {
+		copyFile(new File(scripts, "ToolTip.css"), new File(output, "ToolTip.css"));
+		copyFile(new File(scripts, "ToolTip.js"), new File(output, "ToolTip.js"));
+	}
 
 	/**
 	 * Returns a LineGraph object representing measurements for a scenario over
 	 * builds.
-	 * 
+	 *
 	 * @param t -
 	 *            the scenario object.
 	 * @param dimensionName -
@@ -368,7 +376,7 @@ public class Utils {
 						Color color = black;
 						if (buildID.startsWith("N"))
 							color = yellow;
-						
+
 						graph.addItem("main", label, dim.getDisplayValue(value), value, color, true, getDateFromBuildID(buildID), true);
 						continue;
 					}
@@ -392,7 +400,7 @@ public class Utils {
 						continue;
 					} else if (buildID.startsWith("N"))
 							continue;
-					
+
 					for (int i=0;i<currentBuildIdPrefixes.size();i++){
 						if (buildID.startsWith(currentBuildIdPrefixes.get(i).toString())&&!currentFound) {
 							graph.addItem("main", buildID, dim.getDisplayValue(value), value, black, false, getDateFromBuildID(buildID), false);
@@ -410,7 +418,7 @@ public class Utils {
 
 	/**
 	 * Prints a LineGraph object as a gif
-	 * 
+	 *
 	 * @param p -
 	 *            the LineGraph object.
 	 * @param output -
@@ -450,7 +458,7 @@ public class Utils {
 	/**
 	 * Utility method which returns HTML code representing an image map for a
 	 * LineGraph object.
-	 * 
+	 *
 	 * @param p -
 	 *            the LineGraph object.
 	 * @param imageSource -
@@ -470,7 +478,7 @@ public class Utils {
 
 	/**
 	 * A utility which returns the index of a given buildId in an array.
-	 * 
+	 *
 	 * @param timeSeriesLabels -
 	 *            array of buildIds
 	 * @param buildId -
@@ -586,7 +594,7 @@ public class Utils {
 
 	/**
 	 * Returns the date/time from the build id in format yyyymmddhm
-	 * 
+	 *
 	 * @param buildId
 	 * @return date/time in format YYYYMMDDHHMM, ie. 200504060010
 	 */
@@ -650,13 +658,13 @@ public class Utils {
 			out = new PrintWriter(new FileWriter(new File(outputFile)));
 			out.println(Utils.HTML_OPEN + "</head><body>\n");
 			out.println("<h3>Summary of Elapsed Process Variation Coefficients</h3>\n"+
-		"<p> This table provides a bird's eye view of variability in elapsed process times\n"+ 
+		"<p> This table provides a bird's eye view of variability in elapsed process times\n"+
 		  "for baseline and current build stream performance scenarios." +
 		  " This summary is provided to facilitate the identification of scenarios that should be examined due to high variability." +
-		  "The variability for each scenario is expressed as a <a href=\"http://en.wikipedia.org/wiki/Coefficient_of_variation\">coefficient\n"+ 
-		  "of variation</a> (CV). The CV is calculated by dividing the <b>standard deviation\n"+ 
-		  "of the elapse process time over builds</b> by the <b>average elapsed process\n"+ 
-		  "time over builds</b> and multiplying by 100.\n"+ 
+		  "The variability for each scenario is expressed as a <a href=\"http://en.wikipedia.org/wiki/Coefficient_of_variation\">coefficient\n"+
+		  "of variation</a> (CV). The CV is calculated by dividing the <b>standard deviation\n"+
+		  "of the elapse process time over builds</b> by the <b>average elapsed process\n"+
+		  "time over builds</b> and multiplying by 100.\n"+
 		"</p><p>High CV values may be indicative of any of the following:<br></p>\n"+
 		"<ol><li> an unstable performance test. </li>\n"+
 		  "<ul><li>may be evidenced by an erratic elapsed process line graph.<br><br></li></ul>\n"+
@@ -665,28 +673,28 @@ public class Utils {
 		  "<li>unstable testing hardware.\n" +
 		  "<ul><li>consistent higher CV values for one test configuration as compared to others across" +
 		  " scenarios may be related to hardward problems.</li></ul></li></ol>\n"+
-		"<p> Scenarios are listed in alphabetical order in the far right column. A scenario's\n"+ 
-		  "variation coefficients (CVs) are in columns to the left for baseline and current\n"+ 
-		  "build streams for each test configuration. Scenarios with CVs > 10% are highlighted\n"+ 
+		"<p> Scenarios are listed in alphabetical order in the far right column. A scenario's\n"+
+		  "variation coefficients (CVs) are in columns to the left for baseline and current\n"+
+		  "build streams for each test configuration. Scenarios with CVs > 10% are highlighted\n"+
 		  "in yellow (10%<CV>&lt;CV<20%) and orange(CV>20%). </p>\n"+
-		"<p> Each CV value links to the scenario's detailed results to allow viewers to\n"+ 
+		"<p> Each CV value links to the scenario's detailed results to allow viewers to\n"+
 		  "investigate the variability.</p>\n");
-			
+
 			Hashtable cvTable = (Hashtable) rawDataTables.get(scenarios[0]);
 			String[] configNames = (String[]) cvTable.keySet().toArray(new String[cvTable.size()]);
 			Arrays.sort(configNames);
 
-			
+
 		  	int configColumns=configNames.length/2;
 			out.println("<table border=\"1\"><tr>" +
 					    "<td colspan=\""+configColumns+"\"><b>Baseline CVs</b></td>"+
 					    "<td colspan=\""+configColumns+"\"><b>Current Build Stream CVs</b></td>"+
 					    "<td rowspan=\"2\"><b>Scenario Name</b></td>"+
 					    "</tr><tr>");
-	
+
 
 			for (int i = 0; i < configNames.length; i++) {
-				//configNames here have prefix cConfig- or bConfig- depending on whether the data comes from 
+				//configNames here have prefix cConfig- or bConfig- depending on whether the data comes from
 				//current build stream data or baseline data.
 				out.print("<td>" + ((ConfigDescriptor)configDescriptors.get(configNames[i].substring(8))).description + "</td>");
 			}
@@ -696,7 +704,7 @@ public class Utils {
 				Hashtable aCvTable = (Hashtable) rawDataTables.get(scenarios[i]);
 				String scenario = scenarios[i];
 				String scenarioFile=scenario.replace('#', '.').replace(':', '_').replace('\\', '_')+".html";
-				
+
 				for (int j = 0; j < configNames.length; j++) {
 					String url=configNames[j].substring(8)+"/"+scenarioFile;
 					if (aCvTable.get(configNames[j]) == null) {
@@ -776,48 +784,44 @@ public class Utils {
 
 	public static boolean hasConfidentResult(Variations variations, String scenarioName, String baseline, String config) {
 	    double[] resultStats = resultStats(variations, scenarioName, baseline, config);
-	    if (resultStats != null) {
-	    	return resultStats[1] < 0 || resultStats[0] < resultStats[1] || resultStats[2] < STANDARD_ERROR_THRESHOLD;
-	    }
-	    return true;
+	    return (confidenceLevel(resultStats) & ERR) == 0;
     }
-	public static String failureMessage(Variations variations, String scenarioName, String baseline, String config, boolean prefix) {
-		return failureMessage(resultStats(variations, scenarioName, baseline, config), prefix);
+	public static String failureMessage(Variations variations, String scenarioName, String baseline, String config) {
+		return failureMessage(resultStats(variations, scenarioName, baseline, config), true);
 	}
-	public static String failureMessage(double[] resultStats, boolean prefix) {
-		StringBuffer buffer = null;
-		switch (confidenceLevel(resultStats)) {
-			case ERR:
-				buffer = new StringBuffer();
-				if (prefix) buffer.append("*** INFO ***  ");
-     			buffer.append(STANDARD_ERROR_MESSAGE);
-     			buffer.append(" (");
-     			buffer.append(PERCENT_FORMAT.format(resultStats[2]));
-     			buffer.append(")");
-				break;
-			case TTEST:
-				buffer = new StringBuffer();
-				if (prefix) buffer.append("*** INFO ***  ");
-     			buffer.append(TTEST_MODERATION_MESSAGE);
-     			buffer.append(" (");
-     			buffer.append(PERCENT_FORMAT.format(resultStats[2]));
-     			buffer.append(")");
-				break;
-			case TTEST|ERR:
-				buffer = new StringBuffer();
-				if (prefix) buffer.append("*** WARNING ***  ");
-     			buffer.append(TTEST_FAILURE_MESSAGE);
-				break;
-			default:
-				return null;
+	public static String failureMessage(double[] resultStats, boolean full) {
+		StringBuffer buffer = new StringBuffer();
+		int level = confidenceLevel(resultStats);
+		boolean signal = (level & SIGN) != 0;
+		boolean isErr = (level & ERR) != 0;
+		if (full & isErr) {
+			buffer.append("*** WARNING ***  ");
+ 			buffer.append(STANDARD_ERROR_MESSAGE);
 		}
+		if (!full) buffer.append("<font color=\"#0000FF\" size=\"1\">  ");
+		if (resultStats != null) {
+			double deviation = resultStats[3]==0 ? 0 : -resultStats[3];
+			if (deviation > 0) {
+				buffer.append('+');
+			}
+ 			buffer.append(PERCENT_FORMAT.format(deviation));
+ 			if (signal) {
+	 			buffer.append("    [&#177;");
+ 				buffer.append(DOUBLE_FORMAT.format(resultStats[2]*100));
+ 				buffer.append(']');
+ 			}
+		}
+		if (!full) buffer.append("</font>");
 		return buffer.toString();
 	}
 	public static int confidenceLevel(double[] resultStats) {
 		int level = OK;
  		if (resultStats != null){
- 			if (resultStats[1] >= 0 && resultStats[0] >= resultStats[1]) { // invalid t-test
- 				level |= TTEST;
+// 			if (resultStats[1] >= 0 && resultStats[0] >= resultStats[1]) { // invalid t-test
+// 				level |= TTEST;
+// 			}
+ 			if (resultStats[2] > 0) { // signal standard error higher than 0% (only one iteration)
+ 				level |= SIGN;
  			}
  			if (resultStats[2] >= Utils.STANDARD_ERROR_THRESHOLD) { // standard error higher than the authorized threshold
  				level |= ERR;
@@ -857,44 +861,22 @@ public class Utils {
 		return name.equals(pattern);
 	}
 
-	public static String getImage(int confidence, boolean hasExplanation) {
+	public static String getImage(int confidence, double[] resultStats, boolean hasExplanation) {
 	    boolean scenarioFailed = (confidence & DEV) != 0;
 	    String image = null;
-	    
+
 	    if (scenarioFailed) {
 	    	if (hasExplanation) {
 		    	image = FAIL_IMAGE_EXPLAINED;
+		    } else if ((confidence & ERR) != 0) {
+    			image = FAIL_IMAGE_WARN;
 		    } else {
-		    	switch (confidence) {
-		    		default:
-		    			image = FAIL_IMAGE;
-		    			break;
-		    		case TTEST:
-		    			image = FAIL_IMAGE_TTEST;
-		    			break;
-		    		case ERR:
-		    			image = FAIL_IMAGE_ERR;
-		    			break;
-		    		case NOT_SIGNIFICANT:
-		    			image = FAIL_IMAGE_WARN;
-		    			break;
-		    	}
+    			image = FAIL_IMAGE;
 		    }
-	    } else  {
-	    	switch (confidence) {
-	    		default:
-	    			image = OK_IMAGE;
-	    			break;
-	    		case TTEST:
-	    			image = OK_IMAGE_TTEST;
-	    			break;
-	    		case ERR:
-	    			image = OK_IMAGE_ERR;
-	    			break;
-	    		case NOT_SIGNIFICANT:
-	    			image = OK_IMAGE_WARN;
-	    			break;
-	    	}
+	    } else if ((confidence & ERR) != 0) {
+	   		image = OK_IMAGE_WARN;
+	    } else {
+   			image = OK_IMAGE;
 	    }
 	    return image;
     }
