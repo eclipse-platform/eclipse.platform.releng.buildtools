@@ -19,17 +19,11 @@ import java.io.OutputStream;
 import java.util.Hashtable;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
@@ -37,9 +31,6 @@ import org.eclipse.test.internal.performance.db.Scenario;
 import org.eclipse.test.internal.performance.db.SummaryEntry;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 import org.eclipse.test.internal.performance.db.Variations;
-import org.eclipse.test.internal.performance.eval.StatisticsUtil;
-import org.eclipse.test.internal.performance.eval.StatisticsUtil.Percentile;
-import org.eclipse.test.performance.Dimension;
 import org.eclipse.test.performance.ui.Utils.ConfigDescriptor;
 
 
@@ -74,17 +65,16 @@ public class FingerPrint {
         if (component==null){
         	entries= DB.querySummaries(variations,null);
         	this.component="";
-        }
-        else
+        } else {
         	entries=DB.querySummaries(variations,component+'%');
-       	run(entries);
+        }
+       	run();
     }    
     
     /**
      * Creates the fingerprint gif, image map and scenario status table for the component.
-     * @param entries - the result of a database query for summaries for a specified variation.
      */
-    public void run(Object[] entries) {
+    public void run() {
         new File(outputDirectory).mkdirs();
         String referenceName=referenceBuildId;
         String currentName=currentBuildId;
@@ -101,12 +91,12 @@ public class FingerPrint {
                 
         if (entries != null) {
             for (int i= 0; i < entries.length; i++) {
-                SummaryEntry se= (SummaryEntry)entries[i];
-                if (se.comment==null)
-                	add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName);
+                SummaryEntry summary = entries[i];
+                if (summary.comment==null)
+                	add(summary.shortName, new Dim[] { summary.dimension }, summary.scenarioName);
                 else{
-                	setComment(se.scenarioName, se.comment);
-                	add(bar, se.shortName, new Dim[] { se.dimension }, se.scenarioName,se.comment);
+                	setComment(summary.scenarioName, summary.comment);
+                	add(summary.shortName, new Dim[] { summary.dimension }, summary.scenarioName, summary.comment);
                 }
             }
         }
@@ -115,7 +105,7 @@ public class FingerPrint {
                
         if (component=="")
         	outName= "FP_"+referenceName + '_' + currentBuildId+"."+configDescriptor.name;
-        save(bar, outputDirectory + '/' + outName);
+        save(outputDirectory + '/' + outName);
         
         //show(bar);
      
@@ -127,11 +117,11 @@ public class FingerPrint {
     	scenarioComments.put(scenario,comment);
     }
 
-    private void add(BarGraph bar, String name, Dim[] dims, String scenarioName) {
-    	add (bar,name,dims,scenarioName,null);
+    private void add(String name, Dim[] dims, String scenarioName) {
+    	add (name,dims,scenarioName,null);
     }
 
-    private void add(BarGraph bar, String name, Dim[] dims, String scenarioName,String comment) {
+    private void add(String name, Dim[] dims, String scenarioName, String comment) {
          String refData= "";
         Scenario scenario= DB.getScenarioSeries(scenarioName, variations, PerformanceTestPlugin.BUILD, referenceBuildId, currentBuildId, dims);
         String[] timeSeriesLabels= scenario.getTimeSeriesLabels();
@@ -153,7 +143,8 @@ public class FingerPrint {
             	double percent= 0.0;
             	boolean hasConfidentResult= true;
             	if (l > 1) {
-            		hasConfidentResult= Utils.hasConfidentResult(variations, scenario.getScenarioName(),referenceBuildId,configDescriptor.name);
+//            		hasConfidentResult= Utils.hasConfidentResult(variations, scenario.getScenarioName(),referenceBuildId,configDescriptor.name);
+            		hasConfidentResult= Utils.hasConfidentResult(timeSeries);
             		/*if (!rejectNullHypothesis) {
             			NumberFormat percentFormatter= NumberFormat.getPercentInstance();
             			String statisticsComment= "There is not enough evidence to reject the null hypothesis at the " + percentFormatter.format(percentile.inside()) + "level";
@@ -178,7 +169,7 @@ public class FingerPrint {
 	         
     }
 
-    private void save(BarGraph bar, String output) {
+    private void save(String output) {
 
     	//if (bar.getFItems().size()==0)
     		//return;
@@ -217,7 +208,7 @@ public class FingerPrint {
     
     /*
      * Displays bar graph in window
-     */
+     *
     private void show(final BarGraph bar) {
         Display display= new Display();
         
@@ -245,5 +236,24 @@ public class FingerPrint {
 	}
 	public String getOutName() {
 		return outName;
+	}
+    */
+
+	/**
+	 * @return - an html representation of the fingerprint.
+	 */
+	public String getImageMap() {
+		String componentDescription = this.configDescriptor.description;
+		String areas = this.bar.getAreas();
+		if (areas == null)
+			areas = "";
+		String output = "";
+		if (new File(this.outputDirectory, this.outName + ".gif").exists()) {
+			output = "<h4>" + componentDescription + "</h4>";
+			output = output.concat("<img src=\"" + this.outName + ".gif\" usemap=\"#" + this.outName + "\">" + "<map name=\"" + this.outName + "\">" + areas + "</map>\n");
+		} else {
+			output = output.concat("<br><br>There is no fingerprint for " + componentDescription + "<br><br>\n");
+		}
+		return output;
 	}
 }
