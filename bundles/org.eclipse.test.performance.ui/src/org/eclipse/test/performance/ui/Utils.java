@@ -20,13 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import junit.framework.AssertionFailedError;
@@ -43,10 +43,9 @@ import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
+import org.eclipse.test.internal.performance.db.SummaryEntry;
 import org.eclipse.test.internal.performance.db.TimeSeries;
 import org.eclipse.test.internal.performance.db.Variations;
-import org.eclipse.test.internal.performance.eval.StatisticsUtil;
-import org.eclipse.test.internal.performance.eval.StatisticsUtil.Percentile;
 import org.eclipse.test.performance.Dimension;
 
 
@@ -57,22 +56,29 @@ public class Utils {
 	static {
 		PERCENT_FORMAT.setMaximumFractionDigits(1);
 	}
-	static final NumberFormat DOUBLE_FORMAT = NumberFormat.getNumberInstance();
+	static final DecimalFormat DEVIATION_FORMAT = (DecimalFormat) NumberFormat.getPercentInstance();
 	static {
-		DOUBLE_FORMAT.setMaximumIntegerDigits(2);
-		DOUBLE_FORMAT.setMaximumFractionDigits(1);
+		DEVIATION_FORMAT.setMaximumFractionDigits(1);
+		DEVIATION_FORMAT.setMinimumFractionDigits(1);
+		DEVIATION_FORMAT.setPositivePrefix("+");
+		DEVIATION_FORMAT.setNegativePrefix("- ");
+	}
+	static final DecimalFormat STDERR_FORMAT = (DecimalFormat) NumberFormat.getNumberInstance();
+	static {
+		STDERR_FORMAT.setMaximumFractionDigits(1);
+		STDERR_FORMAT.setMinimumFractionDigits(1);
+		STDERR_FORMAT.setMultiplier(100);
 	}
 	public final static String STANDARD_ERROR_THRESHOLD_STRING = PERCENT_FORMAT.format(STANDARD_ERROR_THRESHOLD);
-	public final static String STANDARD_ERROR_MESSAGE="Standard error on this test is higher than "+STANDARD_ERROR_THRESHOLD_STRING;
+	public final static String UNKNOWN_IMAGE="Unknown.gif";
 	public final static String OK_IMAGE="OK.gif";
 	public final static String OK_IMAGE_WARN="OK_caution.gif";
 	public final static String FAIL_IMAGE="FAIL.gif";
 	public final static String FAIL_IMAGE_WARN="FAIL_caution.gif";
 	public final static String FAIL_IMAGE_EXPLAINED="FAIL_greyed.gif";
 	public final static int OK = 0;
-	public final static int SIGN = 0x1;
+	public final static int NAN = 0x1;
 	public final static int ERR = 0x2;
-//	public final static int TTEST = 0x2;
 	public final static int DEV = 0x4;
 
 	/**
@@ -207,7 +213,7 @@ public class Utils {
 
 		while (tokenizer.hasMoreTokens()) {
 			String labelDescriptor = tokenizer.nextToken();
-			String[] elements = labelDescriptor.split(",");
+			String[] elements = labelDescriptor.trim().split(",");
 			ConfigDescriptor descriptor = new ConfigDescriptor(elements[0], elements[1]);
 			configMap.put(elements[0], descriptor);
 		}
@@ -268,11 +274,11 @@ public class Utils {
 		return componentNames;
 	}
 
-	/**
+	/*
 	 * @param fp -
 	 *            a FingerPrint object
 	 * @return - an html representation of the fingerprint.
-	 */
+	 *
 	public static String getImageMap(FingerPrint fp) {
 		String componentDescription = fp.configDescriptor.description;
 		String areas = fp.bar.getAreas();
@@ -287,6 +293,7 @@ public class Utils {
 		}
 		return output;
 	}
+	*/
 
 	/**
 	 * Utility method to copy a file.
@@ -314,11 +321,12 @@ public class Utils {
 		}
 	}
 	public static void copyImages(File images, File output) {
-		copyFile(new File(images, Utils.FAIL_IMAGE), new File(output, Utils.FAIL_IMAGE));
-		copyFile(new File(images, Utils.FAIL_IMAGE_EXPLAINED), new File(output, Utils.FAIL_IMAGE_EXPLAINED));
-		copyFile(new File(images, Utils.FAIL_IMAGE_WARN), new File(output, Utils.FAIL_IMAGE_WARN));
-		copyFile(new File(images, Utils.OK_IMAGE), new File(output, Utils.OK_IMAGE));
-		copyFile(new File(images, Utils.OK_IMAGE_WARN), new File(output, Utils.OK_IMAGE_WARN));
+		copyFile(new File(images, FAIL_IMAGE), new File(output, FAIL_IMAGE));
+		copyFile(new File(images, FAIL_IMAGE_EXPLAINED), new File(output, FAIL_IMAGE_EXPLAINED));
+		copyFile(new File(images, FAIL_IMAGE_WARN), new File(output, FAIL_IMAGE_WARN));
+		copyFile(new File(images, OK_IMAGE), new File(output, OK_IMAGE));
+		copyFile(new File(images, OK_IMAGE_WARN), new File(output, OK_IMAGE_WARN));
+		copyFile(new File(images, UNKNOWN_IMAGE), new File(output, UNKNOWN_IMAGE));
 	}
 	public static void copyScripts(File scripts, File output) {
 		copyFile(new File(scripts, "ToolTip.css"), new File(output, "ToolTip.css"));
@@ -433,7 +441,7 @@ public class Utils {
 		p.paint(image);
 
 		/* Downscale to 8 bit depth palette to save to gif */
-		ImageData data = Utils.downSample(image);
+		ImageData data = downSample(image);
 		ImageLoader il = new ImageLoader();
 		il.data = new ImageData[] { data };
 		OutputStream out = null;
@@ -599,7 +607,7 @@ public class Utils {
 	 * @return date/time in format YYYYMMDDHHMM, ie. 200504060010
 	 */
 	public static long getDateFromBuildID(String buildId) {
-		return Utils.getDateFromBuildID(buildId, false);
+		return getDateFromBuildID(buildId, false);
 	}
 
 	public static long getDateFromBuildID(String buildId, boolean matchLast) {
@@ -656,7 +664,7 @@ public class Utils {
 		PrintWriter out=null;
 		try {
 			out = new PrintWriter(new FileWriter(new File(outputFile)));
-			out.println(Utils.HTML_OPEN + "</head><body>\n");
+			out.println(HTML_OPEN + "</head><body>\n");
 			out.println("<h3>Summary of Elapsed Process Variation Coefficients</h3>\n"+
 		"<p> This table provides a bird's eye view of variability in elapsed process times\n"+
 		  "for baseline and current build stream performance scenarios." +
@@ -740,91 +748,86 @@ public class Utils {
 			out.close();
 		}
 	}
-	
-	public static double[] resultStats(Variations variations, String scenarioName, String baseline, String config) {
-		String OS = "config";
-				
-		Variations tmpVariations=(Variations)variations.clone();
-		tmpVariations.put(OS,config);
-		Scenario[] currentScenarios = DB.queryScenarios(tmpVariations, scenarioName,OS, null);
-		Variations referenceVariations = (Variations) variations.clone();
-		referenceVariations.put(PerformanceTestPlugin.BUILD, baseline);
-		referenceVariations.put(OS, config);
-		Scenario[] refScenarios = DB.queryScenarios(referenceVariations,
-				scenarioName, OS, null);
 
-		Map referenceScenariosMap = new HashMap();
-		Map currentScenariosMap = new HashMap();
-		for (int i = 0; i < refScenarios.length; i++) {
-			Scenario scenario = refScenarios[i];
-			String name = scenario.getScenarioName();
-			referenceScenariosMap.put(name, scenario);
-		}
-
-		for (int i = 0; i < currentScenarios.length; i++) {
-			Scenario scenario = currentScenarios[i];
-			String name = scenario.getScenarioName();
-			currentScenariosMap.put(name, scenario);
-		}
-		Percentile percentile = StatisticsUtil.T90;
-		Scenario scenario = (Scenario) currentScenariosMap.get(scenarioName);
-
-		Scenario reference = (Scenario) referenceScenariosMap.get(scenarioName);
-		if (reference != null) {
-			// XXX have to find out the relevant dimension
-			Dim significanceDimension = (Dim) Dimension.ELAPSED_PROCESS;
-			TimeSeries currentSeries = scenario.getTimeSeries(significanceDimension);
-			TimeSeries baselineSeries = reference.getTimeSeries(significanceDimension);
-			if (currentSeries.getLength() > 0 && baselineSeries.getLength() > 0) {
-				return StatisticsUtil.statisticsForTimeSeries(baselineSeries, 0, currentSeries, 0, percentile);
-			}
-		}
-		return null;
+    public static double[] resultsStatistics(TimeSeries timeSeries) {
+    	try {
+	    	double valueRef = timeSeries.getValue(0), value = timeSeries.getValue(1);
+	    	long countRef = timeSeries.getCount(0), count = timeSeries.getCount(1);
+	    	double stddevRef = timeSeries.getStddev(0), stddev = timeSeries.getStddev(1);
+	    	double stderr = (countRef == 1 || count == 1)
+    			? Double.NaN
+				: (Double.isNaN(stddevRef)
+					? Math.sqrt((stddev * stddev / count)) / valueRef
+					: Math.sqrt((stddevRef * stddevRef / countRef) + (stddev * stddev / count)) / valueRef);
+			return new double[] {
+				(value - valueRef) / valueRef,
+				stderr,
+			};
+    	}
+    	catch (ArrayIndexOutOfBoundsException aioobe) {
+    		return null;
+    	}
 	}
 
-	public static boolean hasConfidentResult(Variations variations, String scenarioName, String baseline, String config) {
-	    double[] resultStats = resultStats(variations, scenarioName, baseline, config);
+	public static boolean hasConfidentResult(TimeSeries timeSeries) {
+	    double[] resultStats = resultsStatistics(timeSeries);
 	    return (confidenceLevel(resultStats) & ERR) == 0;
     }
 	public static String failureMessage(Variations variations, String scenarioName, String baseline, String config) {
-		return failureMessage(resultStats(variations, scenarioName, baseline, config), true);
+		String current = (String) variations.get(PerformanceTestPlugin.BUILD);
+		Dim significanceDimension = (Dim) Dimension.ELAPSED_PROCESS;
+		Scenario newScenario= DB.getScenarioSeries(scenarioName, variations, PerformanceTestPlugin.BUILD, baseline, current, new Dim[] { significanceDimension });
+        TimeSeries timeSeries = newScenario.getTimeSeries(significanceDimension);
+        double[] results = resultsStatistics(timeSeries);
+		return failureMessage(results, true);
 	}
 	public static String failureMessage(double[] resultStats, boolean full) {
 		StringBuffer buffer = new StringBuffer();
 		int level = confidenceLevel(resultStats);
-		boolean signal = (level & SIGN) != 0;
+//		boolean isWarn = (level & WARN) != 0;
 		boolean isErr = (level & ERR) != 0;
-		if (full & isErr) {
-			buffer.append("*** WARNING ***  ");
- 			buffer.append(STANDARD_ERROR_MESSAGE);
-		}
-		if (!full) buffer.append("<font color=\"#0000FF\" size=\"1\">  ");
-		if (resultStats != null) {
-			double deviation = resultStats[3]==0 ? 0 : -resultStats[3];
-			if (deviation > 0) {
-				buffer.append('+');
+		if (full) {
+			if (isErr) {
+				buffer.append("*** WARNING ***  ");
+	 			buffer.append(Messages.bind(Messages.standardError, PERCENT_FORMAT.format(resultStats[1]), STANDARD_ERROR_THRESHOLD_STRING));
 			}
- 			buffer.append(PERCENT_FORMAT.format(deviation));
- 			if (signal) {
-	 			buffer.append("    [&#177;");
- 				buffer.append(DOUBLE_FORMAT.format(resultStats[2]*100));
- 				buffer.append(']');
- 			}
+			return buffer.toString();
 		}
-		if (!full) buffer.append("</font>");
+		if (resultStats != null) {
+			double deviation = resultStats[0];
+			buffer.append("<font color=\"#0000FF\" size=\"1\">");
+			if (Double.isNaN(deviation) || Double.isInfinite(deviation)) {
+	 			buffer.append(" [n/a]");
+ 			} else {
+				double stderr = resultStats[1];
+				deviation = Math.abs(deviation)<0.001 ? 0 : -deviation;
+	 			if (Double.isNaN(stderr) || Double.isInfinite(stderr)) {
+		 			buffer.append(DEVIATION_FORMAT.format(deviation));
+					buffer.append("</font><font color=\"#DDDD00\" size=\"1\"> ");
+		 			buffer.append(" [n/a]");
+	 			} else {
+		 			buffer.append(DEVIATION_FORMAT.format(deviation));
+	 				buffer.append(" [&#177;");
+	 				buffer.append(STDERR_FORMAT.format(Math.abs(stderr)));
+	 				buffer.append(']');
+	 			}
+ 			}
+			buffer.append("</font>");
+		}
 		return buffer.toString();
 	}
 	public static int confidenceLevel(double[] resultStats) {
 		int level = OK;
  		if (resultStats != null){
-// 			if (resultStats[1] >= 0 && resultStats[0] >= resultStats[1]) { // invalid t-test
-// 				level |= TTEST;
-// 			}
- 			if (resultStats[2] > 0) { // signal standard error higher than 0% (only one iteration)
- 				level |= SIGN;
- 			}
- 			if (resultStats[2] >= Utils.STANDARD_ERROR_THRESHOLD) { // standard error higher than the authorized threshold
- 				level |= ERR;
+			if (Double.isNaN(resultStats[0]) || Double.isInfinite(resultStats[0])) {
+				level = NAN;
+ 			} else {
+//	 			if (resultStats[1] >= (STANDARD_ERROR_THRESHOLD/2)) { // warns standard error higher than the half of authorized threshold
+//	 				level |= WARN;
+//	 			}
+	 			if (resultStats[1] >= STANDARD_ERROR_THRESHOLD) { // standard error higher than the authorized threshold
+	 				level = ERR;
+	 			}
  			}
  		}
 		return level;
@@ -837,15 +840,13 @@ public class Utils {
 			String previous = "";
 			while (tokenizer.hasMoreTokens()) {
 				String token = tokenizer.nextToken();
-				if (token.equals("%")) {
-					start += previous.length();
-				} else if (token.equals("_")) {
-					start++;
-				} else {
+				if (!token.equals("%") && !token.equals("_")) {
 					if (previous.equals("%")) {
-						if (name.substring(start).indexOf(token) < 0) return false;
+						int idx = name.substring(start).indexOf(token);
+						if (idx < 0) return false;
+						start += idx;
 					} else if (previous.equals("_")) {
-						if (!name.substring(start).startsWith(token)) return false;
+						if (!name.substring(++start).startsWith(token)) return false;
 					}
 					start += token.length();
 				}
@@ -861,7 +862,7 @@ public class Utils {
 		return name.equals(pattern);
 	}
 
-	public static String getImage(int confidence, double[] resultStats, boolean hasExplanation) {
+	public static String getImage(int confidence, boolean hasExplanation) {
 	    boolean scenarioFailed = (confidence & DEV) != 0;
 	    String image = null;
 
@@ -873,6 +874,8 @@ public class Utils {
 		    } else {
     			image = FAIL_IMAGE;
 		    }
+	    } else if ((confidence & NAN) != 0) {
+			image = UNKNOWN_IMAGE;
 	    } else if ((confidence & ERR) != 0) {
 	   		image = OK_IMAGE_WARN;
 	    } else {
@@ -880,4 +883,73 @@ public class Utils {
 	    }
 	    return image;
     }
+
+	public static boolean hasSummary(SummaryEntry[] summaries, String scenarioName) {
+		int length = summaries == null ? 0 : summaries.length;
+		for (int i=0; i<length; i++) {
+			SummaryEntry summary = summaries[i];
+			if (summary.scenarioName.equals(scenarioName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static String getScenarioShortName(String scenarioName, int max) {
+
+		// Remove class name qualification
+		int testSeparator = scenarioName.indexOf('#');
+		boolean hasClassName = testSeparator >= 0;
+		if (!hasClassName) {
+			testSeparator = scenarioName.lastIndexOf('.');
+			if (testSeparator <= 0) {
+				if (max > 0 && scenarioName.length() > max) {
+					return "*"+scenarioName.substring(0, max);
+				}
+				return scenarioName;
+			}
+		}
+		int classSeparator = scenarioName.substring(0, testSeparator).lastIndexOf('.');
+		if (classSeparator < 0) {
+			if (max > 0 && scenarioName.length() > max) {
+				return "*"+scenarioName.substring(0, max);
+			}
+			return scenarioName;
+		}
+		int length = scenarioName.length();
+		String shortName = scenarioName.substring(classSeparator+1, length);
+		if (!hasClassName && shortName.startsWith("test.")) { // specific case for swt...
+			shortName = shortName.substring(5);
+		}
+
+		// Remove qualification from test name
+		StringTokenizer tokenizer = new StringTokenizer(shortName, " :,", true);
+		StringBuffer buffer = new StringBuffer(tokenizer.nextToken());
+		while (tokenizer.hasMoreTokens()) {
+			String token = tokenizer.nextToken();
+			char fc = token.charAt(0);
+			while (fc == ' ' || fc == ',' || fc == ':') {
+				buffer.append(token); // add the separator
+				token = tokenizer.nextToken();
+				fc = token.charAt(0);
+			}
+			int last = token .lastIndexOf('.');
+			if (last >= 3) {
+				int first = token .indexOf('.');
+				if (first == last) {
+					buffer.append(token);
+				} else {
+//					buffer.append(token.substring(0, first));
+//					buffer.append("...");
+					buffer.append(token.substring(last+1));
+				}
+			} else {
+				buffer.append(token);
+			}
+		}
+		if (max > 0 && buffer.length() > max) {
+			return "*"+buffer.substring(0, max);
+		}
+		return buffer.toString();
+	}
 }
