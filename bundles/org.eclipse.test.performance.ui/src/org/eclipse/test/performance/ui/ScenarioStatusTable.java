@@ -112,10 +112,9 @@ public class ScenarioStatusTable {
 			        double[] resultStats = Utils.resultsStatistics(timeSeries);
 					if (resultStats == null) continue;
 					if (resultStats != null && resultStats[1] < 0 && scenarioStatus.hasBaseline) scenarioStatus.hasBaseline = false;
-					int confidenceLevel = Utils.confidenceLevel(resultStats);
-					scenarioStatus.configStatus.put(configs[j], new Integer(confidenceLevel));
 					
 					// Store failure message in scenario status
+					int confidenceLevel = Utils.confidenceLevel(resultStats);
 					boolean hasScenarioFailure = failureMessages[j] != null && failureMessages[j].indexOf(configs[j]) != -1; // ensure correct failure message relates to config
 					StringBuffer buffer = new StringBuffer();
 					if (hasScenarioFailure) {
@@ -126,6 +125,7 @@ public class ScenarioStatusTable {
 						}
 						confidenceLevel |= Utils.DEV;
 					}
+					scenarioStatus.configStatus.put(configs[j], new Integer(confidenceLevel));
 					scenarioStatus.statusMap.put(configs[j], buffer.toString());
 
 					// Store text for numbers in scenario status
