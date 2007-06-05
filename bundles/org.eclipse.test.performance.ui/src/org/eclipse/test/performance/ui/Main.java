@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.IPlatformRunnable;
 import org.eclipse.core.runtime.Platform;
 
 import org.eclipse.test.internal.performance.db.Scenario;
-import org.eclipse.test.internal.performance.db.SummaryEntry;
 import org.eclipse.test.internal.performance.db.Variations;
 import org.eclipse.test.performance.ui.Utils.ConfigDescriptor;
 
@@ -49,21 +48,14 @@ public class Main implements IPlatformRunnable{
 	private Hashtable fingerPrints = new Hashtable();
 	private Hashtable scenarioComments=new Hashtable();
 	private Hashtable rawDataTables=new Hashtable();
-	private boolean local = false;
 	
 	public Object run(Object args) throws Exception {
 		parse(args);
 		
-		if (this.local) {
-			int length = configNames.length;
-			for (int i=0; i<length; i++) {
-				generate((ConfigDescriptor)configDescriptors.get(configNames[i]));
-			}
-		} else {
-			Enumeration configIds=configDescriptors.keys();
-			while (configIds.hasMoreElements()){
-				generate((ConfigDescriptor)configDescriptors.get(configIds.nextElement()));
-			}
+		Enumeration configIds=configDescriptors.keys();
+		
+		while (configIds.hasMoreElements()){
+			generate((ConfigDescriptor)configDescriptors.get(configIds.nextElement()));
 		}
 
 		Utils.printVariabilityTable(rawDataTables,output+"/cvsummary.html",configDescriptors);
@@ -95,64 +87,36 @@ public class Main implements IPlatformRunnable{
 				os.println(Utils.HTML_DEFAULT_CSS);
 				os.println("<body>");
 				Hashtable fps = (Hashtable) fingerPrints.get(component);
+				Enumeration configs = fps.keys();
 				
 				int baselineUnderScoreIndex=baseline.indexOf("_");
 				int currentUnderScoreIndex=currentBuildId.indexOf("_");
 
 				String baselineName=(baselineUnderScoreIndex!=-1)?baseline.substring(0, baseline.indexOf("_")):baseline;
 				String currentName=(currentUnderScoreIndex!=-1)?currentBuildId.substring(0, currentBuildId.indexOf("_")):currentBuildId;
-				boolean isGlobal = component.equals("global");
-				StringBuffer title = new StringBuffer("<h3>Performance of ");
-				if (!isGlobal) {
-					title.append(component);
-					title.append(": ");
-				}
-				title.append(currentName);
-				title.append(" relative to ");
-				title.append(baselineName);
-				title.append( "</h3>");
-				os.println(title.toString());
+				String title = "<h3>Performance of " + component + ": "
+						+ currentName + " relative to "
+						+ baselineName
+						+ "</h3>";
+				if (component.equals("global"))
+					title = "<h3>Performance of " + currentName
+							+ " relative to "
+							+ baselineName
+							+ "</h3>";
+				os.println(title);
 				
 				//print the html representation of fingerprint for each config 
-				Enumeration configs = fps.keys();
-				SummaryEntry[] fpSummaries = null;
 				while (configs.hasMoreElements()) {
 					String config = configs.nextElement().toString();
-					FingerPrint fingerPrint = (FingerPrint) fps.get(config);
-					os.println(fingerPrint.getImageMap());
-					if (fpSummaries == null) {
-						fpSummaries = fingerPrint.entries;
-					}
+					FingerPrint fp = (FingerPrint) fps.get(config);
+					os.println(Utils.getImageMap(fp));
 				}
-				if (isGlobal) {
-					if (this.local) {
-						os.println("<table border=0 cellpadding=2 cellspacing=5 width=\"100%\">");
-						os.println("<tbody><tr> <td colspan=3 align=\"left\" bgcolor=\"#0080c0\" valign=\"top\"><b><font color=\"#ffffff\" face=\"Arial,Helvetica\">");
-						os.println("Detailed performance data grouped by scenario prefix</font></b></td></tr></tbody></table>");
-						os.println("<a href=\"org.eclipse.ant.php?\">org.eclipse.ant*</a><br>");
-						os.println("<a href=\"org.eclipse.compare.php?\">org.eclipse.compare*</a><br>");
-						os.println("<a href=\"org.eclipse.core.php?\">org.eclipse.core*</a><br>");
-						os.println("<a href=\"org.eclipse.help.php?\">org.eclipse.help*</a><br>");
-						os.println("<a href=\"org.eclipse.jdt.core.php?\">org.eclipse.jdt.core*</a><br>");
-						os.println("<a href=\"org.eclipse.jdt.debug.php?\">org.eclipse.jdt.debug*</a><br>");
-						os.println("<a href=\"org.eclipse.jdt.text.php?\">org.eclipse.jdt.text*</a><br>");
-						os.println("<a href=\"org.eclipse.jdt.ui.php?\">org.eclipse.jdt.ui*</a><br>");
-						os.println("<a href=\"org.eclipse.jface.php?\">org.eclipse.jface*</a><br>");
-						os.println("<a href=\"org.eclipse.osgi.php?\">org.eclipse.osgi*</a><br>");
-						os.println("<a href=\"org.eclipse.pde.ui.php?\">org.eclipse.pde.ui*</a><br>");
-						os.println("<a href=\"org.eclipse.swt.php?\">org.eclipse.swt*</a><br>");
-						os.println("<a href=\"org.eclipse.team.php?\">org.eclipse.team*</a><br>");
-						os.println("<a href=\"org.eclipse.ua.php?\">org.eclipse.ua*</a><br>");
-						os.println("<a href=\"org.eclipse.ui.php?\">org.eclipse.ui*</a><br><p><br><br>");
-					}
-				} else if (component.length() > 0) {
-					// print the component scenario status table beneath the fingerprint
+				if (component != "") {
+				//print the component scenario status table beneath the fingerprint
 					variations.put("config", "%");
-					boolean filter = this.local && this.scenarioFilter != null; // use scenario filter to minimize DB requests while testing...
-					ScenarioStatusTable sst = filter
-						? new ScenarioStatusTable(variations, this.scenarioFilter, configDescriptors,scenarioComments, fpSummaries, baseline)
-						: new ScenarioStatusTable(variations, component + "%", configDescriptors,scenarioComments, fpSummaries, baseline);
-					sst.print(os, filter);
+					ScenarioStatusTable sst = new ScenarioStatusTable(variations, component + "%", configDescriptors,scenarioComments, baseline);
+//					ScenarioStatusTable sst = new ScenarioStatusTable(variations, this.scenarioFilter, configDescriptors,scenarioComments, baseline);
+					os.println(sst.toString());
 				}
 
 				os.println(Utils.HTML_CLOSE);
@@ -328,7 +292,8 @@ public class Main implements IPlatformRunnable{
 					System.out.println("Missing value for -config.properties parameter");
 					printUsage();
 				}
-				configDescriptors = Utils.getConfigDescriptors(configProperties);
+				configDescriptors = Utils
+						.getConfigDescriptors(configProperties);
 				i++;
 				continue;
 			}
@@ -350,11 +315,6 @@ public class Main implements IPlatformRunnable{
 			if (arg.equals("-scenarioresults")) {
 				genScenarioSummaries = true;
 				genAll = false;
-				i++;
-				continue;
-			}
-			if (arg.equals("-local")) {
-				this.local  = true;
 				i++;
 				continue;
 			}

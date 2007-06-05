@@ -10,19 +10,12 @@
  *******************************************************************************/
 package org.eclipse.test.performance.ui;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
 
-import org.eclipse.test.internal.performance.PerformanceTestPlugin;
-import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Scenario;
-import org.eclipse.test.internal.performance.db.SummaryEntry;
-import org.eclipse.test.internal.performance.db.TimeSeries;
 import org.eclipse.test.internal.performance.db.Variations;
-import org.eclipse.test.performance.Dimension;
 
 public class ScenarioStatusTable {
 	
@@ -31,23 +24,18 @@ public class ScenarioStatusTable {
 	private String scenarioPattern;
 	private ArrayList configNames=new ArrayList();
 	private Hashtable scenarioComments;
-	private SummaryEntry[] fingerprintEntries;
 	private final String baseline;
 	
 	private class ScenarioStatus{
 		Hashtable statusMap;
-		String name, shortName;
+		String name;
 		Hashtable configStatus;
-		Hashtable resultsMap;
 		boolean hasSlowDownExplanation=false;
-		boolean fingerprint = false;
-		boolean hasBaseline = true;
 						
 		public ScenarioStatus(String scenarioName){
-			name = scenarioName;
-			statusMap = new Hashtable();
-			configStatus = new Hashtable();
-			resultsMap = new Hashtable();
+			name=scenarioName;
+			statusMap=new Hashtable();
+			configStatus=new Hashtable();
 		}
 
 	}
@@ -60,20 +48,20 @@ public class ScenarioStatusTable {
 	 * @param scenarioPattern
 	 * @param configDescriptors
 	 */
-	public ScenarioStatusTable(Variations variations,String scenarioPattern,Hashtable configDescriptors,Hashtable scenarioComments, SummaryEntry[] fpSummaries, String baseline){
+	public ScenarioStatusTable(Variations variations,String scenarioPattern,Hashtable configDescriptors,Hashtable scenarioComments, String baseline){
 		configMaps=configDescriptors;
 		this.variations=variations;
 		this.scenarioPattern=scenarioPattern;
 		this.scenarioComments=scenarioComments;
 		this.baseline= baseline;
-		this.fingerprintEntries = fpSummaries;
 	}
-
+	
 	/**
-	 * Prints the HTML representation of scenario status table into the given stream.
+	 * Returns HTML representation of scenario status table.
 	 */
-	public void print(PrintStream stream, boolean filter) {
+	public String toString() {
 		String OS="config";
+		String htmlTable="";
         Scenario[] scenarios= DB.queryScenarios(variations, scenarioPattern, OS, null);
 	
 		if (scenarios != null && scenarios.length > 0) {
@@ -82,40 +70,25 @@ public class ScenarioStatusTable {
 			for (int i= 0; i < scenarios.length; i++) {
 				Scenario scenario= scenarios[i];
 				String scenarioName=scenario.getScenarioName();
-				if (filter && !Utils.matchPattern(scenarioName, scenarioPattern)) continue;
+//				if (!Utils.matchPattern(scenarioName, scenarioPattern)) continue;
 				// returns the config names. Making assumption that indices in
 				// the configs array map to the indices of the failure messages.
 				String[] configs=scenario.getTimeSeriesLabels();
 				String[] failureMessages= scenario.getFailureMessages();
 				ScenarioStatus scenarioStatus=new ScenarioStatus(scenarioName);
-				scenarioStatus.fingerprint = Utils.hasSummary(this.fingerprintEntries, scenarioName);
+				scenarioStatusList.add(scenarioStatus);
 
 				String scenarioComment= (String)scenarioComments.get(scenarioName);
 				if (scenarioComment != null)
 					scenarioStatus.hasSlowDownExplanation= true;
-
-				int confsLength = configs.length;
-				for (int j=0; j<confsLength; j++){
+				
+				for (int j=0;j<configs.length;j++){
 					if (!configNames.contains(configs[j]))
 						configNames.add(configs[j]);
 
-					// Compute confidence level and store it in scenario status
-					Variations v = (Variations) variations.clone();
-					v.put(PerformanceTestPlugin.CONFIG, configs[j]);
-//    				double[] resultStats = Utils.resultStats(v, scenarioName, baseline, configs[j]);
-					String current = (String) v.get(PerformanceTestPlugin.BUILD);
-					Dim significanceDimension = (Dim) Dimension.ELAPSED_PROCESS;
-					Scenario newScenario= DB.getScenarioSeries(scenarioName, v, PerformanceTestPlugin.BUILD, baseline, current, new Dim[] { significanceDimension });
-			        String[] timeSeriesLabels= newScenario.getTimeSeriesLabels();
-			        TimeSeries timeSeries = newScenario.getTimeSeries(significanceDimension);
-			        boolean hasBaseline = timeSeriesLabels.length == 2 && timeSeriesLabels[0].equals(baseline);
-			        double[] resultStats = Utils.resultsStatistics(timeSeries);
-					if (resultStats == null) continue;
-					if (resultStats != null && resultStats[1] < 0 && scenarioStatus.hasBaseline) scenarioStatus.hasBaseline = false;
+					double[] resultStats = Utils.resultStats(variations, scenarioName, baseline, configs[j]);
 					int confidenceLevel = Utils.confidenceLevel(resultStats);
-					scenarioStatus.configStatus.put(configs[j], new Integer(confidenceLevel));
 					
-					// Store failure message in scenario status
 					boolean hasScenarioFailure = failureMessages[j] != null && failureMessages[j].indexOf(configs[j]) != -1; // ensure correct failure message relates to config
 					StringBuffer buffer = new StringBuffer();
 					if (hasScenarioFailure) {
@@ -126,113 +99,47 @@ public class ScenarioStatusTable {
 						}
 						confidenceLevel |= Utils.DEV;
 					}
-					scenarioStatus.statusMap.put(configs[j], buffer.toString());
 
-					// Store text for numbers in scenario status
-					String text = Utils.failureMessage(resultStats, false);
-					scenarioStatus.resultsMap.put(configs[j], text);
-					
-					// Store scenario short name in scenario status (for table column)
-					if (scenarioStatus.shortName == null) {
-						if (hasBaseline) { // baseline is OK
-							scenarioStatus.shortName = Utils.getScenarioShortName(scenarioName, -1);
-						} else {
-							StringBuffer shortName = new StringBuffer("*");
-							shortName.append(Utils.getScenarioShortName(scenarioName, -1));
-							shortName.append(" <small>(vs.&nbsp;");
-							shortName.append(timeSeriesLabels[0]);
-							shortName.append(")</small>");
-							scenarioStatus.shortName = shortName.toString();
-						}
-					}
-
-					// Store scenario status
-					if (!scenarioStatusList.contains(scenarioStatus)) {
-						scenarioStatusList.add(scenarioStatus);
-					}
+					scenarioStatus.configStatus.put(configs[j], new Integer(confidenceLevel));
+					scenarioStatus.statusMap.put(configs[j], new Object[] { buffer.toString(), resultStats });
 				}
 			}
 			
 			String label=null;
-			stream.println("<br><h4>Scenario Status</h4>");
-			stream.println("The following table gives a complete but compact view of performance results for the component.<br>");
-			stream.println("Each line of the table shows the results for one scenario on all machines.<br><br>");
-			stream.println("The name of the scenario is <b>bolded</b> when its results are also displayed in the fingerprints<br>");
-			stream.println("and starts with an '*' when the scenario has no results in the last baseline run.<br><br>");
-			stream.println("Here are information displayed for each test (ie. in each cell):");
-			stream.println("<ul>");
-			stream.println("<li>an icon showing whether the test fails or passes and whether it's reliable or not.<br>");
-			stream.println("The legend for this icon is:");
-			stream.println("<ul>");
-			stream.print("<li>Green (<img src=\"");
-			stream.print(Utils.OK_IMAGE);
-			stream.print("\">): mark a <b>successful result</b>, which means this test has neither significant performance regression nor significant standard error</li>");
-			stream.print("<li>Red (<img src=\"");
-			stream.print(Utils.FAIL_IMAGE);
-			stream.println("\">): mark a <b>failing result</b>, which means this test shows a significant performance regression (more than 10%)</li>");
-			stream.print("<li>Gray (<img src=\"");
-			stream.print(Utils.FAIL_IMAGE_EXPLAINED);
-			stream.println("\">): mark a <b>failing result</b> (see above) with a comment explaining this degradation.</li>");
-			stream.print("<li>Yellow (<img src=\"");
-			stream.print(Utils.FAIL_IMAGE_WARN);
-			stream.print("\"> or <img src=\"");
-			stream.print(Utils.OK_IMAGE_WARN);
-			stream.print("\">): mark a <b>failing or successful result</b> with a significant standard error (more than ");
-			stream.print(Utils.STANDARD_ERROR_THRESHOLD_STRING);
-			stream.println(")</li>");
-			stream.print("<li>Black (<img src=\"");
-			stream.print(Utils.UNKNOWN_IMAGE);
-			stream.print("\">): mark an <b>undefined result</b>, which means that deviation on this test is not a number (<code>NaN</code>) or is infinite (happens when the reference value is equals to 0!)</li>");
-			stream.println("<li>\"n/a\": mark a test for with <b>no</b> performance results</li>");
-			stream.println("</ul></li>");
-			stream.println("<li>the value of the deviation from the baseline as a percentage (ie. formula is: <code>(build_test_time - baseline_test_time) / baseline_test_time</code>)</li>");
-			stream.println("<li>the value of the standard error of this deviation as a percentage (ie. formula is: <code>sqrt(build_test_stddev^2 / N + baseline_test_stddev^2 / N) / baseline_test_time</code>)<br>");
-			stream.println("When test only has one measure, the standard error cannot be computed and is replaced with a '<font color=\"#CCCC00\">[n/a]</font>'.</li>");
-			stream.println("</ul>");
-			stream.println("<u>Hints</u>:<ul>");
-			stream.println("<li>fly over image of failing tests to see the complete error message</li>");
-			stream.println("<li>to look at the complete and detailed test results, click on its image</li>");
-			stream.println("</ul>");
-			stream.println();
-			stream.println("<table border=\"1\">");
-			stream.println("<tr>");
-			stream.print("<td><h4>All ");
-			stream.print(scenarios.length);
-			stream.println(" scenarios</h4></td>");
+			htmlTable=htmlTable.concat("<br><h4>Scenario Status</h4>\n" +
+				"The scenario status table shows all scenarios tests result for all performance test machines. It gives a complete but compact view of performance result for the component.<br>\n" +
+				"For each test (ie. in each cell of this table), following information are displayed:\n" +
+				"<ul>\n" +
+				"<li>an icon showing whether the test fails or passes and whether it's reliable or not.<br>\n" +
+				"The legend for this icon is:\n" +
+				"<ul>\n" +
+				"<li>Green (<img src=\""+Utils.OK_IMAGE+"\">): mark a <b>successful result</b>, which means this test has neither significant performance regression nor significant standard error</li>\n" +
+				"<li>Red (<img src=\""+Utils.FAIL_IMAGE+"\">): mark a <b>failing result</b>, which means this test shows a significant performance regression (more than 10%)</li>\n" +
+				"<li>Gray (<img src=\""+Utils.FAIL_IMAGE_EXPLAINED+"\">): mark a <b>failing result</b> (see above) with a comment explaining this degradation.</li>\n" +
+				"<li>Yellow (<img src=\""+Utils.FAIL_IMAGE_WARN+"\"> or <img src=\""+Utils.OK_IMAGE_WARN+"\">): mark a <b>failing or successful result</b> with a significant standard error (more than "+Utils.STANDARD_ERROR_THRESHOLD_STRING+")</li>\n" +
+				"<li>\"n/a\": mark a test for with <b>no</b> performance results</li>\n" +
+				"</ul></li>\n" +
+				"<li>the value of the deviation from the baseline as a percentage (ie. formula is: <code>(build_test_time - baseline_test_time) / baseline_test_time</code>)</li>\n" +
+				"<li>the value of the standard error of this deviation as a percentage (ie. formula is: <code>sqrt(build_test_stddev^2 / N + baseline_test_stddev^2 / N) / baseline_test_time</code>)<br>\n" +
+				"Note that errors equal to 0 are not shown (tests which have only one iteration).</li>\n" +
+				"</ul>" +
+				"For failing tests, value of deviation with its standard error is added at the beginning of the error message you can see flying over the corresponding image.<br>\n" +
+				"Follow the link on test box corresponding image for detailed results.<br>" +
+				"<br>\n");
 
+			htmlTable=htmlTable.concat("<table border=\"1\"><tr><td><h4>All "+scenarios.length+" scenarios</h4></td>\n");
 			for (int i= 0; i < configNames.size(); i++){
-				label = configNames.get(i).toString();
-				String columnTitle = label;
+				label=configNames.get(i).toString();
+				String columnTitle=label;
 				if (configMaps!=null) {
 					Utils.ConfigDescriptor configDescriptor= (Utils.ConfigDescriptor)configMaps.get(label);
-					if (configDescriptor != null) {
-						int idx = configDescriptor.description.indexOf('(');
-						if (idx < 0) {
-							columnTitle = configDescriptor.description;
-						} else {
-							// first line
-    						StringTokenizer tokenizer = new StringTokenizer(configDescriptor.description.substring(0, idx).trim(), " ");
-    						StringBuffer buffer = new StringBuffer(tokenizer.nextToken());
-    						while (tokenizer.hasMoreTokens()) {
-    							buffer.append("&nbsp;");
-    							buffer.append(tokenizer.nextToken());
-    						}
-    						buffer.append(' ');
-    						// second line
-    						tokenizer = new StringTokenizer(configDescriptor.description.substring(idx).trim(), " ");
-    						buffer.append(tokenizer.nextToken());
-    						while (tokenizer.hasMoreTokens()) {
-    							buffer.append("&nbsp;");
-    							buffer.append(tokenizer.nextToken());
-    						}
-    						columnTitle = buffer.toString();
-						}
-					}
+					if (configDescriptor != null)
+						columnTitle=configDescriptor.description;
 				}
-				stream.print("<td><h5>");
-				stream.print(columnTitle);
-				stream.println("</h5>");
+				htmlTable=htmlTable.concat("<td><h5>"+columnTitle +"</h5></td>");
 			}
+			 
+			htmlTable=htmlTable.concat("</tr>\n");
 			
 			// counter for js class Id's
 			int jsIdCount=0;
@@ -240,63 +147,61 @@ public class ScenarioStatusTable {
 				
 				ScenarioStatus status=(ScenarioStatus)scenarioStatusList.get(j);
 
-				stream.println("<tr>");
-				stream.print("<td>");
-				if (status.fingerprint) stream.print("<b>");
-				if (!status.hasBaseline) stream.print("*");
-//				stream.print(status.name.substring(status.name.indexOf(".",status.name.indexOf(".test")+1)+1));
-				stream.print(status.shortName);
-				if (!status.hasBaseline) stream.print("</i>");
-				if (status.fingerprint) stream.print("</b>");
-				stream.println();
+				htmlTable=htmlTable.concat("<tr><td>"+status.name.substring(status.name.indexOf(".",status.name.indexOf(".test")+1)+1)+"</td>");
 				for (int i=0;i<configNames.size();i++){
+					String message=null;
 					String configName=configNames.get(i).toString();
 					String aUrl=configName;
+					double[] resultStats = null;
+					if(status.statusMap.get(configName)!=null){
+						Object[] statusInfo = (Object[]) status.statusMap.get(configName);
+						message = (String) statusInfo[0];
+						resultStats = (double[]) statusInfo[1];
+					}
+
 					if (status.statusMap.containsKey(configName)){
-						String message = (String) status.statusMap.get(configName);
 						int confidence = ((Integer) status.configStatus.get(configName)).intValue();
-						String image = Utils.getImage(confidence, status.hasSlowDownExplanation);
-						stream.print("<td><a ");
-						if ((confidence & Utils.DEV) == 0 || (confidence & Utils.NAN) != 0 || message.length() == 0){
+						String image = Utils.getImage(confidence, resultStats, status.hasSlowDownExplanation);
+						StringBuffer html = new StringBuffer("\n<td><a ");
+						if ((confidence & Utils.DEV) == 0 || message.length() == 0){
 							// write deviation with error in table when test pass
-							stream.print("href=\"");
-							stream.print(aUrl);
-							stream.print('/');
-							stream.print(status.name.replace('#', '.').replace(':', '_').replace('\\', '_'));
-							stream.println(".html\">");
-							stream.print("<img hspace=\"10\" border=\"0\" src=\"");
-							stream.print(image);
-							stream.println("\"/></a>");
+							html.append("href=\"");
+							html.append(aUrl);
+							html.append('/');
+							html.append(status.name.replace('#', '.').replace(':', '_').replace('\\', '_'));
+							html.append(".html\">\n<img hspace=\"10\" border=\"0\" src=\"");
+							html.append(image);
+							html.append("\"/></a>");
 						} else {
 							// create message with tooltip text including deviation with error plus failure message
 							jsIdCount+=1;
-							stream.print("class=\"tooltipSource\" onMouseover=\"show_element('toolTip");
-							stream.print(jsIdCount);
-							stream.print("')\" onMouseout=\"hide_element('toolTip");
-							stream.print(jsIdCount);
-							stream.print("')\" \nhref=\"");
-							stream.print(aUrl);
-							stream.print('/');
-							stream.print(status.name.replace('#', '.').replace(':', '_').replace('\\', '_'));
-							stream.println(".html\">");
-							stream.print("<img hspace=\"10\" border=\"0\" src=\"");
-							stream.print(image);
-							stream.println("\"/>");
-							stream.print("<span class=\"hidden_tooltip\" id=\"toolTip");
-							stream.print(jsIdCount);
-							stream.print("\">");
-							stream.print(message);
-							stream.println("</span></a>");
+							html.append("class=\"tooltipSource\" onMouseover=\"show_element('toolTip");
+							html.append(jsIdCount);
+							html.append("')\" onMouseout=\"hide_element('toolTip");
+							html.append(jsIdCount);
+							html.append("')\" \nhref=\"");
+							html.append(aUrl);
+							html.append('/');
+							html.append(status.name.replace('#', '.').replace(':', '_').replace('\\', '_'));
+							html.append(".html\">\n<img hspace=\"10\" border=\"0\" src=\"");
+							html.append(image);
+							html.append("\"/>\n<span class=\"hidden_tooltip\" id=\"toolTip");
+							html.append(jsIdCount);
+							html.append("\">");
+							html.append(message);
+							html.append("</span></a>");
 						}
-						String result = (String) status.resultsMap.get(configName);
-						stream.println(result);
+						html.append(Utils.failureMessage(resultStats, false));
+						html.append("</td>");
+						htmlTable=htmlTable.concat(html.toString());
 					}else{
-						stream.println("<td> n/a");
+						htmlTable=htmlTable.concat("<td>n/a</td>");
 					}
 				}
-				stream.flush();
 			}
-			stream.println("</table>");
+			
+			htmlTable=htmlTable.concat("</tr>\n");		
 		}
-    }
+		return htmlTable;
+	}
 }

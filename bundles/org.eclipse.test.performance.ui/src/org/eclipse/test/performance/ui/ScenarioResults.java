@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -47,7 +48,7 @@ public class ScenarioResults {
 	 * 
 	 * @param scenarios -
 	 *            the array of Scenario objects for which to generate results.
-	 * @param baseline -
+	 * @param reference -
 	 *            the reference build ID
 	 * @param current -
 	 *            the current buildID
