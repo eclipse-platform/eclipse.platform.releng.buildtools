@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2006 IBM Corporation and others.
+ * Copyright (c) 2004, 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,13 +10,19 @@
  *******************************************************************************/
 package org.eclipse.test.performance.ui;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.List;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+
 import org.eclipse.test.internal.performance.data.Dim;
 
 public class TimeLineGraph extends LineGraph{
@@ -232,7 +238,6 @@ public class TimeLineGraph extends LineGraph{
 		int n = mainGroup.size();
 		int xIncrement=width/n;
 		double max=getMaxItem()*1.2;
-		double min=getMinItem()*0.8;
 
 		for (int i = 0; i < n; i++) {
 			TimeLineGraphItem thisItem = (TimeLineGraphItem) fItemsArray[i];
