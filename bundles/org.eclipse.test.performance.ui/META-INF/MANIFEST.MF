@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
-Bundle-ManifestVersion: 2.100
+Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.eclipse.test.performance.ui; singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.100.qualifier
 Bundle-ClassPath: performanceui.jar
 Bundle-Activator: org.eclipse.test.performance.ui.UiPlugin
 Bundle-Vendor: %Bundle-Vendor
