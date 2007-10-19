@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2007 IBM Corporation and others.
+ * Copyright (c) 2004, 2006 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,19 +10,13 @@
  *******************************************************************************/
 package org.eclipse.test.performance.ui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-
 import org.eclipse.test.internal.performance.data.Dim;
 
 public class TimeLineGraph extends LineGraph{
@@ -85,8 +79,8 @@ public class TimeLineGraph extends LineGraph{
         Comparator comparator=new TimeLineGraphItem.GraphItemComparator();
  
         while (_enum.hasMoreElements()) {
- 			List fItems = (List) _enum.nextElement();
-			Object[] fItemsArray=fItems.toArray();
+ 			List items = (List) _enum.nextElement();
+			Object[] fItemsArray=items.toArray();
 			Arrays.sort(fItemsArray,comparator);
 			int lastx = 0;
 			int lasty = 0;
@@ -161,12 +155,12 @@ public class TimeLineGraph extends LineGraph{
 	}
 
     public void addItem(String groupName,String name, String description, double value, Color col, boolean display, long timestamp,boolean isSpecial,boolean drawBaseline) {
-      	List fItems = (List) fItemGroups.get(groupName);
+      	List items = (List) fItemGroups.get(groupName);
   		if (fItemGroups.get(groupName) == null) {
-  			fItems=new ArrayList();
-  			fItemGroups.put(groupName, fItems);
+  			items=new ArrayList();
+  			fItemGroups.put(groupName, items);
   		}
-  		fItems.add(new TimeLineGraphItem(name, description, value, col, display,
+  		items.add(new TimeLineGraphItem(name, description, value, col, display,
   				timestamp,isSpecial,drawBaseline));
     }
      
@@ -174,9 +168,9 @@ public class TimeLineGraph extends LineGraph{
     	Enumeration _enum=fItemGroups.elements();
         double maxItem= 0;
     	while (_enum.hasMoreElements()) {
-			List fItems = (List) _enum.nextElement();
-			for (int i = 0; i < fItems.size(); i++) {
-				TimeLineGraphItem graphItem = (TimeLineGraphItem) fItems.get(i);
+			List items = (List) _enum.nextElement();
+			for (int i = 0; i < items.size(); i++) {
+				TimeLineGraphItem graphItem = (TimeLineGraphItem) items.get(i);
 				if (graphItem.value > maxItem)
 					maxItem = graphItem.value;
 			}
@@ -191,9 +185,9 @@ public class TimeLineGraph extends LineGraph{
 		double minItem = getMaxItem();
 
 		while (_enum.hasMoreElements()) {
-			List fItems = (List) _enum.nextElement();
-			for (int i = 0; i < fItems.size(); i++) {
-				TimeLineGraphItem graphItem = (TimeLineGraphItem) fItems.get(i);
+			List items = (List) _enum.nextElement();
+			for (int i = 0; i < items.size(); i++) {
+				TimeLineGraphItem graphItem = (TimeLineGraphItem) items.get(i);
 				if (graphItem.value < minItem)
 					minItem = graphItem.value;
 			}
@@ -209,15 +203,15 @@ public class TimeLineGraph extends LineGraph{
 		TimeLineGraphItem mostRecentItem = null;
 
 		while (_enum.hasMoreElements()) {
-			List fItems = (List) _enum.nextElement();
-			for (int i = 0; i < fItems.size(); i++) {
-				if (fItems.size() == 1)
-					return (TimeLineGraphItem) fItems.get(i);
+			List items = (List) _enum.nextElement();
+			for (int i = 0; i < items.size(); i++) {
+				if (items.size() == 1)
+					return (TimeLineGraphItem) items.get(i);
 				else {
-					TimeLineGraphItem graphItem = (TimeLineGraphItem) fItems.get(i);
+					TimeLineGraphItem graphItem = (TimeLineGraphItem) items.get(i);
 					if (graphItem.timestamp > mostRecentTimestamp) {
 						mostRecentTimestamp = graphItem.timestamp;
-						mostRecentItem = (TimeLineGraphItem) fItems.get(i);
+						mostRecentItem = (TimeLineGraphItem) items.get(i);
 					}
 				}
 			}
@@ -238,6 +232,7 @@ public class TimeLineGraph extends LineGraph{
 		int n = mainGroup.size();
 		int xIncrement=width/n;
 		double max=getMaxItem()*1.2;
+//		double min=getMinItem()*0.8;
 
 		for (int i = 0; i < n; i++) {
 			TimeLineGraphItem thisItem = (TimeLineGraphItem) fItemsArray[i];

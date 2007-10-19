@@ -10,43 +10,25 @@
  *******************************************************************************/
 package org.eclipse.test.performance.ui;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.StringTokenizer;
 
-import junit.framework.AssertionFailedError;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
-import org.eclipse.test.internal.performance.data.Dim;
-import org.eclipse.test.internal.performance.db.DB;
-import org.eclipse.test.internal.performance.db.Scenario;
-import org.eclipse.test.internal.performance.db.SummaryEntry;
-import org.eclipse.test.internal.performance.db.TimeSeries;
 import org.eclipse.test.internal.performance.db.Variations;
-import org.eclipse.test.performance.Dimension;
 
 
 public class Utils {
@@ -79,69 +61,6 @@ public class Utils {
 	public final static int OK = 0;
 	public final static int NAN = 0x1;
 	public final static int ERR = 0x2;
-	public final static int DEV = 0x4;
-
-	/**
-	 * @param dimension
-	 * @return A description of the dimension.
-	 */
-	public static String getDimensionDescription(String dimension) {
-		/* Descriptions of dimensions */
-		// Windows and Linux
-		Hashtable descriptions = new Hashtable();
-		descriptions.put("cpu time", "Amount of time the process ran on the CPU.");
-
-		descriptions.put("kernel time", "Amount of time the process ran on the CPU, while the CPU was in kernel mode.");
-		descriptions.put("used java heap", "Change in the amount of memory allocated for Java objects.");
-		descriptions.put("working set", "Change in the amount of physical memory used by the process (other data resides in swap space).");
-
-		// Linux
-		descriptions.put("data size", "Change in the process' data and stack memory size.");
-		descriptions.put("hard page faults", "Number of memory pages that were loaded from swap space on disk.");
-		descriptions.put("library size", "Change in the process' library memory size.");
-		descriptions.put("soft page faults",
-				"Number of memory pages that were loaded from memory (i.e., they were not mapped in the process' page table, but already present in memory for some reason).");
-		descriptions.put("text size", "Change in the process' code memory size, useful with start-up tests.");
-
-		// Windows
-		descriptions.put("committed", "Change in the amount of allocated memory (both, in physical memory and swap space, can be preallocated for future use).");
-		descriptions.put("elapsed process", "Amount of wall-clock time.");
-		descriptions.put("gdi objects", "Change in the number of GDI (Graphics Device Interface) objects, can be useful for UI tests (particularly start-up tests).");
-		descriptions
-				.put(
-						"page faults",
-						"Number of memory pages that were loaded from swap space on disk or from memory (i.e., in the latter case, they were not mapped in the process' page table, but already present in memory for some reason).");
-		descriptions.put("system time", "* no longer measured, same as elapsed time, see PerformanceMonitor *");
-		descriptions.put("working set peak", "Increase of the maximum working set size, useful with start-up tests.");
-
-		if (descriptions.get(dimension.toLowerCase()) != null)
-			return descriptions.get(dimension.toLowerCase()).toString();
-		return "";
-	}
-
-	/**
-	 * @param timeSeriesLabels -
-	 *            an array of build ID's with results for a scenario.
-	 * @param current -
-	 *            the current build ID
-	 * @return Build Id's of Nightly builds preceding current.
-	 */
-	public static ArrayList lastSevenNightlyBuildNames(String[] timeSeriesLabels, String current) {
-		int currentIndex = getBuildNameIndex(timeSeriesLabels, current);
-		ArrayList labels = new ArrayList();
-		int j = 6;
-
-		for (int i = timeSeriesLabels.length - 1; i > -1; i--) {
-			if (j == -1)
-				break;
-			String timeSeriesLabel = timeSeriesLabels[i];
-			if (timeSeriesLabel.startsWith("N") && i < currentIndex) {
-				labels.add(timeSeriesLabel);
-				j--;
-			}
-		}
-		return labels;
-	}
 
 	/**
 	 * Return &lt;html&gt;&lt;head&gt;&lt;meta http-equiv="Content-Type"
@@ -167,75 +86,6 @@ public class Utils {
 			+ ".indexsub { font-size: xx-small;; font-family: Arial, Helvetica, sans-serif; color: #8080FF}\n" + "</style>";
 
 	/**
-	 * An utility object which stores a name, description, url and optional
-	 * output directory.
-	 */
-	public static class ConfigDescriptor {
-		String name;
-		String description;
-
-		/**
-		 *
-		 * @param name
-		 *            the value specifed for the key config in the
-		 *            eclipse.perf.config system.property key value listings.
-		 *            ie. relengbuildwin2 (machine name)
-		 * @param description
-		 *            a meaningful description to further describe the config.
-		 *            ie. win32-win32-x86 Sun 1.4.2_06
-		 */
-		public ConfigDescriptor(String name, String description) {
-			this.name = name;
-			this.description = description;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public boolean descriptionMatches(String descr) {
-			return descr.equals(this.description);
-		}
-	}
-
-	/**
-	 * @param configDescriptors
-	 *            A semi-colon separated listing of config descriptions.<br>
-	 *            Uses the following format: name,description,
-	 *            url,outputdir;name2, description2,url2,output2;etc..
-	 * @return a mapping of config names to their ConfigDescriptors.
-	 */
-	public static Hashtable getConfigDescriptors(String configDescriptors) {
-		// labelMappings in pairs separated by semi-colon ie.
-		// relengbuildwin2,win32-win32-x86;trelenggtk,linux-gtk-x86
-		StringTokenizer tokenizer = new StringTokenizer(configDescriptors, ";");
-		Hashtable configMap = new Hashtable();
-
-		while (tokenizer.hasMoreTokens()) {
-			String labelDescriptor = tokenizer.nextToken();
-			String[] elements = labelDescriptor.trim().split(",");
-			ConfigDescriptor descriptor = new ConfigDescriptor(elements[0], elements[1]);
-			configMap.put(elements[0], descriptor);
-		}
-		return configMap;
-	}
-
-	/**
-	 * Queries database with variation composed of buildIdPattern, config and
-	 * jvm.
-	 *
-	 * @return Array of scenarios.
-	 */
-	public static Scenario[] getScenarios(String buildIdPattern, String scenarioPattern, String config, String jvm) {
-		Dim[] qd = null;
-		if (scenarioPattern == null)
-			scenarioPattern = "";
-
-		Variations variations = getVariations(buildIdPattern, config, jvm);
-		return DB.queryScenarios(variations, scenarioPattern + "%", PerformanceTestPlugin.BUILD, qd);
-	}
-
-	/**
 	 * Creates a Variations object using build id pattern, config and jvm.
 	 *
 	 * @param buildIdPattern
@@ -250,50 +100,6 @@ public class Utils {
 		variations.put("jvm", jvm);
 		return variations;
 	}
-
-	/**
-	 * @param scenarios
-	 * @return list of unique component names derived from prefixes to scenario
-	 *         names.
-	 */
-	public static ArrayList getComponentNames(Scenario[] scenarios) {
-		ArrayList componentNames = new ArrayList();
-
-		for (int i = 0; i < scenarios.length; i++) {
-			String prefix = null;
-			Scenario scenario = scenarios[i];
-			String scenarioName = scenario.getScenarioName();
-
-			// use part of scenario name prior to .test to identify component
-			if (scenarioName.indexOf(".test") != -1) {
-				prefix = scenarioName.substring(0, scenarioName.indexOf(".test"));
-				if (!componentNames.contains(prefix))
-					componentNames.add(prefix);
-			}
-		}
-		return componentNames;
-	}
-
-	/*
-	 * @param fp -
-	 *            a FingerPrint object
-	 * @return - an html representation of the fingerprint.
-	 *
-	public static String getImageMap(FingerPrint fp) {
-		String componentDescription = fp.configDescriptor.description;
-		String areas = fp.bar.getAreas();
-		if (areas == null)
-			areas = "";
-		String output = "";
-		if (new File(fp.outputDirectory, fp.getOutName() + ".gif").exists()) {
-			output = "<h4>" + componentDescription + "</h4>";
-			output = output.concat("<img src=\"" + fp.getOutName() + ".gif\" usemap=\"#" + fp.outName + "\">" + "<map name=\"" + fp.getOutName() + "\">" + areas + "</map>\n");
-		} else {
-			output = output.concat("<br><br>There is no fingerprint for " + componentDescription + "<br><br>\n");
-		}
-		return output;
-	}
-	*/
 
 	/**
 	 * Utility method to copy a file.
@@ -331,175 +137,6 @@ public class Utils {
 	public static void copyScripts(File scripts, File output) {
 		copyFile(new File(scripts, "ToolTip.css"), new File(output, "ToolTip.css"));
 		copyFile(new File(scripts, "ToolTip.js"), new File(output, "ToolTip.js"));
-	}
-
-	/**
-	 * Returns a LineGraph object representing measurements for a scenario over
-	 * builds.
-	 *
-	 * @param t -
-	 *            the scenario object.
-	 * @param dimensionName -
-	 *            the name of the measurement for which to generate graph.
-	 * @param baseline -
-	 *            the reference build to label.
-	 * @param current -
-	 *            the current build to label.
-	 * @param pointsOfInterest -
-	 *            an array of buildIds. Points for these are highlighted on
-	 *            graph.
-	 * @return a LineGraph object.
-	 */
-	public static TimeLineGraph getLineGraph(Scenario t, String dimensionName, String baseline, String baselinePrefix, String current, ArrayList pointsOfInterest,ArrayList currentBuildIdPrefixes) {
-		Display display = Display.getDefault();
-
-		Color black = display.getSystemColor(SWT.COLOR_BLACK);
-		Color yellow = display.getSystemColor(SWT.COLOR_DARK_YELLOW);
-		Color magenta = display.getSystemColor(SWT.COLOR_MAGENTA);
-
-		String scenarioName = t.getScenarioName();
-		Dim[] dimensions = t.getDimensions();
-		Dim dim = null;
-		for (int i = 0; i < dimensions.length; i++) {
-			if (dimensions[i].getName().equals(dimensionName))
-				dim = dimensions[i];
-		}
-
-		TimeLineGraph graph = new TimeLineGraph(scenarioName + ": " + dimensionName, dim);
-		TimeSeries ts = null;
-		try {
-			ts = t.getTimeSeries(dim);
-			int n = ts.getLength();
-
-			if (n > 0) {
-				boolean currentFound=false;
-				for (int j = 0; j < n; j++) {
-					String buildID = ts.getLabel(j);
-					int underscoreIndex = buildID.indexOf('_');
-					String label = (underscoreIndex != -1 && (buildID.equals(baseline) || buildID.equals(current))) ? buildID.substring(0, underscoreIndex) : buildID;
-
-					double value = ts.getValue(j);
-
-					if (buildID.equals(current)) {
-						Color color = black;
-						if (buildID.startsWith("N"))
-							color = yellow;
-
-						graph.addItem("main", label, dim.getDisplayValue(value), value, color, true, getDateFromBuildID(buildID), true);
-						continue;
-					}
-					if (pointsOfInterest.contains(buildID)&&!currentFound) {
-						graph.addItem("main", label, dim.getDisplayValue(value), value, black, false, getDateFromBuildID(buildID, false), true);
-						continue;
-					}
-					if (buildID.equals(baseline)) {
-						boolean drawBaseline = (baselinePrefix != null) ? false : true;
-						graph.addItem("reference", label, dim.getDisplayValue(value), value, magenta, true, getDateFromBuildID(buildID, true), true, drawBaseline);
-						continue;
-					}
-					if (baselinePrefix != null) {
-						if (buildID.startsWith(baselinePrefix) && !buildID.equals(baseline) && getDateFromBuildID(buildID, true) <= getDateFromBuildID(baseline, true)) {
-							graph.addItem("reference", label, dim.getDisplayValue(value), value, magenta, false, getDateFromBuildID(buildID, true), false);
-							continue;
-						}
-					}
-					if (lastSevenNightlyBuildNames(t.getTimeSeriesLabels(), current).contains(buildID)) {
-						graph.addItem("main", buildID, dim.getDisplayValue(value), value, yellow, false, getDateFromBuildID(buildID), false);
-						continue;
-					} else if (buildID.startsWith("N"))
-							continue;
-
-					for (int i=0;i<currentBuildIdPrefixes.size();i++){
-						if (buildID.startsWith(currentBuildIdPrefixes.get(i).toString())&&!currentFound) {
-							graph.addItem("main", buildID, dim.getDisplayValue(value), value, black, false, getDateFromBuildID(buildID), false);
-							continue;
-						}
-					}
-				}
-			}
-		} catch (AssertionFailedError e) {
-			// System.err.println("Unable to get result for:
-			// "+t.getScenarioName()+" "+ts.toString());
-		}
-		return graph;
-	}
-
-	/**
-	 * Prints a LineGraph object as a gif
-	 *
-	 * @param p -
-	 *            the LineGraph object.
-	 * @param output -
-	 *            the output file path.
-	 */
-	public static void printLineGraphGif(LineGraph p, String output) {
-		File outputFile = new File(output);
-		outputFile.getParentFile().mkdir();
-		int GRAPH_WIDTH = 600;
-		int GRAPH_HEIGHT = 200;
-		Image image = new Image(Display.getDefault(), GRAPH_WIDTH, GRAPH_HEIGHT);
-		p.paint(image);
-
-		/* Downscale to 8 bit depth palette to save to gif */
-		ImageData data = downSample(image);
-		ImageLoader il = new ImageLoader();
-		il.data = new ImageData[] { data };
-		OutputStream out = null;
-		try {
-			out = new BufferedOutputStream(new FileOutputStream(output));
-			il.save(out, SWT.IMAGE_GIF);
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} finally {
-			image.dispose();
-			if (out != null) {
-				try {
-					out.close();
-				} catch (IOException e1) {
-					// silently ignored
-				}
-			}
-		}
-	}
-
-	/**
-	 * Utility method which returns HTML code representing an image map for a
-	 * LineGraph object.
-	 *
-	 * @param p -
-	 *            the LineGraph object.
-	 * @param imageSource -
-	 *            the path to insert for the src attribute to <img>.
-	 */
-	public static String getImageMap(LineGraph p, String imageSource, String rawDataFileLink) {
-		String result = "";
-		String areas = p.getAreas();
-
-		result = result.concat("<img" + " src=\"" + imageSource + "\" usemap=\"#" + p.fTitle + "\">");
-		result = result.concat("<map name=\"" + p.fTitle + "\">");
-		result = result.concat(areas);
-		result = result.concat("</map>\n");
-
-		return result;
-	}
-
-	/**
-	 * A utility which returns the index of a given buildId in an array.
-	 *
-	 * @param timeSeriesLabels -
-	 *            array of buildIds
-	 * @param buildId -
-	 *            the buildId for which to find return value.
-	 * @return The index of the buildID in the array.
-	 */
-	public static int getBuildNameIndex(String[] timeSeriesLabels, String buildId) {
-		for (int i = timeSeriesLabels.length - 1; i > -1; i--) {
-			String timeSeriesLabel = timeSeriesLabels[i];
-			if (timeSeriesLabel.startsWith(buildId))
-				return i;
-		}
-		return -1;
 	}
 
 	/**
@@ -646,141 +283,14 @@ public class Utils {
 
 		return -1;
 	}
-	public static void printVariabilityTable(Hashtable rawDataTables, String outputFile, String[] configList) {
-		Hashtable configs=new Hashtable();
-		for (int i=0;i<configList.length;i++){
-			String configName=configList[i];
-			ConfigDescriptor cd=new ConfigDescriptor(configName,configName);
-			configs.put(configName,cd);
-		}
-		printVariabilityTable(rawDataTables,outputFile,configs);
-	}
-
-	public static void printVariabilityTable(Hashtable rawDataTables, String outputFile, Hashtable configDescriptors) {
-		String[] scenarios = (String[]) rawDataTables.keySet().toArray(new String[rawDataTables.size()]);
-		if (scenarios.length==0)
-			return;
-		Arrays.sort(scenarios);
-		PrintWriter out=null;
-		try {
-			out = new PrintWriter(new FileWriter(new File(outputFile)));
-			out.println(HTML_OPEN + "</head><body>\n");
-			out.println("<h3>Summary of Elapsed Process Variation Coefficients</h3>\n"+
-		"<p> This table provides a bird's eye view of variability in elapsed process times\n"+
-		  "for baseline and current build stream performance scenarios." +
-		  " This summary is provided to facilitate the identification of scenarios that should be examined due to high variability." +
-		  "The variability for each scenario is expressed as a <a href=\"http://en.wikipedia.org/wiki/Coefficient_of_variation\">coefficient\n"+
-		  "of variation</a> (CV). The CV is calculated by dividing the <b>standard deviation\n"+
-		  "of the elapse process time over builds</b> by the <b>average elapsed process\n"+
-		  "time over builds</b> and multiplying by 100.\n"+
-		"</p><p>High CV values may be indicative of any of the following:<br></p>\n"+
-		"<ol><li> an unstable performance test. </li>\n"+
-		  "<ul><li>may be evidenced by an erratic elapsed process line graph.<br><br></li></ul>\n"+
-		  "<li>performance regressions or improvements at some time in the course of builds.</li>\n"+
-		  "<ul><li>may be evidenced by plateaus in elapsed process line graphs.<br><br></li></ul>\n"+
-		  "<li>unstable testing hardware.\n" +
-		  "<ul><li>consistent higher CV values for one test configuration as compared to others across" +
-		  " scenarios may be related to hardward problems.</li></ul></li></ol>\n"+
-		"<p> Scenarios are listed in alphabetical order in the far right column. A scenario's\n"+
-		  "variation coefficients (CVs) are in columns to the left for baseline and current\n"+
-		  "build streams for each test configuration. Scenarios with CVs > 10% are highlighted\n"+
-		  "in yellow (10%<CV>&lt;CV<20%) and orange(CV>20%). </p>\n"+
-		"<p> Each CV value links to the scenario's detailed results to allow viewers to\n"+
-		  "investigate the variability.</p>\n");
-
-			Hashtable cvTable = (Hashtable) rawDataTables.get(scenarios[0]);
-			String[] configNames = (String[]) cvTable.keySet().toArray(new String[cvTable.size()]);
-			Arrays.sort(configNames);
-
-
-		  	int configColumns=configNames.length/2;
-			out.println("<table border=\"1\"><tr>" +
-					    "<td colspan=\""+configColumns+"\"><b>Baseline CVs</b></td>"+
-					    "<td colspan=\""+configColumns+"\"><b>Current Build Stream CVs</b></td>"+
-					    "<td rowspan=\"2\"><b>Scenario Name</b></td>"+
-					    "</tr><tr>");
-
-
-			for (int i = 0; i < configNames.length; i++) {
-				//configNames here have prefix cConfig- or bConfig- depending on whether the data comes from
-				//current build stream data or baseline data.
-				out.print("<td>" + ((ConfigDescriptor)configDescriptors.get(configNames[i].substring(8))).description + "</td>");
-			}
-			out.println("</tr><tr>\n");
-
-			for (int i = 0; i < scenarios.length; i++) {
-				Hashtable aCvTable = (Hashtable) rawDataTables.get(scenarios[i]);
-				String scenario = scenarios[i];
-				String scenarioFile=scenario.replace('#', '.').replace(':', '_').replace('\\', '_')+".html";
-
-				for (int j = 0; j < configNames.length; j++) {
-					String url=configNames[j].substring(8)+"/"+scenarioFile;
-					if (aCvTable.get(configNames[j]) == null) {
-						out.print("<td>n/a</td>");
-						continue;
-					}
-					String displayValue = aCvTable.get(configNames[j]).toString();
-					if (displayValue==null){
-						out.print("<td>n/a</td>");
-						continue;
-					}
-					try {
-						double value = Double.parseDouble(displayValue.substring(0, displayValue.length() - 1));
-						if (value > 10 && value < 20)
-							out.print("<td bgcolor=\"yellow\"><a href=\""+url+"\"/>" + displayValue + "</a></td>");
-						else if (value >= 20)
-							out.print("<td bgcolor=\"FF9900\"><a href=\""+url+"\">" + displayValue + "</a></td>");
-						else
-							out.print("<td><a href=\""+url+"\">" + displayValue + "</a></td>");
-					} catch (NumberFormatException e) {
-						e.printStackTrace();
-						out.print("<td>n/a</td>");
-					}
-				}
-				out.println("<td>" + scenario + "</td>");
-				out.println("</tr>\n");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}finally{
-			out.println("</table></body></html>");
-			out.flush();
-			out.close();
-		}
-	}
-
-    public static double[] resultsStatistics(TimeSeries timeSeries) {
-    	try {
-	    	double valueRef = timeSeries.getValue(0), value = timeSeries.getValue(1);
-	    	long countRef = timeSeries.getCount(0), count = timeSeries.getCount(1);
-	    	double stddevRef = timeSeries.getStddev(0), stddev = timeSeries.getStddev(1);
-	    	double stderr = (countRef == 1 || count == 1)
-    			? Double.NaN
-				: (Double.isNaN(stddevRef)
-					? Math.sqrt((stddev * stddev / count)) / valueRef
-					: Math.sqrt((stddevRef * stddevRef / countRef) + (stddev * stddev / count)) / valueRef);
-			return new double[] {
-				(value - valueRef) / valueRef,
-				stderr,
-			};
-    	}
-    	catch (ArrayIndexOutOfBoundsException aioobe) {
-    		return null;
-    	}
-	}
-
-	public static boolean hasConfidentResult(TimeSeries timeSeries) {
-	    double[] resultStats = resultsStatistics(timeSeries);
-	    return (confidenceLevel(resultStats) & ERR) == 0;
-    }
-	public static String failureMessage(Variations variations, String scenarioName, String baseline, String config) {
-		String current = (String) variations.get(PerformanceTestPlugin.BUILD);
-		Dim significanceDimension = (Dim) Dimension.ELAPSED_PROCESS;
-		Scenario newScenario= DB.getScenarioSeries(scenarioName, variations, PerformanceTestPlugin.BUILD, baseline, current, new Dim[] { significanceDimension });
-        TimeSeries timeSeries = newScenario.getTimeSeries(significanceDimension);
-        double[] results = resultsStatistics(timeSeries);
-		return failureMessage(results, true);
-	}
+	
+	/**
+	 * Returns a message corresponding to given statistics.
+	 * 
+	 * @param resultStats The value with its standard error
+	 * @param full
+	 * @return The failure message. May be empty if stats are good...
+	 */
 	public static String failureMessage(double[] resultStats, boolean full) {
 		StringBuffer buffer = new StringBuffer();
 		int level = confidenceLevel(resultStats);
@@ -816,6 +326,19 @@ public class Utils {
 		}
 		return buffer.toString();
 	}
+	
+	/**
+	 * Returns the confidence level for given statistics:
+	 * <ul>
+	 * <li>{@link #NAN}: if the value is infinite or not a number</li>
+	 * <li>{@link #ERR}: if the standard error is over the expected threshold ({@link #STANDARD_ERROR_THRESHOLD})</li>
+	 * <li>{@link #OK}: in all other cases</li>
+	 * </ul>
+	 * 
+	 * @param resultStats array of 2 doubles, the former is the average value and
+	 * 	the latter is the standard error made while computing the average.
+	 * @return a value telling caller the level of confidence of the provided value
+	 */
 	public static int confidenceLevel(double[] resultStats) {
 		int level = OK;
  		if (resultStats != null){
@@ -832,38 +355,15 @@ public class Utils {
  		}
 		return level;
 	}
-	public static boolean matchPattern(String name, String pattern) {
-		if (pattern.equals("%")) return true;
-		if (pattern.indexOf('%') >= 0 || pattern.indexOf('_') >= 0) {
-			StringTokenizer tokenizer = new StringTokenizer(pattern, "%_", true);
-			int start = 0;
-			String previous = "";
-			while (tokenizer.hasMoreTokens()) {
-				String token = tokenizer.nextToken();
-				if (!token.equals("%") && !token.equals("_")) {
-					if (previous.equals("%")) {
-						int idx = name.substring(start).indexOf(token);
-						if (idx < 0) return false;
-						start += idx;
-					} else if (previous.equals("_")) {
-						if (!name.substring(++start).startsWith(token)) return false;
-					}
-					start += token.length();
-				}
-				previous = token;
-			}
-			if (previous.equals("%")) {
-				return true;
-			} else if (previous.equals("_")) {
-				return name.length() == start;
-			}
-			return name.endsWith(previous);
-		}
-		return name.equals(pattern);
-	}
 
-	public static String getImage(int confidence, boolean hasExplanation) {
-	    boolean scenarioFailed = (confidence & DEV) != 0;
+	/**
+	 * Get an icon image corresponding to a given level of confidence and explanation.
+	 * 
+	 * @param confidence the confiden level
+	 * @param hasExplanation flags indicates whether the confidence may be tempered by an explanation
+	 * @return Corresponding image
+	 */
+	public static String getImage(int confidence, boolean scenarioFailed, boolean hasExplanation) {
 	    String image = null;
 
 	    if (scenarioFailed) {
@@ -884,72 +384,4 @@ public class Utils {
 	    return image;
     }
 
-	public static boolean hasSummary(SummaryEntry[] summaries, String scenarioName) {
-		int length = summaries == null ? 0 : summaries.length;
-		for (int i=0; i<length; i++) {
-			SummaryEntry summary = summaries[i];
-			if (summary.scenarioName.equals(scenarioName)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static String getScenarioShortName(String scenarioName, int max) {
-
-		// Remove class name qualification
-		int testSeparator = scenarioName.indexOf('#');
-		boolean hasClassName = testSeparator >= 0;
-		if (!hasClassName) {
-			testSeparator = scenarioName.lastIndexOf('.');
-			if (testSeparator <= 0) {
-				if (max > 0 && scenarioName.length() > max) {
-					return "*"+scenarioName.substring(0, max);
-				}
-				return scenarioName;
-			}
-		}
-		int classSeparator = scenarioName.substring(0, testSeparator).lastIndexOf('.');
-		if (classSeparator < 0) {
-			if (max > 0 && scenarioName.length() > max) {
-				return "*"+scenarioName.substring(0, max);
-			}
-			return scenarioName;
-		}
-		int length = scenarioName.length();
-		String shortName = scenarioName.substring(classSeparator+1, length);
-		if (!hasClassName && shortName.startsWith("test.")) { // specific case for swt...
-			shortName = shortName.substring(5);
-		}
-
-		// Remove qualification from test name
-		StringTokenizer tokenizer = new StringTokenizer(shortName, " :,", true);
-		StringBuffer buffer = new StringBuffer(tokenizer.nextToken());
-		while (tokenizer.hasMoreTokens()) {
-			String token = tokenizer.nextToken();
-			char fc = token.charAt(0);
-			while (fc == ' ' || fc == ',' || fc == ':') {
-				buffer.append(token); // add the separator
-				token = tokenizer.nextToken();
-				fc = token.charAt(0);
-			}
-			int last = token .lastIndexOf('.');
-			if (last >= 3) {
-				int first = token .indexOf('.');
-				if (first == last) {
-					buffer.append(token);
-				} else {
-//					buffer.append(token.substring(0, first));
-//					buffer.append("...");
-					buffer.append(token.substring(last+1));
-				}
-			} else {
-				buffer.append(token);
-			}
-		}
-		if (max > 0 && buffer.length() > max) {
-			return "*"+buffer.substring(0, max);
-		}
-		return buffer.toString();
-	}
 }
