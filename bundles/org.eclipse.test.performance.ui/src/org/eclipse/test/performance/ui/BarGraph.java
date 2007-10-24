@@ -40,14 +40,15 @@ public class BarGraph {
 	private static class BarItem {
 
 		String title;
-		double value;
+		double value, error;
 		String url;
 		String slowdownExpected;
 		boolean significant;
 
-		BarItem(String t, double v, String u, String slow, boolean sig) {
+		BarItem(String t, double[] stats, String u, String slow, boolean sig) {
 			title= t;
-			value= v;
+			value= stats[0]==0 ? 0 : -stats[0] * 100;
+			error = stats[1] * 100;
 			url= u;
 			slowdownExpected= slow;
 			significant= sig;
@@ -62,16 +63,8 @@ public class BarGraph {
 		fItems= new ArrayList();
 	}
 
-	public void addItem(String name, double value) {
-		fItems.add(new BarItem(name, value, null, null, true));
-	}
-
-	public void addItem(String name, double value, String url) {
-		fItems.add(new BarItem(name, value, url, null, true));
-	}
-
-	public void addItem(String name, double value, String url, String slow, boolean significant) {
-		fItems.add(new BarItem(name, value, url, slow, significant));
+	public void addItem(String name, double[] stats, String url, String slow, boolean significant) {
+		fItems.add(new BarItem(name, stats, url, slow, significant));
 	}
 
 	public int getHeight() {
@@ -195,9 +188,10 @@ public class BarGraph {
 		for (int i= 0; i < bars.length; i++) {
 
 			BarItem bar= bars[i];
-			double delta= bar.value;
+			double delta = bar.value;
+			double error = bar.error;
 			double orgDelta= delta;
-
+			
 			boolean clamped= false;
 			if (NO_SCALE) {
 				if (delta > max) {
@@ -211,19 +205,27 @@ public class BarGraph {
 
 			int barLength= (int) (delta / max * w2);
 
-			if (bar.significant) {
-				if (delta > 0.0)
-					gc.setBackground(green);
-				else if (bar.slowdownExpected == null)
-					gc.setBackground(red);
-				else
+			if (delta < 0) {
+				if (bar.slowdownExpected != null) {
 					gc.setBackground(gray);
-			} else {
+				} else if (!bar.significant) {
+					gc.setBackground(yellow);
+				} else  {
+					gc.setBackground(red);
+				}
+			} else if (!bar.significant) {
 				gc.setBackground(yellow);
+			} else {
+				gc.setBackground(green);
 			}
 
-			gc.fillRectangle(center, y + (GAP / 2), barLength, BARHEIGHT);
-			gc.drawRectangle(center, y + (GAP / 2), barLength, BARHEIGHT);
+			if (barLength > 0) {
+				gc.fillRectangle(center, y + (GAP / 2), barLength, BARHEIGHT);
+				gc.drawRectangle(center, y + (GAP / 2), barLength, BARHEIGHT);
+			} else if (barLength < 0) {
+				gc.fillRectangle(center+barLength, y + (GAP / 2), -barLength, BARHEIGHT);
+				gc.drawRectangle(center+barLength, y + (GAP / 2), -barLength, BARHEIGHT);
+			}
 
 			if (clamped) {
 

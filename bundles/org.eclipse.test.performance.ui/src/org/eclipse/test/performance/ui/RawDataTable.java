@@ -10,250 +10,174 @@
  *******************************************************************************/
 package org.eclipse.test.performance.ui;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.test.internal.performance.data.Dim;
-import org.eclipse.test.internal.performance.db.Scenario;
-import org.eclipse.test.internal.performance.db.TimeSeries;
+import org.eclipse.test.internal.performance.results.AbstractResults;
+import org.eclipse.test.internal.performance.results.BuildResults;
+import org.eclipse.test.internal.performance.results.ConfigResults;
 
+/**
+ * Class used to fill details file of scenario builds data.
+ * @see ScenarioData
+ */
 public class RawDataTable {
 
-	private Scenario scenario;
-	private String currentBuild;
-	private Dim[] dimensions;
-	private Hashtable buildIDTable;
-	private Hashtable derivedValues;
-	private String TOTAL="total";
-	private String SAMPLECOUNT="n";
-	private String MEAN="mean";
-	private String STDDEV="stddev";
-	private String CV="cv";
-	private ArrayList buildIDPatterns;
-		
-	
-	public RawDataTable(Scenario scenario, Dim[] dimensions, ArrayList buildIDPatterns, String currentBuild) {
-		this.scenario = scenario;
-		this.dimensions = dimensions;
-		this.buildIDPatterns=buildIDPatterns;
-		this.currentBuild=currentBuild;
-		buildIDTable = new Hashtable();
-		derivedValues=new Hashtable();
-		fill();
+	private ConfigResults configResults;
+	private List buildPrefixes;
+	private PrintStream stream;
+	private Dim[] dimensions = AbstractResults.SUPPORTED_DIMS;
+	private boolean debug = false;
+
+private RawDataTable(ConfigResults results, PrintStream ps) {
+	this.configResults = results;
+	this.stream = ps;
+}
+
+public RawDataTable(ConfigResults results, List prefixes, PrintStream ps) {
+	this(results, ps);
+	this.buildPrefixes = prefixes;
+}
+public RawDataTable(ConfigResults results, String baselinePrefix, PrintStream ps) {
+	this(results, ps);
+	this.buildPrefixes = new ArrayList();
+	this.buildPrefixes.add(baselinePrefix);
+}
+
+/**
+ * Print all build data to the current stream.
+ */
+public void print(){
+	stream.print("<table border=\"1\">");
+	printSummary();
+	printDetails();
+	stream.println("</table>");
+}
+
+/*
+ * Print table columns headers.
+ */
+private void printColumnHeaders() {
+	StringBuffer buffer = new StringBuffer();
+	int length = this.dimensions.length;
+	for (int i=0; i<length; i++) {
+		buffer.append("<td><b>");
+		buffer.append(this.dimensions[i].getName());
+		buffer.append("</b></td>");
 	}
-	
-	public RawDataTable(Scenario scenario, Dim[] dimensions, String buildIDPrefix,String currentBuild) {
-		buildIDPatterns=new ArrayList();
-		buildIDPatterns.add(buildIDPrefix);
-		this.currentBuild=currentBuild;
-		this.scenario = scenario;
-		this.dimensions = dimensions;
-		buildIDTable = new Hashtable();
-		derivedValues=new Hashtable();
-		fill();
+	stream.print(buffer.toString());
+}
+
+/*
+ * Print all build results in the table.
+ */
+private void printDetails() {
+	stream.print("<tr><td><b>Build ID</b></td>");
+	printColumnHeaders();
+	stream.println("</tr>");
+
+	List builds = this.configResults.getBuildsMatchingPrefixes(this.buildPrefixes);
+	Collections.reverse(builds);
+	int size = builds.size();
+	for (int i=0; i<size; i++) {
+		BuildResults buildResults = (BuildResults) builds.get(i);
+		stream.print("<tr><td>");
+		stream.print(buildResults.getName());
+		stream.print("</td>");
+		int dimLength = this.dimensions.length;
+		for (int d=0; d<dimLength; d++) {
+			int dim_id = this.dimensions[d].getId();
+			double value = buildResults.getValue(dim_id);
+			printDimTitle(this.dimensions[d].getName());
+			String displayValue = this.dimensions[d].getDisplayValue(value);
+			stream.print(displayValue);
+			if (debug) System.out.print("\t"+displayValue);
+			stream.print("</td>");
+		}
+		if (debug) System.out.println();
+		stream.println("</tr>");
+	}
+	if (debug) System.out.println("\n");
+}
+
+/*
+ * Print summary on top of the table.
+ */
+private void printSummary() {
+	stream.print("<tr><td><b>Stats</b></td>");
+	printColumnHeaders();
+	stream.println("</tr>");
+
+	int length = this.dimensions.length;
+	double[][] dimStats = new double[2][];
+	for (int i=0; i<this.dimensions.length; i++) {
+		dimStats[i] = this.configResults.getStatistics(this.buildPrefixes, this.dimensions[i].getId());
 	}
 
-	private void fill() {
+	stream.print("<tr><td>#BUILDS SAMPLED</td>");
+	for (int i=0; i<length; i++) {
+		String dimName = this.dimensions[i].getName();
+		printDimTitle(dimName);
+		stream.print((int)dimStats[i][0]);
+		stream.print("</td>");
+	}
+	stream.println("</tr>");
+	stream.print("<tr><td>MEAN</td>");
+	printRowDoubles(dimStats, 1);
+	stream.println("</tr>");
+	stream.print("<tr><td>STD DEV</td>");
+	printRowDoubles(dimStats, 2);
+	stream.println("</tr>");
+	stream.print("<tr><td>COEF. VAR</td>");
+	printRowDoubles(dimStats, 3);
+	stream.println("</tr>");
 
-		for (int i = 0; i < dimensions.length; i++) {
-			TimeSeries ts = scenario.getTimeSeries(dimensions[i]);
-			double total = 0.0;
-			int samplesCount=0;
-			for (int j = 0; j < ts.getLength(); j++) {
-				String buildID = ts.getLabel(j);
-				double value = 0.0;
-				boolean buildIDmatches=false;
-				Iterator iterator=buildIDPatterns.iterator();
-				while (iterator.hasNext()){
-					Object tmp=iterator.next();
-					if (tmp==null)
-						continue;
-					if (buildID.startsWith(tmp.toString())){
-							buildIDmatches=true;
-							break;
-					}
-				}
-				if (!buildIDmatches)
-					continue;
-				
-				Hashtable samples=(Hashtable)buildIDTable.get(buildID);
-				if (samples==null)
-					samples=new Hashtable();
-				value = ts.getValue(j);
-				
-				// store result for build
-				samples.put(dimensions[i].getName(),new Double(value));
-				buildIDTable.put(buildID,samples);
+	// Blank line
+	stream.print("<tr>");
+	for (int i=0; i<length+1;	i++){
+		stream.print("<td>&nbsp;</td>");
+	}
+	stream.println("</tr>");
+}
 
-				//keep count of samples added and total value
-				total+=value;
-				samplesCount++;
-				
-				//quit after current build
-				if (buildID.equals(currentBuild))
-					break;
+/*
+ * Print values in table row.
+ */
+private void printRowDoubles(double[][] stats, int idx) {
+	int length = this.dimensions.length;
+	for (int i=0; i<length; i++) {
+		double value = stats[i][idx];
+		String dimName = this.dimensions[i].getName();
+		if (idx == 3) {
+			if (value>10 && value<20) {
+				stream.print("<td bgcolor=\"yellow\" title=\"");
+			} else if (value>=20) {
+				stream.print("<td bgcolor=\"FF9900\" title=\"");
+			} else {
+				stream.print("<td title=\"");
 			}
-					
-			double mean = total / samplesCount;
-			double squaredValues = 0.0;
-		
-			String[] buildIDs=(String[])buildIDTable.keySet().toArray(new String[buildIDTable.size()]);
-			for (int j = 0; j < buildIDs.length; j++) {
-				String buildID = buildIDs[j];
-				Hashtable storedValues=(Hashtable)buildIDTable.get(buildID);
-				double value = ((Double) (storedValues.get(dimensions[i].getName()))).doubleValue();
-				double squaredValue = Math.pow(value - mean, 2);
-				squaredValues += squaredValue;
-			}
-
-			double standardDeviation = Math.sqrt((squaredValues / (samplesCount - 1)));
-			double coefficientOfVariation = Math.round(((standardDeviation) / mean) * 100 * 100) / 100;
-			
-			if (coefficientOfVariation>10&&dimensions[i].getName().startsWith("Elapsed"))
-				System.out.println(scenario.getScenarioName()+": "+" "+coefficientOfVariation);
-			
-			//store derived values
-			Hashtable calculatedValuesForDimension=new Hashtable();		
-			calculatedValuesForDimension.put(TOTAL,dimensions[i].getDisplayValue(total));
-			calculatedValuesForDimension.put(SAMPLECOUNT,new Integer(samplesCount));
-			calculatedValuesForDimension.put(MEAN, dimensions[i].getDisplayValue(mean));
-			calculatedValuesForDimension.put(STDDEV, dimensions[i].getDisplayValue(standardDeviation));
-			calculatedValuesForDimension.put(CV, coefficientOfVariation+"%");
-			derivedValues.put(dimensions[i].getName(),calculatedValuesForDimension);
-			
+			stream.print(dimName);
+			stream.print("\">");
+			stream.print(value);
+			stream.print("%</td>");
+		} else {
+			printDimTitle(dimName);
+			stream.print(this.dimensions[i].getDisplayValue(value));
+			stream.print("</td>");
 		}
 	}
+}
 
-	public String toHtmlString(){
-		return "<table border=\"1\">"+htmlSummary()+htmlDetails()+"</table>\n";
-	}
-	
-	private String[] sortBuildIDsByDate(String[] buildIDs) {
-		Hashtable tmp = new Hashtable();
-		String[] result = new String[buildIDs.length];
-
-		for (int i = 0; i < buildIDs.length; i++) {
-			String date=Utils.getDateFromBuildID(buildIDs[i], true)+"";
-			if (date.equals("-1"))
-				date=buildIDs[i];
-			tmp.put(date, buildIDs[i]);
-		}
-		String[] dates = (String[]) tmp.keySet().toArray(new String[tmp.size()]);
-		Arrays.sort(dates);
-		for (int i = 0; i < dates.length; i++) {
-			result[i] = tmp.get(dates[i]).toString();
-		}
-
-		return result;
-	}
-
-	private String htmlDimensionColumnHeaders() {
-		String result="";
-		for (int i=0;i<dimensions.length;i++){
-			result = result.concat("<td><b>"+dimensions[i].getName()+"</b></td>");
-		}
-		return result;
-	}
-
-	private String htmlDetails() {	
-		String result="<tr><td><b>Build ID</b></td>";
-		result = result.concat(htmlDimensionColumnHeaders());
-		result = result.concat("</tr>\n");
-	
-		Set sampleKeys = buildIDTable.keySet();
-		String[] buildIDs = sortBuildIDsByDate((String[]) sampleKeys.toArray(new String[buildIDTable.size()]));
-
-		for (int i = buildIDs.length; i > 0; i--) {
-			String buildID = buildIDs[i-1];
-			if (buildID == null)
-				continue;
-			
-			Hashtable values=(Hashtable)buildIDTable.get(buildID);
-			if (values==null)
-				continue;
-			
-			result = result.concat("<tr><td>" + buildID + "</td>\n");
-
-			for (int j=0;j<dimensions.length;j++){
-				double value = 0.0;
-				String dimensionName=dimensions[j].getName();
-				value = ((Double) (values.get(dimensionName))).doubleValue();
-				result = result.concat("<td title=\""+dimensionName+"\">" + dimensions[j].getDisplayValue(value) + "</td>");
-			}	
-		}
-		result=result.concat("</tr>\n");
-		return result;
-	}
-
-	private String htmlSummary() {
-		if (derivedValues==null)
-			return "";
-		//print summary values
-		//print totals
-		String result="<tr><td><b>Stats</b></td>";
-		result = result.concat(htmlDimensionColumnHeaders());
-		result = result.concat("</tr><tr>\n");
-		
-		//print sample counts
-		
-		result = result.concat("<td>#BUILDS SAMPLED</td>\n");
-		result = result.concat(htmSummaryRow(SAMPLECOUNT));
-
-		//print averages
-		result = result.concat("</tr><tr><td>MEAN</td>\n");
-		result = result.concat(htmSummaryRow(MEAN));
-		
-		//print standard deviation
-		result = result.concat("</tr><tr><td>STD DEV</td>\n");
-		result = result.concat(htmSummaryRow(STDDEV));
-		
-		//print coefficient of variation
-		result = result.concat("</tr><tr><td>CV</td>\n");
-		result = result.concat(htmSummaryRow(CV));
-
-		result = result.concat("</tr><tr>\n");
-		for (int i=0;i<dimensions.length+1;i++){
-			result=result.concat("<td>&nbsp;</td>");
-		}
-		result=result.concat("</tr>\n");
-		
-		return result;
-	}
-
-	private String htmSummaryRow(String summaryType) {
-		String result="";
-		Hashtable tmp;
-		for (int j=0;j<dimensions.length;j++){
-			String dimensionName=dimensions[j].getName();
-			tmp=(Hashtable)(derivedValues.get(dimensionName));
-			String displayValue=tmp.get(summaryType).toString();
-			if (summaryType.equals(CV)){
-				displayValue=displayValue.substring(0,displayValue.length()-1);
-				double value=Double.valueOf(displayValue).doubleValue();
-				if (value>10&&value<20)
-					result = result.concat("<td bgcolor=\"yellow\" title=\""+dimensionName+"\">"+displayValue+"%</td>");
-				else if (value>=20)
-					result = result.concat("<td bgcolor=\"FF9900\" title=\""+dimensionName+"\">"+displayValue+"%</td>");
-				else
-					result = result.concat("<td title=\""+dimensionName+"\">"+displayValue+"%</td>");
-			} else
-				result= result.concat("<td title=\""+dimensionName+"\">"+displayValue+"</td>");
-		}
-		return result;
-	}
-
-	public String getCV() {
-		Hashtable tmp;
-		String dimensionName="Elapsed Process";
-		tmp=(Hashtable)(derivedValues.get(dimensionName));
-		if (tmp==null)
-			return "n/a";
-		if (tmp.get(CV)!=null)
-		return tmp.get(CV).toString();
-		return "n/a";
-		
-	}
+/*
+ * Print dim title inside value reference.
+ * TODO (frederic) See if this title is really necessary
+ */
+private void printDimTitle(String dimName) {
+    stream.print("<td title=\"");
+    stream.print(dimName);
+    stream.print("\">");
+}
 }
