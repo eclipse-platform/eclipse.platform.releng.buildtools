@@ -141,7 +141,7 @@ public class TestResultsGenerator extends Task {
 	public static void main(String[] args) {
 		TestResultsGenerator test = new TestResultsGenerator();
 		test.setDropTokenList(
-			"%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%icubase%,%runtime%,%platformsdk%,%jdt%,%jdtsdk%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%teamextras%,%swt%,%relengtools%");
+			"%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%icubase%,%runtime%,%platformsdk%,%jdt%,%jdtsdk%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%teamextras%,%swt%,%relengtools%");
 		test.setPlatformIdentifierToken("%platform%");
 		test.getDropTokensFromList(test.dropTokenList);
 		test.setIsBuildTested(true);
