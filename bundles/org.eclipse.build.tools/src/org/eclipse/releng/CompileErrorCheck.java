@@ -16,37 +16,70 @@ package org.eclipse.releng;
  * information in monitor.properties.
  */
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Vector;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import java.util.Vector;
-import java.util.Enumeration;
-import java.io.*;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.helpers.DefaultHandler;
 
 public class CompileErrorCheck extends Task {
+
+	private static final class CompilerErrorCheckerHandler extends DefaultHandler {
+		boolean hasErrors = false;
+		
+		public void startElement(String uri, String localName,
+				String name, Attributes attributes) throws SAXException {
+			if (this.hasErrors) return;
+			if ("problem_summary".equals(name)) {
+				// problem_summary name
+				String value = attributes.getValue("errors");
+				this.hasErrors = value != null && !value.equals("0");
+			}
+		}
+		public boolean hasErrors() {
+			return this.hasErrors;
+		}
+	}
 
 	//directory containing of build source, parent of features and plugins
 	private String install = "";
 
 	//keep track of compile logs containing errors
 	private Vector logsWithErrors;
-
+	
+	// keep track of the factory to use
+	private SAXParser parser;
+	
 	public CompileErrorCheck() {
-		logsWithErrors = new Vector();
+		this.logsWithErrors = new Vector();
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		this.parser = null;
+
+		try {
+			this.parser = factory.newSAXParser();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void execute() throws BuildException {
-		findLogs(install);
+		if (parser == null) return;
+		findLogs(new File(install));
 		sendNotice();
 	}
 
@@ -57,22 +90,24 @@ public class CompileErrorCheck extends Task {
 		checker.execute();
 	}
 
-	private void findLogs(String file) {
-		File aFile = new File(file);
-
+	private void findLogs(File aFile) {
+		if (!aFile.exists()) return;
 		// basis case
 		if (aFile.isFile()) {
-			if (aFile.getAbsolutePath().endsWith(".jar.bin.log")||aFile.getAbsolutePath().endsWith("dot.bin.log")){
-				read(aFile);
-			}else if(aFile.getAbsolutePath().endsWith(".xml")){
+			String absolutePath = aFile.getAbsolutePath();
+			if (absolutePath.endsWith(".xml")) {
 				parse(aFile);
+			} else if (absolutePath.endsWith(".jar.bin.log")||absolutePath.endsWith("dot.bin.log")){
+				read(aFile);
 			}
 		} else {
 			//recurse into directories looking for and reading compile logs
 			File files[] = aFile.listFiles();
 
-			for (int i = 0; i < files.length; i++) {
-				findLogs(files[i].getAbsolutePath());
+			if (files != null) {
+				for (int i = 0, max = files.length; i < max; i++) {
+					findLogs(files[i]);
+				}
 			}
 		}
 	}
@@ -105,51 +140,50 @@ public class CompileErrorCheck extends Task {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			// make sure we don't leave any file handle open
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+					// ignore
+				}
+			}
 		}
 	}
 
 	private void parse(File file) {
-		Document aDocument=null;
-			BufferedReader reader = null;
-			try {
-				reader = new BufferedReader(new FileReader(file));
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(file));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 
-			InputSource inputSource = new InputSource(reader);
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = null;
+		InputSource inputSource = new InputSource(reader);
 
-			try {
-				builder = factory.newDocumentBuilder();
-			} catch (ParserConfigurationException e) {
-				e.printStackTrace();
-			}
-
-			try {
-				aDocument = builder.parse(inputSource);
-			} catch (SAXException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			// Get summary of problems
-			NodeList nodeList=aDocument.getElementsByTagName("problem_summary");
-			if (nodeList==null)
-				return;
-			
-			for (int i = 0; i < nodeList.getLength(); i++) {
-				Node problemSummaryNode = nodeList.item(i);
-				NamedNodeMap aNamedNodeMap = problemSummaryNode.getAttributes();
-				Node errorNode = aNamedNodeMap.getNamedItem("errors");
-				if (errorNode!= null&&!errorNode.getNodeValue().equals("0")) {
-					logsWithErrors.add(new File(file.getParentFile(),file.getName().replaceAll(".xml", ".html")));
-					System.out.println(file.getName()+" has compile errors.");
-					return;
+		CompilerErrorCheckerHandler compilerErrorCheckerHandler = new CompilerErrorCheckerHandler();
+		try {
+			parser.parse(inputSource, compilerErrorCheckerHandler);
+		} catch (SAXException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			// make sure we don't leave any file handle open
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					// ignore
 				}
 			}
+		}
+		
+		if (compilerErrorCheckerHandler.hasErrors()) {
+			logsWithErrors.add(new File(file.getParentFile(),file.getName().replaceAll(".xml", ".html")));
+			System.out.println(file.getName()+" has compile errors.");
+		}
 	}
 	
 	private void sendNotice() {
@@ -159,17 +193,17 @@ public class CompileErrorCheck extends Task {
 
 		if (logsWithErrors.size() > 0) {
 			try{
-			
-			Mailer mailer = new Mailer();
-			String [] logFiles = new String [logsWithErrors.size()];
 
-			int i=0;
-				
-			while (enumeration.hasMoreElements()) {
-				logFiles[i++]=((File) enumeration.nextElement()).getAbsolutePath();
-			}
+				Mailer mailer = new Mailer();
+				String [] logFiles = new String [logsWithErrors.size()];
 
-			mailer.sendMultiPartMessage("Compile errors in build", "Compile errors in build.  See attached compile logs.", logFiles);
+				int i=0;
+
+				while (enumeration.hasMoreElements()) {
+					logFiles[i++]=((File) enumeration.nextElement()).getAbsolutePath();
+				}
+
+				mailer.sendMultiPartMessage("Compile errors in build", "Compile errors in build.  See attached compile logs.", logFiles);
 			} catch (NoClassDefFoundError e){
 				while (enumeration.hasMoreElements()) {
 					String path=((File) enumeration.nextElement()).getAbsolutePath();
@@ -179,7 +213,7 @@ public class CompileErrorCheck extends Task {
 
 				System.out.println("Unable to send email notice of compile errors.");
 				System.out.println("The j2ee.jar may not be on the Ant classpath.");
-				
+
 			}
 
 		}
