@@ -36,7 +36,7 @@ public class Main implements IApplication {
 
 /**
  * Prefix of baseline builds displayed in data graphs.
- * This field is set using <b>-baselinePrefix</b> argument.
+ * This field is set using <b>-baseline.prefix</b> argument.
  * <p>
  * Example:
  *		<pre>-baseline.prefix 3.2_200606291905</pre>
@@ -165,6 +165,14 @@ private boolean genAll = true;
  */
 private boolean print = false;
 
+/**
+ * Tells whether the generation is done for a PHP server or not.
+ * This field is set to <code>false</code> if <b>-nophp</b> argument is specified.
+ * <p>
+ * Default is <code>true</code> which means that the generation is done for the build server.
+ */
+private boolean use_php = true; // PerformanceTestPlugin.getDBLocation().startsWith("net://");
+
 /*
  * Parse the command arguments and create corresponding performance
  * results object.
@@ -210,7 +218,7 @@ private PerformanceResults parse(Object argsObject) {
 				System.out.println("Missing value for -baseline.prefix parameter");
 				printUsage();
 			}
-			buffer.append("	-baselinePrefix = "+this.baselinePrefix+'\n');
+			buffer.append("	").append(arg).append(" = ").append(this.baselinePrefix).append('\n');
 			i++;
 			continue;
 		}
@@ -220,7 +228,7 @@ private PerformanceResults parse(Object argsObject) {
 				System.out.println("Missing value for -current.prefix parameter");
 				printUsage();
 			}
-			buffer.append("	-current.prefix = ");
+			buffer.append("	").append(arg).append(" = ");
 			String[] ids = idPrefixList.split(",");
 			this.currentBuildPrefixes = new ArrayList();
 			for (int j = 0; j < ids.length; j++) {
@@ -236,7 +244,7 @@ private PerformanceResults parse(Object argsObject) {
 				System.out.println("Missing value for -highlight parameter");
 				printUsage();
 			}
-			buffer.append("	"+arg+" = ");
+			buffer.append("	").append(arg).append(" = ");
 			String[] ids = args[i + 1].split(",");
 			this.pointsOfInterest = new ArrayList();
 			for (int j = 0; j < ids.length; j++) {
@@ -253,7 +261,7 @@ private PerformanceResults parse(Object argsObject) {
 				System.out.println("Missing value for -current parameter");
 				printUsage();
 			}
-			buffer.append("	-current = "+currentBuildId+'\n');
+			buffer.append("	").append(arg).append(" = ").append(currentBuildId).append('\n');
 			i++;
 			continue;
 		}
@@ -263,7 +271,7 @@ private PerformanceResults parse(Object argsObject) {
 				System.out.println("Missing value for -jvm parameter");
 				printUsage();
 			}
-			buffer.append("	-jvm = "+jvm+'\n');
+			buffer.append("	").append(arg).append(" = ").append(jvm).append('\n');
 			i++;
 			continue;
 		}
@@ -278,7 +286,7 @@ private PerformanceResults parse(Object argsObject) {
 				System.err.println("Cannot create directory "+dir+" to write results in!");
 				System.exit(2);
 			}
-			buffer.append("	-output = "+dir+'\n');
+			buffer.append("	").append(arg).append(" = ").append(dir).append('\n');
 			continue;
 		}
 		if (arg.equals("-dataDir")) {
@@ -292,7 +300,7 @@ private PerformanceResults parse(Object argsObject) {
 				System.err.println("Cannot create directory "+dir+" to save data locally!");
 				System.exit(2);
 			}
-			buffer.append("	-dataDir = "+dir+'\n');
+			buffer.append("	").append(arg).append(" = ").append(dir).append('\n');
 			continue;
 		}
 		if (arg.equals("-config")) {
@@ -303,7 +311,7 @@ private PerformanceResults parse(Object argsObject) {
 			}
 			String[] names = configs.split(",");
 			int length = names.length;
-			buffer.append("	-config = ");
+			buffer.append("	").append(arg).append(" = ");
 			for (int j=0; j<length; j++) {
 				if (j>0) buffer.append(',');
 				buffer.append(names[j]);
@@ -356,7 +364,7 @@ private PerformanceResults parse(Object argsObject) {
 			}
 			int length = this.configDescriptors.length;
 			StringTokenizer tokenizer = new StringTokenizer(configProperties, ";");
-			buffer.append("	-config.properties = ");
+			buffer.append("	").append(arg).append(" = ");
 			while (tokenizer.hasMoreTokens()) {
 				String labelDescriptor = tokenizer.nextToken();
 				String[] elements = labelDescriptor.trim().split(",");
@@ -380,44 +388,59 @@ private PerformanceResults parse(Object argsObject) {
 				System.out.println("Missing value for -baseline parameter");
 				printUsage();
 			}
-			buffer.append("	"+arg+" = "+this.scenarioPattern+'\n');
+			buffer.append("	").append(arg).append(" = ").append(this.scenarioPattern).append('\n');
 			i++;
 			continue;
 		}
 		if (arg.equals("-fingerprints")) {
 			this.genFingerPrints = true;
 			this.genAll = false;
-			buffer.append("	-fingerprints\n");
+			buffer.append("	").append(arg).append('\n');
 			i++;
 			continue;
 		}
 		if (arg.equals("-data")) {
 			this.genData = true;
 			this.genAll = false;
-			buffer.append("	-data\n");
+			buffer.append("	").append(arg).append('\n');
 			i++;
 			continue;
 		}
 		if (arg.equals("-print")) {
 			this.print = true;
-			buffer.append("	-print\n");
+			buffer.append("	").append(arg).append('\n');
+			i++;
+			continue;
+		}
+		if (arg.equals("-nophp")) {
+			this.use_php = false;
+			buffer.append("	").append(arg).append('\n');
 			i++;
 			continue;
 		}
 		i++;
 	}
 	if (this.print) System.out.println(buffer.toString());
+	
+	// Stop if some mandatory parameters are missing
 	if (baseline == null || this.outputDir == null || this.configDescriptors == null || jvm == null || currentBuildId == null) {
 		printUsage();
 	}
+	
+	// Init baseline prefix if not set
 	if (this.baselinePrefix == null) {
 		// Assume that baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
 		this.baselinePrefix = baseline.substring(0, baseline.lastIndexOf('_'));
 	}
 
+	// Init currnt build prefixes if not set
 	if (this.currentBuildPrefixes == null) {
 		this.currentBuildPrefixes = new ArrayList();
-		this.currentBuildPrefixes.add("N");
+		if (currentBuildId.charAt(0) == 'M') {
+			this.currentBuildPrefixes.add("M");
+		} else {
+			this.currentBuildPrefixes.add("N");
+		}
 		this.currentBuildPrefixes.add("I");
 	}
 	return new PerformanceResults(currentBuildId, baseline, this.print);
@@ -465,7 +488,7 @@ private void printComponent(PerformanceResults performanceResults, String compon
 
 	// print scenario status table
 	if (isGlobal) {
-		if (!PerformanceTestPlugin.getDBLocation().startsWith("net://")) {
+		if (!this.use_php) {
 			stream.println("<table border=0 cellpadding=2 cellspacing=5 width=\"100%\">");
 			stream.println("<tbody><tr> <td colspan=3 align=\"left\" bgcolor=\"#0080c0\" valign=\"top\"><b><font color=\"#ffffff\" face=\"Arial,Helvetica\">");
 			stream.println("Detailed performance data grouped by scenario prefix</font></b></td></tr></tbody></table>");
