@@ -18,7 +18,6 @@ import java.util.*;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.results.AbstractResults;
 import org.eclipse.test.internal.performance.results.ConfigResults;
 import org.eclipse.test.internal.performance.results.DB_Results;
