@@ -204,7 +204,7 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-baseline")) {
 			baseline = args[i + 1];
 			if (baseline.startsWith("-")) {
-				System.out.println("Missing value for -baseline parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			buffer.append("	-baseline = "+baseline+'\n');
@@ -214,7 +214,7 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-baseline.prefix")) {
 			this.baselinePrefix = args[i + 1];
 			if (this.baselinePrefix.startsWith("-")) {
-				System.out.println("Missing value for -baseline.prefix parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			buffer.append("	").append(arg).append(" = ").append(this.baselinePrefix).append('\n');
@@ -224,7 +224,7 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-current.prefix")) {
 			String idPrefixList = args[i + 1];
 			if (idPrefixList.startsWith("-")) {
-				System.out.println("Missing value for -current.prefix parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			buffer.append("	").append(arg).append(" = ");
@@ -240,7 +240,7 @@ private PerformanceResults parse(Object argsObject) {
 		}
 		if (arg.equals("-highlight") || arg.equals("-highlight.latest")) {
 			if (args[i + 1].startsWith("-")) {
-				System.out.println("Missing value for -highlight parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			buffer.append("	").append(arg).append(" = ");
@@ -257,7 +257,7 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-current")) {
 			currentBuildId  = args[i + 1];
 			if (currentBuildId.startsWith("-")) {
-				System.out.println("Missing value for -current parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			buffer.append("	").append(arg).append(" = ").append(currentBuildId).append('\n');
@@ -267,7 +267,7 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-jvm")) {
 			jvm = args[i + 1];
 			if (jvm.startsWith("-")) {
-				System.out.println("Missing value for -jvm parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			buffer.append("	").append(arg).append(" = ").append(jvm).append('\n');
@@ -277,7 +277,7 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-output")) {
 			String dir = args[++i];
 			if (dir.startsWith("-")) {
-				System.out.println("Missing value for -output parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			this.outputDir = new File(dir);
@@ -291,7 +291,7 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-dataDir")) {
 			String dir = args[++i];
 			if (dir.startsWith("-")) {
-				System.out.println("Missing value for -output parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			this.dataDir = new File(dir);
@@ -305,7 +305,7 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-config")) {
 			String configs = args[i + 1];
 			if (configs.startsWith("-")) {
-				System.out.println("Missing value for -config parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			String[] names = configs.split(",");
@@ -354,7 +354,7 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-config.properties")) {
 			String configProperties = args[i + 1];
 			if (configProperties.startsWith("-")) {
-				System.out.println("Missing value for -config.properties parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			if (this.configDescriptors == null) {
@@ -384,7 +384,7 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-scenario.filter") || arg.equals("-scenario.pattern")) {
 			this.scenarioPattern= args[i + 1];
 			if (this.scenarioPattern.startsWith("-")) {
-				System.out.println("Missing value for -baseline parameter");
+				System.out.println("Missing value for "+arg+" parameter");
 				printUsage();
 			}
 			buffer.append("	").append(arg).append(" = ").append(this.scenarioPattern).append('\n');
