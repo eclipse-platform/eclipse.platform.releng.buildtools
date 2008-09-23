@@ -258,20 +258,23 @@ private void printDifferenceLine(PrintStream stream, ConfigResults configResults
 		BuildResults currentBuild = configResults.getCurrentBuildResults();
 		BuildResults baselineBuild = configResults.getBaselineBuildResults();
 
+		// Compute difference values
 		double baselineValue = baselineBuild.getValue(dim_id);
-		double diffValue = currentBuild.getValue(dim_id) - baselineValue;
+		double diffValue = baselineValue - currentBuild.getValue(dim_id);
 		double diffPercentage =  baselineValue == 0 ? 0 : Math.round(diffValue / baselineValue * 1000) / 10.0;
 		String diffDisplayValue = currentDim.getDisplayValue(diffValue);
-		// green
+
+		// Set colors
 		String fontColor = "";
-		if ((diffPercentage < -10 && !currentDim.largerIsBetter()) || (diffPercentage > 10 && currentDim.largerIsBetter()))
-			fontColor = "#006600";
-		if ((diffPercentage < -10 && currentDim.largerIsBetter()) || (diffPercentage > 10 && !currentDim.largerIsBetter()))
-			fontColor = "#FF0000";
+		if (diffPercentage > 10) {
+			fontColor = "#006600";	// green
+		}
+		if (diffPercentage < -10) {
+			fontColor = "#FF0000";	// red
+		}
 
-		diffPercentage = Math.abs(diffPercentage);
+		// Print line
 		String percentage = (diffPercentage == 0) ? "" : "<br>" + diffPercentage + " %";
-
 		if (diffPercentage > 10 || diffPercentage < -10) {
 			stream.print("<td><FONT COLOR=\"" + fontColor + "\"><b>" + diffDisplayValue + percentage + "</b></FONT></td>");
 		} else {
