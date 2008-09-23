@@ -731,6 +731,7 @@ public Object start(IApplicationContext context) throws Exception {
 	performanceResults.read(this.configDescriptors, this.scenarioPattern, this.dataDir);
 
 	// Print whole scenarios summary
+	if (this.print) System.out.println();
 	printSummary(performanceResults);
 
 	// Copy images and scripts to output dir
@@ -749,7 +750,7 @@ public Object start(IApplicationContext context) throws Exception {
 	// Print HTML pages and all linked files
 	if (this.print) {
 		System.out.println("Print performance results HTML pages:");
-		System.out.print("	- all components");
+		System.out.print("	- components main page");
 	}
 	long start = System.currentTimeMillis();
 	printComponent(performanceResults, "global");
@@ -757,38 +758,31 @@ public Object start(IApplicationContext context) throws Exception {
 	while (components.hasNext()) {
 		printComponent(performanceResults, (String) components.next());
 	}
-	if (this.print) System.out.println("done in "+(System.currentTimeMillis()-start)+"ms");
+	if (this.print) {
+		String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
+		System.out.println(" done in "+duration);
+	}
 
 	// Print the scenarios data
 	if (genData || genAll) {
 		start = System.currentTimeMillis();
-		if (this.print) System.out.print("	- all scenarios data...");
+		if (this.print) System.out.println("	- all scenarios data:");
 		ScenarioData data = new ScenarioData(this.baselinePrefix, this.pointsOfInterest, this.currentBuildPrefixes, this.outputDir);
 		try {
-			data.print(performanceResults);
+			data.print(performanceResults, this.print);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		if (this.print) System.out.println("done in "+(System.currentTimeMillis()-start)+"ms");
+		if (this.print) {
+			String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
+			System.out.println("	=> done in "+duration);
+		}
 	}
 	if (this.print) {
 		long time = System.currentTimeMillis();
 		System.out.println("End of generation: "+new SimpleDateFormat("H:mm:ss").format(new Date(time)));
-		long ms = System.currentTimeMillis() - begin;
-		int sec = (int) (ms / 1000L);
-		if ((ms - (sec*1000)) >= 500) sec++;
-		if (sec < 60) {
-			System.out.println("=> done in "+sec+" second"+(sec==1?"":"s"));
-		} else if (sec < 3600) {
-			int m = sec / 60;
-			int s = sec % 60;
-			System.out.println("=> done in "+m+" minute"+(m==1?"":"s")+" and "+s+" second"+(s==1?"":"s"));
-		} else {
-			int h = sec / 3600;
-			int m = (sec-h*3600) / 60;
-			int s = (sec-h*3600)  % 60;
-			System.out.println("=> done in "+h+" hour"+(h==1?"":"s")+", "+m+" minute"+(m==1?"":"s")+" and "+s+" second"+(s==1?"":"s"));
-		}
+		String duration = AbstractResults.timeString(System.currentTimeMillis()-begin);
+		System.out.println("=> done in "+duration);
 	}
 	return null;
 }

@@ -71,18 +71,26 @@ public ScenarioData(String baselinePrefix, List pointsOfInterest, List buildIDPa
  * 
  * @param performanceResults The needed information to generate scenario data
  */
-public void print(PerformanceResults performanceResults) {
+public void print(PerformanceResults performanceResults, boolean print) {
 	String[] configNames = performanceResults.getConfigNames(false/*not sorted*/);
 	String[] configBoxes = performanceResults.getConfigBoxes(false/*not sorted*/);
 	int length = configNames.length;
 	for (int i=0; i<length; i++) {
-		File outputDir = new File(this.rootDir, configNames[i]);
+		String configName = configNames[i];
+		long start = System.currentTimeMillis();
+		if (print) System.out.print("		+ "+configName);
+		File outputDir = new File(this.rootDir, configName);
 		outputDir.mkdir();
 		Iterator components = performanceResults.getResults();
 		while (components.hasNext()) {
+			if (print) System.out.print(".");
 			ComponentResults componentResults = (ComponentResults) components.next();
-			printSummary(configNames[i], configBoxes[i], componentResults, outputDir);
-			printDetails(configNames[i], configBoxes[i], componentResults, outputDir);
+			printSummary(configName, configBoxes[i], componentResults, outputDir);
+			printDetails(configName, configBoxes[i], componentResults, outputDir);
+		}
+		if (print) {
+			String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
+			System.out.println(" done in "+duration);
 		}
 	}
 }
