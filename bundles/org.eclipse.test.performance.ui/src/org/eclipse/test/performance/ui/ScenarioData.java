@@ -30,7 +30,6 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.data.Dim;
-import org.eclipse.test.internal.performance.data.DimensionMessages;
 import org.eclipse.test.internal.performance.results.AbstractResults;
 import org.eclipse.test.internal.performance.results.BuildResults;
 import org.eclipse.test.internal.performance.results.ComponentResults;
@@ -64,6 +63,85 @@ public ScenarioData(String baselinePrefix, List pointsOfInterest, List buildIDPa
 	this.pointsOfInterest = pointsOfInterest;
 	this.buildIDStreamPatterns = buildIDPatterns;
 	this.rootDir = outputDir;
+}
+
+/*
+ * Create a file handle verifying that its name does not go over
+ * the maximum authorized length.
+ */
+private File createFile(File outputDir, String subdir, String name, String extension) {
+	File dir = outputDir;
+	if (subdir != null) {
+		dir = new File(outputDir, subdir);
+		if (!dir.exists()) {
+			dir.mkdir();
+		}
+	}
+	return new File(dir, name + '.' + extension);
+}
+
+/*
+ * Returns a LineGraph object representing measurements for a scenario over builds.
+ */
+private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResults configResults, Dim dim, List highlightedPoints, List currentBuildIdPrefixes) {
+	Display display = Display.getDefault();
+
+	Color black = display.getSystemColor(SWT.COLOR_BLACK);
+	Color yellow = display.getSystemColor(SWT.COLOR_DARK_YELLOW);
+	Color magenta = display.getSystemColor(SWT.COLOR_MAGENTA);
+
+	String scenarioName = scenarioResults.getName();
+	TimeLineGraph graph = new TimeLineGraph(scenarioName + ": " + dim.getName(), dim);
+	String baseline = configResults.getBaselineBuildName();
+	String current = configResults.getCurrentBuildName();
+
+	Iterator builds = configResults.getResults();
+	List lastSevenNightlyBuilds = configResults.lastNightlyBuildNames(7);
+	buildLoop: while (builds.hasNext()) {
+		BuildResults buildResults = (BuildResults) builds.next();
+		String buildID = buildResults.getName();
+		int underscoreIndex = buildID.indexOf('_');
+		String label = (underscoreIndex != -1 && (buildID.equals(baseline) || buildID.equals(current))) ? buildID.substring(0, underscoreIndex) : buildID;
+
+		double value = buildResults.getValue(dim.getId());
+
+		if (buildID.equals(current)) {
+			Color color = black;
+			if (buildID.startsWith("N"))
+				color = yellow;
+
+			graph.addItem("main", label, dim.getDisplayValue(value), value, color, true, Utils.getDateFromBuildID(buildID), true);
+			continue;
+		}
+		if (highlightedPoints.contains(buildID)) {
+			graph.addItem("main", label, dim.getDisplayValue(value), value, black, false, Utils.getDateFromBuildID(buildID, false), true);
+			continue;
+		}
+		if (buildID.charAt(0) == 'N') {
+			if (lastSevenNightlyBuilds.contains(buildID)) {
+				graph.addItem("main", buildID, dim.getDisplayValue(value), value, yellow, false, Utils.getDateFromBuildID(buildID), false);
+			}
+			continue;
+		}
+		for (int i=0;i<currentBuildIdPrefixes.size();i++){
+			if (buildID.startsWith(currentBuildIdPrefixes.get(i).toString())) {
+				graph.addItem("main", buildID, dim.getDisplayValue(value), value, black, false, Utils.getDateFromBuildID(buildID), false);
+				continue buildLoop;
+			}
+		}
+		if (buildID.equals(baseline)) {
+			boolean drawBaseline = (baselinePrefix != null) ? false : true;
+			graph.addItem("reference", label, dim.getDisplayValue(value), value, magenta, true, Utils.getDateFromBuildID(buildID, true), true, drawBaseline);
+			continue;
+		}
+		if (baselinePrefix != null) {
+			if (buildID.startsWith(baselinePrefix) && !buildID.equals(baseline) && Utils.getDateFromBuildID(buildID, true) <= Utils.getDateFromBuildID(baseline, true)) {
+				graph.addItem("reference", label, dim.getDisplayValue(value), value, magenta, false, Utils.getDateFromBuildID(buildID, true), false);
+				continue;
+			}
+		}
+	}
+	return graph;
 }
 
 /**
@@ -123,12 +201,12 @@ private void printSummary(String configName, String configBox, ComponentResults 
 		}
 
 		String scenarioFileName = scenarioResults.getFileName();
-		File outFile = new File(outputDir, scenarioFileName + ".html");
+		File outputFile = new File(outputDir, scenarioFileName+".html");
 		PrintStream stream = null;
 		try {
-			stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outFile)));
+			stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 		} catch (FileNotFoundException e) {
-			System.err.println("can't create output file" + outFile); //$NON-NLS-1$
+			System.err.println("can't create output file" + outputFile); //$NON-NLS-1$
 		}
 		if (stream == null) {
 			stream = System.out;
@@ -152,7 +230,7 @@ private void printSummary(String configName, String configBox, ComponentResults 
 		}
 
 		// Print link to raw data.
-		String rawDataFile = scenarioFileName+"_raw.html";
+		String rawDataFile = "raw/" + scenarioFileName+".html";
 		stream.println("<br><br><b><a href=\""+rawDataFile+"\">Raw data and Stats</a></b><br><br>\n");
 		stream.println("<b>Click measurement name to view line graph of measured values over builds.</b><br><br>\n");
 
@@ -163,8 +241,7 @@ private void printSummary(String configName, String configBox, ComponentResults 
 			Dim[] dimensions = AbstractResults.SUPPORTED_DIMS;
 			int dimLength = dimensions.length;
 			for (int d=0; d<dimLength; d++) {
-				String dimName = dimensions[d].getName();
-				stream.print("<td><a href=\"#" + configName + "_" + scenarioFileName + "_" + dimName + "\"><b>" + dimName + "</b></a></td>");
+				stream.print("<td><a href=\"#" + dimensions[d].getShortName() + "\"><b>" + dimensions[d].getName() + "</b></a></td>");
 			}
 			stream.println("</tr>\n");
 
@@ -187,17 +264,15 @@ private void printSummary(String configName, String configBox, ComponentResults 
 
 			// print image maps of historical
 			for (int d=0; d<dimLength; d++) {
-				String dimName = dimensions[d].getName();
-				int dim_id = dimensions[d].getId();
 				TimeLineGraph lineGraph = getLineGraph(scenarioResults, configResults, dimensions[d], highlightedPoints, this.buildIDStreamPatterns);
 
-				File graphsDir = new File(outputDir, "graphs");
-				graphsDir.mkdir();
-				File imgFile = new File(graphsDir, scenarioFileName + "_" + dimName + ".gif");
+				String dimShortName = dimensions[d].getShortName();
+				String imgFileName = scenarioFileName + "_" + dimShortName;
+				File imgFile = createFile(outputDir, "graphs", imgFileName, "gif");
 				saveGraph(lineGraph, imgFile);
-				stream.println("<br><a name=\"" + configName + "_" + scenarioFileName + "_" + dimName + "\"></a>");
-				stream.println("<br><b>" + dimName + "</b><br>");
-				stream.println(DimensionMessages.getDescription(dim_id) + "<br><br>\n");
+				stream.println("<br><a name=\"" + dimShortName + "\"></a>");
+				stream.println("<br><b>" + dimensions[d].getName() + "</b><br>");
+				stream.println(dimensions[d].getDescription() + "<br><br>\n");
 				stream.print("<img src=\"graphs/");
 				stream.print(imgFile.getName());
 				stream.print("\" usemap=\"#" + lineGraph.fTitle + "\">");
@@ -285,70 +360,6 @@ private void printDifferenceLine(PrintStream stream, ConfigResults configResults
 }
 
 /*
- * Returns a LineGraph object representing measurements for a scenario over builds.
- */
-private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResults configResults, Dim dim, List highlightedPoints, List currentBuildIdPrefixes) {
-	Display display = Display.getDefault();
-
-	Color black = display.getSystemColor(SWT.COLOR_BLACK);
-	Color yellow = display.getSystemColor(SWT.COLOR_DARK_YELLOW);
-	Color magenta = display.getSystemColor(SWT.COLOR_MAGENTA);
-
-	String scenarioName = scenarioResults.getName();
-	TimeLineGraph graph = new TimeLineGraph(scenarioName + ": " + dim.getName(), dim);
-	String baseline = configResults.getBaselineBuildName();
-	String current = configResults.getCurrentBuildName();
-
-	Iterator builds = configResults.getResults();
-	List lastSevenNightlyBuilds = configResults.lastNightlyBuildNames(7);
-	buildLoop: while (builds.hasNext()) {
-		BuildResults buildResults = (BuildResults) builds.next();
-		String buildID = buildResults.getName();
-		int underscoreIndex = buildID.indexOf('_');
-		String label = (underscoreIndex != -1 && (buildID.equals(baseline) || buildID.equals(current))) ? buildID.substring(0, underscoreIndex) : buildID;
-
-		double value = buildResults.getValue(dim.getId());
-
-		if (buildID.equals(current)) {
-			Color color = black;
-			if (buildID.startsWith("N"))
-				color = yellow;
-
-			graph.addItem("main", label, dim.getDisplayValue(value), value, color, true, Utils.getDateFromBuildID(buildID), true);
-			continue;
-		}
-		if (highlightedPoints.contains(buildID)) {
-			graph.addItem("main", label, dim.getDisplayValue(value), value, black, false, Utils.getDateFromBuildID(buildID, false), true);
-			continue;
-		}
-		if (buildID.charAt(0) == 'N') {
-			if (lastSevenNightlyBuilds.contains(buildID)) {
-				graph.addItem("main", buildID, dim.getDisplayValue(value), value, yellow, false, Utils.getDateFromBuildID(buildID), false);
-			}
-			continue;
-		}
-		for (int i=0;i<currentBuildIdPrefixes.size();i++){
-			if (buildID.startsWith(currentBuildIdPrefixes.get(i).toString())) {
-				graph.addItem("main", buildID, dim.getDisplayValue(value), value, black, false, Utils.getDateFromBuildID(buildID), false);
-				continue buildLoop;
-			}
-		}
-		if (buildID.equals(baseline)) {
-			boolean drawBaseline = (baselinePrefix != null) ? false : true;
-			graph.addItem("reference", label, dim.getDisplayValue(value), value, magenta, true, Utils.getDateFromBuildID(buildID, true), true, drawBaseline);
-			continue;
-		}
-		if (baselinePrefix != null) {
-			if (buildID.startsWith(baselinePrefix) && !buildID.equals(baseline) && Utils.getDateFromBuildID(buildID, true) <= Utils.getDateFromBuildID(baseline, true)) {
-				graph.addItem("reference", label, dim.getDisplayValue(value), value, magenta, false, Utils.getDateFromBuildID(buildID, true), false);
-				continue;
-			}
-		}
-	}
-	return graph;
-}
-
-/*
  * Print details file of the scenario builds data.
  */
 private void printDetails(String configName, String configBox, ComponentResults componentResults, File outputDir) {
@@ -359,12 +370,12 @@ private void printDetails(String configName, String configBox, ComponentResults 
 		if (configResults == null || !configResults.isValid()) continue;
 		String scenarioName= scenarioResults.getName();
 		String scenarioFileName = scenarioResults.getFileName();
-		File outFile = new File(outputDir, scenarioFileName + "_raw.html");
+		File outputFile = createFile(outputDir, "raw", scenarioFileName, "html");
 		PrintStream stream = null;
 		try {
-			stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outFile)));
+			stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 		} catch (FileNotFoundException e) {
-			System.err.println("can't create output file" + outFile); //$NON-NLS-1$
+			System.err.println("can't create output file" + outputFile); //$NON-NLS-1$
 		}
 		if (stream == null) stream = System.out;
 		RawDataTable currentResultsTable = new RawDataTable(configResults, this.buildIDStreamPatterns, stream);
@@ -373,7 +384,7 @@ private void printDetails(String configName, String configBox, ComponentResults 
 		stream.println(Utils.HTML_DEFAULT_CSS);
 		stream.println("<title>" + scenarioName + "(" + configBox + ")" + " - Details</title></head>"); //$NON-NLS-1$
 		stream.println("<h4>Scenario: " + scenarioName + " (" + configBox + ")</h4>"); //$NON-NLS-1$
-		stream.println("<a href=\""+scenarioFileName+".html\">VIEW GRAPH</a><br><br>"); //$NON-NLS-1$
+		stream.println("<a href=\"../"+scenarioFileName+".html\">VIEW GRAPH</a><br><br>"); //$NON-NLS-1$
 		stream.println("<table><td><b>Current Stream Test Runs</b></td><td><b>Baseline Test Runs</b></td></tr>\n");
 		stream.println("<tr valign=\"top\">");
 		stream.print("<td>");

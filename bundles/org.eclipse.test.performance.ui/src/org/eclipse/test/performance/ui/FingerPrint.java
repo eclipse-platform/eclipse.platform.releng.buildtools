@@ -89,6 +89,7 @@ public void print(PerformanceResults performanceResults) {
 		// Create BarGraph
 //		BarGraph barGraph = new BarGraph(null);
 		BarGraph barGraph = null;
+		String defaultDimName = AbstractResults.DEFAULT_DIM.getName();
 		for (int i=0, size=scenarios.size(); i<size; i++) {
 			ScenarioResults scenarioResults = (ScenarioResults) scenarios.get(i);
 			ConfigResults configResults = scenarioResults.getConfigResults(configName);
@@ -96,8 +97,7 @@ public void print(PerformanceResults performanceResults) {
 			double[] results = configResults.getCurrentBuildDeviation();
 			double percent = -results[0] * 100.0;
 			if (results != null && Math.abs(percent) < 200) {
-				String defaultDimensionName = AbstractResults.SUPPORTED_DIMS[0].getName();
-				String name = scenarioResults.getLabel() + " (" + defaultDimensionName + ")";
+				String name = scenarioResults.getLabel() + " (" + defaultDimName + ")";
 				if (!configResults.getCurrentBuildName().equals(buildName)) {
 					continue; // the test didn't run on last build, skip it
 				}
@@ -109,7 +109,7 @@ public void print(PerformanceResults performanceResults) {
 				}
 				barGraph.addItem(name,
 				    results,
-				    configName + "/" + scenarioResults.getFileName() + ".html#" + defaultDimensionName,
+				    configName + "/" + scenarioResults.getFileName() + ".html",
 				    configResults.getCurrentBuildResults().getComment(),
 				    (Utils.confidenceLevel(results) & Utils.ERR) == 0);
 			}

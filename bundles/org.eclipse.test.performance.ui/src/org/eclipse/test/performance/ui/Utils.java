@@ -11,12 +11,6 @@
 package org.eclipse.test.performance.ui;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -29,6 +23,7 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.db.Variations;
+import org.eclipse.test.internal.performance.results.AbstractResults;
 
 
 public class Utils {
@@ -102,41 +97,23 @@ public class Utils {
 	}
 
 	/**
-	 * Utility method to copy a file.
-	 *
-	 * @param src the source file.
-	 * @param dest the destination.
+	 * Copy all image files.
 	 */
-	private static void copyFile(File src, File dest) {
-
-		try {
-			InputStream in = new FileInputStream(src);
-			OutputStream out = new FileOutputStream(dest);
-			byte[] buf = new byte[1024];
-			int len;
-			while ((len = in.read(buf)) > 0) {
-				out.write(buf, 0, len);
-			}
-			in.close();
-			out.close();
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	public static void copyImages(File images, File output) {
-		copyFile(new File(images, FAIL_IMAGE), new File(output, FAIL_IMAGE));
-		copyFile(new File(images, FAIL_IMAGE_EXPLAINED), new File(output, FAIL_IMAGE_EXPLAINED));
-		copyFile(new File(images, FAIL_IMAGE_WARN), new File(output, FAIL_IMAGE_WARN));
-		copyFile(new File(images, OK_IMAGE), new File(output, OK_IMAGE));
-		copyFile(new File(images, OK_IMAGE_WARN), new File(output, OK_IMAGE_WARN));
-		copyFile(new File(images, UNKNOWN_IMAGE), new File(output, UNKNOWN_IMAGE));
+		AbstractResults.copyFile(new File(images, FAIL_IMAGE), new File(output, FAIL_IMAGE));
+		AbstractResults.copyFile(new File(images, FAIL_IMAGE_EXPLAINED), new File(output, FAIL_IMAGE_EXPLAINED));
+		AbstractResults.copyFile(new File(images, FAIL_IMAGE_WARN), new File(output, FAIL_IMAGE_WARN));
+		AbstractResults.copyFile(new File(images, OK_IMAGE), new File(output, OK_IMAGE));
+		AbstractResults.copyFile(new File(images, OK_IMAGE_WARN), new File(output, OK_IMAGE_WARN));
+		AbstractResults.copyFile(new File(images, UNKNOWN_IMAGE), new File(output, UNKNOWN_IMAGE));
 	}
+
+	/**
+	 * Copy all scripts files.
+	 */
 	public static void copyScripts(File scripts, File output) {
-		copyFile(new File(scripts, "ToolTip.css"), new File(output, "ToolTip.css"));
-		copyFile(new File(scripts, "ToolTip.js"), new File(output, "ToolTip.js"));
+		AbstractResults.copyFile(new File(scripts, "ToolTip.css"), new File(output, "ToolTip.css"));
+		AbstractResults.copyFile(new File(scripts, "ToolTip.js"), new File(output, "ToolTip.js"));
 	}
 
 	/**
