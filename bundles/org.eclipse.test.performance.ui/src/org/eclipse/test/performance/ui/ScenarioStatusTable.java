@@ -128,7 +128,7 @@ private void printConfigStats(ScenarioResults scenarioResults, String config) {
 	}
 	BuildResults currentBuildResults = configResults.getCurrentBuildResults();
 	String failure = currentBuildResults.getFailure();
-	double[] deviation = configResults.getCurrentBuildDeviation();
+	double[] deviation = configResults.getCurrentBuildDeltaInfo();
 	int confidence = Utils.confidenceLevel(deviation);
 	boolean hasFailure = failure != null;
 	String comment = currentBuildResults.getComment();

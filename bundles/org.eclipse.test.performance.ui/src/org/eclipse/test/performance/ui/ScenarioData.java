@@ -217,7 +217,7 @@ private void printSummary(String configName, String configBox, ComponentResults 
 		stream.println("<title>" + scenarioResults.getName() + "(" + configBox + ")" + "</title></head>"); //$NON-NLS-1$
 		stream.println("<h4>Scenario: " + scenarioResults.getName() + " (" + configBox + ")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
 
-		String failureMessage = Utils.failureMessage(configResults.getCurrentBuildDeviation(), true);
+		String failureMessage = Utils.failureMessage(configResults.getCurrentBuildDeltaInfo(), true);
  		if (failureMessage != null){
    			stream.println("<table><tr><td><b>"+failureMessage+"</td></tr></table>\n");
  		}

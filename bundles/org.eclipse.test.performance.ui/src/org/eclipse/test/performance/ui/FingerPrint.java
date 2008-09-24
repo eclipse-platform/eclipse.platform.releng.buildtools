@@ -94,7 +94,7 @@ public void print(PerformanceResults performanceResults) {
 			ScenarioResults scenarioResults = (ScenarioResults) scenarios.get(i);
 			ConfigResults configResults = scenarioResults.getConfigResults(configName);
 			if (configResults == null || !configResults.isValid()) continue;
-			double[] results = configResults.getCurrentBuildDeviation();
+			double[] results = configResults.getCurrentBuildDeltaInfo();
 			double percent = -results[0] * 100.0;
 			if (results != null && Math.abs(percent) < 200) {
 				String name = scenarioResults.getLabel() + " (" + defaultDimName + ")";

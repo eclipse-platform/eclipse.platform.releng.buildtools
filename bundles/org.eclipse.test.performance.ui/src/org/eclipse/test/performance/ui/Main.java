@@ -172,6 +172,13 @@ private boolean print = false;
  */
 private boolean use_php = true; // PerformanceTestPlugin.getDBLocation().startsWith("net://");
 
+/**
+ * Tells what should be the failure percentage threshold.
+ * <p>
+ * Default is 10%.
+ */
+private int failure_threshold = 10; // PerformanceTestPlugin.getDBLocation().startsWith("net://");
+
 /*
  * Parse the command arguments and create corresponding performance
  * results object.
@@ -414,6 +421,23 @@ private PerformanceResults parse(Object argsObject) {
 		if (arg.equals("-nophp")) {
 			this.use_php = false;
 			buffer.append("	").append(arg).append('\n');
+			i++;
+			continue;
+		}
+		if (arg.equals("-failure.threshold")) {
+			String value = args[i + 1];
+			try {
+				this.failure_threshold = Integer.parseInt(value);
+				if (this.failure_threshold < 0) {
+					System.out.println("Value for "+arg+" parameter must be positive.");
+					printUsage();
+				}
+			}
+			catch (NumberFormatException nfe) {
+				System.out.println("Invalid value for "+arg+" parameter");
+				printUsage();
+			}
+			buffer.append("	").append(arg).append(" = ").append(value).append('\n');
 			i++;
 			continue;
 		}
@@ -705,7 +729,13 @@ private void printUsage() {
 		"	Optional.  Generates table of scenario reference and current data with line graphs.\n\n" +
 
 		"[-print]\n" +
-		"	Optional.  Display output in the console while generating.\n"
+		"	Optional.  Display output in the console while generating.\n" +
+
+		"[-nophp]\n" +
+		"	Optional.  Generate files for non-php server.\n" +
+
+		"[-failure.threshold]\n" +
+		"	Optional.  Set the failure percentage threshold (default is 10%).\n"
 	);
 
 	System.exit(1);
@@ -728,7 +758,7 @@ public Object start(IApplicationContext context) throws Exception {
 
 	// Parse arguments and read DB info
 	PerformanceResults performanceResults = parse(context.getArguments().get("application.args"));
-	performanceResults.read(this.configDescriptors, this.scenarioPattern, this.dataDir);
+	performanceResults.read(this.configDescriptors, this.scenarioPattern, this.dataDir, this.failure_threshold);
 
 	// Print whole scenarios summary
 	if (this.print) System.out.println();
