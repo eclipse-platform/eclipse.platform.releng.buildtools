@@ -556,7 +556,7 @@ private void printSummary(PerformanceResults performanceResults) {
 	try {
 		stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 		printSummaryPresentation(stream);
-		List scenarioNames = DB_Results.getScenariosNames();
+		List scenarioNames = DB_Results.getScenarios();
 		int size = scenarioNames.size();
 		printSummaryColumnsTitle(stream, performanceResults);
 		String[] configs = performanceResults.getConfigNames(true/*sorted*/);
@@ -651,13 +651,12 @@ private void printSummaryScenarioLine(int i, String config, ScenarioResults scen
 	}
 	String url = config + "/" + scenarioResults.getFileName()+".html";
 	double[] stats = null;
-	int dim_id = AbstractResults.SUPPORTED_DIMS[0].getId();
 	if (i==0) { // baseline results
 		List baselinePrefixes = new ArrayList();
 		baselinePrefixes.add(this.baselinePrefix);
-		stats = configResults.getStatistics(baselinePrefixes, dim_id);
+		stats = configResults.getStatistics(baselinePrefixes);
 	} else {
-		stats = configResults.getStatistics(this.currentBuildPrefixes, dim_id);
+		stats = configResults.getStatistics(this.currentBuildPrefixes);
 	}
 	double variation = stats[3];
 	if (variation > 10 && variation < 20) {
