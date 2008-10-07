@@ -114,7 +114,7 @@ public void print(PerformanceResults performanceResults) {
 				    (Utils.confidenceLevel(results) & Utils.ERR) == 0);
 			}
 		}
-		 if (barGraph == null) continue;
+		if (barGraph == null) continue;
 
 		// Save image file
 		String fileName = filePrefix + configName ;
