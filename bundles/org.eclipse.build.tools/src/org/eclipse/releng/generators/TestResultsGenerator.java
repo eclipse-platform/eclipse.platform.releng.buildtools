@@ -132,10 +132,10 @@ public class TestResultsGenerator extends Task {
 	//The four configurations, add new configurations to test results here + update
 	//testResults.php.template for changes
 	private String[] testsConfig = {"linux.gtk.x86.xml",
-			"linux.gtk.x86_5.0.xml",
+			"linux.gtk.x86_6.0.xml",
 			"macosx.carbon.ppc_5.0.xml",
 			"win32.win32.x86.xml",
-			"win32.win32.x86_5.0.xml"};
+			"win32.win32.x86_6.0.xml"};
 
 
 	public static void main(String[] args) {
