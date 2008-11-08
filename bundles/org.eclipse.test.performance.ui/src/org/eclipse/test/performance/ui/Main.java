@@ -799,13 +799,18 @@ public Object start(IApplicationContext context) throws Exception {
 	if (doc != null) {
 		doc = FileLocator.resolve(doc);
 		File docDir = new File(doc.getPath());
-		File[] docFiles = docDir.listFiles();
+		FileFilter filter = new FileFilter() {
+			public boolean accept(File pathname) {
+	            return !pathname.getName().equals("CVS");
+            }
+		};
+		File[] docFiles = docDir.listFiles(filter);
 		for (int i=0; i<docFiles.length; i++) {
 			File file = docFiles[i];
 			if (file.isDirectory()) {
 				File subdir = new File(this.outputDir, file.getName());
 				subdir.mkdir();
-				File[] subdirFiles = file.listFiles();
+				File[] subdirFiles = file.listFiles(filter);
 				for (int j=0; j<subdirFiles.length; j++) {
 					if (subdirFiles[i].isDirectory()) {
 						// expect only one sub-directory
