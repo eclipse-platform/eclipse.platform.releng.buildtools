@@ -211,39 +211,39 @@ private void printSummary(String configName, String configBox, ComponentResults 
 		if (stream == null) {
 			stream = System.out;
 		}
-		stream.println(Utils.HTML_OPEN);
-		stream.println(Utils.HTML_DEFAULT_CSS);
+		stream.print(Utils.HTML_OPEN);
+		stream.print(Utils.HTML_DEFAULT_CSS);
 
-		stream.println("<title>" + scenarioResults.getName() + "(" + configBox + ")" + "</title></head>"); //$NON-NLS-1$
-		stream.println("<h4>Scenario: " + scenarioResults.getName() + " (" + configBox + ")</h4><br>"); //$NON-NLS-1$ //$NON-NLS-2$
+		stream.print("<title>" + scenarioResults.getName() + "(" + configBox + ")" + "</title></head>\n"); //$NON-NLS-1$
+		stream.print("<h4>Scenario: " + scenarioResults.getName() + " (" + configBox + ")</h4><br>\n"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		String failureMessage = Utils.failureMessage(configResults.getCurrentBuildDeltaInfo(), true);
  		if (failureMessage != null){
-   			stream.println("<table><tr><td><b>"+failureMessage+"</td></tr></table>\n");
+   			stream.print("<table><tr><td><b>"+failureMessage+"</td></tr></table>\n");
  		}
 
  		BuildResults currentBuildResults = configResults.getCurrentBuildResults();
  		String comment = currentBuildResults.getComment();
 		if (comment != null) {
-			stream.println("<p><b>Note:</b><br>\n");
-			stream.println(comment + "</p>");
+			stream.print("<p><b>Note:</b><br>\n");
+			stream.print(comment + "</p>\n");
 		}
 
 		// Print link to raw data.
 		String rawDataFile = "raw/" + scenarioFileName+".html";
-		stream.println("<br><br><b><a href=\""+rawDataFile+"\">Raw data and Stats</a></b><br><br>\n");
-		stream.println("<b>Click measurement name to view line graph of measured values over builds.</b><br><br>\n");
+		stream.print("<br><br><b><a href=\""+rawDataFile+"\">Raw data and Stats</a></b><br><br>\n");
+		stream.print("<b>Click measurement name to view line graph of measured values over builds.</b><br><br>\n");
 
 		try {
 			// Print build result table
-			stream.println("<table border=\"1\">"); //$NON-NLS-1$
+			stream.print("<table border=\"1\">\n"); //$NON-NLS-1$
 			stream.print("<tr><td><b>Build Id</b></td>"); //$NON-NLS-1$
 			Dim[] dimensions = AbstractResults.SUPPORTED_DIMS;
 			int dimLength = dimensions.length;
 			for (int d=0; d<dimLength; d++) {
 				stream.print("<td><a href=\"#" + dimensions[d].getShortName() + "\"><b>" + dimensions[d].getName() + "</b></a></td>");
 			}
-			stream.println("</tr>\n");
+			stream.print("</tr>\n");
 
 			// Write build lines
 			printTableLine(stream, currentBuildResults);
@@ -253,12 +253,12 @@ private void printSummary(String configName, String configBox, ComponentResults 
 			printDifferenceLine(stream, configResults);
 
 			// End of table
-			stream.println("</table>");
-			stream.println("*Delta values in red and green indicate degradation > 10% and improvement > 10%,respectively.<br><br>");
-			stream.println("<br><hr>\n\n");
+			stream.print("</table>\n");
+			stream.print("*Delta values in red and green indicate degradation > 10% and improvement > 10%,respectively.<br><br>\n");
+			stream.print("<br><hr>\n\n");
 
 			// print text legend.
-			stream.println("Black and yellow points plot values measured in integration and last seven nightly builds.<br>\n" + "Magenta points plot the repeated baseline measurement over time.<br>\n"
+			stream.print("Black and yellow points plot values measured in integration and last seven nightly builds.<br>\n" + "Magenta points plot the repeated baseline measurement over time.<br>\n"
 					+ "Boxed points represent previous releases, milestone builds, current reference and current build.<br><br>\n"
 					+ "Hover over any point for build id and value.\n");
 
@@ -270,18 +270,18 @@ private void printSummary(String configName, String configBox, ComponentResults 
 				String imgFileName = scenarioFileName + "_" + dimShortName;
 				File imgFile = createFile(outputDir, "graphs", imgFileName, "gif");
 				saveGraph(lineGraph, imgFile);
-				stream.println("<br><a name=\"" + dimShortName + "\"></a>");
-				stream.println("<br><b>" + dimensions[d].getName() + "</b><br>");
-				stream.println(dimensions[d].getDescription() + "<br><br>\n");
+				stream.print("<br><a name=\"" + dimShortName + "\"></a>\n");
+				stream.print("<br><b>" + dimensions[d].getName() + "</b><br>\n");
+				stream.print(dimensions[d].getDescription() + "<br><br>\n");
 				stream.print("<img src=\"graphs/");
 				stream.print(imgFile.getName());
 				stream.print("\" usemap=\"#" + lineGraph.fTitle + "\">");
 				stream.print("<map name=\"" + lineGraph.fTitle + "\">");
 				stream.print(lineGraph.getAreas());
-				stream.println("</map>");
+				stream.print("</map>\n");
 			}
-			stream.println("<br><br></body>");
-			stream.println(Utils.HTML_CLOSE);
+			stream.print("<br><br></body>\n");
+			stream.print(Utils.HTML_CLOSE);
 			if (stream != System.out)
 				stream.close();
 
@@ -309,7 +309,7 @@ private void printTableLine(PrintStream stream, BuildResults buildResults) {
 		stream.print("<td>");
 		stream.print(displayValue);
 		if (stddev < 0) {
-			stream.println(" [n/a]");
+			stream.print(" [n/a]\n");
 		} else if (stddev > 0) {
 			stream.print(" [");
 			stream.print(dimensions[d].getDisplayValue(stddev));
@@ -317,7 +317,7 @@ private void printTableLine(PrintStream stream, BuildResults buildResults) {
 		}
 		stream.print( "</td>");
 	}
-	stream.println("</tr>");
+	stream.print("</tr>\n");
 }
 
 /*
@@ -380,21 +380,21 @@ private void printDetails(String configName, String configBox, ComponentResults 
 		if (stream == null) stream = System.out;
 		RawDataTable currentResultsTable = new RawDataTable(configResults, this.buildIDStreamPatterns, stream);
 		RawDataTable baselineResultsTable = new RawDataTable(configResults, this.baselinePrefix, stream);
-		stream.println(Utils.HTML_OPEN);
-		stream.println(Utils.HTML_DEFAULT_CSS);
-		stream.println("<title>" + scenarioName + "(" + configBox + ")" + " - Details</title></head>"); //$NON-NLS-1$
-		stream.println("<h4>Scenario: " + scenarioName + " (" + configBox + ")</h4>"); //$NON-NLS-1$
-		stream.println("<a href=\"../"+scenarioFileName+".html\">VIEW GRAPH</a><br><br>"); //$NON-NLS-1$
-		stream.println("<table><td><b>Current Stream Test Runs</b></td><td><b>Baseline Test Runs</b></td></tr>\n");
-		stream.println("<tr valign=\"top\">");
+		stream.print(Utils.HTML_OPEN);
+		stream.print(Utils.HTML_DEFAULT_CSS);
+		stream.print("<title>" + scenarioName + "(" + configBox + ")" + " - Details</title></head>\n"); //$NON-NLS-1$
+		stream.print("<h4>Scenario: " + scenarioName + " (" + configBox + ")</h4>\n"); //$NON-NLS-1$
+		stream.print("<a href=\"../"+scenarioFileName+".html\">VIEW GRAPH</a><br><br>\n"); //$NON-NLS-1$
+		stream.print("<table><td><b>Current Stream Test Runs</b></td><td><b>Baseline Test Runs</b></td></tr>\n");
+		stream.print("<tr valign=\"top\">\n");
 		stream.print("<td>");
 		currentResultsTable.print();
-		stream.println("</td>");
+		stream.print("</td>\n");
 		stream.print("<td>");
 		baselineResultsTable.print();
-		stream.println("</td>");
-		stream.println("</tr>");
-		stream.println("</table>");
+		stream.print("</td>\n");
+		stream.print("</tr>\n");
+		stream.print("</table>\n");
 		stream.close();
 	}
 }

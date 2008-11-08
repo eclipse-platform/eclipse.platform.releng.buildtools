@@ -54,7 +54,7 @@ public void print(){
 	stream.print("<table border=\"1\">");
 	printSummary();
 	printDetails();
-	stream.println("</table>");
+	stream.print("</table>\n");
 }
 
 /*
@@ -77,7 +77,7 @@ private void printColumnHeaders() {
 private void printDetails() {
 	stream.print("<tr><td><b>Build ID</b></td>");
 	printColumnHeaders();
-	stream.println("</tr>");
+	stream.print("</tr>\n");
 
 	List builds = this.configResults.getBuildsMatchingPrefixes(this.buildPrefixes);
 	Collections.reverse(builds);
@@ -98,7 +98,7 @@ private void printDetails() {
 			stream.print("</td>");
 		}
 		if (debug) System.out.println();
-		stream.println("</tr>");
+		stream.print("</tr>\n");
 	}
 	if (debug) System.out.println("\n");
 }
@@ -109,7 +109,7 @@ private void printDetails() {
 private void printSummary() {
 	stream.print("<tr><td><b>Stats</b></td>");
 	printColumnHeaders();
-	stream.println("</tr>");
+	stream.print("</tr>\n");
 
 	int length = this.dimensions.length;
 	double[][] dimStats = new double[2][];
@@ -124,23 +124,23 @@ private void printSummary() {
 		stream.print((int)dimStats[i][0]);
 		stream.print("</td>");
 	}
-	stream.println("</tr>");
+	stream.print("</tr>\n");
 	stream.print("<tr><td>MEAN</td>");
 	printRowDoubles(dimStats, 1);
-	stream.println("</tr>");
+	stream.print("</tr>\n");
 	stream.print("<tr><td>STD DEV</td>");
 	printRowDoubles(dimStats, 2);
-	stream.println("</tr>");
+	stream.print("</tr>\n");
 	stream.print("<tr><td>COEF. VAR</td>");
 	printRowDoubles(dimStats, 3);
-	stream.println("</tr>");
+	stream.print("</tr>\n");
 
 	// Blank line
 	stream.print("<tr>");
 	for (int i=0; i<length+1;	i++){
 		stream.print("<td>&nbsp;</td>");
 	}
-	stream.println("</tr>");
+	stream.print("</tr>\n");
 }
 
 /*

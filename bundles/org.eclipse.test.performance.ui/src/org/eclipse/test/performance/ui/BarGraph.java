@@ -273,7 +273,7 @@ public class BarGraph {
 			if (hasURL) {
 				if (fAreaBuffer == null)
 					fAreaBuffer= new StringBuffer();
-				fAreaBuffer.append("<area shape=\"RECT\" coords=\"0," + y0 + ',' + width + ',' + y + "\" href=\"" + bar.url + "\">\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				fAreaBuffer.append("		echo '<area shape=\"RECT\" coords=\"0," + y0 + ',' + width + ',' + y + "\" href=\"" + bar.url + "\">';\n");
 			}
 		}
 

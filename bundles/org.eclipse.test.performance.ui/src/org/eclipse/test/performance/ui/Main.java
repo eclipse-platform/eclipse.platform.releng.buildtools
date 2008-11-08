@@ -165,14 +165,6 @@ private boolean genAll = true;
 private boolean print = false;
 
 /**
- * Tells whether the generation is done for a PHP server or not.
- * This field is set to <code>false</code> if <b>-nophp</b> argument is specified.
- * <p>
- * Default is <code>true</code> which means that the generation is done for the build server.
- */
-private boolean use_php = true; // PerformanceTestPlugin.getDBLocation().startsWith("net://");
-
-/**
  * Tells what should be the failure percentage threshold.
  * <p>
  * Default is 10%.
@@ -418,12 +410,6 @@ private PerformanceResults parse(Object argsObject) {
 			i++;
 			continue;
 		}
-		if (arg.equals("-nophp")) {
-			this.use_php = false;
-			buffer.append("	").append(arg).append('\n');
-			i++;
-			continue;
-		}
 		if (arg.equals("-failure.threshold")) {
 			String value = args[i + 1];
 			try {
@@ -476,28 +462,49 @@ private void printComponent(PerformanceResults performanceResults, String compon
 	if (this.print) System.out.print(".");
 	File outputFile = new File(this.outputDir, component + ".php");
 	PrintStream stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
-	stream.println(Utils.HTML_OPEN);
-	stream.println("<link href=\"ToolTip.css\" rel=\"stylesheet\" type=\"text/css\"><script src=\"ToolTip.js\"></script>");
-	stream.println(Utils.HTML_DEFAULT_CSS);
-	stream.println("<body>");
-
-	String baselineName = performanceResults.getBaselineName();
-	String currentName = performanceResults.getName();
-	boolean isGlobal = component.equals("global");
-	StringBuffer title = new StringBuffer("<h3>Performance of ");
-	if (!isGlobal) {
-		title.append(component);
-		title.append(": ");
+	
+	// Print header
+	boolean isGlobal = component.startsWith("global");
+	if (isGlobal) {
+		File globalFile = new File(this.outputDir, "global.php");
+		PrintStream gStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(globalFile)));
+		gStream.print(Utils.HTML_OPEN);
+		gStream.print("</head>\n");
+		gStream.print("<body>\n");
+		gStream.print("<?php\n");
+		gStream.print("	include(\"global_fp.php\");\n");
+		gStream.print("?>\n");
+		gStream.print("<table border=0 cellpadding=2 cellspacing=5 width=\"100%\">\n");
+		gStream.print("<tbody><tr> <td colspan=3 align=\"left\" bgcolor=\"#0080c0\" valign=\"top\"><b><font color=\"#ffffff\" face=\"Arial,Helvetica\">\n");
+		gStream.print("Detailed performance data grouped by scenario prefix</font></b></td></tr></tbody></table>\n");
+		gStream.print("<a href=\"org.eclipse.ant.php?\">org.eclipse.ant*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.compare.php?\">org.eclipse.compare*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.core.php?\">org.eclipse.core*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.jdt.core.php?\">org.eclipse.jdt.core*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.jdt.debug.php?\">org.eclipse.jdt.debug*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.jdt.text.php?\">org.eclipse.jdt.text*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.jdt.ui.php?\">org.eclipse.jdt.ui*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.jface.php?\">org.eclipse.jface*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.osgi.php?\">org.eclipse.osgi*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.pde.ui.php?\">org.eclipse.pde.ui*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.swt.php?\">org.eclipse.swt*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.team.php?\">org.eclipse.team*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.ua.php?\">org.eclipse.ua*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.ui.php?\">org.eclipse.ui*</a><br><p><br><br>\n");
+		gStream.print("</body>\n");
+		gStream.print(Utils.HTML_CLOSE);
+		gStream.close();
+	} else {
+		stream.print(Utils.HTML_OPEN);
 	}
-	title.append(currentName);
-	title.append(" relative to ");
-	int index = baselineName.indexOf('_');
-	title.append(baselineName.substring(0, index));
-	title.append(" (");
-	index = baselineName.lastIndexOf('_');
-	title.append(baselineName.substring(index+1, baselineName.length()));
-	title.append(")</h3>");
-	stream.println(title.toString());
+	stream.print("<link href=\"ToolTip.css\" rel=\"stylesheet\" type=\"text/css\">\n");
+	stream.print("<script src=\"ToolTip.js\"></script>\n");
+	stream.print("<script src=\"Fingerprints.js\"></script>\n");
+	stream.print(Utils.HTML_DEFAULT_CSS);
+	
+	// Print title
+	stream.print("<body>");
+	printComponentTitle(performanceResults, component, isGlobal, stream);
 
 	// print the html representation of fingerprint for each config
 	if (genFingerPrints || genAll) {
@@ -510,27 +517,7 @@ private void printComponent(PerformanceResults performanceResults, String compon
 	}
 
 	// print scenario status table
-	if (isGlobal) {
-		if (!this.use_php) {
-			stream.println("<table border=0 cellpadding=2 cellspacing=5 width=\"100%\">");
-			stream.println("<tbody><tr> <td colspan=3 align=\"left\" bgcolor=\"#0080c0\" valign=\"top\"><b><font color=\"#ffffff\" face=\"Arial,Helvetica\">");
-			stream.println("Detailed performance data grouped by scenario prefix</font></b></td></tr></tbody></table>");
-			stream.println("<a href=\"org.eclipse.ant.php?\">org.eclipse.ant*</a><br>");
-			stream.println("<a href=\"org.eclipse.compare.php?\">org.eclipse.compare*</a><br>");
-			stream.println("<a href=\"org.eclipse.core.php?\">org.eclipse.core*</a><br>");
-			stream.println("<a href=\"org.eclipse.jdt.core.php?\">org.eclipse.jdt.core*</a><br>");
-			stream.println("<a href=\"org.eclipse.jdt.debug.php?\">org.eclipse.jdt.debug*</a><br>");
-			stream.println("<a href=\"org.eclipse.jdt.text.php?\">org.eclipse.jdt.text*</a><br>");
-			stream.println("<a href=\"org.eclipse.jdt.ui.php?\">org.eclipse.jdt.ui*</a><br>");
-			stream.println("<a href=\"org.eclipse.jface.php?\">org.eclipse.jface*</a><br>");
-			stream.println("<a href=\"org.eclipse.osgi.php?\">org.eclipse.osgi*</a><br>");
-			stream.println("<a href=\"org.eclipse.pde.ui.php?\">org.eclipse.pde.ui*</a><br>");
-			stream.println("<a href=\"org.eclipse.swt.php?\">org.eclipse.swt*</a><br>");
-			stream.println("<a href=\"org.eclipse.team.php?\">org.eclipse.team*</a><br>");
-			stream.println("<a href=\"org.eclipse.ua.php?\">org.eclipse.ua*</a><br>");
-			stream.println("<a href=\"org.eclipse.ui.php?\">org.eclipse.ui*</a><br><p><br><br>");
-		}
-	} else if (component.length() > 0) {
+	if (!isGlobal) {
 		// print the component scenario status table beneath the fingerprint
 		ScenarioStatusTable sst = new ScenarioStatusTable(component, stream);
 		try {
@@ -540,8 +527,41 @@ private void printComponent(PerformanceResults performanceResults, String compon
 		}
 	}
 
-	stream.println(Utils.HTML_CLOSE);
+	stream.print(Utils.HTML_CLOSE);
 	stream.close();
+}
+
+private void printComponentTitle(PerformanceResults performanceResults, String component, boolean isGlobal, PrintStream stream) {
+	String baselineName = performanceResults.getBaselineName();
+	String currentName = performanceResults.getName();
+	
+	// Print title line
+	stream.print("<h3>Performance of ");
+	if (!isGlobal) {
+		stream.print(component);
+		stream.print(": ");
+	}
+	stream.print(currentName);
+	stream.print(" relative to ");
+	int index = baselineName.indexOf('_');
+	stream.print(baselineName.substring(0, index));
+	stream.print(" (");
+	index = baselineName.lastIndexOf('_');
+	stream.print(baselineName.substring(index+1, baselineName.length()));
+	stream.print(")</h3>\n");
+	
+	// Print reference to global results
+	if (!isGlobal) {
+		stream.print("<?php\n");
+		stream.print("	$type=$QUERY_STRING;\n");
+		stream.print("	if ($type==\"\") {\n");
+		stream.print("        $type=\"fp_type=0\";\n");
+		stream.print("	}\n");
+		stream.print("	$href=\"<a href=\\\"performance.php?\";\n");
+		stream.print("	$href=$href . $type . \"\\\">Back to global results</a><br><br>\";\n");
+		stream.print("	echo $href;\n");
+		stream.print("?>\n");
+	}
 }
 
 /*
@@ -566,7 +586,7 @@ private void printSummary(PerformanceResults performanceResults) {
 			if (scenarioName == null) continue;
 			ScenarioResults scenarioResults = performanceResults.getScenarioResults(scenarioName);
 			if (scenarioResults != null) {
-				stream.println("<tr>");
+				stream.print("<tr>\n");
 				for (int j=0; j<2; j++) {
 					for (int c=0; c<configsLength; c++) {
 						printSummaryScenarioLine(j, configs[c], scenarioResults, stream);
@@ -574,13 +594,13 @@ private void printSummary(PerformanceResults performanceResults) {
 				}
 				stream.print("<td>");
 				stream.print(scenarioName);
-				stream.println("</td></tr>");
+				stream.print("</td></tr>\n");
 			}
 		}
 	} catch (Exception e) {
 		e.printStackTrace();
 	} finally {
-		stream.println("</table></body></html>");
+		stream.print("</table></body></html>\n");
 		stream.flush();
 		stream.close();
 	}
@@ -591,31 +611,31 @@ private void printSummary(PerformanceResults performanceResults) {
  * Print summary presentation (eg. file start and text presenting the purpose of this file contents)..
  */
 private void printSummaryPresentation(PrintStream stream) {
-	stream.println(Utils.HTML_OPEN);
+	stream.print(Utils.HTML_OPEN);
 	stream.print(Utils.HTML_DEFAULT_CSS);
-	stream.println("<title>Summary of Elapsed Process Variation Coefficients</title></head>");
-	stream.println("<body><h3>Summary of Elapsed Process Variation Coefficients</h3>\n");
-	stream.println("<p> This table provides a bird's eye view of variability in elapsed process times\n");
+	stream.print("<title>Summary of Elapsed Process Variation Coefficients</title></head>\n");
+	stream.print("<body><h3>Summary of Elapsed Process Variation Coefficients</h3>\n");
+	stream.print("<p> This table provides a bird's eye view of variability in elapsed process times\n");
 	stream.print("for baseline and current build stream performance scenarios.");
 	stream.print(" This summary is provided to facilitate the identification of scenarios that should be examined due to high variability.");
-	stream.println("The variability for each scenario is expressed as a <a href=\"http://en.wikipedia.org/wiki/Coefficient_of_variation\">coefficient\n");
-	stream.println("of variation</a> (CV). The CV is calculated by dividing the <b>standard deviation\n");
-	stream.println("of the elapse process time over builds</b> by the <b>average elapsed process\n");
-	stream.println("time over builds</b> and multiplying by 100.\n");
-	stream.println("</p><p>High CV values may be indicative of any of the following:<br></p>\n");
-	stream.println("<ol><li> an unstable performance test. </li>\n");
-	stream.println("<ul><li>may be evidenced by an erratic elapsed process line graph.<br><br></li></ul>\n");
-	stream.println("<li>performance regressions or improvements at some time in the course of builds.</li>\n");
-	stream.println("<ul><li>may be evidenced by plateaus in elapsed process line graphs.<br><br></li></ul>\n");
-	stream.println("<li>unstable testing hardware.\n");
+	stream.print("The variability for each scenario is expressed as a <a href=\"http://en.wikipedia.org/wiki/Coefficient_of_variation\">coefficient\n");
+	stream.print("of variation</a> (CV). The CV is calculated by dividing the <b>standard deviation\n");
+	stream.print("of the elapse process time over builds</b> by the <b>average elapsed process\n");
+	stream.print("time over builds</b> and multiplying by 100.\n");
+	stream.print("</p><p>High CV values may be indicative of any of the following:<br></p>\n");
+	stream.print("<ol><li> an unstable performance test. </li>\n");
+	stream.print("<ul><li>may be evidenced by an erratic elapsed process line graph.<br><br></li></ul>\n");
+	stream.print("<li>performance regressions or improvements at some time in the course of builds.</li>\n");
+	stream.print("<ul><li>may be evidenced by plateaus in elapsed process line graphs.<br><br></li></ul>\n");
+	stream.print("<li>unstable testing hardware.\n");
 	stream.print("<ul><li>consistent higher CV values for one test configuration as compared to others across");
-	stream.println(" scenarios may be related to hardward problems.</li></ul></li></ol>\n");
-	stream.println("<p> Scenarios are listed in alphabetical order in the far right column. A scenario's\n");
-	stream.println("variation coefficients (CVs) are in columns to the left for baseline and current\n");
-	stream.println("build streams for each test configuration. Scenarios with CVs > 10% are highlighted\n");
-	stream.println("in yellow (10%<CV>&lt;CV<20%) and orange(CV>20%). </p>\n");
-	stream.println("<p> Each CV value links to the scenario's detailed results to allow viewers to\n");
-	stream.println("investigate the variability.</p>\n");
+	stream.print(" scenarios may be related to hardward problems.</li></ul></li></ol>\n");
+	stream.print("<p> Scenarios are listed in alphabetical order in the far right column. A scenario's\n");
+	stream.print("variation coefficients (CVs) are in columns to the left for baseline and current\n");
+	stream.print("build streams for each test configuration. Scenarios with CVs > 10% are highlighted\n");
+	stream.print("in yellow (10%<CV>&lt;CV<20%) and orange(CV>20%). </p>\n");
+	stream.print("<p> Each CV value links to the scenario's detailed results to allow viewers to\n");
+	stream.print("investigate the variability.</p>\n");
 }
 
 /*
@@ -628,7 +648,7 @@ private void printSummaryColumnsTitle(PrintStream stream, PerformanceResults per
 	stream.print(length);
 	stream.print("\"><b>Baseline CVs</b></td><td colspan=\"");
 	stream.print(length);
-	stream.println("\"><b>Current Build Stream CVs</b></td><td rowspan=\"2\"><b>Scenario Name</b></td></tr>");
+	stream.print("\"><b>Current Build Stream CVs</b></td><td rowspan=\"2\"><b>Scenario Name</b></td></tr>\n");
 	stream.print("<tr>");
 	for (int n=0; n<2; n++) {
 		for (int c=0; c<length; c++) {
@@ -637,7 +657,7 @@ private void printSummaryColumnsTitle(PrintStream stream, PerformanceResults per
 			stream.print("</td>");
 		}
 	}
-	stream.println("</tr>\n");
+	stream.print("</tr>\n");
 }
 
 /*
@@ -766,14 +786,37 @@ public Object start(IApplicationContext context) throws Exception {
 	// Copy images and scripts to output dir
 	Bundle bundle = UiPlugin.getDefault().getBundle();
 	URL images = bundle.getEntry("images");
-	URL scripts = bundle.getEntry("scripts");
 	if (images != null) {
 		images = FileLocator.resolve(images);
 		Utils.copyImages(new File(images.getPath()), this.outputDir);
 	}
+	URL scripts = bundle.getEntry("scripts");
 	if (scripts != null) {
 		scripts = FileLocator.resolve(scripts);
 		Utils.copyScripts(new File(scripts.getPath()), this.outputDir);
+	}
+	URL doc = bundle.getEntry("doc");
+	if (doc != null) {
+		doc = FileLocator.resolve(doc);
+		File docDir = new File(doc.getPath());
+		File[] docFiles = docDir.listFiles();
+		for (int i=0; i<docFiles.length; i++) {
+			File file = docFiles[i];
+			if (file.isDirectory()) {
+				File subdir = new File(this.outputDir, file.getName());
+				subdir.mkdir();
+				File[] subdirFiles = file.listFiles();
+				for (int j=0; j<subdirFiles.length; j++) {
+					if (subdirFiles[i].isDirectory()) {
+						// expect only one sub-directory
+					} else {
+						AbstractResults.copyFile(subdirFiles[j], new File(subdir, subdirFiles[j].getName()));
+					}
+				}
+			} else {
+				AbstractResults.copyFile(file, new File(this.outputDir, file.getName()));
+			}
+		}
 	}
 
 	// Print HTML pages and all linked files
@@ -782,7 +825,7 @@ public Object start(IApplicationContext context) throws Exception {
 		System.out.print("	- components main page");
 	}
 	long start = System.currentTimeMillis();
-	printComponent(performanceResults, "global");
+	printComponent(performanceResults, "global_fp");
 	Iterator components = performanceResults.getComponents().iterator();
 	while (components.hasNext()) {
 		printComponent(performanceResults, (String) components.next());
