@@ -635,7 +635,7 @@ final public void paint(PrintStream stream) {
 
 void print(int kind, PrintStream stream) {
 	String imgName = getImageName(kind);
-	stream.print("	if ($QUERY_STRING==\"fp_type="+kind+"\") {\n");
+	stream.print("	if ($type==\"fp_type="+kind+"\") {\n");
 	stream.print("		echo '<img src=\"");
 	stream.print(imgName);
 	stream.print(".gif\" usemap=\"#");

@@ -162,7 +162,8 @@ public void print(PerformanceResults performanceResults) {
 			this.stream.print(boxName);
 			this.stream.print("</h4>\n");
 			this.stream.print("<?php\n");
-			this.stream.print("	if ($QUERY_STRING==\"\" || $QUERY_STRING==\"fp_type=0\") {\n");
+			this.stream.print("	$type=$_SERVER['QUERY_STRING'];\n");
+			this.stream.print("	if ($type==\"\" || $type==\"fp_type=0\") {\n");
 			this.stream.print("		echo '<img src=\"");
 			this.stream.print(fileName);
 			this.stream.print(".gif\" usemap=\"#");

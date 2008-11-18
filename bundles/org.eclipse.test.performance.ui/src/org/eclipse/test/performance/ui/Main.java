@@ -553,9 +553,9 @@ private void printComponentTitle(PerformanceResults performanceResults, String c
 	// Print reference to global results
 	if (!isGlobal) {
 		stream.print("<?php\n");
-		stream.print("	$type=$QUERY_STRING;\n");
+		stream.print("	$type=$_SERVER['QUERY_STRING'];\n");
 		stream.print("	if ($type==\"\") {\n");
-		stream.print("        $type=\"fp_type=0\";\n");
+		stream.print("		$type=\"fp_type=0\";\n");
 		stream.print("	}\n");
 		stream.print("	$href=\"<a href=\\\"performance.php?\";\n");
 		stream.print("	$href=$href . $type . \"\\\">Back to global results</a><br><br>\";\n");
