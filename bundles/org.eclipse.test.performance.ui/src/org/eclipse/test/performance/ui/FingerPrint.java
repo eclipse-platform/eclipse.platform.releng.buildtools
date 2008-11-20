@@ -54,15 +54,9 @@ public FingerPrint(String name, PrintStream ps, File outputDir) {
  * @param performanceResults The performance results used to print the fingerprints
  */
 public void print(PerformanceResults performanceResults) {
-	String baselineBuildName = performanceResults.getBaselineName();
 	String buildName = performanceResults.getName();
 	
 	// Compute fingerprint output file name prefix
-	int referenceUnderscoreIndex = baselineBuildName.indexOf('_');
-	String baselinePrefix = baselineBuildName;
-	if (referenceUnderscoreIndex != -1) {
-		baselinePrefix = baselineBuildName.substring(0, referenceUnderscoreIndex);
-	}
 	int currentUnderscoreIndex = buildName.indexOf('_');
 	if  (currentUnderscoreIndex != -1){
 		buildName = buildName.substring(0, currentUnderscoreIndex);
@@ -72,7 +66,7 @@ public void print(PerformanceResults performanceResults) {
 		buffer.append(this.component);
 		buffer.append('_');
 	}
-	buffer.append(baselinePrefix);
+	buffer.append(AbstractResults.VERSION_REF);
 	buffer.append('_');
 	buffer.append(buildName);
 	String filePrefix = buffer.toString();
