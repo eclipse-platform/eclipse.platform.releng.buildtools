@@ -49,7 +49,7 @@ public void print(PerformanceResults performanceResults) {
 	this.jsIdCount = 0;
 	for (int i=0; i<size; i++) {
 		ScenarioResults scenarioResults = (ScenarioResults) scenarios.get(i);
-		this.stream.println("<tr>");
+		this.stream.print("<tr>\n");
 		this.stream.print("<td>");
 		boolean hasSummary = scenarioResults.hasSummary();
 		if (hasSummary) this.stream.print("<b>");
@@ -65,25 +65,25 @@ public void print(PerformanceResults performanceResults) {
 			this.stream.print(scenarioResults.getShortName());
 		}
 		if (hasSummary) this.stream.print("</b>");
-		this.stream.println();
+		this.stream.print("\n");
 		String[] configs = performanceResults.getConfigNames(true/*sort*/);
 		int length = configs.length;
 		for (int j=0; j<length; j++) {
 			printConfigStats(scenarioResults, configs[j]);
 		}
 	}
-	this.stream.println("</table>");
+	this.stream.print("</table>\n");
 }
 
 /*
  * Print the table columns title.
  */
 private void printColumnsTitle(int size, PerformanceResults performanceResults) {
-	this.stream.println("<table border=\"1\">");
-	this.stream.println("<tr>");
+	this.stream.print("<table border=\"1\">\n");
+	this.stream.print("<tr>\n");
 	this.stream.print("<td><h4>All ");
 	this.stream.print(size);
-	this.stream.println(" scenarios</h4></td>");
+	this.stream.print(" scenarios</h4></td>\n");
 	String[] configNames = performanceResults.getConfigNames(true/*sort*/);
 	String[] configBoxes = performanceResults.getConfigBoxes(true/*sort*/);
 	int length = configNames.length;
@@ -113,7 +113,7 @@ private void printColumnsTitle(int size, PerformanceResults performanceResults) 
 		}
 		this.stream.print("<td><h5>");
 		this.stream.print(columnTitle);
-		this.stream.println("</h5>");
+		this.stream.print("</h5>\n");
 	}
 }
 
@@ -140,10 +140,10 @@ private void printConfigStats(ScenarioResults scenarioResults, String config) {
 		this.stream.print(configResults.getName());
 		this.stream.print('/');
 		this.stream.print(scenarioResults.getFileName());
-		this.stream.println(".html\">");
+		this.stream.print(".html\">\n");
 		this.stream.print("<img hspace=\"10\" border=\"0\" src=\"");
 		this.stream.print(image);
-		this.stream.println("\"/></a>");
+		this.stream.print("\"/></a>\n");
 	} else {
 		// create message with tooltip text including deviation with error plus failure message
 		this.jsIdCount+=1;
@@ -155,62 +155,63 @@ private void printConfigStats(ScenarioResults scenarioResults, String config) {
 		this.stream.print(configResults.getName());
 		this.stream.print('/');
 		this.stream.print(scenarioResults.getFileName());
-		this.stream.println(".html\">");
+		this.stream.print(".html\">\n");
 		this.stream.print("<img hspace=\"10\" border=\"0\" src=\"");
 		this.stream.print(image);
-		this.stream.println("\"/>");
+		this.stream.print("\"/>\n");
 		this.stream.print("<span class=\"hidden_tooltip\" id=\"toolTip");
 		this.stream.print(jsIdCount);
 		this.stream.print("\">");
 		this.stream.print(failure);
-		this.stream.println("</span></a>");
+		this.stream.print("</span></a>\n");
 	}
 	String result = Utils.failureMessage(deviation, false);
-	this.stream.println(result);
+	this.stream.print(result);
+	this.stream.print("\n");
 }
 
 /*
  * Print the status table explanationtitle.
  */
 private void printTitle() {
-	this.stream.println("<br><h4>Scenario Status</h4>");
-	this.stream.println("The following table gives a complete but compact view of performance results for the component.<br>");
-	this.stream.println("Each line of the table shows the results for one scenario on all machines.<br><br>");
-	this.stream.println("The name of the scenario is in <b>bold</b> when its results are also displayed in the fingerprints<br>");
-	this.stream.println("and starts with an '*' when the scenario has no results in the last baseline run.<br><br>");
-	this.stream.println("Here are information displayed for each test (ie. in each cell):");
-	this.stream.println("<ul>");
-	this.stream.println("<li>an icon showing whether the test fails or passes and whether it's reliable or not.<br>");
-	this.stream.println("The legend for this icon is:");
-	this.stream.println("<ul>");
+	this.stream.print("<br><h4>Scenario Status</h4>\n");
+	this.stream.print("The following table gives a complete but compact view of performance results for the component.<br>\n");
+	this.stream.print("Each line of the table shows the results for one scenario on all machines.<br><br>\n");
+	this.stream.print("The name of the scenario is in <b>bold</b> when its results are also displayed in the fingerprints<br>\n");
+	this.stream.print("and starts with an '*' when the scenario has no results in the last baseline run.<br><br>\n");
+	this.stream.print("Here are information displayed for each test (ie. in each cell):\n");
+	this.stream.print("<ul>\n");
+	this.stream.print("<li>an icon showing whether the test fails or passes and whether it's reliable or not.<br>\n");
+	this.stream.print("The legend for this icon is:\n");
+	this.stream.print("<ul>\n");
 	this.stream.print("<li>Green (<img src=\"");
 	this.stream.print(Utils.OK_IMAGE);
 	this.stream.print("\">): mark a <b>successful result</b>, which means this test has neither significant performance regression nor significant standard error</li>");
 	this.stream.print("<li>Red (<img src=\"");
 	this.stream.print(Utils.FAIL_IMAGE);
-	this.stream.println("\">): mark a <b>failing result</b>, which means this test shows a significant performance regression (more than 10%)</li>");
+	this.stream.print("\">): mark a <b>failing result</b>, which means this test shows a significant performance regression (more than 10%)</li>\n");
 	this.stream.print("<li>Gray (<img src=\"");
 	this.stream.print(Utils.FAIL_IMAGE_EXPLAINED);
-	this.stream.println("\">): mark a <b>failing result</b> (see above) with a comment explaining this degradation.</li>");
+	this.stream.print("\">): mark a <b>failing result</b> (see above) with a comment explaining this degradation.</li>\n");
 	this.stream.print("<li>Yellow (<img src=\"");
 	this.stream.print(Utils.FAIL_IMAGE_WARN);
 	this.stream.print("\"> or <img src=\"");
 	this.stream.print(Utils.OK_IMAGE_WARN);
 	this.stream.print("\">): mark a <b>failing or successful result</b> with a significant standard error (more than ");
 	this.stream.print(Utils.STANDARD_ERROR_THRESHOLD_STRING);
-	this.stream.println(")</li>");
+	this.stream.print(")</li>\n");
 	this.stream.print("<li>Black (<img src=\"");
 	this.stream.print(Utils.UNKNOWN_IMAGE);
 	this.stream.print("\">): mark an <b>undefined result</b>, which means that deviation on this test is not a number (<code>NaN</code>) or is infinite (happens when the reference value is equals to 0!)</li>");
-	this.stream.println("<li>\"n/a\": mark a test for with <b>no</b> performance results</li>");
-	this.stream.println("</ul></li>");
-	this.stream.println("<li>the value of the deviation from the baseline as a percentage (ie. formula is: <code>(build_test_time - baseline_test_time) / baseline_test_time</code>)</li>");
-	this.stream.println("<li>the value of the standard error of this deviation as a percentage (ie. formula is: <code>sqrt(build_test_stddev^2 / N + baseline_test_stddev^2 / N) / baseline_test_time</code>)<br>");
-	this.stream.println("When test only has one measure, the standard error cannot be computed and is replaced with a '<font color=\"#CCCC00\">[n/a]</font>'.</li>");
-	this.stream.println("</ul>");
-	this.stream.println("<u>Hints</u>:<ul>");
-	this.stream.println("<li>fly over image of failing tests to see the complete error message</li>");
-	this.stream.println("<li>to look at the complete and detailed test results, click on its image</li>");
-	this.stream.println("</ul>");
+	this.stream.print("<li>\"n/a\": mark a test for with <b>no</b> performance results</li>\n");
+	this.stream.print("</ul></li>\n");
+	this.stream.print("<li>the value of the deviation from the baseline as a percentage (ie. formula is: <code>(build_test_time - baseline_test_time) / baseline_test_time</code>)</li>\n");
+	this.stream.print("<li>the value of the standard error of this deviation as a percentage (ie. formula is: <code>sqrt(build_test_stddev^2 / N + baseline_test_stddev^2 / N) / baseline_test_time</code>)<br>\n");
+	this.stream.print("When test only has one measure, the standard error cannot be computed and is replaced with a '<font color=\"#CCCC00\">[n/a]</font>'.</li>\n");
+	this.stream.print("</ul>\n");
+	this.stream.print("<u>Hints</u>:<ul>\n");
+	this.stream.print("<li>fly over image of failing tests to see the complete error message</li>\n");
+	this.stream.print("<li>to look at the complete and detailed test results, click on its image</li>\n");
+	this.stream.print("</ul>\n");
 }
 }

@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -42,7 +43,7 @@ private static final int GRAPH_WIDTH = 1000;
 	File outputDir;
 
 public FingerPrint(String name, PrintStream ps, File outputDir) {
-	if (!name.equals("global")) this.component = name;
+	if (!name.startsWith("global")) this.component = name;
 	this.stream = ps;
 	this.outputDir = outputDir;
 }
@@ -53,15 +54,9 @@ public FingerPrint(String name, PrintStream ps, File outputDir) {
  * @param performanceResults The performance results used to print the fingerprints
  */
 public void print(PerformanceResults performanceResults) {
-	String baselineBuildName = performanceResults.getBaselineName();
 	String buildName = performanceResults.getName();
 	
 	// Compute fingerprint output file name prefix
-	int referenceUnderscoreIndex = baselineBuildName.indexOf('_');
-	String baselinePrefix = baselineBuildName;
-	if (referenceUnderscoreIndex != -1) {
-		baselinePrefix = baselineBuildName.substring(0, referenceUnderscoreIndex);
-	}
 	int currentUnderscoreIndex = buildName.indexOf('_');
 	if  (currentUnderscoreIndex != -1){
 		buildName = buildName.substring(0, currentUnderscoreIndex);
@@ -71,11 +66,38 @@ public void print(PerformanceResults performanceResults) {
 		buffer.append(this.component);
 		buffer.append('_');
 	}
-	buffer.append(baselinePrefix);
+	buffer.append(AbstractResults.VERSION_REF);
 	buffer.append('_');
 	buffer.append(buildName);
-	buffer.append('.');
 	String filePrefix = buffer.toString();
+	
+	// Print the legend
+	this.stream.print("The following fingerprints show results for the most representative tests of the ");
+	if (this.component == null) {
+		this.stream.print("current build.<br>\n");
+	} else {
+		this.stream.print(component);
+		this.stream.print(" component.<br>\n");
+	}
+	this.stream.print("<table border=\"0\">\n");
+	this.stream.print("<tr><td valign=\"top\">Select which kind of scale you want to use:</td>\n");
+	this.stream.print("<td valign=\"top\">\n");
+	this.stream.print("  <form>\n");
+	this.stream.print("    <select onChange=\"toggleFingerprints();\">\n");
+	this.stream.print("      <option>percentage</option>\n");
+	this.stream.print("      <option>time (linear)</option>\n");
+	this.stream.print("      <option>time (log)</option>\n");
+	this.stream.print("    </select>\n");
+	this.stream.print("  </form>\n");
+	this.stream.print("</td>\n");
+	this.stream.print("<td valign=\"top\">\n");
+	this.stream.print("<a href=\"help.html\"><img hspace=\"10\" border=\"0\" src=\"light.gif\" title=\"Some tips on fingerprints\"/></a>\n");
+	this.stream.print("</td></tr></table>\n");
+
+	// Print script to reset dropdown list selection
+	this.stream.print("<script type=\"text/javascript\">\n");
+	this.stream.print("	setFingerprintsType();\n");
+	this.stream.print("</script>\n");
 
 	// Create each fingerprint and save it
 	String[] configNames = performanceResults.getConfigNames(false/* not sorted*/);
@@ -87,8 +109,9 @@ public void print(PerformanceResults performanceResults) {
 		if (scenarios == null) continue;
 
 		// Create BarGraph
-//		BarGraph barGraph = new BarGraph(null);
+		// TODO use FingerPrintGraph instead
 		BarGraph barGraph = null;
+		List allResults = new ArrayList();
 		String defaultDimName = AbstractResults.DEFAULT_DIM.getName();
 		for (int i=0, size=scenarios.size(); i<size; i++) {
 			ScenarioResults scenarioResults = (ScenarioResults) scenarios.get(i);
@@ -112,12 +135,15 @@ public void print(PerformanceResults performanceResults) {
 				    configName + "/" + scenarioResults.getFileName() + ".html",
 				    configResults.getCurrentBuildResults().getComment(),
 				    (Utils.confidenceLevel(results) & Utils.ERR) == 0);
+
+				// add results
+				allResults.add(configResults);
 			}
 		}
 		if (barGraph == null) continue;
 
 		// Save image file
-		String fileName = filePrefix + configName ;
+		String fileName = filePrefix + '.' + configName ;
 		File outputFile = new File(this.outputDir, fileName+".gif");
 		save(barGraph, outputFile);
 
@@ -128,21 +154,33 @@ public void print(PerformanceResults performanceResults) {
 			if (areas == null) areas = "";
 			this.stream.print("<h4>");
 			this.stream.print(boxName);
-			this.stream.print("</h4>");
-			this.stream.print("<img src=\"");
+			this.stream.print("</h4>\n");
+			this.stream.print("<?php\n");
+			this.stream.print("	$type=$_SERVER['QUERY_STRING'];\n");
+			this.stream.print("	if ($type==\"\" || $type==\"fp_type=0\") {\n");
+			this.stream.print("		echo '<img src=\"");
 			this.stream.print(fileName);
 			this.stream.print(".gif\" usemap=\"#");
 			this.stream.print(fileName);
-			this.stream.print("\"><map name=\"");
+			this.stream.print("\" name=\"");
+			this.stream.print(configName);
+			this.stream.print("\">';\n");
+			this.stream.print("		echo '<map name=\"");
 			this.stream.print(fileName);
-			this.stream.print("\">");
+			this.stream.print("\">';\n");
 			this.stream.print(areas);
-			this.stream.print("</map>\n");
+			this.stream.print("		echo '</map>';\n");
+			this.stream.print("	}\n");
 		} else {
 			this.stream.print("<br><br>There is no fingerprint for ");
 			this.stream.print(boxName);
 			this.stream.print("<br><br>\n");
 		}
+
+		// Create, paint and print the time bars graph
+		FingerPrintGraph graph = new FingerPrintGraph(this.outputDir, fileName, GRAPH_WIDTH, allResults);
+		graph.paint(this.stream);
+		this.stream.print("?>\n");
 	}
 }
 
@@ -159,6 +197,14 @@ private void save(BarGraph barGraph, File outputFile) {
 	barGraph.paint(display, GRAPH_WIDTH, height, gc);
 	gc.dispose();
 
+	saveImage(outputFile, image);
+}
+
+/**
+ * @param outputFile
+ * @param image
+ */
+private void saveImage(File outputFile, Image image) {
 	// Save image
 	ImageData data = Utils.downSample(image);
 	ImageLoader imageLoader = new ImageLoader();

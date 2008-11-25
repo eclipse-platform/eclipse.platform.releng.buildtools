@@ -10,15 +10,22 @@
  *******************************************************************************/
 package org.eclipse.test.performance.ui;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
@@ -53,6 +60,8 @@ public class Utils {
 	public final static String FAIL_IMAGE="FAIL.gif";
 	public final static String FAIL_IMAGE_WARN="FAIL_caution.gif";
 	public final static String FAIL_IMAGE_EXPLAINED="FAIL_greyed.gif";
+	public final static String LIGHT="light.gif";
+	public final static String WARNING_OBJ="warning_obj.gif";
 	public final static int OK = 0;
 	public final static int NAN = 0x1;
 	public final static int ERR = 0x2;
@@ -61,24 +70,24 @@ public class Utils {
 	 * Return &lt;html&gt;&lt;head&gt;&lt;meta http-equiv="Content-Type"
 	 *         content="text/html; charset=iso-8859-1"&gt;
 	 */
-	public static String HTML_OPEN = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">";
+	public final static String HTML_OPEN = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">\n";
 
 	/**
 	 * Return "&lt;/html&gt;".
 	 */
-	public static String HTML_CLOSE = "</html>";
+	public final static String HTML_CLOSE = "</html>\n";
 
 	/**
 	 * Default style-sheet used on eclipse.org
 	 */
-	public static String HTML_DEFAULT_CSS = "<style type=\"text/css\">" + "p, table, td, th {  font-family: arial, helvetica, geneva; font-size: 10pt}\n"
+	public final static String HTML_DEFAULT_CSS = "<style type=\"text/css\">" + "p, table, td, th {  font-family: arial, helvetica, geneva; font-size: 10pt}\n"
 			+ "pre {  font-family: \"Courier New\", Courier, mono; font-size: 10pt}\n" + "h2 { font-family: arial, helvetica, geneva; font-size: 18pt; font-weight: bold ; line-height: 14px}\n"
 			+ "code {  font-family: \"Courier New\", Courier, mono; font-size: 10pt}\n" + "sup {  font-family: arial,helvetica,geneva; font-size: 10px}\n"
 			+ "h3 {  font-family: arial, helvetica, geneva; font-size: 14pt; font-weight: bold}\n" + "li {  font-family: arial, helvetica, geneva; font-size: 10pt}\n"
 			+ "h1 {  font-family: arial, helvetica, geneva; font-size: 28px; font-weight: bold}\n"
 			+ "body {  font-family: arial, helvetica, geneva; font-size: 10pt; clip:   rect(   ); margin-top: 5mm; margin-left: 3mm}\n"
 			+ ".indextop { font-size: x-large;; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight: bold}\n"
-			+ ".indexsub { font-size: xx-small;; font-family: Arial, Helvetica, sans-serif; color: #8080FF}\n" + "</style>";
+			+ ".indexsub { font-size: xx-small;; font-family: Arial, Helvetica, sans-serif; color: #8080FF}\n" + "</style>\n\n";
 
 	/**
 	 * Creates a Variations object using build id pattern, config and jvm.
@@ -106,6 +115,8 @@ public class Utils {
 		AbstractResults.copyFile(new File(images, OK_IMAGE), new File(output, OK_IMAGE));
 		AbstractResults.copyFile(new File(images, OK_IMAGE_WARN), new File(output, OK_IMAGE_WARN));
 		AbstractResults.copyFile(new File(images, UNKNOWN_IMAGE), new File(output, UNKNOWN_IMAGE));
+		AbstractResults.copyFile(new File(images, LIGHT), new File(output, LIGHT));
+		AbstractResults.copyFile(new File(images, WARNING_OBJ), new File(output, WARNING_OBJ));
 	}
 
 	/**
@@ -114,6 +125,24 @@ public class Utils {
 	public static void copyScripts(File scripts, File output) {
 		AbstractResults.copyFile(new File(scripts, "ToolTip.css"), new File(output, "ToolTip.css"));
 		AbstractResults.copyFile(new File(scripts, "ToolTip.js"), new File(output, "ToolTip.js"));
+		AbstractResults.copyFile(new File(scripts, "Fingerprints.js"), new File(output, "Fingerprints.js"));
+	}
+
+	/**
+	 * Copy all doc files.
+	 */
+	public static void copyDoc(File docDir, File output) {
+		File[] docFiles = docDir.listFiles();
+		for (int i=0; i<docFiles.length; i++) {
+			File file = docFiles[i];
+			if (file.isDirectory()) {
+				File subdir = new File(output, file.getName());
+				subdir.mkdir();
+				copyDoc(file, subdir);
+			} else {
+				AbstractResults.copyFile(file, new File(output, file.getName()));
+			}
+		}
 	}
 
 	/**
@@ -361,4 +390,31 @@ public class Utils {
 	    return image;
     }
 
+/**
+ * @param outputFile
+ * @param image
+ */
+public static void saveImage(File outputFile, Image image) {
+	// Save image
+	ImageData data = downSample(image);
+	ImageLoader imageLoader = new ImageLoader();
+	imageLoader.data = new ImageData[] { data };
+
+	OutputStream out = null;
+	try {
+		out = new BufferedOutputStream(new FileOutputStream(outputFile));
+		imageLoader.save(out, SWT.IMAGE_GIF);
+	} catch (FileNotFoundException e) {
+		e.printStackTrace();
+	} finally {
+		image.dispose();
+		if (out != null) {
+			try {
+				out.close();
+			} catch (IOException e1) {
+				// silently ignored
+			}
+		}
+	}
+}
 }
