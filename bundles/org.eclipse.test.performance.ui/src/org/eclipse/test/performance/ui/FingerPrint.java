@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2007 IBM Corporation and others.
+ * Copyright (c) 2004, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -90,9 +90,11 @@ public void print(PerformanceResults performanceResults) {
 	this.stream.print("    </select>\n");
 	this.stream.print("  </form>\n");
 	this.stream.print("</td>\n");
-	this.stream.print("<td valign=\"top\">\n");
-	this.stream.print("<a href=\"help.html\"><img hspace=\"10\" border=\"0\" src=\"light.gif\" title=\"Some tips on fingerprints\"/></a>\n");
-	this.stream.print("</td></tr></table>\n");
+//	this.stream.print("<td valign=\"top\">\n");
+//	this.stream.print("<a href=\"help.html\"><img hspace=\"10\" border=\"0\" src=\"light.gif\" title=\"Some tips on fingerprints\"/></a>\n");
+//	this.stream.print("</td></tr></table>\n");
+	this.stream.print("</tr></table>\n");
+	this.stream.print("<img hspace=\"10\" border=\"0\" src=\"light.gif\"><a href=\"help.html\">Help on fingerprints</a>\n");
 
 	// Print script to reset dropdown list selection
 	this.stream.print("<script type=\"text/javascript\">\n");

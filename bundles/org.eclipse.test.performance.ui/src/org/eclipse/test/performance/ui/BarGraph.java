@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2007 IBM Corporation and others.
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -180,8 +180,10 @@ public class BarGraph {
 		// link color
 		Color blue= display.getSystemColor(SWT.COLOR_BLUE);
 		// draw bars
-		Color green= display.getSystemColor(SWT.COLOR_GREEN);
-		Color red= display.getSystemColor(SWT.COLOR_RED);
+//		Color green= display.getSystemColor(SWT.COLOR_GREEN);
+//		Color red= display.getSystemColor(SWT.COLOR_RED);
+		Color green = new Color(display, 95, 191, 95);
+		Color red = new Color(display, 225, 50, 50);
 		Color gray= display.getSystemColor(SWT.COLOR_GRAY);
 		Color yellow= display.getSystemColor(SWT.COLOR_YELLOW);
 		Color white= display.getSystemColor(SWT.COLOR_WHITE);
@@ -278,6 +280,8 @@ public class BarGraph {
 		}
 
 		lightblue.dispose();
+		red.dispose();
+		green.dispose();
 	}
 
 	public String getAreas() {

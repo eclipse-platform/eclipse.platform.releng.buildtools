@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2007 IBM Corporation and others.
+ * Copyright (c) 2004, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -149,26 +149,26 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
  * 
  * @param performanceResults The needed information to generate scenario data
  */
-public void print(PerformanceResults performanceResults, boolean print) {
+public void print(PerformanceResults performanceResults, PrintStream printStream) {
 	String[] configNames = performanceResults.getConfigNames(false/*not sorted*/);
 	String[] configBoxes = performanceResults.getConfigBoxes(false/*not sorted*/);
 	int length = configNames.length;
 	for (int i=0; i<length; i++) {
 		String configName = configNames[i];
 		long start = System.currentTimeMillis();
-		if (print) System.out.print("		+ "+configName);
+		if (printStream != null) printStream.print("		+ "+configName);
 		File outputDir = new File(this.rootDir, configName);
 		outputDir.mkdir();
 		Iterator components = performanceResults.getResults();
 		while (components.hasNext()) {
-			if (print) System.out.print(".");
+			if (printStream != null) printStream.print(".");
 			ComponentResults componentResults = (ComponentResults) components.next();
 			printSummary(configName, configBoxes[i], componentResults, outputDir);
 			printDetails(configName, configBoxes[i], componentResults, outputDir);
 		}
-		if (print) {
+		if (printStream != null) {
 			String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
-			System.out.println(" done in "+duration);
+			printStream.println(" done in "+duration);
 		}
 	}
 }

@@ -208,15 +208,15 @@ void drawBars(int kind) {
 		darkyellow = new Color(DEFAULT_DISPLAY, 160, 160, 0);
 		this.resources.put("darkyellow", darkyellow);
 	}
-	Color lightgreen= (Color) this.resources.get("lightgreen");
-	if (lightgreen == null) {
-		lightgreen = new Color(DEFAULT_DISPLAY, 160, 255, 160);
-		this.resources.put("lightgreen", lightgreen);
+	Color okColor= (Color) this.resources.get("lightgreen");
+	if (okColor == null) {
+		okColor = new Color(DEFAULT_DISPLAY, 95, 191, 95);
+		this.resources.put("lightgreen", okColor);
 	}
-	Color lightred = (Color) this.resources.get("lightred");
-	if (lightred == null) {
-		lightred = new Color(DEFAULT_DISPLAY, 255, 160, 160);
-		this.resources.put("lightred", lightred);
+	Color failureColor = (Color) this.resources.get("lightred");
+	if (failureColor == null) {
+		failureColor = new Color(DEFAULT_DISPLAY, 220, 50, 50);
+		this.resources.put("lightred", failureColor);
 	}
 
 	// Build each scenario bar graph
@@ -280,10 +280,10 @@ void drawBars(int kind) {
 			if (isCommented) {
 				this.gc.setBackground(GRAY);
 			} else  {
-				this.gc.setBackground(RED);
+				this.gc.setBackground(failureColor);
 			}
 		} else {
-			this.gc.setBackground(GREEN);
+			this.gc.setBackground(okColor);
 		}
 
 		// draw current build bar
@@ -577,8 +577,8 @@ void paint(int kind) {
 	for (int i= 0; i<this.count; i++) {
 		BuildResults baselineBuildResults = this.results[i].getBaselineBuildResults();
 		double value = baselineBuildResults.getValue();
-//		double error = baselineBuildResults.getError();
-//		value += error;
+		double error = baselineBuildResults.getError();
+		value += Math.abs(error);
 		if (value > this.maxValue) {
 			this.maxValue = value;
 		}
@@ -587,8 +587,8 @@ void paint(int kind) {
 		}
 		BuildResults currentBuildResults = this.results[i].getCurrentBuildResults();
 		value = currentBuildResults.getValue();
-//		error = currentBuildResults.getError();
-//		value += error;
+		error = currentBuildResults.getError();
+		value += Math.abs(error);
 		if (value > this.maxValue) {
 			this.maxValue = value;
 		}

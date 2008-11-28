@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2007 IBM Corporation and others.
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -162,7 +162,7 @@ private boolean genAll = true;
  * <p>
  * Default is <code>false</code> which means that nothing is print during the generation.
  */
-private boolean print = false;
+private PrintStream printStream = null;
 
 /**
  * Tells what should be the failure percentage threshold.
@@ -181,7 +181,8 @@ private PerformanceResults parse(Object argsObject) {
 	buffer.append("):\n");
 	String[] args = (String[]) argsObject;
 	int i = 0;
-	if (args.length == 0) {
+	int argsLength = args.length;
+	if (argsLength == 0) {
 		printUsage();
 	}
 
@@ -190,13 +191,13 @@ private PerformanceResults parse(Object argsObject) {
 	String jvm = null;
 	this.configDescriptors = null;
 
-	while (i < args.length) {
+	while (i < argsLength) {
 		String arg = args[i];
 		if (!arg.startsWith("-")) {
 			i++;
 			continue;
 		}
-		if (args.length == i + 1 && i != args.length - 1) {
+		if (argsLength == i + 1 && i != argsLength - 1) {
 			System.out.println("Missing value for last parameter");
 			printUsage();
 		}
@@ -405,9 +406,21 @@ private PerformanceResults parse(Object argsObject) {
 			continue;
 		}
 		if (arg.equals("-print")) {
-			this.print = true;
-			buffer.append("	").append(arg).append('\n');
+			this.printStream = System.out; // default is to print to console
+			buffer.append("	").append(arg);
 			i++;
+			String printFile = i==argsLength ? null : args[i];
+			if (printFile==null ||printFile.startsWith("-")) {
+				buffer.append(" (to the console)").append('\n');
+			} else {
+				try {
+					this.printStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(printFile)));
+				}
+				catch (FileNotFoundException fnfe) {
+					// use the console if the output file cannot be created
+				}
+				buffer.append(" (to file: ").append(printFile).append(")\n");
+			}
 			continue;
 		}
 		if (arg.equals("-failure.threshold")) {
@@ -429,13 +442,50 @@ private PerformanceResults parse(Object argsObject) {
 		}
 		i++;
 	}
-	if (this.print) System.out.println(buffer.toString());
+	if (this.printStream != null) {
+		this.printStream.print(buffer.toString());
+	}
 	
 	// Stop if some mandatory parameters are missing
-	if (baseline == null || this.outputDir == null || this.configDescriptors == null || jvm == null || currentBuildId == null) {
+	if (this.outputDir == null || this.configDescriptors == null || jvm == null) {
 		printUsage();
 	}
 	
+	// Init builds if not set
+	if (baseline == null) {
+		baseline = DB_Results.getLastBaselineBuild();
+		if (baseline == null) {
+			System.err.println("Cannot find any baseline to refer!");
+			System.exit(1);
+		}
+		if (this.printStream != null) {
+			this.printStream.println("	+ no baseline specified => use last one: "+baseline);
+		}
+	}
+	if (currentBuildId == null) {
+		currentBuildId = DB_Results.getLastCurrentBuild();
+		if (currentBuildId == null) {
+			System.err.println("Cannot find any current build!");
+			System.exit(1);
+		}
+		if (this.printStream != null) {
+			this.printStream.println("	+ no build specified => use last one: "+currentBuildId);
+		}
+		if (this.outputDir.getPath().indexOf(currentBuildId) == -1) {
+			File dir = new File(this.outputDir, currentBuildId);
+			if (dir.exists() || dir.mkdir()) {
+				this.outputDir = dir;
+				if (this.printStream != null) {
+					this.printStream.println("	+ changed output dir to: "+dir.getPath());
+				}
+			}
+		}
+	}
+	if (this.printStream != null) {
+		this.printStream.println();
+		this.printStream.flush();
+	}
+
 	// Init baseline prefix if not set
 	if (this.baselinePrefix == null) {
 		// Assume that baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
@@ -452,14 +502,14 @@ private PerformanceResults parse(Object argsObject) {
 		}
 		this.currentBuildPrefixes.add("I");
 	}
-	return new PerformanceResults(currentBuildId, baseline, this.print);
+	return new PerformanceResults(currentBuildId, baseline, this.printStream);
 }
 
 /*
  * Print component PHP file
  */
 private void printComponent(PerformanceResults performanceResults, String component) throws FileNotFoundException {
-	if (this.print) System.out.print(".");
+	if (this.printStream != null) this.printStream.print(".");
 	File outputFile = new File(this.outputDir, component + ".php");
 	PrintStream stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 	
@@ -570,7 +620,7 @@ private void printComponentTitle(PerformanceResults performanceResults, String c
  */
 private void printSummary(PerformanceResults performanceResults) {
 	long start = System.currentTimeMillis();
-	if (this.print) System.out.print("Print scenarios variations summary...");
+	if (this.printStream != null) this.printStream.print("Print scenarios variations summary...");
 	File outputFile = new File(this.outputDir, "cvsummary.html");
 	PrintStream stream = null;
 	try {
@@ -604,7 +654,7 @@ private void printSummary(PerformanceResults performanceResults) {
 		stream.flush();
 		stream.close();
 	}
-	if (this.print) System.out.println("done in "+(System.currentTimeMillis()-start)+"ms");
+	if (this.printStream != null) this.printStream.println("done in "+(System.currentTimeMillis()-start)+"ms");
 }
 
 /*
@@ -776,90 +826,100 @@ public Object start(IApplicationContext context) throws Exception {
 	long begin = System.currentTimeMillis();
 
 	// Parse arguments and read DB info
-	PerformanceResults performanceResults = parse(context.getArguments().get("application.args"));
-	performanceResults.read(this.configDescriptors, this.scenarioPattern, this.dataDir, this.failure_threshold);
-
-	// Print whole scenarios summary
-	if (this.print) System.out.println();
-	printSummary(performanceResults);
-
-	// Copy images and scripts to output dir
-	Bundle bundle = UiPlugin.getDefault().getBundle();
-	URL images = bundle.getEntry("images");
-	if (images != null) {
-		images = FileLocator.resolve(images);
-		Utils.copyImages(new File(images.getPath()), this.outputDir);
-	}
-	URL scripts = bundle.getEntry("scripts");
-	if (scripts != null) {
-		scripts = FileLocator.resolve(scripts);
-		Utils.copyScripts(new File(scripts.getPath()), this.outputDir);
-	}
-	URL doc = bundle.getEntry("doc");
-	if (doc != null) {
-		doc = FileLocator.resolve(doc);
-		File docDir = new File(doc.getPath());
-		FileFilter filter = new FileFilter() {
-			public boolean accept(File pathname) {
-	            return !pathname.getName().equals("CVS");
-            }
-		};
-		File[] docFiles = docDir.listFiles(filter);
-		for (int i=0; i<docFiles.length; i++) {
-			File file = docFiles[i];
-			if (file.isDirectory()) {
-				File subdir = new File(this.outputDir, file.getName());
-				subdir.mkdir();
-				File[] subdirFiles = file.listFiles(filter);
-				for (int j=0; j<subdirFiles.length; j++) {
-					if (subdirFiles[i].isDirectory()) {
-						// expect only one sub-directory
-					} else {
-						AbstractResults.copyFile(subdirFiles[j], new File(subdir, subdirFiles[j].getName()));
+	try {
+		PerformanceResults performanceResults = parse(context.getArguments().get("application.args"));
+		performanceResults.read(this.configDescriptors, this.scenarioPattern, this.dataDir, this.failure_threshold);
+	
+		// Print whole scenarios summary
+		if (this.printStream != null) this.printStream.println();
+		printSummary(performanceResults);
+	
+		// Copy images and scripts to output dir
+		Bundle bundle = UiPlugin.getDefault().getBundle();
+		URL images = bundle.getEntry("images");
+		if (images != null) {
+			images = FileLocator.resolve(images);
+			Utils.copyImages(new File(images.getPath()), this.outputDir);
+		}
+		URL scripts = bundle.getEntry("scripts");
+		if (scripts != null) {
+			scripts = FileLocator.resolve(scripts);
+			Utils.copyScripts(new File(scripts.getPath()), this.outputDir);
+		}
+		URL doc = bundle.getEntry("doc");
+		if (doc != null) {
+			doc = FileLocator.resolve(doc);
+			File docDir = new File(doc.getPath());
+			FileFilter filter = new FileFilter() {
+				public boolean accept(File pathname) {
+		            return !pathname.getName().equals("CVS");
+	            }
+			};
+			File[] docFiles = docDir.listFiles(filter);
+			for (int i=0; i<docFiles.length; i++) {
+				File file = docFiles[i];
+				if (file.isDirectory()) {
+					File subdir = new File(this.outputDir, file.getName());
+					subdir.mkdir();
+					File[] subdirFiles = file.listFiles(filter);
+					for (int j=0; j<subdirFiles.length; j++) {
+						if (subdirFiles[i].isDirectory()) {
+							// expect only one sub-directory
+						} else {
+							AbstractResults.copyFile(subdirFiles[j], new File(subdir, subdirFiles[j].getName()));
+						}
 					}
+				} else {
+					AbstractResults.copyFile(file, new File(this.outputDir, file.getName()));
 				}
-			} else {
-				AbstractResults.copyFile(file, new File(this.outputDir, file.getName()));
 			}
 		}
-	}
-
-	// Print HTML pages and all linked files
-	if (this.print) {
-		System.out.println("Print performance results HTML pages:");
-		System.out.print("	- components main page");
-	}
-	long start = System.currentTimeMillis();
-	printComponent(performanceResults, "global_fp");
-	Iterator components = performanceResults.getComponents().iterator();
-	while (components.hasNext()) {
-		printComponent(performanceResults, (String) components.next());
-	}
-	if (this.print) {
-		String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
-		System.out.println(" done in "+duration);
-	}
-
-	// Print the scenarios data
-	if (genData || genAll) {
-		start = System.currentTimeMillis();
-		if (this.print) System.out.println("	- all scenarios data:");
-		ScenarioData data = new ScenarioData(this.baselinePrefix, this.pointsOfInterest, this.currentBuildPrefixes, this.outputDir);
-		try {
-			data.print(performanceResults, this.print);
-		} catch (Exception ex) {
-			ex.printStackTrace();
+	
+		// Print HTML pages and all linked files
+		if (this.printStream != null) {
+			this.printStream.println("Print performance results HTML pages:");
+			this.printStream.print("	- components main page");
 		}
-		if (this.print) {
+		long start = System.currentTimeMillis();
+		printComponent(performanceResults, "global_fp");
+		Iterator components = performanceResults.getComponents().iterator();
+		while (components.hasNext()) {
+			printComponent(performanceResults, (String) components.next());
+		}
+		if (this.printStream != null) {
 			String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
-			System.out.println("	=> done in "+duration);
+			this.printStream.println(" done in "+duration);
+		}
+	
+		// Print the scenarios data
+		if (genData || genAll) {
+			start = System.currentTimeMillis();
+			if (this.printStream != null) this.printStream.println("	- all scenarios data:");
+			ScenarioData data = new ScenarioData(this.baselinePrefix, this.pointsOfInterest, this.currentBuildPrefixes, this.outputDir);
+			try {
+				data.print(performanceResults, this.printStream);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			if (this.printStream != null) {
+				String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
+				this.printStream.println("	=> done in "+duration);
+			}
+		}
+		if (this.printStream != null) {
+			long time = System.currentTimeMillis();
+			this.printStream.println("End of generation: "+new SimpleDateFormat("H:mm:ss").format(new Date(time)));
+			String duration = AbstractResults.timeString(System.currentTimeMillis()-begin);
+			this.printStream.println("=> done in "+duration);
 		}
 	}
-	if (this.print) {
-		long time = System.currentTimeMillis();
-		System.out.println("End of generation: "+new SimpleDateFormat("H:mm:ss").format(new Date(time)));
-		String duration = AbstractResults.timeString(System.currentTimeMillis()-begin);
-		System.out.println("=> done in "+duration);
+	finally {
+		if (this.printStream != null) {
+			this.printStream.flush();
+			if (this.printStream != System.out) {
+				this.printStream.close();
+			}
+		}
 	}
 	return null;
 }
