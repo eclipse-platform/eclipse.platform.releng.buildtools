@@ -578,7 +578,7 @@ void paint(int kind) {
 		BuildResults baselineBuildResults = this.results[i].getBaselineBuildResults();
 		double value = baselineBuildResults.getValue();
 		double error = baselineBuildResults.getError();
-		value += Math.abs(error);
+		if (!Double.isNaN(error)) value += Math.abs(error);
 		if (value > this.maxValue) {
 			this.maxValue = value;
 		}
@@ -588,7 +588,7 @@ void paint(int kind) {
 		BuildResults currentBuildResults = this.results[i].getCurrentBuildResults();
 		value = currentBuildResults.getValue();
 		error = currentBuildResults.getError();
-		value += Math.abs(error);
+		if (!Double.isNaN(error)) value += Math.abs(error);
 		if (value > this.maxValue) {
 			this.maxValue = value;
 		}
