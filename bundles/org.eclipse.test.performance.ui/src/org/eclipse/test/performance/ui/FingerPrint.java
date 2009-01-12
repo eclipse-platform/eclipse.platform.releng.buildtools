@@ -53,7 +53,7 @@ public FingerPrint(String name, PrintStream ps, File outputDir) {
  * 
  * @param performanceResults The performance results used to print the fingerprints
  */
-public void print(PerformanceResults performanceResults) {
+public void print(final PerformanceResults performanceResults) {
 	String buildName = performanceResults.getName();
 	
 	// Compute fingerprint output file name prefix

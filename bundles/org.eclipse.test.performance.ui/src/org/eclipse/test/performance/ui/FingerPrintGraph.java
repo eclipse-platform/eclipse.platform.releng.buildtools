@@ -574,12 +574,14 @@ void paint(int kind) {
 	this.graphWidth -= warning.getImageData().width;
 
 	// Set maximum of values
+	this.maxValue = 0.0;
+	this.minValue = Double.MAX_VALUE;
 	for (int i= 0; i<this.count; i++) {
 		BuildResults baselineBuildResults = this.results[i].getBaselineBuildResults();
 		double value = baselineBuildResults.getValue();
 		double error = baselineBuildResults.getError();
 		if (!Double.isNaN(error)) value += Math.abs(error);
-		if (value > this.maxValue) {
+		if (value < 1000000 && value > this.maxValue) {
 			this.maxValue = value;
 		}
 		if (value < this.minValue) {
@@ -589,7 +591,7 @@ void paint(int kind) {
 		value = currentBuildResults.getValue();
 		error = currentBuildResults.getError();
 		if (!Double.isNaN(error)) value += Math.abs(error);
-		if (value > this.maxValue) {
+		if (value < 1000000 && value > this.maxValue) {
 			this.maxValue = value;
 		}
 		if (value < this.minValue) {

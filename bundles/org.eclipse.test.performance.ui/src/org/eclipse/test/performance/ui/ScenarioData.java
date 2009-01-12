@@ -23,6 +23,8 @@ import java.util.List;
 
 import junit.framework.AssertionFailedError;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
@@ -101,7 +103,10 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 		BuildResults buildResults = (BuildResults) builds.next();
 		String buildID = buildResults.getName();
 		int underscoreIndex = buildID.indexOf('_');
-		String label = (underscoreIndex != -1 && (buildID.equals(baseline) || buildID.equals(current))) ? buildID.substring(0, underscoreIndex) : buildID;
+		String label = (underscoreIndex != -1 && buildID.equals(current)) ? buildID.substring(0, underscoreIndex) : buildID;
+		if (buildID.startsWith(AbstractResults.VERSION_REF)) {
+			label = AbstractResults.VERSION_REF+buildID.substring(underscoreIndex);
+		}
 
 		double value = buildResults.getValue(dim.getId());
 
@@ -149,22 +154,48 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
  * 
  * @param performanceResults The needed information to generate scenario data
  */
-public void print(PerformanceResults performanceResults, PrintStream printStream) {
+public void print(PerformanceResults performanceResults, PrintStream printStream, final IProgressMonitor monitor) {
 	String[] configNames = performanceResults.getConfigNames(false/*not sorted*/);
 	String[] configBoxes = performanceResults.getConfigBoxes(false/*not sorted*/);
 	int length = configNames.length;
+	int mainStep = 1000 / length;
 	for (int i=0; i<length; i++) {
-		String configName = configNames[i];
+		final String configName = configNames[i];
+		final String configBox = configBoxes[i];
+		if (monitor != null) {
+			monitor.setTaskName("Generating data for "+configBox);
+			if (monitor.isCanceled()) throw new OperationCanceledException();
+		}
 		long start = System.currentTimeMillis();
 		if (printStream != null) printStream.print("		+ "+configName);
-		File outputDir = new File(this.rootDir, configName);
+		final File outputDir = new File(this.rootDir, configName);
 		outputDir.mkdir();
 		Iterator components = performanceResults.getResults();
+		int step = mainStep / performanceResults.size();
+		int progress = 0;
 		while (components.hasNext()) {
 			if (printStream != null) printStream.print(".");
-			ComponentResults componentResults = (ComponentResults) components.next();
-			printSummary(configName, configBoxes[i], componentResults, outputDir);
+			final ComponentResults componentResults = (ComponentResults) components.next();
+			if (monitor != null) {
+				int percentage = (int) ((progress / ((double)mainStep)) * 100);
+				monitor.setTaskName("Generating data for "+configBox+": "+percentage+"%");
+				monitor.subTask("Component "+componentResults.getName()+"...");
+			}
+			Display display = Display.getDefault();
+		     display.syncExec(
+				new Runnable() {
+					public void run(){
+						printSummary(configName, configBox, componentResults, outputDir, monitor);
+					}
+				}
+			);
+//			printSummary(configName, configBox, componentResults, outputDir, monitor);
 			printDetails(configName, configBoxes[i], componentResults, outputDir);
+			if (monitor != null) {
+				monitor.worked(step);
+				if (monitor.isCanceled()) throw new OperationCanceledException();
+				progress += step;
+			}
 		}
 		if (printStream != null) {
 			String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
@@ -176,7 +207,7 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
 /*
  * Print the summary file of the builds data.
  */
-private void printSummary(String configName, String configBox, ComponentResults componentResults, File outputDir) {
+void printSummary(String configName, String configBox, ComponentResults componentResults, File outputDir, IProgressMonitor monitor) {
 	Iterator scenarios = componentResults.getResults();
 	while (scenarios.hasNext()) {
 		List highlightedPoints = new ArrayList();
@@ -233,6 +264,7 @@ private void printSummary(String configName, String configBox, ComponentResults 
 		String rawDataFile = "raw/" + scenarioFileName+".html";
 		stream.print("<br><br><b><a href=\""+rawDataFile+"\">Raw data and Stats</a></b><br><br>\n");
 		stream.print("<b>Click measurement name to view line graph of measured values over builds.</b><br><br>\n");
+		if (monitor != null && monitor.isCanceled()) throw new OperationCanceledException();
 
 		try {
 			// Print build result table
@@ -265,6 +297,7 @@ private void printSummary(String configName, String configBox, ComponentResults 
 			// print image maps of historical
 			for (int d=0; d<dimLength; d++) {
 				TimeLineGraph lineGraph = getLineGraph(scenarioResults, configResults, dimensions[d], highlightedPoints, this.buildIDStreamPatterns);
+				if (monitor != null && monitor.isCanceled()) throw new OperationCanceledException();
 
 				String dimShortName = dimensions[d].getShortName();
 				String imgFileName = scenarioFileName + "_" + dimShortName;
@@ -279,6 +312,7 @@ private void printSummary(String configName, String configBox, ComponentResults 
 				stream.print("<map name=\"" + lineGraph.fTitle + "\">");
 				stream.print(lineGraph.getAreas());
 				stream.print("</map>\n");
+				if (monitor != null && monitor.isCanceled()) throw new OperationCanceledException();
 			}
 			stream.print("<br><br></body>\n");
 			stream.print(Utils.HTML_CLOSE);
