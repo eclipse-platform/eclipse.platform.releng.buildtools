@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.results.AbstractResults;
 import org.eclipse.test.internal.performance.results.ConfigResults;
@@ -43,7 +42,7 @@ import org.osgi.framework.Bundle;
  * 
  * @see #printUsage() method to see a detailed parameters usage
  */
-public class GenerateResults extends Job {
+public class GenerateResults {
 
 /**
  * Prefix of baseline builds displayed in data graphs.
@@ -185,18 +184,12 @@ private int failure_threshold = 10; // PerformanceTestPlugin.getDBLocation().sta
 
 PerformanceResults performanceResults;
 
-public GenerateResults(String title) {
-	super(title);
-}
-
 public GenerateResults(Object argsObject) {
-	super("Generate performance results...");
 	String[] args = (String[]) argsObject;
 	parse(args);
 }
 
 public GenerateResults(String current, String baseline, File data, File output) {
-	super("Generate performance results...");
 	this.dataDir = data;
 	this.outputDir = output;
 	setPerformanceResults(current, baseline);
