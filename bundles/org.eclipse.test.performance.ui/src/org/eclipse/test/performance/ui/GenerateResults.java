@@ -189,9 +189,11 @@ public GenerateResults(Object argsObject) {
 	parse(args);
 }
 
-public GenerateResults(String current, String baseline, File data, File output) {
+public GenerateResults(String current, String baseline, boolean fingerprints, File data, File output) {
 	this.dataDir = data;
 	this.outputDir = output;
+	this.genFingerPrints = fingerprints;
+	this.genAll = !fingerprints;
 	setPerformanceResults(current, baseline);
 	this.printStream = System.out;
 }
@@ -486,7 +488,8 @@ void parse(String[] args) {
 private void setPerformanceResults(String currentBuildId, String baseline) {
 	// Init builds if not set
 	if (baseline == null) {
-		baseline = DB_Results.getLastBaselineBuild(AbstractResults.getBuildDate(currentBuildId));
+		String buildDate = currentBuildId == null ? null : AbstractResults.getBuildDate(currentBuildId);
+		baseline = DB_Results.getLastBaselineBuild(buildDate);
 		if (baseline == null) {
 			System.err.println("Cannot find any baseline to refer!");
 			System.exit(1);
@@ -569,6 +572,7 @@ private void printComponent(/*PerformanceResults performanceResults, */String co
 		gStream.print("<a href=\"org.eclipse.jdt.ui.php?\">org.eclipse.jdt.ui*</a><br>\n");
 		gStream.print("<a href=\"org.eclipse.jface.php?\">org.eclipse.jface*</a><br>\n");
 		gStream.print("<a href=\"org.eclipse.osgi.php?\">org.eclipse.osgi*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.pde.ui.php?\">org.eclipse.pde.api.tools*</a><br>\n");
 		gStream.print("<a href=\"org.eclipse.pde.ui.php?\">org.eclipse.pde.ui*</a><br>\n");
 		gStream.print("<a href=\"org.eclipse.swt.php?\">org.eclipse.swt*</a><br>\n");
 		gStream.print("<a href=\"org.eclipse.team.php?\">org.eclipse.team*</a><br>\n");
