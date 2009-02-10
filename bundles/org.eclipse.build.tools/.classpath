@@ -5,7 +5,7 @@
 	<classpathentry kind="src" path="src_bugzilla"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.osgi_3.4.2.R34x_v20080826-1230.jar"/>
+	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.osgi_3.4.3.R34x_v20081215-1030.jar"/>
 	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.apache.ant_1.7.0.v200803061910/lib/ant.jar"/>
 	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.apache.ant_1.7.0.v200803061910/lib/ant-launcher.jar"/>
 	<classpathentry kind="output" path="bin"/>
