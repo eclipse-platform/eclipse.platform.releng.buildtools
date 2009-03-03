@@ -72,8 +72,9 @@ public class GenerateExcludeListTask extends Task {
 					end = lastcomma;
 				}
 				int lastzip = line.lastIndexOf(".zip");
-				if (lastzip > start) {
-					end = lastzip;
+				if (lastzip > start) {					
+					String rstring = line.substring(0,lastzip);
+					line = rstring + ".jar";
 				}
 				if ((start < end) && (start > 0)) {
 					String substr = line.substring(start + 1, end);
