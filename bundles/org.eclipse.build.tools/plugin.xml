@@ -54,6 +54,13 @@
             name="unpackUpdateJars"
             class="org.eclipse.releng.UnpackUpdateJars">
       </antTask>
+      <antTask
+            library="buildTools.jar"
+            name="generateExcludeList"
+            class="org.eclipse.releng.GenerateExcludeListTask">
+      </antTask>
+      
+      
     <!--   <antTask
             library="feedTools.jar"
             name="CreateFeed"
