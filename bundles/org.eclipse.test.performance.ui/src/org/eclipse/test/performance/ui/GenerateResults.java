@@ -572,7 +572,7 @@ private void printComponent(/*PerformanceResults performanceResults, */String co
 		gStream.print("<a href=\"org.eclipse.jdt.ui.php?\">org.eclipse.jdt.ui*</a><br>\n");
 		gStream.print("<a href=\"org.eclipse.jface.php?\">org.eclipse.jface*</a><br>\n");
 		gStream.print("<a href=\"org.eclipse.osgi.php?\">org.eclipse.osgi*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.pde.ui.php?\">org.eclipse.pde.api.tools*</a><br>\n");
+		gStream.print("<a href=\"org.eclipse.pde.api.tools.php?\">org.eclipse.pde.api.tools*</a><br>\n");
 		gStream.print("<a href=\"org.eclipse.pde.ui.php?\">org.eclipse.pde.ui*</a><br>\n");
 		gStream.print("<a href=\"org.eclipse.swt.php?\">org.eclipse.swt*</a><br>\n");
 		gStream.print("<a href=\"org.eclipse.team.php?\">org.eclipse.team*</a><br>\n");
