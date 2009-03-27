@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2005, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,8 +34,9 @@ public class Main implements IApplication {
  */
 public Object start(IApplicationContext context) throws Exception {
 	
-	GenerateResults generation = new GenerateResults(context.getArguments().get("application.args"));
-	generation.run(null);
+	GenerateResults generation = new GenerateResults();
+	String[] args = (String[]) context.getArguments().get("application.args");
+	generation.run(args);
 	return null;
 }
 
