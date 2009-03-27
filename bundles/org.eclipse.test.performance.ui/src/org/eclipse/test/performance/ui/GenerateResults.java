@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2008 IBM Corporation and others.
+ * Copyright (c) 2005, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -28,6 +29,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.results.AbstractResults;
 import org.eclipse.test.internal.performance.results.ConfigResults;
@@ -53,7 +55,7 @@ public class GenerateResults {
  *
  * @see #currentBuildPrefixes
  */
-private String baselinePrefix = null;
+String baselinePrefix = null;
 
 /**
  * Root directory where all files are generated.
@@ -62,7 +64,7 @@ private String baselinePrefix = null;
  * Example:
  * 	<pre>-output /releng/results/I20070615-1200/performance</pre>
  */
-private File outputDir;
+File outputDir;
 
 /**
  * Root directory where all data are locally stored to speed-up generation.
@@ -71,7 +73,7 @@ private File outputDir;
  * Example:
  * 	<pre>-dataDir /tmp</pre>
  */
-private File dataDir;
+File dataDir;
 
 /**
  * Arrays of 2 strings which contains config information: name and description.
@@ -95,7 +97,7 @@ private File dataDir;
  * 		<b>-config.properties</b> argument is only used to set the configuration description.</li>
  * </ul>
  */
-private String[][] configDescriptors;
+String[][] configDescriptors;
 
 /**
  * Scenario pattern used to generate performance results.
@@ -108,7 +110,7 @@ private String[][] configDescriptors;
  * Example:
  * 	<pre>-scenario.pattern org.eclipse.%.test</pre>
  */
-private String scenarioPattern;
+String scenarioPattern;
 
 /**
  * A list of prefixes for builds displayed in data graphs.
@@ -119,7 +121,7 @@ private String scenarioPattern;
  * 
  * @see #baselinePrefix
  */
-private List currentBuildPrefixes;
+List currentBuildPrefixes;
 
 /**
  * A list of prefixes of builds to highlight in displayed data graphs.
@@ -128,7 +130,7 @@ private List currentBuildPrefixes;
  * Example:
  * 	<pre>-higlight 3_2</pre>
  */
-private List pointsOfInterest;
+List pointsOfInterest;
 
 /**
  * Tells whether only fingerprints has to be generated.
@@ -140,7 +142,7 @@ private List pointsOfInterest;
  * @see #genData
  * @see #genAll
  */
-private boolean genFingerPrints = false;
+boolean genFingerPrints = false;
 
 /**
  * Tells whether only fingerprints has to be generated.
@@ -152,7 +154,7 @@ private boolean genFingerPrints = false;
  * @see #genFingerPrints
  * @see #genAll
  */
-private boolean genData = false;
+boolean genData = false;
 
 /**
  * Tells whether only fingerprints has to be generated.
@@ -165,7 +167,7 @@ private boolean genData = false;
  * @see #genData
  * @see #genFingerPrints
  */
-private boolean genAll = true;
+boolean genAll = true;
 
 /**
  * Tells whether information should be displayed in the console while generating.
@@ -180,29 +182,28 @@ PrintStream printStream = null;
  * <p>
  * Default is 10%.
  */
-private int failure_threshold = 10; // PerformanceTestPlugin.getDBLocation().startsWith("net://");
+int failure_threshold = 10; // PerformanceTestPlugin.getDBLocation().startsWith("net://");
 
 PerformanceResults performanceResults;
 
-public GenerateResults(Object argsObject) {
-	String[] args = (String[]) argsObject;
-	parse(args);
+public GenerateResults() {
 }
 
-public GenerateResults(String current, String baseline, boolean fingerprints, File data, File output) {
+public GenerateResults(PerformanceResults results, String current, String baseline, boolean fingerprints, File data, File output) {
 	this.dataDir = data;
 	this.outputDir = output;
 	this.genFingerPrints = fingerprints;
 	this.genAll = !fingerprints;
-	setPerformanceResults(current, baseline);
+	this.performanceResults = results;
 	this.printStream = System.out;
+	setDefaults(current, baseline);
 }
 
 /*
  * Parse the command arguments and create corresponding performance
  * results object.
  */
-void parse(String[] args) {
+private void parse(String[] args) {
 	StringBuffer buffer = new StringBuffer("Parameters used to generate performance results (");
 	buffer.append(new SimpleDateFormat().format(new Date(System.currentTimeMillis())));
 	buffer.append("):\n");
@@ -481,66 +482,6 @@ void parse(String[] args) {
 	setPerformanceResults(currentBuildId, baseline);
 }
 
-/**
- * @param currentBuildId
- * @param baseline
- */
-private void setPerformanceResults(String currentBuildId, String baseline) {
-	// Init builds if not set
-	if (baseline == null) {
-		String buildDate = currentBuildId == null ? null : AbstractResults.getBuildDate(currentBuildId);
-		baseline = DB_Results.getLastBaselineBuild(buildDate);
-		if (baseline == null) {
-			System.err.println("Cannot find any baseline to refer!");
-			System.exit(1);
-		}
-		if (this.printStream != null) {
-			this.printStream.println("	+ no baseline specified => use last one: "+baseline);
-		}
-	}
-	if (currentBuildId == null) {
-		currentBuildId = DB_Results.getLastCurrentBuild();
-		if (currentBuildId == null) {
-			System.err.println("Cannot find any current build!");
-			System.exit(1);
-		}
-		if (this.printStream != null) {
-			this.printStream.println("	+ no build specified => use last one: "+currentBuildId);
-		}
-		if (this.outputDir.getPath().indexOf(currentBuildId) == -1) {
-			File dir = new File(this.outputDir, currentBuildId);
-			if (dir.exists() || dir.mkdir()) {
-				this.outputDir = dir;
-				if (this.printStream != null) {
-					this.printStream.println("	+ changed output dir to: "+dir.getPath());
-				}
-			}
-		}
-	}
-	if (this.printStream != null) {
-		this.printStream.println();
-		this.printStream.flush();
-	}
-
-	// Init baseline prefix if not set
-	if (this.baselinePrefix == null) {
-		// Assume that baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
-		this.baselinePrefix = baseline.substring(0, baseline.lastIndexOf('_'));
-	}
-
-	// Init currnt build prefixes if not set
-	if (this.currentBuildPrefixes == null) {
-		this.currentBuildPrefixes = new ArrayList();
-		if (currentBuildId.charAt(0) == 'M') {
-			this.currentBuildPrefixes.add("M");
-		} else {
-			this.currentBuildPrefixes.add("N");
-		}
-		this.currentBuildPrefixes.add("I");
-	}
-	this.performanceResults = new PerformanceResults(currentBuildId, baseline, this.printStream);
-}
-
 /*
  * Print component PHP file
  */
@@ -777,7 +718,11 @@ private void printSummaryScenarioLine(int i, String config, ScenarioResults scen
 	double[] stats = null;
 	if (i==0) { // baseline results
 		List baselinePrefixes = new ArrayList();
-		baselinePrefixes.add(this.baselinePrefix);
+		if (this.baselinePrefix == null) {
+			baselinePrefixes.add(AbstractResults.VERSION_REF);
+		} else {
+			baselinePrefixes.add(this.baselinePrefix);
+		}
 		stats = configResults.getStatistics(baselinePrefixes);
 	} else {
 		stats = configResults.getStatistics(this.currentBuildPrefixes);
@@ -864,14 +809,32 @@ private void printUsage() {
 	System.exit(1);
 }
 
+/**
+ * Run the generation from a list of arguments.
+ * Typically used to generate results from an application.
+ */
+public IStatus run(String[] args) {
+	parse(args);
+	return run((IProgressMonitor) null);
+}
+
+/**
+ * Run the generation using a progress monitor.
+ * Note that all necessary information to generate properly must be set before
+ * calling this method
+ * 
+ * @see #run(String[])
+ */
 public IStatus run(final IProgressMonitor monitor) {
 	long begin = System.currentTimeMillis();
-	if (monitor != null) monitor.beginTask("", 3100);
+	int work = 1100;
+    int dataWork = 1000 * this.performanceResults.getConfigBoxes(false).length;
+	if (genAll || genData) {
+	    work += dataWork;
+    }
+	SubMonitor subMonitor = SubMonitor.convert(monitor, work);
 	try {
 		
-		if (monitor != null) monitor.setTaskName("Read performance results...");
-		performanceResults.read(this.configDescriptors, this.scenarioPattern, this.dataDir, this.failure_threshold, monitor);
-	
 		// Print whole scenarios summary
 		if (this.printStream != null) this.printStream.println();
 		printSummary(/*performanceResults*/);
@@ -923,31 +886,23 @@ public IStatus run(final IProgressMonitor monitor) {
 			this.printStream.print("	- components main page");
 		}
 		long start = System.currentTimeMillis();
-		if (monitor != null) {
-			monitor.setTaskName("Write fingerprints: 0%");
-			monitor.subTask("Global...");
-		}
+		subMonitor.setTaskName("Write fingerprints: 0%");
+		subMonitor.subTask("Global...");
 		printComponent(/*performanceResults, */"global_fp");
-		if (monitor != null) {
-			monitor.worked(100);
-			if (monitor.isCanceled()) throw new OperationCanceledException();
-		}
+		subMonitor.worked(100);
+		if (subMonitor.isCanceled()) throw new OperationCanceledException();
 		String[] components = performanceResults.getComponents();
 		int length = components.length;
 		int step = 1000 / length;
 		int progress = 0;
 		for (int i=0; i<length; i++) {
-			if (monitor != null) {
-				int percentage = (int) ((progress / ((double) length)) * 100);
-				monitor.setTaskName("Write fingerprints: "+percentage+"%");
-				monitor.subTask(components[i]+"...");
-			}
+			int percentage = (int) ((progress / ((double) length)) * 100);
+			subMonitor.setTaskName("Write fingerprints: "+percentage+"%");
+			subMonitor.subTask(components[i]+"...");
 			printComponent(/*performanceResults, */components[i]);
-			if (monitor != null) {
-				monitor.worked(step);
-				if (monitor.isCanceled()) throw new OperationCanceledException();
-				progress++;
-			}
+			subMonitor.worked(step);
+			if (subMonitor.isCanceled()) throw new OperationCanceledException();
+			progress++;
 		}
 		if (this.printStream != null) {
 			String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
@@ -960,7 +915,7 @@ public IStatus run(final IProgressMonitor monitor) {
 			if (this.printStream != null) this.printStream.println("	- all scenarios data:");
 			ScenarioData data = new ScenarioData(this.baselinePrefix, this.pointsOfInterest, this.currentBuildPrefixes, this.outputDir);
 			try {
-				data.print(performanceResults, printStream, monitor);
+				data.print(performanceResults, printStream, subMonitor.newChild(dataWork));
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -993,10 +948,68 @@ public IStatus run(final IProgressMonitor monitor) {
 	}
 }
 
+private void setDefaults(String buildName, String baseline) {
+	// Set default output dir if not set
+	if (this.outputDir.getPath().indexOf(buildName) == -1) {
+		File dir = new File(this.outputDir, buildName);
+		if (dir.exists() || dir.mkdir()) {
+			this.outputDir = dir;
+			if (this.printStream != null) {
+				this.printStream.println("	+ changed output dir to: "+dir.getPath());
+			}
+		}
+	}
+	
+	// Verify that build is known
+	String[] builds = DB_Results.getBuilds();
+	if (builds == null || builds.length == 0) {
+		System.err.println("Cannot connect to database to generate results build '"+buildName+"'");
+		System.exit(1);
+	}
+	if (Arrays.binarySearch(builds, buildName) < 0) {
+		System.err.println("No results in database for build '"+buildName+"'");
+		System.exit(1);
+	}
+	if (this.printStream != null) {
+		this.printStream.println();
+		this.printStream.flush();
+	}
+
+	// Init baseline prefix if not set
+	if (this.baselinePrefix == null) {
+		// Assume that baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
+		this.baselinePrefix = baseline.substring(0, baseline.lastIndexOf('_'));
+	}
+
+	// Init current build prefixes if not set
+	if (this.currentBuildPrefixes == null) {
+		this.currentBuildPrefixes = new ArrayList();
+		if (buildName.charAt(0) == 'M') {
+			this.currentBuildPrefixes.add("M");
+		} else {
+			this.currentBuildPrefixes.add("N");
+		}
+		this.currentBuildPrefixes.add("I");
+	}
+}
+
+private void setPerformanceResults(String buildName, String baselineName) {
+
+	// Set performance results
+	this.performanceResults = new PerformanceResults(buildName, baselineName, this.baselinePrefix, this.printStream);
+
+	// Set defaults
+	setDefaults(this.performanceResults.getName(), this.performanceResults.getBaselineName());
+
+	// Read performance results data
+	this.performanceResults.readAll(this.configDescriptors, this.scenarioPattern, this.dataDir, this.failure_threshold, null);
+}
+
 /* (non-Javadoc)
  * @see org.eclipse.equinox.app.IApplication#stop()
  */
 public void stop() {
 	// Do nothing
 }
+
 }
