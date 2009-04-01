@@ -999,10 +999,10 @@ private void setPerformanceResults(String buildName, String baselineName) {
 	this.performanceResults = new PerformanceResults(buildName, baselineName, this.baselinePrefix, this.printStream);
 
 	// Set defaults
-	setDefaults(this.performanceResults.getName(), this.performanceResults.getBaselineName());
+	setDefaults(buildName, this.performanceResults.getBaselineName());
 
 	// Read performance results data
-	this.performanceResults.readAll(this.configDescriptors, this.scenarioPattern, this.dataDir, this.failure_threshold, null);
+	this.performanceResults.readAll(buildName, this.configDescriptors, this.scenarioPattern, this.dataDir, this.failure_threshold, null);
 }
 
 /* (non-Javadoc)
