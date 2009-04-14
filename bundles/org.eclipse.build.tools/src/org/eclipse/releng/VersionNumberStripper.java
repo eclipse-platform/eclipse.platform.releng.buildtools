@@ -53,16 +53,23 @@ public class VersionNumberStripper extends Task {
 		File [] files = file.listFiles();
 		
 		for (int i=0; i<files.length; i++){
-		int underScorePos = files[i].getAbsolutePath().indexOf("_");
-			int jarExtPos = files[i].getAbsolutePath().indexOf(".jar");
+			String absolutePath = files[i].getAbsolutePath();
+			String path = absolutePath.substring(0, absolutePath.length() 
+					- files[i].getName().length());
+			
+			int underScorePos = files[i].getName().indexOf("_");
+			int jarExtPos = files[i].getName().indexOf(".jar");
 			if (underScorePos != -1) {
-				if (jarExtPos != -1)
-					files[i].renameTo(new File((files[i].getAbsolutePath())
-							.substring(0, underScorePos)
-							+ ".jar"));
-				else
-					files[i].renameTo(new File((files[i].getAbsolutePath())
-							.substring(0, underScorePos)));
+				String targetPath;
+				if (jarExtPos != -1) {
+					targetPath =path
+							+ files[i].getName().substring(0, underScorePos)
+							+ ".jar";
+				} else {
+					targetPath = path  
+							+ files[i].getName().substring(0, underScorePos);
+				}
+				files[i].renameTo(new File(targetPath));
 			}
 
 		}
