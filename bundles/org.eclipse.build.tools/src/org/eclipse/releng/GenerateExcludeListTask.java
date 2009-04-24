@@ -95,9 +95,9 @@ public class GenerateExcludeListTask extends Task {
 			for (Iterator iterator = a.iterator(); iterator.hasNext();) {				
 				String s = iterator.next().toString();
 				if (iterator.hasNext()) {
-				out.write("eclipse/plugins/" + s + ",");
+				out.write("plugins/" + s + ",");
 				} else {
-					out.write("eclipse/plugins/" + s);
+					out.write("plugins/" + s);
 				}
 			}
 			out.close();
