@@ -949,6 +949,10 @@ public IStatus run(final IProgressMonitor monitor) {
 }
 
 private void setDefaults(String buildName, String baseline) {
+	if (buildName == null) {
+		buildName = this.performanceResults.getName();
+	}
+
 	// Set default output dir if not set
 	if (this.outputDir.getPath().indexOf(buildName) == -1) {
 		File dir = new File(this.outputDir, buildName);
