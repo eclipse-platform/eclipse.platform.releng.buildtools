@@ -49,6 +49,7 @@ public void print(PerformanceResults performanceResults) {
 	this.jsIdCount = 0;
 	for (int i=0; i<size; i++) {
 		ScenarioResults scenarioResults = (ScenarioResults) scenarios.get(i);
+		if (!scenarioResults.isValid()) continue;
 		this.stream.print("<tr>\n");
 		this.stream.print("<td>");
 		boolean hasSummary = scenarioResults.hasSummary();
