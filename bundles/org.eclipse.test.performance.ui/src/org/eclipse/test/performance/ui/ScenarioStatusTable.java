@@ -41,11 +41,21 @@ public ScenarioStatusTable(String  name, PrintStream stream) {
  * Prints the HTML representation of scenario status table into the given stream.
  */
 public void print(PerformanceResults performanceResults) {
-	printTitle();
-	List scenarios = performanceResults.getComponentScenarios(this.component);
+
 	String baselineName = performanceResults.getBaselineName();
+	List scenarios = performanceResults.getComponentScenarios(this.component);
 	int size = scenarios.size();
+
+	// Print titles
+	printTitle();
+	this.stream.print("<table border=\"1\">\n");
+	this.stream.print("<tr>\n");
+	this.stream.print("<td><h4>All ");
+	this.stream.print(computeSize(scenarios));
+	this.stream.print(" scenarios</h4></td>\n");
 	printColumnsTitle(size, performanceResults);
+	
+	// Print one line per scenario results
 	this.jsIdCount = 0;
 	for (int i=0; i<size; i++) {
 		ScenarioResults scenarioResults = (ScenarioResults) scenarios.get(i);
@@ -76,15 +86,20 @@ public void print(PerformanceResults performanceResults) {
 	this.stream.print("</table>\n");
 }
 
+private int computeSize(List scenarios) {
+	int size = scenarios.size();
+	int n = 0;
+	for (int i=0; i<size; i++) {
+		ScenarioResults scenarioResults = (ScenarioResults) scenarios.get(i);
+		if (scenarioResults.isValid()) n++;
+	}
+	return n;
+}
+
 /*
  * Print the table columns title.
  */
 private void printColumnsTitle(int size, PerformanceResults performanceResults) {
-	this.stream.print("<table border=\"1\">\n");
-	this.stream.print("<tr>\n");
-	this.stream.print("<td><h4>All ");
-	this.stream.print(size);
-	this.stream.print(" scenarios</h4></td>\n");
 	String[] configNames = performanceResults.getConfigNames(true/*sort*/);
 	String[] configBoxes = performanceResults.getConfigBoxes(true/*sort*/);
 	int length = configNames.length;
