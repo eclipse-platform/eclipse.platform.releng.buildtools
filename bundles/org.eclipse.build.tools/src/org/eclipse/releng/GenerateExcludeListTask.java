@@ -59,10 +59,11 @@ public class GenerateExcludeListTask extends Task {
 		writeProp();
 	}
 
-	private void readMap() {
+	
+	//for old map file format //
+/*	private void readMap() {
 		try {
-			BufferedReader r = new BufferedReader(new FileReader(
-					mapFile));
+			BufferedReader r = new BufferedReader(new FileReader(mapFile));
 			String line;
 			while ((line = r.readLine()) != null) {
 				int start = line.lastIndexOf('/');
@@ -72,8 +73,8 @@ public class GenerateExcludeListTask extends Task {
 					end = lastcomma;
 				}
 				int lastzip = line.lastIndexOf(".zip");
-				if (lastzip > start) {					
-					String rstring = line.substring(0,lastzip);
+				if (lastzip > start) {
+					String rstring = line.substring(0, lastzip);
 					line = rstring + ".jar";
 				}
 				if ((start < end) && (start > 0)) {
@@ -85,7 +86,26 @@ public class GenerateExcludeListTask extends Task {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
+	} */
+	
+	private void readMap() {
+		try {
+			BufferedReader r = new BufferedReader(new FileReader(mapFile));
+			String line;
+			while ((line = r.readLine()) != null) {
+			    int start = line.indexOf("plugin@");
+			    int end = line.indexOf(",");
+			    String plugin = line.substring(start+7,end);
+			    int startv = line.indexOf("version=");
+			    int endv = line.indexOf(",", startv);			    
+			    String version = line.substring(startv+8,endv);		
+				a.add(plugin + "_" + version +".jar");
+			}
+			r.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	} 
 
 	private void writeProp() {
 
