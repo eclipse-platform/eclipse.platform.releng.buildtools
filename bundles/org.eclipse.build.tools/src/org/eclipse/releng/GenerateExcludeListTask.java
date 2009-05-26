@@ -26,18 +26,18 @@ public class GenerateExcludeListTask extends Task {
 	private ArrayList a = new ArrayList();
 	private String mapFile;
 	private String outputFile;
-			
+
 	public GenerateExcludeListTask() {
 		super();
 	}
-	
-	public static void main(String[] args) {		
+
+	public static void main(String[] args) {
 		GenerateExcludeListTask parser = new GenerateExcludeListTask();
 		parser.setMapFile("c:\\temp\\orbit.map");
 		parser.setOutputFile("c:\\temp\\orbit.map.new");
-		parser.execute();			
+		parser.execute();
 	}
-	
+
 	public String getOutputFile() {
 		return outputFile;
 	}
@@ -54,14 +54,14 @@ public class GenerateExcludeListTask extends Task {
 		this.mapFile = mapFile;
 	}
 
-	public void execute() throws BuildException {		
+	public void execute() throws BuildException {
 		readMap();
 		writeProp();
 	}
 
-	
-	//for old map file format //
-/*	private void readMap() {
+	// for old map file format //
+
+	/* private void readMap() {
 		try {
 			BufferedReader r = new BufferedReader(new FileReader(mapFile));
 			String line;
@@ -87,35 +87,40 @@ public class GenerateExcludeListTask extends Task {
 			e.printStackTrace();
 		}
 	} */
-	
+
 	private void readMap() {
 		try {
 			BufferedReader r = new BufferedReader(new FileReader(mapFile));
 			String line;
 			while ((line = r.readLine()) != null) {
-			    int start = line.indexOf("plugin@");
-			    int end = line.indexOf(",");
-			    String plugin = line.substring(start+7,end);
-			    int startv = line.indexOf("version=");
-			    int endv = line.indexOf(",", startv);			    
-			    String version = line.substring(startv+8,endv);		
-				a.add(plugin + "_" + version +".jar");
+				int start = line.indexOf("plugin@");
+				int end = line.indexOf(",");
+				String plugin = "";
+				if ((start > 0) && (end > 0)) {
+					plugin = line.substring(start + 7, end);
+				}
+				String version = "";
+				int startv = line.indexOf("version=");
+				int endv = line.indexOf(",", startv);
+				if ((startv > 0) && (endv > 0)) {
+					version = line.substring(startv + 8, endv);
+				}
+				a.add(plugin + "_" + version + ".jar");
 			}
 			r.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	} 
+	}
 
 	private void writeProp() {
 
 		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter(
-					outputFile));			
-			for (Iterator iterator = a.iterator(); iterator.hasNext();) {				
+			BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
+			for (Iterator iterator = a.iterator(); iterator.hasNext();) {
 				String s = iterator.next().toString();
 				if (iterator.hasNext()) {
-				out.write("plugins/" + s + ",");
+					out.write("plugins/" + s + ",");
 				} else {
 					out.write("plugins/" + s);
 				}
@@ -125,7 +130,5 @@ public class GenerateExcludeListTask extends Task {
 			e.printStackTrace();
 		}
 	}
-	
-
 
 }
