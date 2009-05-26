@@ -93,19 +93,22 @@ public class GenerateExcludeListTask extends Task {
 			BufferedReader r = new BufferedReader(new FileReader(mapFile));
 			String line;
 			while ((line = r.readLine()) != null) {
-				int start = line.indexOf("plugin@");
+				int start = line.indexOf("plugin@") + 7;
 				int end = line.indexOf(",");
-				String plugin = "";
-				if ((start > 0) && (end > 0)) {
-					plugin = line.substring(start + 7, end);
-				}
+				String plugin = "";		
+				if ((start > 0) && (end > 0)) {				
+					plugin = line.substring(start, end);
+				}				
 				String version = "";
-				int startv = line.indexOf("version=");
+				int startv = line.indexOf("version=") + 8;
 				int endv = line.indexOf(",", startv);
 				if ((startv > 0) && (endv > 0)) {
-					version = line.substring(startv + 8, endv);
+					version = line.substring(startv, endv);
 				}
-				a.add(plugin + "_" + version + ".jar");
+				if ((version != "") && (plugin != "")) {
+				String l = plugin + "_" + version + ".jar";				
+				a.add(l);			
+				}						
 			}
 			r.close();
 		} catch (IOException e) {
