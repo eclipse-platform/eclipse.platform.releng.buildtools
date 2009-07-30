@@ -589,11 +589,16 @@ private void printComponentTitle(/*PerformanceResults performanceResults, */Stri
 	stream.print(currentName);
 	stream.print(" relative to ");
 	int index = baselineName.indexOf('_');
-	stream.print(baselineName.substring(0, index));
-	stream.print(" (");
-	index = baselineName.lastIndexOf('_');
-	stream.print(baselineName.substring(index+1, baselineName.length()));
-	stream.print(")</h3>\n");
+	if (index > 0) {
+		stream.print(baselineName.substring(0, index));
+		stream.print(" (");
+		index = baselineName.lastIndexOf('_');
+		stream.print(baselineName.substring(index+1, baselineName.length()));
+		stream.print(')');
+	} else {
+		stream.print(baselineName);
+	}
+		stream.print("</h3>\n");
 	
 	// Print reference to global results
 	if (!isGlobal) {
@@ -719,7 +724,7 @@ private void printSummaryScenarioLine(int i, String config, ScenarioResults scen
 	if (i==0) { // baseline results
 		List baselinePrefixes = new ArrayList();
 		if (this.baselinePrefix == null) {
-			baselinePrefixes.add(AbstractResults.VERSION_REF);
+			baselinePrefixes.add(AbstractResults.DEFAULT_BASELINE_PREFIX);
 		} else {
 			baselinePrefixes.add(this.baselinePrefix);
 		}
@@ -933,10 +938,10 @@ public IStatus run(final IProgressMonitor monitor) {
 		return new Status(IStatus.OK, UiPlugin.getDefault().toString(), "Everything is OK");
 	}
 	catch (OperationCanceledException oce) {
-		return new Status(IStatus.OK, UiPlugin.getDefault().toString(), "Everything is OK");
+		return new Status(IStatus.OK, UiPlugin.getDefault().toString(), "Generation was cancelled!");
 	}
 	catch (Exception ex) {
-		return new Status(IStatus.ERROR, UiPlugin.getDefault().toString(), "Something wrong happened", ex);
+		return new Status(IStatus.ERROR, UiPlugin.getDefault().toString(), "An unexpected exception occurred!", ex);
 	}
 	finally {
 		if (this.printStream != null) {
@@ -981,8 +986,12 @@ private void setDefaults(String buildName, String baseline) {
 
 	// Init baseline prefix if not set
 	if (this.baselinePrefix == null) {
-		// Assume that baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
-		this.baselinePrefix = baseline.substring(0, baseline.lastIndexOf('_'));
+		int index = baseline.lastIndexOf('_');
+		if (index > 0) {
+			this.baselinePrefix = baseline.substring(0, index);
+		} else {
+			this.baselinePrefix = AbstractResults.DEFAULT_BASELINE_PREFIX;
+		}
 	}
 
 	// Init current build prefixes if not set

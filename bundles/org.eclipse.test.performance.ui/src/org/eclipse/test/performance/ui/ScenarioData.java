@@ -104,8 +104,8 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 		String buildID = buildResults.getName();
 		int underscoreIndex = buildID.indexOf('_');
 		String label = (underscoreIndex != -1 && buildID.equals(current)) ? buildID.substring(0, underscoreIndex) : buildID;
-		if (buildID.startsWith(AbstractResults.VERSION_REF)) {
-			label = AbstractResults.VERSION_REF+buildID.substring(underscoreIndex);
+		if (buildID.startsWith(AbstractResults.DEFAULT_BASELINE_PREFIX)) {
+			label = AbstractResults.DEFAULT_BASELINE_PREFIX+buildID.charAt(AbstractResults.DEFAULT_BASELINE_PREFIX.length())+buildID.substring(underscoreIndex);
 		}
 
 		double value = buildResults.getValue(dim.getId());
@@ -160,6 +160,7 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
 	int length = configNames.length;
 	int size = performanceResults.size();
 	double total = length * size;
+	subMonitor.setWorkRemaining(length*size);
 	int progress = 0;
 	for (int i=0; i<length; i++) {
 		final String configName = configNames[i];
@@ -174,7 +175,6 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
 		final File outputDir = new File(this.rootDir, configName);
 		outputDir.mkdir();
 		Iterator components = performanceResults.getResults();
-		subMonitor.setWorkRemaining(size);
 		while (components.hasNext()) {
 			if (printStream != null) printStream.print(".");
 			final ComponentResults componentResults = (ComponentResults) components.next();
@@ -188,13 +188,14 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
 		     display.syncExec(
 				new Runnable() {
 					public void run(){
-						printSummary(configName, configBox, componentResults, outputDir, subMonitor.newChild(1));
+						printSummary(configName, configBox, componentResults, outputDir, subMonitor);
 					}
 				}
 			);
 //			printSummary(configName, configBox, componentResults, outputDir, monitor);
 			printDetails(configName, configBoxes[i], componentResults, outputDir);
 
+			subMonitor.worked(1);
 			if (subMonitor.isCanceled()) throw new OperationCanceledException();
 		}
 		if (printStream != null) {
