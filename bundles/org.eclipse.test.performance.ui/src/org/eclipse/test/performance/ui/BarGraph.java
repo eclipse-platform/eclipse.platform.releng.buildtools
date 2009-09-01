@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,7 +27,7 @@ public class BarGraph {
 	private static final int GAP= 10; // gap between bars
 	private static final int TGAP= 5; // gap between lines and labels
 
-	private static final boolean NO_SCALE= true; // 
+	private static final boolean NO_SCALE= true; //
 
 	// if NO_SCALE is true the following values are used:
 	private static final double RATIO= 0.6; // fraction of width reserved for bar graph; needs tweaking
@@ -40,18 +40,17 @@ public class BarGraph {
 	private static class BarItem {
 
 		String title;
-		double value, error;
+		double value;
 		String url;
 		String slowdownExpected;
 		boolean significant;
 
 		BarItem(String t, double[] stats, String u, String slow, boolean sig) {
-			title= t;
-			value= stats[0]==0 ? 0 : -stats[0] * 100;
-			error = stats[1] * 100;
-			url= u;
-			slowdownExpected= slow;
-			significant= sig;
+			this.title= t;
+			this.value= stats[0]==0 ? 0 : -stats[0] * 100;
+			this.url= u;
+			this.slowdownExpected= slow;
+			this.significant= sig;
 		}
 	}
 
@@ -59,19 +58,19 @@ public class BarGraph {
 	private List fItems;
 
 	BarGraph(String title) {
-		fTitle= title;
-		fItems= new ArrayList();
+		this.fTitle= title;
+		this.fItems= new ArrayList();
 	}
 
 	public void addItem(String name, double[] stats, String url, String slow, boolean significant) {
-		fItems.add(new BarItem(name, stats, url, slow, significant));
+		this.fItems.add(new BarItem(name, stats, url, slow, significant));
 	}
 
 	public int getHeight() {
-		int n= fItems.size();
+		int n= this.fItems.size();
 		int textHeight= 16;
 		int titleHeight= 0;
-		if (fTitle != null)
+		if (this.fTitle != null)
 			titleHeight= textHeight + GAP;
 		return MARGIN + titleHeight + n * (GAP + BARHEIGHT) + GAP + textHeight + MARGIN;
 	}
@@ -80,7 +79,7 @@ public class BarGraph {
 
 		NumberFormat nf= NumberFormat.getInstance();
 
-		BarItem[] bars= (BarItem[]) fItems.toArray(new BarItem[fItems.size()]);
+		BarItem[] bars= (BarItem[]) this.fItems.toArray(new BarItem[this.fItems.size()]);
 
 		// draw white background
 		Color bg= display.getSystemColor(SWT.COLOR_WHITE);
@@ -105,9 +104,9 @@ public class BarGraph {
 		Color fg= display.getSystemColor(SWT.COLOR_BLACK);
 
 		int vstart= 0; // start rows here
-		if (fTitle != null) {
-			vstart= gc.stringExtent(fTitle).y + GAP;
-			gc.drawString(fTitle, MARGIN, MARGIN, true); // draw title left aligned
+		if (this.fTitle != null) {
+			vstart= gc.stringExtent(this.fTitle).y + GAP;
+			gc.drawString(this.fTitle, MARGIN, MARGIN, true); // draw title left aligned
 		}
 
 		int center= MARGIN + w / 2;
@@ -192,7 +191,7 @@ public class BarGraph {
 			BarItem bar= bars[i];
 			double delta = bar.value;
 			double orgDelta= delta;
-			
+
 			boolean clamped= false;
 			if (NO_SCALE) {
 				if (delta > max) {
@@ -273,9 +272,9 @@ public class BarGraph {
 			y+= BARHEIGHT + GAP;
 
 			if (hasURL) {
-				if (fAreaBuffer == null)
-					fAreaBuffer= new StringBuffer();
-				fAreaBuffer.append("		echo '<area shape=\"RECT\" coords=\"0," + y0 + ',' + width + ',' + y + "\" href=\"" + bar.url + "\">';\n");
+				if (this.fAreaBuffer == null)
+					this.fAreaBuffer= new StringBuffer();
+				this.fAreaBuffer.append("		echo '<area shape=\"RECT\" coords=\"0," + y0 + ',' + width + ',' + y + "\" href=\"" + bar.url + "\">';\n");
 			}
 		}
 
@@ -285,9 +284,9 @@ public class BarGraph {
 	}
 
 	public String getAreas() {
-		if (fAreaBuffer != null) {
-			String s= fAreaBuffer.toString();
-			fAreaBuffer= null;
+		if (this.fAreaBuffer != null) {
+			String s= this.fAreaBuffer.toString();
+			this.fAreaBuffer= null;
 			return s;
 		}
 		return null;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,22 +10,24 @@
  *******************************************************************************/
 package org.eclipse.test.performance.ui;
 
-import org.eclipse.core.runtime.Plugin;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
  * The main plugin class to be used in the desktop.
  */
-public class UiPlugin extends Plugin {
+public class UiPlugin extends AbstractUIPlugin {
 	//The shared instance.
 	private static UiPlugin plugin;
-	
+
 	/**
 	 * The constructor.
 	 */
 	public UiPlugin() {
 		super();
-		plugin = this;
+		if (plugin == null) {
+			plugin = this;
+		}
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,17 +31,17 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.test.internal.performance.results.AbstractResults;
-import org.eclipse.test.internal.performance.results.ConfigResults;
-import org.eclipse.test.internal.performance.results.DB_Results;
-import org.eclipse.test.internal.performance.results.PerformanceResults;
-import org.eclipse.test.internal.performance.results.ScenarioResults;
+import org.eclipse.test.internal.performance.results.db.ConfigResults;
+import org.eclipse.test.internal.performance.results.db.DB_Results;
+import org.eclipse.test.internal.performance.results.db.PerformanceResults;
+import org.eclipse.test.internal.performance.results.db.ScenarioResults;
+import org.eclipse.test.internal.performance.results.utils.Util;
 import org.osgi.framework.Bundle;
 
 /**
  * Main class to generate performance results of all scenarios matching a given pattern
  * in one HTML page per component.
- * 
+ *
  * @see #printUsage() method to see a detailed parameters usage
  */
 public class GenerateResults {
@@ -118,7 +118,7 @@ String scenarioPattern;
  * <p>
  * Example:
  * 	<pre>-current.prefix N, I</pre>
- * 
+ *
  * @see #baselinePrefix
  */
 List currentBuildPrefixes;
@@ -138,7 +138,7 @@ List pointsOfInterest;
  * <p>
  * Default is <code>false</code> which means that scenario data
  * will also be generated.
- * 
+ *
  * @see #genData
  * @see #genAll
  */
@@ -150,7 +150,7 @@ boolean genFingerPrints = false;
  * <p>
  * Default is <code>false</code> which means that fingerprints
  * will also be generated.
- * 
+ *
  * @see #genFingerPrints
  * @see #genAll
  */
@@ -163,7 +163,7 @@ boolean genData = false;
  * <p>
  * Default is <code>true</code> which means that scenario data
  * will also be generated.
- * 
+ *
  * @see #genData
  * @see #genFingerPrints
  */
@@ -472,7 +472,7 @@ private void parse(String[] args) {
 	if (this.printStream != null) {
 		this.printStream.print(buffer.toString());
 	}
-	
+
 	// Stop if some mandatory parameters are missing
 	if (this.outputDir == null || this.configDescriptors == null || jvm == null) {
 		printUsage();
@@ -489,7 +489,7 @@ private void printComponent(/*PerformanceResults performanceResults, */String co
 	if (this.printStream != null) this.printStream.print(".");
 	File outputFile = new File(this.outputDir, component + ".php");
 	PrintStream stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
-	
+
 	// Print header
 	boolean isGlobal = component.startsWith("global");
 	if (isGlobal) {
@@ -529,20 +529,20 @@ private void printComponent(/*PerformanceResults performanceResults, */String co
 	stream.print("<script src=\"ToolTip.js\"></script>\n");
 	stream.print("<script src=\"Fingerprints.js\"></script>\n");
 	stream.print(Utils.HTML_DEFAULT_CSS);
-	
+
 	// Print title
 	stream.print("<body>");
 	printComponentTitle(/*performanceResults, */component, isGlobal, stream);
 
 	// print the html representation of fingerprint for each config
 	Display display = Display.getDefault();
-	if (genFingerPrints || genAll) {
+	if (this.genFingerPrints || this.genAll) {
 		final FingerPrint fingerprint = new FingerPrint(component, stream, this.outputDir);
 		display.syncExec(
 			new Runnable() {
 				public void run(){
 					try {
-						fingerprint.print(performanceResults);
+						fingerprint.print(GenerateResults.this.performanceResults);
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
@@ -561,7 +561,7 @@ private void printComponent(/*PerformanceResults performanceResults, */String co
 			new Runnable() {
 				public void run(){
 					try {
-						sst.print(performanceResults);
+						sst.print(GenerateResults.this.performanceResults);
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
@@ -577,9 +577,9 @@ private void printComponent(/*PerformanceResults performanceResults, */String co
 }
 
 private void printComponentTitle(/*PerformanceResults performanceResults, */String component, boolean isGlobal, PrintStream stream) {
-	String baselineName = performanceResults.getBaselineName();
-	String currentName = performanceResults.getName();
-	
+	String baselineName = this.performanceResults.getBaselineName();
+	String currentName = this.performanceResults.getName();
+
 	// Print title line
 	stream.print("<h3>Performance of ");
 	if (!isGlobal) {
@@ -599,7 +599,7 @@ private void printComponentTitle(/*PerformanceResults performanceResults, */Stri
 		stream.print(baselineName);
 	}
 		stream.print("</h3>\n");
-	
+
 	// Print reference to global results
 	if (!isGlobal) {
 		stream.print("<?php\n");
@@ -629,12 +629,12 @@ private void printSummary(/*PerformanceResults performanceResults*/) {
 		List scenarioNames = DB_Results.getScenarios();
 		int size = scenarioNames.size();
 		printSummaryColumnsTitle(stream/*, performanceResults*/);
-		String[] configs = performanceResults.getConfigNames(true/*sorted*/);
+		String[] configs = this.performanceResults.getConfigNames(true/*sorted*/);
 		int configsLength = configs.length;
 		for (int i=0; i<size; i++) {
 			String scenarioName = (String) scenarioNames.get(i);
 			if (scenarioName == null) continue;
-			ScenarioResults scenarioResults = performanceResults.getScenarioResults(scenarioName);
+			ScenarioResults scenarioResults = this.performanceResults.getScenarioResults(scenarioName);
 			if (scenarioResults != null) {
 				stream.print("<tr>\n");
 				for (int j=0; j<2; j++) {
@@ -692,7 +692,7 @@ private void printSummaryPresentation(PrintStream stream) {
  * Print columns titles of the summary table.
  */
 private void printSummaryColumnsTitle(PrintStream stream/*, PerformanceResults performanceResults*/) {
-	String[] configBoxes = performanceResults.getConfigBoxes(true/*sorted*/);
+	String[] configBoxes = this.performanceResults.getConfigBoxes(true/*sorted*/);
 	int length = configBoxes.length;
 	stream.print("<table border=\"1\"><tr><td colspan=\"");
 	stream.print(length);
@@ -724,7 +724,7 @@ private void printSummaryScenarioLine(int i, String config, ScenarioResults scen
 	if (i==0) { // baseline results
 		List baselinePrefixes = new ArrayList();
 		if (this.baselinePrefix == null) {
-			baselinePrefixes.add(AbstractResults.DEFAULT_BASELINE_PREFIX);
+			baselinePrefixes.add(DB_Results.getDbBaselinePrefix());
 		} else {
 			baselinePrefixes.add(this.baselinePrefix);
 		}
@@ -827,23 +827,23 @@ public IStatus run(String[] args) {
  * Run the generation using a progress monitor.
  * Note that all necessary information to generate properly must be set before
  * calling this method
- * 
+ *
  * @see #run(String[])
  */
 public IStatus run(final IProgressMonitor monitor) {
 	long begin = System.currentTimeMillis();
 	int work = 1100;
     int dataWork = 1000 * this.performanceResults.getConfigBoxes(false).length;
-	if (genAll || genData) {
+	if (this.genAll || this.genData) {
 	    work += dataWork;
     }
 	SubMonitor subMonitor = SubMonitor.convert(monitor, work);
 	try {
-		
+
 		// Print whole scenarios summary
 		if (this.printStream != null) this.printStream.println();
 		printSummary(/*performanceResults*/);
-	
+
 		// Copy images and scripts to output dir
 		Bundle bundle = UiPlugin.getDefault().getBundle();
 		URL images = bundle.getEntry("images");
@@ -876,15 +876,15 @@ public IStatus run(final IProgressMonitor monitor) {
 						if (subdirFiles[i].isDirectory()) {
 							// expect only one sub-directory
 						} else {
-							AbstractResults.copyFile(subdirFiles[j], new File(subdir, subdirFiles[j].getName()));
+							Util.copyFile(subdirFiles[j], new File(subdir, subdirFiles[j].getName()));
 						}
 					}
 				} else {
-					AbstractResults.copyFile(file, new File(this.outputDir, file.getName()));
+					Util.copyFile(file, new File(this.outputDir, file.getName()));
 				}
 			}
 		}
-	
+
 		// Print HTML pages and all linked files
 		if (this.printStream != null) {
 			this.printStream.println("Print performance results HTML pages:");
@@ -896,7 +896,7 @@ public IStatus run(final IProgressMonitor monitor) {
 		printComponent(/*performanceResults, */"global_fp");
 		subMonitor.worked(100);
 		if (subMonitor.isCanceled()) throw new OperationCanceledException();
-		String[] components = performanceResults.getComponents();
+		String[] components = this.performanceResults.getComponents();
 		int length = components.length;
 		int step = 1000 / length;
 		int progress = 0;
@@ -910,29 +910,29 @@ public IStatus run(final IProgressMonitor monitor) {
 			progress++;
 		}
 		if (this.printStream != null) {
-			String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
+			String duration = Util.timeString(System.currentTimeMillis()-start);
 			this.printStream.println(" done in "+duration);
 		}
-	
+
 		// Print the scenarios data
-		if (genData || genAll) {
+		if (this.genData || this.genAll) {
 			start = System.currentTimeMillis();
 			if (this.printStream != null) this.printStream.println("	- all scenarios data:");
 			ScenarioData data = new ScenarioData(this.baselinePrefix, this.pointsOfInterest, this.currentBuildPrefixes, this.outputDir);
 			try {
-				data.print(performanceResults, printStream, subMonitor.newChild(dataWork));
+				data.print(this.performanceResults, this.printStream, subMonitor.newChild(dataWork));
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			if (this.printStream != null) {
-				String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
+				String duration = Util.timeString(System.currentTimeMillis()-start);
 				this.printStream.println("	=> done in "+duration);
 			}
 		}
 		if (this.printStream != null) {
 			long time = System.currentTimeMillis();
 			this.printStream.println("End of generation: "+new SimpleDateFormat("H:mm:ss").format(new Date(time)));
-			String duration = AbstractResults.timeString(System.currentTimeMillis()-begin);
+			String duration = Util.timeString(System.currentTimeMillis()-begin);
 			this.printStream.println("=> done in "+duration);
 		}
 		return new Status(IStatus.OK, UiPlugin.getDefault().toString(), "Everything is OK");
@@ -968,7 +968,7 @@ private void setDefaults(String buildName, String baseline) {
 			}
 		}
 	}
-	
+
 	// Verify that build is known
 	String[] builds = DB_Results.getBuilds();
 	if (builds == null || builds.length == 0) {
@@ -990,7 +990,7 @@ private void setDefaults(String buildName, String baseline) {
 		if (index > 0) {
 			this.baselinePrefix = baseline.substring(0, index);
 		} else {
-			this.baselinePrefix = AbstractResults.DEFAULT_BASELINE_PREFIX;
+			this.baselinePrefix = DB_Results.getDbBaselinePrefix();
 		}
 	}
 

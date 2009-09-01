@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2008 IBM Corporation and others.
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,12 +32,13 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.data.Dim;
-import org.eclipse.test.internal.performance.results.AbstractResults;
-import org.eclipse.test.internal.performance.results.BuildResults;
-import org.eclipse.test.internal.performance.results.ComponentResults;
-import org.eclipse.test.internal.performance.results.ConfigResults;
-import org.eclipse.test.internal.performance.results.PerformanceResults;
-import org.eclipse.test.internal.performance.results.ScenarioResults;
+import org.eclipse.test.internal.performance.results.db.BuildResults;
+import org.eclipse.test.internal.performance.results.db.ComponentResults;
+import org.eclipse.test.internal.performance.results.db.ConfigResults;
+import org.eclipse.test.internal.performance.results.db.DB_Results;
+import org.eclipse.test.internal.performance.results.db.PerformanceResults;
+import org.eclipse.test.internal.performance.results.db.ScenarioResults;
+import org.eclipse.test.internal.performance.results.utils.Util;
 
 /**
  * Class used to print scenario all builds data.
@@ -49,6 +50,7 @@ public class ScenarioData {
 	private File rootDir;
 	private static final int GRAPH_WIDTH = 600;
 	private static final int GRAPH_HEIGHT = 200;
+	private Dim[] dimensions = DB_Results.getResultsDimensions();
 
 /**
  * Summary of results for a scenario for a given build compared to a
@@ -97,6 +99,7 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 	String baseline = configResults.getBaselineBuildName();
 	String current = configResults.getCurrentBuildName();
 
+	final String defaultBaselinePrefix = DB_Results.getDbBaselinePrefix();
 	Iterator builds = configResults.getResults();
 	List lastSevenNightlyBuilds = configResults.lastNightlyBuildNames(7);
 	buildLoop: while (builds.hasNext()) {
@@ -104,8 +107,8 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 		String buildID = buildResults.getName();
 		int underscoreIndex = buildID.indexOf('_');
 		String label = (underscoreIndex != -1 && buildID.equals(current)) ? buildID.substring(0, underscoreIndex) : buildID;
-		if (buildID.startsWith(AbstractResults.DEFAULT_BASELINE_PREFIX)) {
-			label = AbstractResults.DEFAULT_BASELINE_PREFIX+buildID.charAt(AbstractResults.DEFAULT_BASELINE_PREFIX.length())+buildID.substring(underscoreIndex);
+		if (buildID.startsWith(defaultBaselinePrefix)) {
+			label = defaultBaselinePrefix+buildID.charAt(defaultBaselinePrefix.length())+buildID.substring(underscoreIndex);
 		}
 
 		double value = buildResults.getValue(dim.getId());
@@ -135,12 +138,12 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 			}
 		}
 		if (buildID.equals(baseline)) {
-			boolean drawBaseline = (baselinePrefix != null) ? false : true;
+			boolean drawBaseline = (this.baselinePrefix != null) ? false : true;
 			graph.addItem("reference", label, dim.getDisplayValue(value), value, magenta, true, Utils.getDateFromBuildID(buildID, true), true, drawBaseline);
 			continue;
 		}
-		if (baselinePrefix != null) {
-			if (buildID.startsWith(baselinePrefix) && !buildID.equals(baseline) && Utils.getDateFromBuildID(buildID, true) <= Utils.getDateFromBuildID(baseline, true)) {
+		if (this.baselinePrefix != null) {
+			if (buildID.startsWith(this.baselinePrefix) && !buildID.equals(baseline) && Utils.getDateFromBuildID(buildID, true) <= Utils.getDateFromBuildID(baseline, true)) {
 				graph.addItem("reference", label, dim.getDisplayValue(value), value, magenta, false, Utils.getDateFromBuildID(buildID, true), false);
 				continue;
 			}
@@ -151,7 +154,7 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 
 /**
  * Print the scenario all builds data from the given performance results.
- * 
+ *
  * @param performanceResults The needed information to generate scenario data
  */
 public void print(PerformanceResults performanceResults, PrintStream printStream, final SubMonitor subMonitor) {
@@ -165,11 +168,11 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
 	for (int i=0; i<length; i++) {
 		final String configName = configNames[i];
 		final String configBox = configBoxes[i];
-		
+
 		// Manage monitor
 		subMonitor.setTaskName("Generating data for "+configBox);
 		if (subMonitor.isCanceled()) throw new OperationCanceledException();
-		
+
 		long start = System.currentTimeMillis();
 		if (printStream != null) printStream.print("		+ "+configName);
 		final File outputDir = new File(this.rootDir, configName);
@@ -178,7 +181,7 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
 		while (components.hasNext()) {
 			if (printStream != null) printStream.print(".");
 			final ComponentResults componentResults = (ComponentResults) components.next();
-			
+
 			// Manage monitor
 			int percentage = (int) ((progress++ / total) * 100);
 			subMonitor.setTaskName("Generating data for "+configBox+": "+percentage+"%");
@@ -199,7 +202,7 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
 			if (subMonitor.isCanceled()) throw new OperationCanceledException();
 		}
 		if (printStream != null) {
-			String duration = AbstractResults.timeString(System.currentTimeMillis()-start);
+			String duration = Util.timeString(System.currentTimeMillis()-start);
 			printStream.println(" done in "+duration);
 		}
 	}
@@ -271,10 +274,10 @@ void printSummary(String configName, String configBox, ComponentResults componen
 			// Print build result table
 			stream.print("<table border=\"1\">\n"); //$NON-NLS-1$
 			stream.print("<tr><td><b>Build Id</b></td>"); //$NON-NLS-1$
-			Dim[] dimensions = AbstractResults.SUPPORTED_DIMS;
-			int dimLength = dimensions.length;
+			int dimLength = this.dimensions.length;
 			for (int d=0; d<dimLength; d++) {
-				stream.print("<td><a href=\"#" + dimensions[d].getShortName() + "\"><b>" + dimensions[d].getName() + "</b></a></td>");
+				Dim dim = this.dimensions[d];
+				stream.print("<td><a href=\"#" + dim.getLabel() + "\"><b>" + dim.getName() + "</b></a></td>");
 			}
 			stream.print("</tr>\n");
 
@@ -297,16 +300,17 @@ void printSummary(String configName, String configBox, ComponentResults componen
 
 			// print image maps of historical
 			for (int d=0; d<dimLength; d++) {
-				TimeLineGraph lineGraph = getLineGraph(scenarioResults, configResults, dimensions[d], highlightedPoints, this.buildIDStreamPatterns);
+				Dim dim = this.dimensions[d];
+				TimeLineGraph lineGraph = getLineGraph(scenarioResults, configResults, dim, highlightedPoints, this.buildIDStreamPatterns);
 				if (subMonitor.isCanceled()) throw new OperationCanceledException();
 
-				String dimShortName = dimensions[d].getShortName();
+				String dimShortName = dim.getLabel();
 				String imgFileName = scenarioFileName + "_" + dimShortName;
 				File imgFile = createFile(outputDir, "graphs", imgFileName, "gif");
 				saveGraph(lineGraph, imgFile);
 				stream.print("<br><a name=\"" + dimShortName + "\"></a>\n");
-				stream.print("<br><b>" + dimensions[d].getName() + "</b><br>\n");
-				stream.print(dimensions[d].getDescription() + "<br><br>\n");
+				stream.print("<br><b>" + dim.getName() + "</b><br>\n");
+				stream.print(dim.getDescription() + "<br><br>\n");
 				stream.print("<img src=\"graphs/");
 				stream.print(imgFile.getName());
 				stream.print("\" usemap=\"#" + lineGraph.fTitle + "\">");
@@ -335,19 +339,19 @@ private void printTableLine(PrintStream stream, BuildResults buildResults) {
 	stream.print(buildResults.getName());
 	if (buildResults.isBaseline()) stream.print(" (reference)");
 	stream.print("</td>");
-	Dim[] dimensions = AbstractResults.SUPPORTED_DIMS;
-	int dimLength = dimensions.length;
+	int dimLength = this.dimensions.length;
 	for (int d=0; d<dimLength; d++) {
-		int dim_id = dimensions[d].getId();
+		Dim dim = this.dimensions[d];
+		int dim_id = dim.getId();
 		double stddev = buildResults.getDeviation(dim_id);
-		String displayValue = dimensions[d].getDisplayValue(buildResults.getValue(dim_id));
+		String displayValue = dim.getDisplayValue(buildResults.getValue(dim_id));
 		stream.print("<td>");
 		stream.print(displayValue);
 		if (stddev < 0) {
 			stream.print(" [n/a]\n");
 		} else if (stddev > 0) {
 			stream.print(" [");
-			stream.print(dimensions[d].getDisplayValue(stddev));
+			stream.print(dim.getDisplayValue(stddev));
 			stream.print("]");
 		}
 		stream.print( "</td>");
@@ -360,10 +364,9 @@ private void printTableLine(PrintStream stream, BuildResults buildResults) {
  */
 private void printDifferenceLine(PrintStream stream, ConfigResults configResults) {
 	stream.print("<tr><td>*Delta</td>");
-	Dim[] dimensions = AbstractResults.SUPPORTED_DIMS;
-	int dimLength = dimensions.length;
+	int dimLength = this.dimensions.length;
 	for (int d=0; d<dimLength; d++) {
-		Dim currentDim = dimensions[d];
+		Dim currentDim = this.dimensions[d];
 		int dim_id = currentDim.getId();
 		BuildResults currentBuild = configResults.getCurrentBuildResults();
 		BuildResults baselineBuild = configResults.getBaselineBuildResults();

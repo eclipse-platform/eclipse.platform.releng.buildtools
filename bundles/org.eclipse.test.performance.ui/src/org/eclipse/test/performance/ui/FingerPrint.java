@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2008 IBM Corporation and others.
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,10 +26,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.test.internal.performance.results.AbstractResults;
-import org.eclipse.test.internal.performance.results.ConfigResults;
-import org.eclipse.test.internal.performance.results.PerformanceResults;
-import org.eclipse.test.internal.performance.results.ScenarioResults;
+import org.eclipse.test.internal.performance.results.db.ConfigResults;
+import org.eclipse.test.internal.performance.results.db.DB_Results;
+import org.eclipse.test.internal.performance.results.db.PerformanceResults;
+import org.eclipse.test.internal.performance.results.db.ScenarioResults;
 
 /**
  * Class used to create scenario fingerprint.
@@ -50,12 +50,12 @@ public FingerPrint(String name, PrintStream ps, File outputDir) {
 
 /**
  * Create and save fingerprints as image and print their reference in the current stream.
- * 
+ *
  * @param performanceResults The performance results used to print the fingerprints
  */
 public void print(final PerformanceResults performanceResults) {
 	String buildName = performanceResults.getName();
-	
+
 	// Compute fingerprint output file name prefix
 	int currentUnderscoreIndex = buildName.indexOf('_');
 	if  (currentUnderscoreIndex != -1){
@@ -66,17 +66,17 @@ public void print(final PerformanceResults performanceResults) {
 		buffer.append(this.component);
 		buffer.append('_');
 	}
-	buffer.append(AbstractResults.VERSION_REF);
+	buffer.append(DB_Results.getDbBaselineRefVersion());
 	buffer.append('_');
 	buffer.append(buildName);
 	String filePrefix = buffer.toString();
-	
+
 	// Print the legend
 	this.stream.print("The following fingerprints show results for the most representative tests of the ");
 	if (this.component == null) {
 		this.stream.print("current build.<br>\n");
 	} else {
-		this.stream.print(component);
+		this.stream.print(this.component);
 		this.stream.print(" component.<br>\n");
 	}
 	this.stream.print("<table border=\"0\">\n");
@@ -114,7 +114,7 @@ public void print(final PerformanceResults performanceResults) {
 		// TODO use FingerPrintGraph instead
 		BarGraph barGraph = null;
 		List allResults = new ArrayList();
-		String defaultDimName = AbstractResults.DEFAULT_DIM.getName();
+		String defaultDimName = DB_Results.getDefaultDimension().getName();
 		for (int i=0, size=scenarios.size(); i<size; i++) {
 			ScenarioResults scenarioResults = (ScenarioResults) scenarios.get(i);
 			ConfigResults configResults = scenarioResults.getConfigResults(configName);
