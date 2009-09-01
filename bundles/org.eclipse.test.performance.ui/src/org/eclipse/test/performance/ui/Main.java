@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2005, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,7 +16,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 /**
  * Main class to generate performance results of all scenarios matching a given pattern
  * in one HTML page per component.
- *
+ * 
  * @see GenerateResults for the complete implementation
  */
 public class Main implements IApplication {
@@ -33,7 +33,7 @@ public class Main implements IApplication {
  * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
  */
 public Object start(IApplicationContext context) throws Exception {
-
+	
 	GenerateResults generation = new GenerateResults();
 	String[] args = (String[]) context.getArguments().get("application.args");
 	generation.run(args);

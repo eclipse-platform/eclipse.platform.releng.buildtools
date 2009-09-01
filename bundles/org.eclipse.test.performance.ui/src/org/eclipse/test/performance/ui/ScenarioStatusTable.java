@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,10 +14,10 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.eclipse.test.internal.performance.results.db.BuildResults;
-import org.eclipse.test.internal.performance.results.db.ConfigResults;
-import org.eclipse.test.internal.performance.results.db.PerformanceResults;
-import org.eclipse.test.internal.performance.results.db.ScenarioResults;
+import org.eclipse.test.internal.performance.results.BuildResults;
+import org.eclipse.test.internal.performance.results.ConfigResults;
+import org.eclipse.test.internal.performance.results.PerformanceResults;
+import org.eclipse.test.internal.performance.results.ScenarioResults;
 
 /**
  * Class used to print a scenario status table.
@@ -54,7 +54,7 @@ public void print(PerformanceResults performanceResults) {
 	this.stream.print(computeSize(scenarios));
 	this.stream.print(" scenarios</h4></td>\n");
 	printColumnsTitle(size, performanceResults);
-
+	
 	// Print one line per scenario results
 	this.jsIdCount = 0;
 	for (int i=0; i<size; i++) {
@@ -164,9 +164,9 @@ private void printConfigStats(ScenarioResults scenarioResults, String config) {
 		// create message with tooltip text including deviation with error plus failure message
 		this.jsIdCount+=1;
 		this.stream.print("class=\"tooltipSource\" onMouseover=\"show_element('toolTip");
-		this.stream.print(this.jsIdCount);
+		this.stream.print(jsIdCount);
 		this.stream.print("')\" onMouseout=\"hide_element('toolTip");
-		this.stream.print(this.jsIdCount);
+		this.stream.print(jsIdCount);
 		this.stream.print("')\" \nhref=\"");
 		this.stream.print(configResults.getName());
 		this.stream.print('/');
@@ -176,7 +176,7 @@ private void printConfigStats(ScenarioResults scenarioResults, String config) {
 		this.stream.print(image);
 		this.stream.print("\"/>\n");
 		this.stream.print("<span class=\"hidden_tooltip\" id=\"toolTip");
-		this.stream.print(this.jsIdCount);
+		this.stream.print(jsIdCount);
 		this.stream.print("\">");
 		this.stream.print(failure);
 		this.stream.print("</span></a>\n");

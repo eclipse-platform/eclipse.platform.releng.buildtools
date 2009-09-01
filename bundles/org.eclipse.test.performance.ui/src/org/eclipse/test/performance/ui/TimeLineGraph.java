@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2004, 2006 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,52 +20,52 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.test.internal.performance.data.Dim;
 
 public class TimeLineGraph extends LineGraph{
-
+    
     Hashtable fItemGroups;
-
+     
     public TimeLineGraph (String title, Dim dim) {
         super(title, dim);
-        this.fItemGroups=new Hashtable();
+        fItemGroups=new Hashtable();
     }
 
     public void paint(Image im) {
-
+        
         Rectangle bounds= im.getBounds();
-
+        
         GC g= new GC(im);
 
-        Point ee= g.stringExtent(this.fTitle);
+        Point ee= g.stringExtent(fTitle);
         int titleHeight= ee.y;
 
         double maxItem= getMaxItem();
         double minItem= getMinItem();
-
+        
         int max= (int) (Math.ceil(maxItem * (maxItem < 0 ? 0.8 : 1.2)));
         int min= (int) (Math.floor(minItem * (minItem < 0 ? 1.2 : 0.8)));
 
-        String smin= this.fDimension.getDisplayValue(min);
+        String smin= fDimension.getDisplayValue(min);
         Point emin= g.stringExtent(smin);
-
-        String smax= this.fDimension.getDisplayValue(max);
+        
+        String smax= fDimension.getDisplayValue(max);
         Point emax= g.stringExtent(smax);
-
+        
         int labelWidth= Math.max(emin.x, emax.x) + 2;
-
+                
         int top= PADDING;
         int bottom= bounds.height - titleHeight - PADDING;
         int left= PADDING + labelWidth;
 
         //getMostRecent
-        TimeLineGraphItem lastItem= getMostRecent(this.fItemGroups);
+        TimeLineGraphItem lastItem= getMostRecent(fItemGroups);
         int right=bounds.width - PADDING/2;
         if (lastItem!=null)
         	right= bounds.width - lastItem.getSize(g).x - PADDING/2;
-
+             
         // draw the max and min values
         g.drawString(smin, PADDING/2+labelWidth-emin.x, bottom-titleHeight, true);
         g.drawString(smax, PADDING/2+labelWidth-emax.x, top, true);
         g.drawString("TIME (not drawn to scale)", (right-left)/3+PADDING+titleHeight,bottom-PADDING+(titleHeight*2), true);
-
+    
         // draw the vertical and horizontal lines
         g.drawLine(left, top, left, bottom);
         g.drawLine(left, bottom, right, bottom);
@@ -74,10 +74,10 @@ public class TimeLineGraph extends LineGraph{
         Color oldfg= g.getForeground();
 
         setCoordinates(right-left,left,bottom-top,bottom,max-min);
-
-        Enumeration _enum=this.fItemGroups.elements();
+        
+        Enumeration _enum=fItemGroups.elements();
         Comparator comparator=new TimeLineGraphItem.GraphItemComparator();
-
+ 
         while (_enum.hasMoreElements()) {
  			List items = (List) _enum.nextElement();
 			Object[] fItemsArray=items.toArray();
@@ -93,16 +93,16 @@ public class TimeLineGraph extends LineGraph{
 				int yposition = thisItem.y;
 				int xposition = thisItem.x;
 				g.setLineWidth(1);
-
+				
 				g.setBackground(thisItem.color);
 				g.setForeground(thisItem.color);
 
 				if (thisItem.drawAsBaseline){
-					g.setLineWidth(0);
+					g.setLineWidth(0);					
 					g.drawLine(xposition, yposition,right,yposition);
 					g.drawLine(left,yposition,xposition, yposition);
     		    }
-
+    		    
 				if (i > 0) // don't draw for first segment
 					g.drawLine(lastx, lasty, xposition, yposition);
 
@@ -113,11 +113,11 @@ public class TimeLineGraph extends LineGraph{
 
 				if (thisItem.isSpecial)
 					g.drawRectangle(xposition -4, yposition - 4, 8, 8);
+		
+				if (fAreaBuffer == null)
+					fAreaBuffer = new StringBuffer();
 
-				if (this.fAreaBuffer == null)
-					this.fAreaBuffer = new StringBuffer();
-
-				this.fAreaBuffer.append("\r<area shape=\"circle\" coords=\""
+				fAreaBuffer.append("\r<area shape=\"circle\" coords=\""
 						+ (xposition - 2) + ',' + (yposition - 2) + ',' + 5
 						+ " alt=\"" + thisItem.title + ": "
 						+ thisItem.description + "\"" + " title=\""
@@ -141,10 +141,10 @@ public class TimeLineGraph extends LineGraph{
 				lasty = yposition;
 			}
 		}
-
+        
         g.dispose();
     }
-
+    
     public void addItem(String groupName,String name, String description, double value, Color col, boolean display, long timestamp) {
     	addItem(groupName, name, description, value, col, display,	timestamp,false);
     }
@@ -155,17 +155,17 @@ public class TimeLineGraph extends LineGraph{
 	}
 
     public void addItem(String groupName,String name, String description, double value, Color col, boolean display, long timestamp,boolean isSpecial,boolean drawBaseline) {
-      	List items = (List) this.fItemGroups.get(groupName);
-  		if (this.fItemGroups.get(groupName) == null) {
+      	List items = (List) fItemGroups.get(groupName);
+  		if (fItemGroups.get(groupName) == null) {
   			items=new ArrayList();
-  			this.fItemGroups.put(groupName, items);
+  			fItemGroups.put(groupName, items);
   		}
   		items.add(new TimeLineGraphItem(name, description, value, col, display,
   				timestamp,isSpecial,drawBaseline));
     }
-
+     
     public double getMaxItem() {
-    	Enumeration _enum=this.fItemGroups.elements();
+    	Enumeration _enum=fItemGroups.elements();
         double maxItem= 0;
     	while (_enum.hasMoreElements()) {
 			List items = (List) _enum.nextElement();
@@ -181,7 +181,7 @@ public class TimeLineGraph extends LineGraph{
     }
 
     public double getMinItem() {
-       	Enumeration _enum = this.fItemGroups.elements();
+       	Enumeration _enum = fItemGroups.elements();
 		double minItem = getMaxItem();
 
 		while (_enum.hasMoreElements()) {
@@ -196,7 +196,7 @@ public class TimeLineGraph extends LineGraph{
             return -1;
         return minItem;
     }
-
+    
     private TimeLineGraphItem getMostRecent(Hashtable lineGraphGroups) {
 		Enumeration _enum = lineGraphGroups.elements();
 		long mostRecentTimestamp = 0;
@@ -218,14 +218,14 @@ public class TimeLineGraph extends LineGraph{
 		}
 		return mostRecentItem;
 	}
-
+      
     private void setCoordinates(int width, int xOffset, int height, int yOffset, int yValueRange){
-
-        List mainGroup=(ArrayList)this.fItemGroups.get("main");
-        List referenceGroup=(ArrayList)this.fItemGroups.get("reference");
-
+ 
+        List mainGroup=(ArrayList)fItemGroups.get("main");
+        List referenceGroup=(ArrayList)fItemGroups.get("reference");
+        
         Comparator comparator=new TimeLineGraphItem.GraphItemComparator();
-
+ 
  		Object[] fItemsArray=mainGroup.toArray();
 		Arrays.sort(fItemsArray,comparator);
 
@@ -238,12 +238,12 @@ public class TimeLineGraph extends LineGraph{
 			TimeLineGraphItem thisItem = (TimeLineGraphItem) fItemsArray[i];
 			thisItem.setX(xOffset + (i * xIncrement));
 			thisItem.setY((int)(PADDING+((max-thisItem.value) * (height)/(yValueRange))));
-
+			
 			}
-
+		
 		if (referenceGroup==null)
 			return;
-
+		
 		n = referenceGroup.size();
 		for (int i = 0; i < n; i++) {
 			 TimeLineGraphItem thisItem = (TimeLineGraphItem) referenceGroup.get(i);
@@ -256,19 +256,19 @@ public class TimeLineGraph extends LineGraph{
 
 		}
     }
-
+	
 
 	private void setRelativeXPosition (TimeLineGraphItem thisItem, List items){
 			Comparator comparator=new TimeLineGraphItem.GraphItemComparator();
 			Object[] fItemsArray=items.toArray();
 			Arrays.sort(fItemsArray,comparator);
-
+			
 			TimeLineGraphItem closestPrecedingItem=null;
 			long minimumTimeDiffPreceding=thisItem.timestamp;
-
+			
 			TimeLineGraphItem closestFollowingItem=null;
 			long minimumTimeDiffFollowing=thisItem.timestamp;
-
+		
 			for (int i=0;i<fItemsArray.length;i++){
 				TimeLineGraphItem anItem=(TimeLineGraphItem)fItemsArray[i];
 				long timeDiff=thisItem.timestamp-anItem.timestamp;
@@ -276,7 +276,7 @@ public class TimeLineGraph extends LineGraph{
 				 if (timeDiff>0&&timeDiff<minimumTimeDiffPreceding){
 					 closestPrecedingItem=anItem;
 				 	minimumTimeDiffPreceding=thisItem.timestamp-anItem.timestamp;
-				 }
+				 } 
 				 if (timeDiff<=0&&Math.abs(timeDiff)<=minimumTimeDiffFollowing){
 					 closestFollowingItem=anItem;
 					 minimumTimeDiffFollowing=thisItem.timestamp-anItem.timestamp;
@@ -287,12 +287,12 @@ public class TimeLineGraph extends LineGraph{
 
 			else if (closestFollowingItem!=null && closestPrecedingItem==null)
 				thisItem.setX(closestFollowingItem.x);
-			else{
+			else{	
 				long timeRange=closestFollowingItem.timestamp-closestPrecedingItem.timestamp;
-
+			
 				int xRange=closestFollowingItem.x-closestPrecedingItem.x;
 				double increments=(xRange*1.0)/timeRange;
-
+			
 				thisItem.setX((int)(Math.round((thisItem.timestamp-closestPrecedingItem.timestamp)*increments)+closestPrecedingItem.x));
 			}
 	}

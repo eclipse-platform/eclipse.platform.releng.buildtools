@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2005, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,7 +30,7 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.db.Variations;
-import org.eclipse.test.internal.performance.results.utils.Util;
+import org.eclipse.test.internal.performance.results.AbstractResults;
 
 
 public class Utils {
@@ -109,23 +109,23 @@ public class Utils {
 	 * Copy all image files.
 	 */
 	public static void copyImages(File images, File output) {
-		Util.copyFile(new File(images, FAIL_IMAGE), new File(output, FAIL_IMAGE));
-		Util.copyFile(new File(images, FAIL_IMAGE_EXPLAINED), new File(output, FAIL_IMAGE_EXPLAINED));
-		Util.copyFile(new File(images, FAIL_IMAGE_WARN), new File(output, FAIL_IMAGE_WARN));
-		Util.copyFile(new File(images, OK_IMAGE), new File(output, OK_IMAGE));
-		Util.copyFile(new File(images, OK_IMAGE_WARN), new File(output, OK_IMAGE_WARN));
-		Util.copyFile(new File(images, UNKNOWN_IMAGE), new File(output, UNKNOWN_IMAGE));
-		Util.copyFile(new File(images, LIGHT), new File(output, LIGHT));
-		Util.copyFile(new File(images, WARNING_OBJ), new File(output, WARNING_OBJ));
+		AbstractResults.copyFile(new File(images, FAIL_IMAGE), new File(output, FAIL_IMAGE));
+		AbstractResults.copyFile(new File(images, FAIL_IMAGE_EXPLAINED), new File(output, FAIL_IMAGE_EXPLAINED));
+		AbstractResults.copyFile(new File(images, FAIL_IMAGE_WARN), new File(output, FAIL_IMAGE_WARN));
+		AbstractResults.copyFile(new File(images, OK_IMAGE), new File(output, OK_IMAGE));
+		AbstractResults.copyFile(new File(images, OK_IMAGE_WARN), new File(output, OK_IMAGE_WARN));
+		AbstractResults.copyFile(new File(images, UNKNOWN_IMAGE), new File(output, UNKNOWN_IMAGE));
+		AbstractResults.copyFile(new File(images, LIGHT), new File(output, LIGHT));
+		AbstractResults.copyFile(new File(images, WARNING_OBJ), new File(output, WARNING_OBJ));
 	}
 
 	/**
 	 * Copy all scripts files.
 	 */
 	public static void copyScripts(File scripts, File output) {
-		Util.copyFile(new File(scripts, "ToolTip.css"), new File(output, "ToolTip.css"));
-		Util.copyFile(new File(scripts, "ToolTip.js"), new File(output, "ToolTip.js"));
-		Util.copyFile(new File(scripts, "Fingerprints.js"), new File(output, "Fingerprints.js"));
+		AbstractResults.copyFile(new File(scripts, "ToolTip.css"), new File(output, "ToolTip.css"));
+		AbstractResults.copyFile(new File(scripts, "ToolTip.js"), new File(output, "ToolTip.js"));
+		AbstractResults.copyFile(new File(scripts, "Fingerprints.js"), new File(output, "Fingerprints.js"));
 	}
 
 	/**
@@ -140,7 +140,7 @@ public class Utils {
 				subdir.mkdir();
 				copyDoc(file, subdir);
 			} else {
-				Util.copyFile(file, new File(output, file.getName()));
+				AbstractResults.copyFile(file, new File(output, file.getName()));
 			}
 		}
 	}
@@ -173,7 +173,7 @@ public class Utils {
 		int count;
 
 		public int compareTo(Object o) {
-			return ((ColorCounter) o).count - this.count;
+			return ((ColorCounter) o).count - count;
 		}
 	}
 
@@ -289,10 +289,10 @@ public class Utils {
 
 		return -1;
 	}
-
+	
 	/**
 	 * Returns a message corresponding to given statistics.
-	 *
+	 * 
 	 * @param resultStats The value with its standard error
 	 * @param full
 	 * @return The failure message. May be empty if stats are good...
@@ -332,7 +332,7 @@ public class Utils {
 		}
 		return buffer.toString();
 	}
-
+	
 	/**
 	 * Returns the confidence level for given statistics:
 	 * <ul>
@@ -340,7 +340,7 @@ public class Utils {
 	 * <li>{@link #ERR}: if the standard error is over the expected threshold ({@link #STANDARD_ERROR_THRESHOLD})</li>
 	 * <li>{@link #OK}: in all other cases</li>
 	 * </ul>
-	 *
+	 * 
 	 * @param resultStats array of 2 doubles, the former is the average value and
 	 * 	the latter is the standard error made while computing the average.
 	 * @return a value telling caller the level of confidence of the provided value
@@ -364,7 +364,7 @@ public class Utils {
 
 	/**
 	 * Get an icon image corresponding to a given level of confidence and explanation.
-	 *
+	 * 
 	 * @param confidence the confiden level
 	 * @param hasExplanation flags indicates whether the confidence may be tempered by an explanation
 	 * @return Corresponding image

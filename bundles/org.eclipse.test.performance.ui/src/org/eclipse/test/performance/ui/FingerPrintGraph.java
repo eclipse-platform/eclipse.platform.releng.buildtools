@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,16 +30,18 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.test.internal.performance.results.db.BuildResults;
-import org.eclipse.test.internal.performance.results.db.ConfigResults;
-import org.eclipse.test.internal.performance.results.db.DB_Results;
-import org.eclipse.test.internal.performance.results.db.ScenarioResults;
-import org.eclipse.test.internal.performance.results.utils.Util;
+import org.eclipse.test.internal.performance.results.AbstractResults;
+import org.eclipse.test.internal.performance.results.BuildResults;
+import org.eclipse.test.internal.performance.results.ConfigResults;
+import org.eclipse.test.internal.performance.results.ScenarioResults;
 
 /**
  * Abstract class to build graph with bars
  */
 public class FingerPrintGraph {
+
+	// Dimensions
+	static final String DEFAULT_DIM_NAME = AbstractResults.DEFAULT_DIM.getName();
 
 	// Sizes
 	static final int MARGIN= 5; // margin on all four sides
@@ -96,11 +98,10 @@ public class FingerPrintGraph {
 	// Values
 	double maxValue = 0.0;
 	double minValue = Double.MAX_VALUE;
-
+	
 	// File info
 	File outputDir;
 	String imageName;
-	private final String defaultDimName = DB_Results.getDefaultDimension().getName();
 
 	/*
 	 * Member class defining a bar graph area.
@@ -253,7 +254,7 @@ void drawBars(int kind) {
 			this.gc.fillRectangle(MARGIN, y + (GAP/2), baselineBarLength, BAR_HEIGHT);
 			Rectangle rec = new Rectangle(MARGIN, y + (GAP/2), baselineBarLength, BAR_HEIGHT);
 			this.gc.drawRectangle(rec);
-			graphArea.addArea(rec, "Time for baseline build "+baselineBuildResults.getName()+": "+Util.timeString((long)baselineValue));
+			graphArea.addArea(rec, "Time for baseline build "+baselineBuildResults.getName()+": "+AbstractResults.timeString((long)baselineValue));
 		} else {
 			int wr = baselineBarLength - baselineErrorLength;
 			Rectangle recValue = new Rectangle(MARGIN, y + (GAP/2), wr, BAR_HEIGHT);
@@ -266,9 +267,9 @@ void drawBars(int kind) {
 			StringBuffer tooltip = new StringBuffer("Time for baseline build ");
 			tooltip.append(baselineBuildResults.getName());
 			tooltip.append(": ");
-			tooltip.append(Util.timeString((long)baselineValue));
+			tooltip.append(AbstractResults.timeString((long)baselineValue));
 			tooltip.append(" [&#177;");
-			tooltip.append(Util.timeString((long)baselineError));
+			tooltip.append(AbstractResults.timeString((long)baselineError));
 			tooltip.append(']');
 			graphArea.addArea(rec, tooltip.toString());
 			labelxpos += baselineErrorLength;
@@ -293,7 +294,7 @@ void drawBars(int kind) {
 			this.gc.fillRectangle(MARGIN, y + (GAP/2) + BAR_HEIGHT, currentBarLength, BAR_HEIGHT);
 			Rectangle rec = new Rectangle(MARGIN, y + (GAP/2) + BAR_HEIGHT, currentBarLength, BAR_HEIGHT);
 			this.gc.drawRectangle(rec);
-			String tooltip = "Time for current build "+currentBuildResults.getName()+": "+Util.timeString((long)currentValue);
+			String tooltip = "Time for current build "+currentBuildResults.getName()+": "+AbstractResults.timeString((long)currentValue);
 			if (isCommented) {
 				tooltip += ".		" + currentBuildResults.getComment();
 			}
@@ -313,9 +314,9 @@ void drawBars(int kind) {
 			StringBuffer tooltip = new StringBuffer("Time for current build ");
 			tooltip.append(currentBuildResults.getName());
 			tooltip.append(": ");
-			tooltip.append(Util.timeString((long)currentValue));
+			tooltip.append(AbstractResults.timeString((long)currentValue));
 			tooltip.append(" [&#177;");
-			tooltip.append(Util.timeString((long)currentError));
+			tooltip.append(AbstractResults.timeString((long)currentError));
 			tooltip.append(']');
 			if (isCommented) {
 				tooltip.append(".		");
@@ -384,7 +385,7 @@ void drawBars(int kind) {
 		// draw scenario title
 		int x= titleStart;
 		ScenarioResults scenarioResults = (ScenarioResults) configResults.getParent();
-		String title = scenarioResults.getLabel() + " (" + this.defaultDimName + ")";
+		String title = scenarioResults.getLabel() + " (" + DEFAULT_DIM_NAME + ")";
 		Point e= this.gc.stringExtent(title);
 		this.gc.drawLine(x, labelvpos + e.y - 1, x + e.x, labelvpos + e.y - 1);
 		this.gc.drawString(title, x, labelvpos, true);
@@ -442,7 +443,7 @@ void drawLinearScale() {
 
 		// draw value
 		this.gc.setForeground(BLACK);
-		String val= Util.timeString(value);
+		String val= AbstractResults.timeString(value);
 		Point point= this.gc.stringExtent(val);
 		this.gc.drawString(val, x - point.x / 2, this.graphHeight + TGAP, true);
 
@@ -475,7 +476,7 @@ void drawLogarithmScale() {
 
 		// draw value
 		this.gc.setForeground(BLACK);
-		String str = Util.timeString(value);
+		String str = AbstractResults.timeString(value);
 		Point point= this.gc.stringExtent(str);
 		this.gc.drawString(str, x - point.x / 2, this.graphHeight + TGAP, true);
 
@@ -604,7 +605,7 @@ void paint(int kind) {
 
 	// Draw the bars
 	drawBars(kind);
-
+	
 	// Dispose
 	this.gc.dispose();
 }
@@ -612,11 +613,11 @@ void paint(int kind) {
 /**
  * Create, paint and save all supported bar graphs and add the corresponding
  * image and map references in the given stream.
- *
+ * 
  * @param stream
  */
 final public void paint(PrintStream stream) {
-
+	
 	// Paint supported graphs
 	int length = SUPPORTED_GRAPHS.length;
 	for (int i=0; i<length; i++) {
@@ -663,7 +664,7 @@ void save(int kind, PrintStream stream) {
 		print(kind, stream);
 	} else {
 		stream.print("<br><br>There is no fingerprint for ");
-		stream.print(this.imageName);
+		stream.print(imageName);
 		stream.print(" (kind=");
 		stream.print(kind);
 		stream.print(")<br><br>\n");

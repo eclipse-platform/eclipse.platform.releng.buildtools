@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2005, 2006 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,9 +16,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.test.internal.performance.data.Dim;
-import org.eclipse.test.internal.performance.results.db.BuildResults;
-import org.eclipse.test.internal.performance.results.db.ConfigResults;
-import org.eclipse.test.internal.performance.results.db.DB_Results;
+import org.eclipse.test.internal.performance.results.AbstractResults;
+import org.eclipse.test.internal.performance.results.BuildResults;
+import org.eclipse.test.internal.performance.results.ConfigResults;
 
 /**
  * Class used to fill details file of scenario builds data.
@@ -29,7 +29,7 @@ public class RawDataTable {
 	private ConfigResults configResults;
 	private List buildPrefixes;
 	private PrintStream stream;
-	private Dim[] dimensions = DB_Results.getResultsDimensions();
+	private Dim[] dimensions = AbstractResults.SUPPORTED_DIMS;
 	private boolean debug = false;
 
 private RawDataTable(ConfigResults results, PrintStream ps) {
@@ -51,10 +51,10 @@ public RawDataTable(ConfigResults results, String baselinePrefix, PrintStream ps
  * Print all build data to the current stream.
  */
 public void print(){
-	this.stream.print("<table border=\"1\">");
+	stream.print("<table border=\"1\">");
 	printSummary();
 	printDetails();
-	this.stream.print("</table>\n");
+	stream.print("</table>\n");
 }
 
 /*
@@ -68,80 +68,79 @@ private void printColumnHeaders() {
 		buffer.append(this.dimensions[i].getName());
 		buffer.append("</b></td>");
 	}
-	this.stream.print(buffer.toString());
+	stream.print(buffer.toString());
 }
 
 /*
  * Print all build results in the table.
  */
 private void printDetails() {
-	this.stream.print("<tr><td><b>Build ID</b></td>");
+	stream.print("<tr><td><b>Build ID</b></td>");
 	printColumnHeaders();
-	this.stream.print("</tr>\n");
+	stream.print("</tr>\n");
 
 	List builds = this.configResults.getBuildsMatchingPrefixes(this.buildPrefixes);
 	Collections.reverse(builds);
 	int size = builds.size();
 	for (int i=0; i<size; i++) {
 		BuildResults buildResults = (BuildResults) builds.get(i);
-		this.stream.print("<tr><td>");
-		this.stream.print(buildResults.getName());
-		this.stream.print("</td>");
+		stream.print("<tr><td>");
+		stream.print(buildResults.getName());
+		stream.print("</td>");
 		int dimLength = this.dimensions.length;
 		for (int d=0; d<dimLength; d++) {
-			Dim dimension = this.dimensions[d];
-			int dim_id = dimension.getId();
+			int dim_id = this.dimensions[d].getId();
 			double value = buildResults.getValue(dim_id);
-			printDimTitle(dimension.getName());
-			String displayValue = dimension.getDisplayValue(value);
-			this.stream.print(displayValue);
-			if (this.debug) System.out.print("\t"+displayValue);
-			this.stream.print("</td>");
+			printDimTitle(this.dimensions[d].getName());
+			String displayValue = this.dimensions[d].getDisplayValue(value);
+			stream.print(displayValue);
+			if (debug) System.out.print("\t"+displayValue);
+			stream.print("</td>");
 		}
-		if (this.debug) System.out.println();
-		this.stream.print("</tr>\n");
+		if (debug) System.out.println();
+		stream.print("</tr>\n");
 	}
-	if (this.debug) System.out.println("\n");
+	if (debug) System.out.println("\n");
 }
 
 /*
  * Print summary on top of the table.
  */
 private void printSummary() {
-	this.stream.print("<tr><td><b>Stats</b></td>");
+	stream.print("<tr><td><b>Stats</b></td>");
 	printColumnHeaders();
-	this.stream.print("</tr>\n");
+	stream.print("</tr>\n");
 
 	int length = this.dimensions.length;
-	double[][] dimStats = new double[length][];
-	for (int i=0; i<length; i++) {
+	double[][] dimStats = new double[2][];
+	for (int i=0; i<this.dimensions.length; i++) {
 		dimStats[i] = this.configResults.getStatistics(this.buildPrefixes, this.dimensions[i].getId());
 	}
 
-	this.stream.print("<tr><td>#BUILDS SAMPLED</td>");
+	stream.print("<tr><td>#BUILDS SAMPLED</td>");
 	for (int i=0; i<length; i++) {
 		String dimName = this.dimensions[i].getName();
 		printDimTitle(dimName);
-		this.stream.print((int)dimStats[i][0]);
-		this.stream.print("</td>");
+		stream.print((int)dimStats[i][0]);
+		stream.print("</td>");
 	}
-	this.stream.print("</tr>\n");
-	this.stream.print("<tr><td>MEAN</td>");
+	stream.print("</tr>\n");
+	stream.print("<tr><td>MEAN</td>");
 	printRowDoubles(dimStats, 1);
-	this.stream.print("</tr>\n");
-	this.stream.print("<tr><td>STD DEV</td>");
+	stream.print("</tr>\n");
+	stream.print("<tr><td>STD DEV</td>");
 	printRowDoubles(dimStats, 2);
-	this.stream.print("</tr>\n");
-	this.stream.print("<tr><td>COEF. VAR</td>");
+	stream.print("</tr>\n");
+	stream.print("<tr><td>COEF. VAR</td>");
 	printRowDoubles(dimStats, 3);
-	this.stream.print("</tr>\n");
+	stream.print("</tr>\n");
 
 	// Blank line
-	this.stream.print("<tr>");
+	stream.print("<tr>");
 	for (int i=0; i<length+1;	i++){
-		this.stream.print("<td>&nbsp;</td>");
+		stream.print("<td>&nbsp;</td>");
 	}
-	this.stream.print("</tr>\n");
+	stream.print("</tr>\n");
 }
 
 /*
@@ -154,20 +153,20 @@ private void printRowDoubles(double[][] stats, int idx) {
 		String dimName = this.dimensions[i].getName();
 		if (idx == 3) {
 			if (value>10 && value<20) {
-				this.stream.print("<td bgcolor=\"yellow\" title=\"");
+				stream.print("<td bgcolor=\"yellow\" title=\"");
 			} else if (value>=20) {
-				this.stream.print("<td bgcolor=\"FF9900\" title=\"");
+				stream.print("<td bgcolor=\"FF9900\" title=\"");
 			} else {
-				this.stream.print("<td title=\"");
+				stream.print("<td title=\"");
 			}
-			this.stream.print(dimName);
-			this.stream.print("\">");
-			this.stream.print(value);
-			this.stream.print("%</td>");
+			stream.print(dimName);
+			stream.print("\">");
+			stream.print(value);
+			stream.print("%</td>");
 		} else {
 			printDimTitle(dimName);
-			this.stream.print(this.dimensions[i].getDisplayValue(value));
-			this.stream.print("</td>");
+			stream.print(this.dimensions[i].getDisplayValue(value));
+			stream.print("</td>");
 		}
 	}
 }
@@ -177,8 +176,8 @@ private void printRowDoubles(double[][] stats, int idx) {
  * TODO (frederic) See if this title is really necessary
  */
 private void printDimTitle(String dimName) {
-    this.stream.print("<td title=\"");
-    this.stream.print(dimName);
-    this.stream.print("\">");
+    stream.print("<td title=\"");
+    stream.print(dimName);
+    stream.print("\">");
 }
 }
