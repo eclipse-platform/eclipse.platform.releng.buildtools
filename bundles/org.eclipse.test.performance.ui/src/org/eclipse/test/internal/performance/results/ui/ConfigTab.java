@@ -38,7 +38,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.test.internal.performance.results.db.ComponentResults;
-import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
 import org.eclipse.test.internal.performance.results.model.ComponentResultsElement;
 import org.eclipse.test.internal.performance.results.model.ConfigResultsElement;
@@ -312,16 +311,13 @@ private void fillTableLines(boolean fingerprints) {
 		String milestoneName = Util.getMilestoneName(buildName);
 		TableItem item = null;
 
-		// Display tool
+		// Set item if the line is not filtered
 		Font italic;
 		if (milestoneName != null) {
 			item = new TableItem (this.table, SWT.NONE);
 			item.setText(milestoneName + " - " + buildName);
-			String version = DB_Results.getDbVersion();
-			String toolTipMessage = "This line shows the result for the "+version.charAt(version.length()-2)+"."+version.charAt(version.length()-1)+milestoneName+" milestone.";
 			item.setFont(0, this.boldFont);
 			item.setBackground(this.blueref);
-			createToolTip(buildName, toolTipMessage, SWT.BALLOON | SWT.ICON_INFORMATION, new Point(0, row));
 			italic = this.boldItalicFont;
 		} else {
 			if ((onlyMilestones && Util.getNextMilestone(buildName) != null) ||
@@ -335,6 +331,7 @@ private void fillTableLines(boolean fingerprints) {
 		}
 
 		// Read each column value
+		String baselineName = null;
 		for (int col=1; col<size; col++) {
 
 			// Reset tooltip info
@@ -350,7 +347,6 @@ private void fillTableLines(boolean fingerprints) {
 				item.setFont(col, this.boldFont);
 			}
 			// Otherwise get values for a scenario
-			ConfigResultsElement configResultsElement = (ConfigResultsElement) scenarioResultsElement.getResultsElement(this.configName);
 			double[] values = (double[]) line.get(col);
 			if (values == ComponentResults.NO_BUILD_RESULTS) {
 				item.setText(col, "Missing");
@@ -393,8 +389,23 @@ private void fillTableLines(boolean fingerprints) {
 					// delta < -10%: failure shown by an red-cross icon + text in red
 					item.setImage(col, ResultsElement.ERROR_IMAGE);
 					item.setForeground(col, RED);
+				} else if (delta < -0.05) {
+					// negative delta over 5% shown in red
+					item.setForeground(col, RED);
+				} else if (delta < 0) {
+					// negative delta shown in magenta
+					item.setForeground(col, MAGENTA);
+				} else if (delta > 0.2) {
+					// positive delta over 20% shown in green
+					item.setForeground(col, DARK_GREEN);
+				} else if (delta > 0.1) {
+					// positive delta between 10% and 20% shown in blue
+					item.setForeground(col, BLUE);
+				}
+
+				// Moderate the status if the build value or the difference is small
+				if (delta < 0) {
 					double diff = Math.abs(baselineValue - buildValue);
-					// moderate the status if the build value or the difference is small
 					if (buildValue < 100 || diff < 100) {
 						if (toolTipText == null) {
 							toolTipText = "";
@@ -417,22 +428,11 @@ private void fillTableLines(boolean fingerprints) {
 						item.setFont(col, italic2);
 						toolTipStyle |= SWT.ICON_INFORMATION;
 					}
-				} else if (delta < -0.05) {
-					// negative delta over 5% shown in red
-					item.setForeground(col, RED);
-				} else if (delta < 0) {
-					// negative delta shown in magenta
-					item.setForeground(col, MAGENTA);
-				} else if (delta > 0.2) {
-					// positive delta over 20% shown in green
-					item.setForeground(col, DARK_GREEN);
-				} else if (delta > 0.1) {
-					// positive delta between 10% and 20% shown in blue
-					item.setForeground(col, BLUE);
 				}
 
 				// Add information in tooltip when history shows big variation
 				if (deviations[col-1] < 0) {
+					ConfigResultsElement configResultsElement = (ConfigResultsElement) scenarioResultsElement.getResultsElement(this.configName);
 					double[] stats = configResultsElement.getStatistics();
 					deviations[col-1] = stats[3];
 				}
@@ -482,7 +482,25 @@ private void fillTableLines(boolean fingerprints) {
 			if (toolTipText != null) {
 				createToolTip(toolTipText, toolTipMessage, toolTipStyle, new Point(col, row));
 			}
+
+			// Baseline name
+			ConfigResultsElement configResultsElement = (ConfigResultsElement) scenarioResultsElement.getResultsElement(this.configName);
+			if (configResultsElement != null) {
+				String configBaselineName = configResultsElement.getBaselineBuildName(buildName);
+				if (baselineName == null) {
+					baselineName = configBaselineName;
+				} else if (baselineName.indexOf(configBaselineName) < 0) {
+					baselineName += ", " +configBaselineName;
+				}
+			}
 		}
+
+		// Set the tooltip over the build name
+		if (baselineName != null) {
+			createToolTip(buildName, "Baseline: "+baselineName, SWT.BALLOON | SWT.ICON_INFORMATION, new Point(0, row));
+		}
+
+		// Increment row counter
 		row++;
 	}
 	this.rowsCount = row;

@@ -150,6 +150,16 @@ BuildResultsElement getBaselineBuild() {
 	return this.baselineBuild;
 }
 
+/**
+ * Get the baseline build used for this configuration.
+ *
+ * @param buildName The name of the build to have the baseline
+ * @return The baseline build as {@link BuildResultsElement}.
+ */
+public String getBaselineBuildName(String buildName) {
+	return getConfigResults().getBaselineBuildResults(buildName).getName();
+}
+
 private ConfigResults getConfigResults() {
 	return (ConfigResults) this.results;
 }

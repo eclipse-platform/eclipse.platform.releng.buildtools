@@ -20,7 +20,6 @@ import java.util.Comparator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -484,27 +483,20 @@ void makeActions() {
 	this.filterNightlyBuilds.setChecked(false);
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener#preferenceChange(org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent)
+/**
+ * Reset the views.
  */
-public void preferenceChange(PreferenceChangeEvent event) {
-	super.preferenceChange(event);
-	String propertyName = event.getKey();
+public void resetViews() {
+	// Close DB connexion
+	DB_Results.shutdown();
 
-	// Database location change
-	if (propertyName.equals(IPerformancesConstants.PRE_DATABASE_LOCATION)) {
+	// Reset views content
+	resetInput();
+	getSiblingView().resetInput();
 
-		// Close DB connexion
-		DB_Results.shutdown();
-
-		// Reset views content
-		resetInput();
-		getSiblingView().resetInput();
-
-		// May be read local data now
-		if (MessageDialog.openQuestion(this.shell, getTitleToolTip(), "Do you want to read local data right now?")) {
-			changeDataDir();
-		}
+	// May be read local data now
+	if (MessageDialog.openQuestion(this.shell, getTitleToolTip(), "Do you want to read local data right now?")) {
+		changeDataDir();
 	}
 }
 

@@ -115,7 +115,6 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 
 	// Data info
 	File dataDir;
-	String dbLocation;
 
 	// Views
 	IMemento viewState;
@@ -161,8 +160,9 @@ static IViewPart getWorkbenchView(String viewId) {
  */
 public PerformancesView() {
 	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+	int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
 	String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.DEFAULT_DATABASE_LOCATION);
-	DB_Results.updateDbConstants(databaseLocation);
+	DB_Results.updateDbConstants(eclipseVersion, databaseLocation);
 	this.preferences.addPreferenceChangeListener(this);
 	setTitleToolTip();
 }
@@ -395,9 +395,18 @@ public void preferenceChange(PreferenceChangeEvent event) {
 	String propertyName = event.getKey();
 	String newValue = (String) event.getNewValue();
 
+	// Eclipse version change
+	if (propertyName.equals(IPerformancesConstants.PRE_ECLIPSE_VERSION)) {
+		int eclipseVersion = newValue == null ? IPerformancesConstants.DEFAULT_ECLIPSE_VERSION : Integer.parseInt(newValue);
+		String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.DEFAULT_DATABASE_LOCATION);
+		DB_Results.updateDbConstants(eclipseVersion, databaseLocation);
+		setTitleToolTip();
+	}
+
 	// Database location change
 	if (propertyName.equals(IPerformancesConstants.PRE_DATABASE_LOCATION)) {
-		DB_Results.updateDbConstants(newValue);
+		int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
+		DB_Results.updateDbConstants(eclipseVersion, newValue);
 		setTitleToolTip();
 	}
 }

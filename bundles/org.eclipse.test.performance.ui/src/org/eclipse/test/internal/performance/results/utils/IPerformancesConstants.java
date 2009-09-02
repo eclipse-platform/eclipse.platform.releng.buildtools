@@ -26,6 +26,7 @@ public interface IPerformancesConstants {
     public static final String PRE_FULL_LINE_SELECTION  = PREFIX + "full.line.selection"; //$NON-NLS-1$
 
 	    // Preference constants
+    public static final String PRE_ECLIPSE_VERSION = PREFIX + "eclipse.version"; //$NON-NLS-1$
     public static final String PRE_DATABASE_LOCATION = PREFIX + "database.location"; //$NON-NLS-1$
     public static final String PRE_LOCAL_DATA_DIR = PREFIX + "local.data.dir"; //$NON-NLS-1$
     public static final String PRE_RESULTS_GENERATION_DIR = PREFIX + "results.generation.dir"; //$NON-NLS-1$
@@ -40,16 +41,14 @@ public interface IPerformancesConstants {
     public static final String PRE_FILTER_NIGHTLY_BUILDS = PREFIX + "filter.nightly.builds"; //$NON-NLS-1$
 
 	// Other constants
-//	public static final String DIALOG_TITLE = "Performance Results Tool";
-//	public static final String ECLIPSE_MAINTENANCE_VERSION = "v35";
-	public static final String ECLIPSE_DEVELOPMENT_VERSION = "v36";
+	public static final int ECLIPSE_MAINTENANCE_VERSION = 35;
+	public static final int ECLIPSE_DEVELOPMENT_VERSION = 36;
 
 	// Default values
-//	public static final String DEFAULT_DATA_DIR = new Path(Platform.getOS().equals(Platform.OS_WIN32) ? "C:\\temp\\data" : "/tmp/data").append(ECLIPSE_DEVELOPMENT_VERSION).toOSString();
-	public static final String DEFAULT_DATABASE_NAME = "perfDb"+ECLIPSE_DEVELOPMENT_VERSION.substring(1);
+	public static final String DATABASE_NAME_PREFIX = "perfDb";
 	public static final String DEFAULT_LOCAL_DATA_DIR = new Path(Platform.getOS().equals(Platform.OS_WIN32) ? "C:\\temp" : "/tmp").toOSString();
-	public static final String DEFAULT_DATABASE_LOCATION = "net://trelenggtk.ottawa.ibm.com:1528;"+DEFAULT_DATABASE_NAME;
-//	public static final String DEFAULT_VERSION_CHOICE = ECLIPSE_DEVELOPMENT_VERSION;
+	public static final String DEFAULT_DATABASE_LOCATION = "net://trelenggtk.ottawa.ibm.com:1528";
+	public static final int DEFAULT_ECLIPSE_VERSION = ECLIPSE_DEVELOPMENT_VERSION;
 	public static final String DEFAULT_RESULTS_GENERATION_DIR = new Path(Platform.getOS().equals(Platform.OS_WIN32) ? "C:\\temp" : "/tmp").toOSString();
 	public static final boolean DEFAULT_FILTER_NON_FINGERPRINT_SCENARIOS = true;
 	public static final boolean DEFAULT_FILTER_NON_MILESTONES_BUILDS = false;

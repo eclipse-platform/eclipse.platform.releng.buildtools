@@ -86,6 +86,18 @@ ResultsElement createChild(AbstractResults testResults) {
 	return new ScenarioResultsElement(testResults, this);
 }
 
+/**
+ * Get all results numbers for a given machine of the current component.
+ *
+ * @param configName The name of the configuration to get numbers
+ * @param fingerprints Set whether only fingerprints scenario should be taken into account
+ * @return A list of lines. Each line represent a build and is a list of either strings or values.
+ */
+public List getConfigNumbers(String configName, boolean fingerprints) {
+	if (this.results == null) return null;
+	return ((ComponentResults)this.results).getConfigNumbers(configName, fingerprints, new ArrayList());
+}
+
 /* (non-Javadoc)
  * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyDescriptors()
  */
@@ -121,11 +133,10 @@ public Object getPropertyValue(Object propKey) {
 	}
 	if (propKey.equals(P_ID_BASELINE_BUILD)) {
 		if (this.results == null) {
-			PerformanceResultsElement performanceResultsElement = (PerformanceResultsElement) getParent(null);
-			return performanceResultsElement.getBaselines()[0];
+			return "?";
 		}
 		PerformanceResults performanceResults = (PerformanceResults) this.results.getParent();
-		return performanceResults.getName();
+		return performanceResults.getBaselineName();
 	}
     return super.getPropertyValue(propKey);
 }
@@ -184,18 +195,6 @@ void initStatus() {
 	} else {
 		super.initStatus();
 	}
-}
-
-/**
- * Get all results numbers for a given machine of the current component.
- *
- * @param configName The name of the configuration to get numbers
- * @param fingerprints Set whether only fingerprints scenario should be taken into account
- * @return A list of lines. Each line represent a build and is a list of either strings or values.
- */
-public List getConfigNumbers(String configName, boolean fingerprints) {
-	if (this.results == null) return null;
-	return ((ComponentResults)this.results).getConfigNumbers(configName, fingerprints, new ArrayList());
 }
 
 }

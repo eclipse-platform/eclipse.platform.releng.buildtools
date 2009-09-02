@@ -162,19 +162,11 @@ public class DB_Results {
 	 * 	May be a path to a local folder or a net address
 	 * 	(see {@link IPerformancesConstants#DEFAULT_DATABASE_LOCATION}).
 	 */
-	public static void updateDbConstants(String databaseLocation) {
-		String location = databaseLocation == null ? IPerformancesConstants.DEFAULT_DATABASE_LOCATION : databaseLocation;
-		if (location.startsWith("net://")) {
-			int index = location.indexOf(';');
-			DB_LOCATION = location.substring(0, index);
-			DB_NAME = location.substring(index + 1);
-		} else {
-			int index = location.lastIndexOf(File.separatorChar);
-			DB_LOCATION = location.substring(0, index);
-			DB_NAME = location.substring(index + 1);
-		}
-		DB_VERSION = "v" + location.substring(location.length() - 2);
-		DB_VERSION_REF = "R-3." + (Character.digit(location.charAt(location.length() - 1), 10) - 1);
+	public static void updateDbConstants(int eclipseVersion, String databaseLocation) {
+		DB_LOCATION = databaseLocation == null ? IPerformancesConstants.DEFAULT_DATABASE_LOCATION : databaseLocation;
+		DB_NAME =IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion;
+		DB_VERSION = "v" + eclipseVersion;
+		DB_VERSION_REF = "R-3." + (eclipseVersion - 1);
 	}
 
 	/**
@@ -183,11 +175,11 @@ public class DB_Results {
 	 * @return A title as a string.
 	 */
 	public static String getDbTitle() {
-		String title = "Eclipse " + DB_VERSION + " - " + DB_Results.DB_NAME;
+		String title = "Eclipse " + DB_VERSION + " - ";
 		if (DB_LOCATION.startsWith("net:")) {
-			title += " (net)";
+			title += " Network DB";
 		} else {
-			title += " (local)";
+			title += " Local DB";
 		}
 		return title;
 	}

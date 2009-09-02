@@ -50,9 +50,8 @@ import org.osgi.service.prefs.BackingStoreException;
 public class PerformanceResultsPreferencePage extends PreferencePage
 	implements IWorkbenchPreferencePage, SelectionListener, ModifyListener, IPerformancesConstants {
 
-//	private Button maintenanceVersion;
-//	private Button developmentVersion;
-//	private CCombo databaseLocation;
+	private Button maintenanceVersion;
+	private Button developmentVersion;
 	private CCombo databaseLocationCombo;
 	private Button localButton;
 	private Button relengButton;
@@ -113,11 +112,11 @@ private Composite createComposite(Composite parent, int numColumns) {
 protected Control createContents(Composite parent) {
 
 	// Eclipse version choice
-//	Composite composite_eclipseVersion = createComposite(parent, 2);
-//	createLabel(composite_eclipseVersion, "Eclipse version");
-//	Composite composite_versionChoice = createComposite(composite_eclipseVersion, 2);
-//	this.maintenanceVersion = createRadioButton(composite_versionChoice, ECLIPSE_MAINTENANCE_VERSION);
-//	this.developmentVersion = createRadioButton(composite_versionChoice, ECLIPSE_DEVELOPMENT_VERSION);
+	Composite composite_eclipseVersion = createComposite(parent, 2);
+	createLabel(composite_eclipseVersion, "Eclipse version", false);
+	Composite composite_versionChoice = createComposite(composite_eclipseVersion, 2);
+	this.maintenanceVersion = createRadioButton(composite_versionChoice, "v"+ECLIPSE_MAINTENANCE_VERSION);
+	this.developmentVersion = createRadioButton(composite_versionChoice, "v"+ECLIPSE_DEVELOPMENT_VERSION);
 
 	// Database location
 	Composite compositeDatabaseLocation = createComposite(parent, 5);
@@ -256,7 +255,7 @@ private Button createPushButton(Composite parent, String label) {
 	return button;
 }
 
-/*
+/**
  * Utility method that creates a radio button instance and sets the default
  * layout data.
  *
@@ -265,7 +264,7 @@ private Button createPushButton(Composite parent, String label) {
  * @param label
  *            the label for the new button
  * @return the newly-created button
- *
+ */
 private Button createRadioButton(Composite parent, String label) {
 	Button button = new Button(parent, SWT.RADIO | SWT.LEFT);
 	button.setText(label);
@@ -274,7 +273,6 @@ private Button createRadioButton(Composite parent, String label) {
 	button.setLayoutData(data);
 	return button;
 }
-*/
 
 /**
  * Create a text field specific for this application
@@ -368,16 +366,6 @@ void initDimensionsLists() {
 private void initializeDefaults() {
 	IPreferenceStore store = getPreferenceStore();
 
-	// Init eclipse version
-//	this.maintenanceVersion.setSelection(false);
-//	this.developmentVersion.setSelection(false);
-//	String version = dataDir.substring(index+1);
-//	if (version.equals(ECLIPSE_MAINTENANCE_VERSION)) {
-//		this.maintenanceVersion.setSelection(true);
-//	} else {
-//		this.developmentVersion.setSelection(true);
-//	}
-
 	// Init default database location
 	String location = store.getDefaultString(PRE_DATABASE_LOCATION);
 	this.databaseLocationCombo.setText(location);
@@ -391,11 +379,18 @@ private void initializeDefaults() {
 	}
 	this.databaseLocationCombo.add(location, 0);
 
+	// Init eclipse version
+	this.maintenanceVersion.setSelection(false);
+	this.developmentVersion.setSelection(false);
+	int version = store.getDefaultInt(PRE_ECLIPSE_VERSION);
+	if (version == ECLIPSE_MAINTENANCE_VERSION) {
+		this.maintenanceVersion.setSelection(true);
+	} else {
+		this.developmentVersion.setSelection(true);
+	}
+
 	// Milestones
 	this.milestonesCombo.removeAll();
-	final String databaseLocation = this.databaseLocationCombo.getText();
-	char last = databaseLocation.charAt(databaseLocation.length()-1);
-	String version = last == '5' ? ".v35." : ".v36.";
 	String milestone = store.getDefaultString(PRE_MILESTONE_BUILDS + version + "0");
 	int index = 0;
 	while (milestone != null && milestone.length() > 0) {
@@ -418,14 +413,6 @@ private void initializeDefaults() {
 private void initializeValues() {
 	IPreferenceStore store = getPreferenceStore();
 
-	// Init eclipse version
-//	String version = dataDir.substring(index+1);
-//	if (version.equals(ECLIPSE_MAINTENANCE_VERSION)) {
-//		this.maintenanceVersion.setSelection(true);
-//	} else {
-//		this.developmentVersion.setSelection(true);
-//	}
-
 	// Init database location
 	this.databaseLocationCombo.removeAll();
 	this.databaseLocationCombo.setText(store.getString(PRE_DATABASE_LOCATION));
@@ -436,10 +423,15 @@ private void initializeValues() {
 		this.databaseLocationCombo.add(history);
 	}
 
+	// Init eclipse version
+	int version = store.getInt(PRE_ECLIPSE_VERSION);
+	if (version == ECLIPSE_MAINTENANCE_VERSION) {
+		this.maintenanceVersion.setSelection(true);
+	} else {
+		this.developmentVersion.setSelection(true);
+	}
+
 	// Milestones
-	final String databaseLocation = this.databaseLocationCombo.getText();
-	char last = databaseLocation.charAt(databaseLocation.length()-1);
-	String version = last == '5' ? ".v35." : ".v36.";
 	String milestone = store.getString(PRE_MILESTONE_BUILDS + version + "0");
 	int index = 0;
 	while (milestone != null && milestone.length() > 0) {
@@ -641,6 +633,8 @@ public boolean performOk() {
 	try {
 		IEclipsePreferences preferences = new InstanceScope().getNode(PLUGIN_ID);
 		preferences.flush();
+		BuildsView buildsView = (BuildsView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.BuildsView");
+		buildsView.resetViews();
 	} catch (BackingStoreException e) {
 		e.printStackTrace();
 		return false;
@@ -655,12 +649,13 @@ private void storeValues() {
 	IPreferenceStore store = getPreferenceStore();
 
 	// Set version
-//	String version;
-//	if (this.maintenanceVersion.getSelection()) {
-//		version = ECLIPSE_MAINTENANCE_VERSION;
-//	} else {
-//		version = ECLIPSE_DEVELOPMENT_VERSION;
-//	}
+	int version;
+	if (this.maintenanceVersion.getSelection()) {
+		version = ECLIPSE_MAINTENANCE_VERSION;
+	} else {
+		version = ECLIPSE_DEVELOPMENT_VERSION;
+	}
+	store.setValue(PRE_ECLIPSE_VERSION, version);
 
 	// Set database location
 	String location = this.databaseLocationCombo.getText();
@@ -681,8 +676,6 @@ private void storeValues() {
 	}
 
 	// Set milestones
-	char last = location.charAt(location.length()-1);
-	String version = last == '5' ? ".v35." : ".v36.";
 	count  = this.milestonesCombo.getItemCount();
 	for (int i=0; i<count; i++) {
 		store.putValue(PRE_MILESTONE_BUILDS + version + i, this.milestonesCombo.getItem(i));

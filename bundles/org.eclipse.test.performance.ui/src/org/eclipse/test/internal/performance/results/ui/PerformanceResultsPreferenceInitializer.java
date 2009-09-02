@@ -32,6 +32,9 @@ public class PerformanceResultsPreferenceInitializer extends AbstractPreferenceI
 public void initializeDefaultPreferences() {
 	IEclipsePreferences defaultPreferences = ((IScopeContext) new DefaultScope()).getNode(PLUGIN_ID);
 
+	// Eclipse verison
+	defaultPreferences.putInt(PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
+
 	// Database location
 	defaultPreferences.put(PRE_DATABASE_LOCATION, IPerformancesConstants.DEFAULT_DATABASE_LOCATION);
 
