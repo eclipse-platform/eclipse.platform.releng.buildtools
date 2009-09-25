@@ -21,6 +21,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
@@ -34,6 +35,15 @@ import org.eclipse.test.internal.performance.results.db.DB_Results;
  */
 public final class Util implements IPerformancesConstants {
 private static String[] MILESTONES;
+public static final BuildDateComparator BUILD_DATE_COMPARATOR = new BuildDateComparator();
+
+static class BuildDateComparator implements Comparator {
+	public int compare(Object o1, Object o2) {
+		String s1 = (String) o1;
+		String s2 = (String) o2;
+		return getBuildDate(s1).compareTo(getBuildDate(s2));
+	}
+}
 
 private static void initMilestones() {
 	String version = DB_Results.getDbVersion();
@@ -113,6 +123,35 @@ public static boolean copyFile(File src, File dest) {
 
 	try {
 		InputStream in = new FileInputStream(src);
+		OutputStream out = new FileOutputStream(dest);
+		byte[] buf = new byte[1024];
+		int len;
+		while ((len = in.read(buf)) > 0) {
+			out.write(buf, 0, len);
+		}
+		in.close();
+		out.close();
+	} catch (FileNotFoundException e) {
+		e.printStackTrace();
+		return false;
+	} catch (IOException e) {
+		e.printStackTrace();
+		return false;
+	}
+	return true;
+}
+
+/**
+ * Copy a file content to another location.
+ *
+ * @param in the input stream.
+ * @param dest the destination.
+ * @return <code>true</code> if the file was successfully copied,
+ * 	<code>false</code> otherwise.
+ */
+public static boolean copyStream(InputStream in, File dest) {
+
+	try {
 		OutputStream out = new FileOutputStream(dest);
 		byte[] buf = new byte[1024];
 		int len;

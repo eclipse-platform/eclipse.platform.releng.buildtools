@@ -30,6 +30,7 @@ import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
+import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.test.performance.Dimension;
 
 /**
@@ -58,6 +59,7 @@ public class DB_Results {
     private String fDBType;	// either "derby" or "cloudscape"
 
 	    // Preferences info
+    public static boolean DB_CONNECTION = false;
     private static String DB_NAME;
     private static String DB_LOCATION;
 	private static String DB_BASELINE_PREFIX = DEFAULT_DB_BASELINE_PREFIX;
@@ -90,6 +92,7 @@ public class DB_Results {
 	 * @return The location as a string.
 	 */
     public static String getDbLocation() {
+    	if (!DB_CONNECTION) return null;
     	if (DB_LOCATION == null) initDbContants();
     	return DB_LOCATION;
     }
@@ -157,16 +160,22 @@ public class DB_Results {
 
 	/**
 	 * Update the database constants from a new database location.
-	 *
+	 * @param connected Tells whether the database should be connected or not.
 	 * @param databaseLocation The database location.
 	 * 	May be a path to a local folder or a net address
-	 * 	(see {@link IPerformancesConstants#DEFAULT_DATABASE_LOCATION}).
+	 * 	(see {@link IPerformancesConstants#NETWORK_DATABASE_LOCATION}).
 	 */
-	public static void updateDbConstants(int eclipseVersion, String databaseLocation) {
-		DB_LOCATION = databaseLocation == null ? IPerformancesConstants.DEFAULT_DATABASE_LOCATION : databaseLocation;
-		DB_NAME =IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion;
+	public static boolean updateDbConstants(boolean connected, int eclipseVersion, String databaseLocation) {
+		shutdown();
+		DB_CONNECTION = connected;
+		DB_LOCATION = databaseLocation == null ? IPerformancesConstants.NETWORK_DATABASE_LOCATION : databaseLocation;
+		DB_NAME = IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion;
 		DB_VERSION = "v" + eclipseVersion;
-		DB_VERSION_REF = "R-3." + (eclipseVersion - 1);
+		DB_VERSION_REF = "R-3." + (eclipseVersion % 10 - 1);
+		if (connected) {
+			return getDefault().fSQL != null;
+		}
+		return true;
 	}
 
 	/**
@@ -175,6 +184,7 @@ public class DB_Results {
 	 * @return A title as a string.
 	 */
 	public static String getDbTitle() {
+    	if (!DB_CONNECTION) return null;
 		String title = "Eclipse " + DB_VERSION + " - ";
 		if (DB_LOCATION.startsWith("net:")) {
 			title += " Network DB";
@@ -321,32 +331,6 @@ public class DB_Results {
 	private static String[] SCENARII;
 	private static String[] COMMENTS;
 
-	// Static private data
-	private final static int MAX_CONFIGS = 5;
-	/*
-	private final static String[] SUPPORTED_VMS =  { // Consider only supported VMs a static data
-		"sun" //$NON-NLS-1$
-	};
-	private final static String[] SUPPORTED_COMPONENTS = {
-		"org.eclipse.ant", //$NON-NLS-1$
-		"org.eclipse.compare", //$NON-NLS-1$
-		"org.eclipse.core", //$NON-NLS-1$
-		"org.eclipse.help", //$NON-NLS-1$
-		"org.eclipse.jdt.core", //$NON-NLS-1$
-		"org.eclipse.jdt.debug", //$NON-NLS-1$
-		"org.eclipse.jdt.text", //$NON-NLS-1$
-		"org.eclipse.jdt.ui", //$NON-NLS-1$
-		"org.eclipse.jface", //$NON-NLS-1$
-		"org.eclipse.osgi", //$NON-NLS-1$
-		"org.eclipse.pde.api.tools", //$NON-NLS-1$
-		"org.eclipse.pde.ui", //$NON-NLS-1$
-		"org.eclipse.swt", //$NON-NLS-1$
-		"org.eclipse.team", //$NON-NLS-1$
-		"org.eclipse.ua", //$NON-NLS-1$
-		"org.eclipse.ui" //$NON-NLS-1$
-	};
-	*/
-
     //---- private implementation
 
 	/**
@@ -413,7 +397,7 @@ public class DB_Results {
  */
 static int getBuildId(String name) {
 	if (BUILDS == null) return -1;
-	return Arrays.binarySearch(BUILDS, name);
+	return Arrays.binarySearch(BUILDS, name, Util.BUILD_DATE_COMPARATOR);
 }
 
 /**
@@ -509,6 +493,13 @@ public static String[] getConfigs() {
 }
 
 /**
+ * Set the default dimension used for performance results.
+ */
+public static void setConfigs(String[] configs) {
+	CONFIGS = configs;
+}
+
+/**
  * Get all configurations read from the database.
  *
  * @return A list of configuration names
@@ -533,6 +524,13 @@ public static String[] getConfigDescriptions() {
 	String[] descriptions = new String[length];
 	System.arraycopy(CONFIG_DESCRIPTIONS, 0, descriptions, 0, length);
 	return descriptions;
+}
+
+/**
+ * Set the default dimension used for performance results.
+ */
+public static void setConfigDescriptions(String[] descriptions) {
+	CONFIG_DESCRIPTIONS = descriptions;
 }
 
 /**
@@ -770,7 +768,7 @@ static void queryScenarioValues(ScenarioResults scenarioResults, String configPa
  */
 private void connect() {
 
-	if (this.fConnection != null)
+	if (this.fConnection != null || !DB_CONNECTION)
 		return;
 
 	if (DEBUG) DriverManager.setLogWriter(new PrintWriter(System.out));
@@ -978,7 +976,7 @@ private void internalQueryAllVariations(String configPattern) {
 	}
 	ResultSet result = null;
 	try {
-		CONFIGS = new String[MAX_CONFIGS];
+		CONFIGS = null;
 		BUILDS = null;
 		BUILDS_LENGTH = 0;
 		result = this.fSQL.queryAllVariations(configPattern);
@@ -996,12 +994,6 @@ private void internalQueryAllVariations(String configPattern) {
 			BUILDS = EMPTY_LIST;
 		} else {
 			System.arraycopy(BUILDS, 0, BUILDS = new String[BUILDS_LENGTH], 0, BUILDS_LENGTH);
-		}
-		for (int i=0; i<MAX_CONFIGS; i++) {
-			if (CONFIGS[i] == null) {
-				System.arraycopy(CONFIGS, 0, CONFIGS = new String[i], 0, i);
-				break;
-			}
 		}
 	} catch (SQLException e) {
 		PerformanceTestPlugin.log(e);
@@ -1171,7 +1163,7 @@ private int storeBuildName(String build) {
 		}
 		return 0;
 	}
-	int idx = Arrays.binarySearch(BUILDS, build);
+	int idx = Arrays.binarySearch(BUILDS, build, Util.BUILD_DATE_COMPARATOR);
 	if (idx >= 0) return idx;
 	int index = -idx-1;
 	int length = BUILDS.length;
@@ -1211,16 +1203,18 @@ private int storeBuildName(String build) {
  * The list is sorted alphabetically.
  */
 private int storeConfig(String config) {
-	for (int i=0; i<MAX_CONFIGS; i++) {
-		if (CONFIGS[i] == null) {
-			CONFIGS[i] = config;
-			return i;
-		}
-		if (config.equals(CONFIGS[i])) {
-			return i;
-		}
+	if (CONFIGS== null) {
+		CONFIGS= new String[1];
+		CONFIGS[0] = config;
+		return 0;
 	}
-	return -1;
+	int idx = Arrays.binarySearch(CONFIGS, config);
+	if (idx >= 0) return idx;
+	int length = CONFIGS.length;
+	System.arraycopy(CONFIGS, 0, CONFIGS = new String[length+1], 0, length);
+	CONFIGS[length] = config;
+	Arrays.sort(CONFIGS);
+	return length;
 }
 
 /*
@@ -1239,6 +1233,7 @@ private int storeComponent(String component) {
 	int length = COMPONENTS.length;
 	System.arraycopy(COMPONENTS, 0, COMPONENTS = new String[length+1], 0, length);
 	COMPONENTS[length] = component;
+	Arrays.sort(COMPONENTS);
 	return length;
 }
 

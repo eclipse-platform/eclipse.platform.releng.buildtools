@@ -47,7 +47,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
 import org.eclipse.test.internal.performance.results.model.PerformanceResultsElement;
-import org.eclipse.test.internal.performance.results.model.ResultsElement;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
@@ -61,6 +60,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
+import org.osgi.service.prefs.BackingStoreException;
 
 
 /**
@@ -105,6 +105,15 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 			return true;
 		}
 	};
+	final static ViewerFilter FILTER_OLD_BUILDS = new ViewerFilter() {
+		public boolean select(Viewer v, Object parentElement, Object element) {
+			if (element instanceof BuildResultsElement) {
+				BuildResultsElement buildElement = (BuildResultsElement) element;
+				return buildElement.isImportant();
+			}
+	        return true;
+        }
+	};
 	Set viewFilters = new HashSet();
 
 	// SWT resources
@@ -126,6 +135,8 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	Action changeDataDir;
 	Action filterBaselineBuilds;
 	Action filterNightlyBuilds;
+	Action filterOldBuilds;
+//	Action dbConnection;
 
 	// Eclipse preferences
 	IEclipsePreferences preferences;
@@ -161,14 +172,15 @@ static IViewPart getWorkbenchView(String viewId) {
 public PerformancesView() {
 	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
 	int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
-	String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.DEFAULT_DATABASE_LOCATION);
-	DB_Results.updateDbConstants(eclipseVersion, databaseLocation);
+	String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
+	boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
+	DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
 	this.preferences.addPreferenceChangeListener(this);
 	setTitleToolTip();
 }
 
 File changeDataDir() {
-	String localDataDir = this.preferences.get(IPerformancesConstants.PRE_LOCAL_DATA_DIR, IPerformancesConstants.DEFAULT_LOCAL_DATA_DIR);
+	String localDataDir = this.preferences.get(IPerformancesConstants.PRE_LOCAL_DATA_DIR, "");
 	String filter = (this.dataDir == null) ? localDataDir : this.dataDir.getPath();
 	File dir = this.dataDir;
 	this.dataDir = changeDir(filter, "Select directory for data local files");
@@ -181,31 +193,9 @@ File changeDataDir() {
 			refresh = true;
 		}
 		if (refresh) {
-			DB_Results.shutdown();
-			IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			readLocalFiles();
 
-				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					try {
-						// String[] components = results.getComponents();
-						// int length = components.length;
-						// if (monitor != null) monitor.beginTask("",
-						// length*1000);
-						monitor.beginTask("Read local files", 1000);
-						PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor);
-						monitor.done();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			};
-			ProgressMonitorDialog readProgress = new ProgressMonitorDialog(getSite().getShell());
-			try {
-				readProgress.run(true, true, runnable);
-			} catch (InvocationTargetException e) {
-				// skip
-			} catch (InterruptedException e) {
-				// skip
-			}
+			// Refresh views
 			refreshInput();
 			PerformancesView resultsView = getSiblingView();
 			resultsView.refreshInput();
@@ -258,22 +248,45 @@ public void createPartControl(Composite parent) {
  * Fill the context menu.
  */
 void fillContextMenu(IMenuManager manager) {
-//	manager.add(changeDataDir);
+	// no default contextual action
+}
+
+/*
+ * Fill the filters drop-down menu.
+ */
+void fillFiltersDropDown(IMenuManager manager) {
+	manager.add(this.filterBaselineBuilds);
+	manager.add(this.filterNightlyBuilds);
+}
+
+/*
+ * Fill the local data drop-down menu
+ */
+void fillLocalDataDropDown(IMenuManager manager) {
+	manager.add(this.changeDataDir);
 }
 
 /*
  * Fill the local pull down menu.
  */
 void fillLocalPullDown(IMenuManager manager) {
-	manager.add(this.filterBaselineBuilds);
-	manager.add(this.filterNightlyBuilds);
+
+	// Filters menu
+	MenuManager filtersManager= new MenuManager("Filters");
+	fillFiltersDropDown(filtersManager);
+	manager.add(filtersManager);
+
+	// Local data menu
+	MenuManager localDataManager= new MenuManager("Local data");
+	fillLocalDataDropDown(localDataManager);
+	manager.add(localDataManager);
 }
 
 /*
  * Fill the local toolbar.
  */
 void fillLocalToolBar(IToolBarManager manager) {
-	manager.add(this.changeDataDir);
+	// no default toolbar action
 }
 
 /*
@@ -286,6 +299,19 @@ void filterNightlyBuilds(boolean filter, boolean updatePreference) {
 		this.viewFilters.remove(FILTER_NIGHTLY_BUILDS);
 	}
 	this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS, filter);
+	updateFilters();
+}
+
+/*
+ * Filter non milestone builds action run.
+ */
+void filterOldBuilds(boolean filter, boolean updatePreference) {
+	if (filter) {
+		this.viewFilters.add(FILTER_OLD_BUILDS);
+	} else {
+		this.viewFilters.remove(FILTER_OLD_BUILDS);
+	}
+	this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_OLD_BUILDS, filter);
 	updateFilters();
 }
 
@@ -353,21 +379,40 @@ public void init(IViewSite site, IMemento memento) throws PartInitException {
 }
 
 /*
+ * Init results
+ */
+void initResults() {
+	this.results = PerformanceResultsElement.PERF_RESULTS_MODEL;
+	if (this.results.isInitialized()) {
+		this.dataDir = getSiblingView().dataDir;
+	} else {
+		String localDataDir = this.preferences.get(IPerformancesConstants.PRE_LOCAL_DATA_DIR, null);
+		if (localDataDir != null) {
+			File dir = new File(localDataDir);
+			if (dir.exists() && dir.isDirectory()) {
+				this.dataDir = dir;
+				readLocalFiles();
+			}
+		}
+	}
+}
+
+/*
  * Make common actions to performance views.
  */
 void makeActions() {
 
 	// Change data dir action
-	this.changeDataDir = new Action() {
+	this.changeDataDir = new Action("&Read...") {
 		public void run() {
 			changeDataDir();
 		}
 	};
 	this.changeDataDir.setToolTipText("Change the directory of the local data files");
-	this.changeDataDir.setImageDescriptor(ResultsElement.FOLDER_IMAGE_DESCRIPTOR);
+//	this.changeDataDir.setImageDescriptor(ResultsElement.FOLDER_IMAGE_DESCRIPTOR);
 
 	// Filter baselines action
-	this.filterBaselineBuilds = new Action("Filter baselines builds", IAction.AS_CHECK_BOX) {
+	this.filterBaselineBuilds = new Action("&Baselines", IAction.AS_CHECK_BOX) {
 		public void run() {
 			if (isChecked()) {
 				PerformancesView.this.viewFilters.add(FILTER_BASELINE_BUILDS);
@@ -377,15 +422,24 @@ void makeActions() {
 			updateFilters();
         }
 	};
-	this.filterBaselineBuilds.setToolTipText("Do not show baselines builds in hierarchy");
+	this.filterBaselineBuilds.setToolTipText("Filter baseline builds");
 
 	// Filter baselines action
-	this.filterNightlyBuilds = new Action("Filter nightly builds", IAction.AS_CHECK_BOX) {
+	this.filterNightlyBuilds = new Action("&Nightly", IAction.AS_CHECK_BOX) {
 		public void run() {
 			filterNightlyBuilds(isChecked(), true/*update preference*/);
 		}
 	};
-	this.filterNightlyBuilds.setToolTipText("Do not show nightly builds in hierarchy");
+	this.filterNightlyBuilds.setToolTipText("Filter nightly builds");
+
+	// Filter non-important builds action
+	this.filterOldBuilds = new Action("&Old Builds", IAction.AS_CHECK_BOX) {
+		public void run() {
+			filterOldBuilds(isChecked(), true/*update preference*/);
+		}
+	};
+	this.filterOldBuilds.setChecked(false);
+	this.filterOldBuilds.setToolTipText("Filter old builds (i.e. before last milestone) but keep all previous milestones)");
 }
 
 /* (non-Javadoc)
@@ -393,21 +447,61 @@ void makeActions() {
  */
 public void preferenceChange(PreferenceChangeEvent event) {
 	String propertyName = event.getKey();
-	String newValue = (String) event.getNewValue();
+//	String newValue = (String) event.getNewValue();
 
 	// Eclipse version change
 	if (propertyName.equals(IPerformancesConstants.PRE_ECLIPSE_VERSION)) {
-		int eclipseVersion = newValue == null ? IPerformancesConstants.DEFAULT_ECLIPSE_VERSION : Integer.parseInt(newValue);
-		String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.DEFAULT_DATABASE_LOCATION);
-		DB_Results.updateDbConstants(eclipseVersion, databaseLocation);
-		setTitleToolTip();
+//		int eclipseVersion = newValue == null ? IPerformancesConstants.DEFAULT_ECLIPSE_VERSION : Integer.parseInt(newValue);
+//		String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
+//		boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
+//		DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
+//		setTitleToolTip();
 	}
 
 	// Database location change
 	if (propertyName.equals(IPerformancesConstants.PRE_DATABASE_LOCATION)) {
-		int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
-		DB_Results.updateDbConstants(eclipseVersion, newValue);
-		setTitleToolTip();
+//		boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
+//		int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
+//		DB_Results.updateDbConstants(connected, eclipseVersion, newValue);
+//		setTitleToolTip();
+	}
+
+	// Database connection
+	if (propertyName.equals(IPerformancesConstants.PRE_DATABASE_CONNECTION)) {
+//		boolean connected = newValue == null ? IPerformancesConstants.DEFAULT_DATABASE_CONNECTION : newValue.equals(Boolean.TRUE);
+//		int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
+//		String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
+//		DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
+//		setTitleToolTip();
+	}
+}
+
+/*
+ * Read local files
+ */
+void readLocalFiles() {
+
+	// Create runnable to read local files
+	IRunnableWithProgress runnable = new IRunnableWithProgress() {
+		public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+			try {
+				monitor.beginTask("Read local files", 1000);
+				PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor);
+				monitor.done();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	};
+
+	// Execute the runnable with progress
+	ProgressMonitorDialog readProgress = new ProgressMonitorDialog(getSite().getShell());
+	try {
+		readProgress.run(true, true, runnable);
+	} catch (InvocationTargetException e) {
+		// skip
+	} catch (InterruptedException e) {
+		// skip
 	}
 }
 
@@ -423,7 +517,7 @@ void refreshInput() {
  * Clear view content.
  */
 void resetInput() {
-	this.results.reset();
+	this.results.reset(null);
 	this.viewer.setInput(getViewSite());
 	this.viewer.refresh();
 }
@@ -449,11 +543,23 @@ void restoreState() {
 	if (checked) {
 		this.viewFilters.add(FILTER_NIGHTLY_BUILDS);
 	}
+
+	// Filter non important builds action state
+	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_OLD_BUILDS, IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS);
+	this.filterOldBuilds.setChecked(checked);
+	if (checked) {
+		this.viewFilters.add(FILTER_OLD_BUILDS);
+	}
 }
 
 public void saveState(IMemento memento) {
 	super.saveState(memento);
 	memento.putBoolean(IPerformancesConstants.PRE_FILTER_BASELINE_BUILDS, this.filterBaselineBuilds.isChecked());
+	try {
+		this.preferences.flush();
+	} catch (BackingStoreException e) {
+		// ignore
+	}
 }
 
 /*
@@ -476,9 +582,42 @@ public void setFocus() {
 /*
  * Set the view tooltip to reflect the DB connection kind.
  */
-private void setTitleToolTip() {
-	setTitleToolTip(DB_Results.getDbTitle());
+void setTitleToolTip() {
+	String title = DB_Results.getDbTitle();
+	if (title == null) {
+		// DB is not connected
+		int version = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
+		title = "Eclipse v" + version + " - DB not connected";
+	}
+	setTitleToolTip(title);
 }
+
+/*
+ * Set/unset the database connection.
+ *
+void toogleDbConnection() {
+
+	// Toogle DB connection and store new state
+	boolean dbConnected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
+	DB_Results.DB_CONNECTION = !dbConnected;
+	getSiblingView().dbConnection.setChecked(DB_Results.DB_CONNECTION);
+	this.preferences.putBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, DB_Results.DB_CONNECTION);
+
+	// First close DB connection
+	if (!DB_Results.DB_CONNECTION) {
+		DB_Results.shutdown();
+	}
+
+	// Read local files if any
+	if (this.dataDir != null) {
+		readLocalFiles();
+	}
+
+	// Refresh views
+	refreshInput();
+	getSiblingView().refreshInput();
+}
+*/
 
 /*
  * Update the filters from the stored list and apply them to the view.

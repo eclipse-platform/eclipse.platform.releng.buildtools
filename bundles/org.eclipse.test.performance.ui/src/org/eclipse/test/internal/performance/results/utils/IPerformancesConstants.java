@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.utils;
 
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
-
 /**
  * Interface to define all constants used for performances.
  */
@@ -27,6 +24,8 @@ public interface IPerformancesConstants {
 
 	    // Preference constants
     public static final String PRE_ECLIPSE_VERSION = PREFIX + "eclipse.version"; //$NON-NLS-1$
+    public static final String PRE_DATABASE_CONNECTION = PREFIX + "database.connection"; //$NON-NLS-1$
+    public static final String PRE_DATABASE_LOCAL = PREFIX + "local"; //$NON-NLS-1$
     public static final String PRE_DATABASE_LOCATION = PREFIX + "database.location"; //$NON-NLS-1$
     public static final String PRE_LOCAL_DATA_DIR = PREFIX + "local.data.dir"; //$NON-NLS-1$
     public static final String PRE_RESULTS_GENERATION_DIR = PREFIX + "results.generation.dir"; //$NON-NLS-1$
@@ -36,8 +35,8 @@ public interface IPerformancesConstants {
     public static final String PRE_RESULTS_DIMENSION = PREFIX + "results.dimension"; //$NON-NLS-1$
     public static final String PRE_MILESTONE_BUILDS = PREFIX + "milestone.builds"; //$NON-NLS-1$
     public static final String PRE_STATUS_COMMENT_PREFIX = PREFIX + "status.comment"; //$NON-NLS-1$
-    public static final String PRE_FILTER_NON_FINGERPRINT_SCENARIOS = PREFIX + "filter.non.fingerprints.scenarios"; //$NON-NLS-1$
-    public static final String PRE_FILTER_NON_MILESTONES_BUILDS = PREFIX + "filter.non.milestones.builds"; //$NON-NLS-1$
+    public static final String PRE_FILTER_ADVANCED_SCENARIOS = PREFIX + "filter.non.fingerprints.scenarios"; //$NON-NLS-1$
+    public static final String PRE_FILTER_OLD_BUILDS = PREFIX + "filter.non.milestones.builds"; //$NON-NLS-1$
     public static final String PRE_FILTER_NIGHTLY_BUILDS = PREFIX + "filter.nightly.builds"; //$NON-NLS-1$
 
 	// Other constants
@@ -46,18 +45,18 @@ public interface IPerformancesConstants {
 
 	// Default values
 	public static final String DATABASE_NAME_PREFIX = "perfDb";
-	public static final String DEFAULT_LOCAL_DATA_DIR = new Path(Platform.getOS().equals(Platform.OS_WIN32) ? "C:\\temp" : "/tmp").toOSString();
-	public static final String DEFAULT_DATABASE_LOCATION = "net://trelenggtk.ottawa.ibm.com:1528";
+	public static final String NETWORK_DATABASE_LOCATION = "net://trelenggtk.ottawa.ibm.com:1528";
 	public static final int DEFAULT_ECLIPSE_VERSION = ECLIPSE_DEVELOPMENT_VERSION;
-	public static final String DEFAULT_RESULTS_GENERATION_DIR = new Path(Platform.getOS().equals(Platform.OS_WIN32) ? "C:\\temp" : "/tmp").toOSString();
-	public static final boolean DEFAULT_FILTER_NON_FINGERPRINT_SCENARIOS = true;
-	public static final boolean DEFAULT_FILTER_NON_MILESTONES_BUILDS = false;
+	public static final boolean DEFAULT_FILTER_ADVANCED_SCENARIOS = true;
+	public static final boolean DEFAULT_FILTER_OLD_BUILDS = false;
 	public static final boolean DEFAULT_FILTER_NIGHTLY_BUILDS = false;
-	public static final boolean DEFAULT_AUTOMATIC_CONNECTION = false;
+	public static final boolean DEFAULT_DATABASE_CONNECTION = false;
+	public static final boolean DEFAULT_DATABASE_LOCAL = false;
 
 	// Default milestones nowadays
 	public static final String[] V36_MILESTONES = new String[] {
 		"M1-200908060100",
+		"M2-200909170100",
 	};
 	public static final String[] V35_MILESTONES = new String[] {
 		        "M1-200808071402",

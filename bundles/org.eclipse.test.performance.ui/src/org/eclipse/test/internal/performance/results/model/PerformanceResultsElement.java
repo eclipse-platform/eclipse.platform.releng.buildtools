@@ -12,8 +12,6 @@ package org.eclipse.test.internal.performance.results.model;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Comparator;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.test.internal.performance.results.db.*;
 import org.eclipse.test.internal.performance.results.utils.Util;
@@ -35,13 +33,16 @@ ResultsElement createChild(AbstractResults testResults) {
 }
 
 public String[] getBaselines() {
-	String[] builds = DB_Results.getBuilds();
-	int length = builds.length;
+	getBuildNames();
+	if (this.buildNames == null) {
+		return new String[0];
+	}
+	int length = this.buildNames.length;
 	String[] baselines = new String[length];
 	int count = 0;
 	for (int i=0; i<length; i++) {
-		if (builds[i].startsWith("R-")) {
-			baselines[count++] = builds[i];
+		if (this.buildNames[i].startsWith("R-")) {
+			baselines[count++] = this.buildNames[i];
 		}
 	}
 	if (count < length) {
@@ -52,23 +53,27 @@ public String[] getBaselines() {
 
 String[] getBuildNames() {
 	if (this.buildNames == null) {
-		this.buildNames = this.results == null ? new String[0] : getPerformanceResults().getAllBuildNames();
+		this.buildNames = DB_Results.DB_CONNECTION
+			? DB_Results.getBuilds()
+			: this.results == null
+				? new String[0]
+				: getPerformanceResults().getAllBuildNames();
 	}
 	return this.buildNames;
 }
 
 public Object[] getBuilds() {
-	String[] builds = DB_Results.getBuilds();
-	int length = builds.length;
+	getBuildNames();
+	int length = this.buildNames == null ? 0 : this.buildNames.length;
 	BuildResultsElement[] elements = new BuildResultsElement[length];
 	for (int i=0; i<length; i++) {
-		elements[i] = new BuildResultsElement(builds[i], this);
+		elements[i] = new BuildResultsElement(this.buildNames[i], this);
 	}
 	return elements;
 }
 
 public String[] getComponents() {
-	if (this.results == null) {
+	if (!isInitialized()) {
 		String[] components = DB_Results.getComponents();
 		int length = components.length;
 		if (length == 0) {
@@ -77,11 +82,47 @@ public String[] getComponents() {
 		}
 		return components;
 	}
-	return ((PerformanceResults) this.results).getComponents();
+	return getPerformanceResults().getComponents();
+}
+
+/**
+ * Returns the names of the configurations.
+ *
+ * @return An array of String
+ */
+public String[] getConfigs() {
+	if (!isInitialized()) {
+		String[] configs = DB_Results.getConfigs();
+		int length = configs.length;
+		if (length == 0) {
+			DB_Results.queryAllScenarios();
+			configs = DB_Results.getConfigs();
+		}
+		return configs;
+	}
+	return getPerformanceResults().getConfigNames(false);
+}
+
+/**
+ * Returns the descriptions of the configurations.
+ *
+ * @return An array of String
+ */
+public String[] getConfigDescriptions() {
+	if (!isInitialized()) {
+		String[] descriptions = DB_Results.getConfigDescriptions();
+		int length = descriptions.length;
+		if (length == 0) {
+			DB_Results.queryAllScenarios();
+			descriptions = DB_Results.getConfigDescriptions();
+		}
+		return descriptions;
+	}
+	return getPerformanceResults().getConfigBoxes(false);
 }
 
 public Object[] getElements() {
-	if (this.results == null) {
+	if (!isInitialized()) {
 		String[] components = getComponents();
 		int length = components.length;
 		ComponentResultsElement[] elements = new ComponentResultsElement[length];
@@ -98,45 +139,46 @@ public PerformanceResults getPerformanceResults() {
 }
 
 boolean hasRead(BuildResultsElement buildResultsElement) {
-	String[] builds = getBuildNames();
-	if (Arrays.binarySearch(builds, buildResultsElement.getName(),
-		new Comparator() {
-		public int compare(Object o1, Object o2) {
-	        String s1 = (String) o1;
-	        String s2 = (String) o2;
-	        return Util.getBuildDate(s1).compareTo(Util.getBuildDate(s2));
-	    }
-	}) < 0) {
+	String[] builds = this.results == null ? getBuildNames() : getPerformanceResults().getAllBuildNames();
+	if (Arrays.binarySearch(builds, buildResultsElement.getName(), Util.BUILD_DATE_COMPARATOR) < 0) {
 		return false;
 	}
 	return true;
 }
 
+public boolean isInitialized() {
+	return super.isInitialized() && this.results.size() > 0;
+}
+
 public void readLocal(File dataDir, IProgressMonitor monitor) {
-	this.results = new PerformanceResults(null, null, null, System.out);
-	reset();
+	reset(null);
 	getPerformanceResults().readLocal(dataDir, monitor);
 }
 
-public void reset() {
+public void reset(String buildName) {
+	if (buildName == null) {
+		this.results = new PerformanceResults(System.out);
+	} else {
+		this.results = new PerformanceResults(buildName, null, null, System.out);
+	}
 	this.children = null;
+	this.buildNames = null;
+}
+
+public void resetBuildNames() {
 	this.buildNames = null;
 }
 
 public void updateBuild(String buildName, boolean force, File dataDir, IProgressMonitor monitor) {
 	if (this.results == null) {
-//		throw new IllegalArgumentException("Unexpected null results!");
-		this.results = new PerformanceResults(buildName, null, null, System.out);
-		reset();
+		reset(buildName);
 	}
 	getPerformanceResults().updateBuild(buildName, force, dataDir, monitor);
 }
 
 public void updateBuilds(String[] builds, boolean force, File dataDir, IProgressMonitor monitor) {
 	if (this.results == null) {
-//		throw new IllegalArgumentException("Unexpected null results!");
-		this.results = new PerformanceResults(null, null, null, System.out);
-		reset();
+		reset(null);
 	}
 	getPerformanceResults().updateBuilds(builds, force, dataDir, monitor);
 }

@@ -91,10 +91,10 @@ public void print(final PerformanceResults performanceResults) {
 	this.stream.print("  </form>\n");
 	this.stream.print("</td>\n");
 //	this.stream.print("<td valign=\"top\">\n");
-//	this.stream.print("<a href=\"help.html\"><img hspace=\"10\" border=\"0\" src=\"light.gif\" title=\"Some tips on fingerprints\"/></a>\n");
+//	this.stream.print("<a href=\"help.html\"><img hspace=\"10\" border=\"0\" src=\""+Utils.LIGHT+"\" title=\"Some tips on fingerprints\"/></a>\n");
 //	this.stream.print("</td></tr></table>\n");
 	this.stream.print("</tr></table>\n");
-	this.stream.print("<img hspace=\"10\" border=\"0\" src=\"light.gif\"><a href=\"help.html\">Help on fingerprints</a>\n");
+	this.stream.print("<img hspace=\"10\" border=\"0\" src=\""+Utils.LIGHT+"\"><a href=\""+Utils.HELP+"\">Help on fingerprints</a>\n");
 
 	// Print script to reset dropdown list selection
 	this.stream.print("<script type=\"text/javascript\">\n");

@@ -33,14 +33,15 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
 import org.eclipse.test.internal.performance.results.model.ComponentResultsElement;
 import org.eclipse.test.internal.performance.results.model.ConfigResultsElement;
-import org.eclipse.test.internal.performance.results.model.PerformanceResultsElement;
 import org.eclipse.test.internal.performance.results.model.ResultsElement;
 import org.eclipse.test.internal.performance.results.model.ScenarioResultsElement;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
@@ -76,20 +77,11 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 public class ComponentsView extends PerformancesView {
 
 	// Viewer filters
-	final static ViewerFilter FILTER_NON_FINGERPRINT_SCENARIOS = new ViewerFilter() {
+	final static ViewerFilter FILTER_ADVANCED_SCENARIOS = new ViewerFilter() {
 		public boolean select(Viewer v, Object parentElement, Object element) {
 			if (element instanceof ScenarioResultsElement) {
 				ScenarioResultsElement scenarioElement = (ScenarioResultsElement) element;
 				return scenarioElement.hasSummary();
-			}
-	        return true;
-        }
-	};
-	final static ViewerFilter FILTER_NON_MILESTONE_BUILDS = new ViewerFilter() {
-		public boolean select(Viewer v, Object parentElement, Object element) {
-			if (element instanceof BuildResultsElement) {
-				BuildResultsElement buildElement = (BuildResultsElement) element;
-				return buildElement.isImportant();
 			}
 	        return true;
         }
@@ -103,12 +95,10 @@ public class ComponentsView extends PerformancesView {
 	Set expandedComponents = new HashSet();
 
 	// Actions
-	Action filterNonFingerprints;
-	Action filterNonImportantBuilds;
+	Action filterAdvancedScenarios;
 
 	// SWT resources
 	Font boldFont;
-//	ImageDescriptor onlyFingerprintsImageDescriptor;
 
 /**
  * Default constructor.
@@ -155,7 +145,7 @@ public void createPartControl(Composite parent) {
 			if (element instanceof ScenarioResultsElement) {
 //				Action fingerprints = ComponentsView.this.filterNonFingerprints;
 //				if (fingerprints != null && !fingerprints.isChecked()) {
-				boolean fingerprints = ComponentsView.this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NON_FINGERPRINT_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_NON_FINGERPRINT_SCENARIOS);
+				boolean fingerprints = ComponentsView.this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
 				if (!fingerprints) {
 					ScenarioResultsElement scenarioElement = (ScenarioResultsElement) element;
 					if (scenarioElement.hasSummary()) {
@@ -195,12 +185,17 @@ public void createPartControl(Composite parent) {
 	this.viewer.setSorter(nameSorter);
 
 	// Add results view as listener to viewer selection changes
-	ISelectionChangedListener listener = getResultsView();
-	if (listener != null) {
-		this.viewer.addSelectionChangedListener(listener);
-	}
+	Display.getDefault().asyncExec(new Runnable() {
+		public void run() {
+			ISelectionChangedListener listener = getResultsView();
+			if (listener != null) {
+				ComponentsView.this.viewer.addSelectionChangedListener(listener);
+			}
+		}
+	});
 
 	// Finalize viewer initialization
+	PlatformUI.getWorkbench().getHelpSystem().setHelp(this.viewer.getControl(), "org.eclipse.test.performance.ui.components");
 	finalizeViewerCreation();
 }
 
@@ -220,11 +215,11 @@ public void dispose() {
  * (non-Javadoc)
  * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#fillLocalPullDown(org.eclipse.jface.action.IMenuManager)
  */
-void fillLocalPullDown(IMenuManager manager) {
-	super.fillLocalPullDown(manager);
-	manager.add(this.filterNonImportantBuilds);
+void fillFiltersDropDown(IMenuManager manager) {
+	super.fillFiltersDropDown(manager);
+	manager.add(this.filterOldBuilds);
 	manager.add(new Separator());
-	manager.add(this.filterNonFingerprints);
+	manager.add(this.filterAdvancedScenarios);
 }
 
 /*
@@ -238,27 +233,14 @@ void fillLocalToolBar(IToolBarManager manager) {
 /*
  * Filter non fingerprints scenarios action run.
  */
-void filterNonFingerprints(boolean fingerprints, boolean updatePreference) {
+void filterAdvancedScenarios(boolean fingerprints, boolean updatePreference) {
 	this.results.setFingerprints(fingerprints);
 	if (fingerprints) {
-		this.viewFilters.add(FILTER_NON_FINGERPRINT_SCENARIOS);
+		this.viewFilters.add(FILTER_ADVANCED_SCENARIOS);
 	} else {
-		this.viewFilters.remove(FILTER_NON_FINGERPRINT_SCENARIOS);
+		this.viewFilters.remove(FILTER_ADVANCED_SCENARIOS);
 	}
-	this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_NON_FINGERPRINT_SCENARIOS, fingerprints);
-	updateFilters();
-}
-
-/*
- * Filter non milestone builds action run.
- */
-void filterNonMilestoneBuilds(boolean filter, boolean updatePreference) {
-	if (filter) {
-		this.viewFilters.add(FILTER_NON_MILESTONE_BUILDS);
-	} else {
-		this.viewFilters.remove(FILTER_NON_MILESTONE_BUILDS);
-	}
-	this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_NON_MILESTONES_BUILDS, filter);
+	this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, fingerprints);
 	updateFilters();
 }
 
@@ -279,9 +261,9 @@ Font getBoldFont(Font font) {
  */
 Object[] getElements() {
 	if (this.results == null) {
-		this.results = PerformanceResultsElement.PERF_RESULTS_MODEL;
-		if (this.filterNonFingerprints != null) {
-			this.results.setFingerprints(this.filterNonFingerprints.isChecked());
+		initResults();
+		if (this.filterAdvancedScenarios != null) {
+			this.results.setFingerprints(this.filterAdvancedScenarios.isChecked());
 		}
 	}
 	return this.results.getElements();
@@ -316,23 +298,13 @@ void makeActions() {
 	super.makeActions();
 
 	// Filter non-fingerprints action
-	this.filterNonFingerprints = new Action("Filter non-fingerprint scenarios", IAction.AS_CHECK_BOX) {
+	this.filterAdvancedScenarios = new Action("Advanced &Scenarios", IAction.AS_CHECK_BOX) {
 		public void run() {
-			filterNonFingerprints(isChecked(), true/*update preference*/);
+			filterAdvancedScenarios(isChecked(), true/*update preference*/);
         }
 	};
-	this.filterNonFingerprints.setChecked(true);
-	this.filterNonFingerprints.setToolTipText("Show only fingerprints scenarios in the hierarchy");
-//	this.filterNonFingerprints.setImageDescriptor(this.onlyFingerprintsImageDescriptor);
-
-	// Filter non-important builds action
-	this.filterNonImportantBuilds = new Action("Filter non-important builds", IAction.AS_CHECK_BOX) {
-		public void run() {
-			filterNonMilestoneBuilds(isChecked(), true/*update preference*/);
-		}
-	};
-	this.filterNonImportantBuilds.setChecked(false);
-	this.filterNonImportantBuilds.setToolTipText("Show only important builds (i.e. milestones and recent builds)");
+	this.filterAdvancedScenarios.setChecked(true);
+	this.filterAdvancedScenarios.setToolTipText("Filter advanced scenarios (i.e. not fingerprint ones)");
 
 	// Set filters default
 	this.filterBaselineBuilds.setChecked(true);
@@ -347,17 +319,17 @@ public void preferenceChange(PreferenceChangeEvent event) {
 	Object newValue = event.getNewValue();
 
 	// Filter non-fingerprints change
-	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_NON_FINGERPRINT_SCENARIOS)) {
-		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_NON_FINGERPRINT_SCENARIOS : "true".equals(newValue);
-		filterNonFingerprints(checked, false/*do not update preference*/);
-		this.filterNonFingerprints.setChecked(checked);
+	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS)) {
+		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS : "true".equals(newValue);
+		filterAdvancedScenarios(checked, false/*do not update preference*/);
+		this.filterAdvancedScenarios.setChecked(checked);
 	}
 
 	// Filter non-milestone change
-	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_NON_MILESTONES_BUILDS)) {
-		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_NON_MILESTONES_BUILDS : "true".equals(newValue);
-		filterNonMilestoneBuilds(checked, false/*do not update preference*/);
-		this.filterNonImportantBuilds.setChecked(checked);
+	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_OLD_BUILDS)) {
+		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS : "true".equals(newValue);
+		filterOldBuilds(checked, false/*do not update preference*/);
+		this.filterOldBuilds.setChecked(checked);
 	}
 
 	// Filter nightly builds change
@@ -378,17 +350,10 @@ void restoreState() {
 	}
 
 	// Filter non fingerprints action state
-	boolean checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NON_FINGERPRINT_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_NON_FINGERPRINT_SCENARIOS);
-	this.filterNonFingerprints.setChecked(checked);
+	boolean checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
+	this.filterAdvancedScenarios.setChecked(checked);
 	if (checked) {
-		this.viewFilters.add(FILTER_NON_FINGERPRINT_SCENARIOS);
-	}
-
-	// Filter non important builds action state
-	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NON_MILESTONES_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NON_MILESTONES_BUILDS);
-	this.filterNonImportantBuilds.setChecked(checked);
-	if (checked) {
-		this.viewFilters.add(FILTER_NON_MILESTONE_BUILDS);
+		this.viewFilters.add(FILTER_ADVANCED_SCENARIOS);
 	}
 }
 

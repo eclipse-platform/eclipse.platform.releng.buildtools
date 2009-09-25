@@ -276,7 +276,7 @@ private String lastBuildName(int kind) {
  * information.
  */
 String readLocalFile(File dir, List scenarios) throws FileNotFoundException {
-	if (!dir.exists()) return null;
+//	if (!dir.exists()) return null;
 	File dataFile = new File(dir, getName()+".dat");	//$NON-NLS-1$
 	if (!dataFile.exists()) throw new FileNotFoundException();
 	DataInputStream stream = null;
@@ -293,17 +293,15 @@ String readLocalFile(File dir, List scenarios) throws FileNotFoundException {
 		for (int i=0; i<size; i++) {
 			// ... which starts with the scenario id
 			int scenario_id = stream.readInt();
-			ScenarioResults scenarioResults = getScenarioResults(scenarios, scenario_id);
+			ScenarioResults scenarioResults = scenarios == null ? null : getScenarioResults(scenarios, scenario_id);
 			if (scenarioResults == null) {
 				// this can happen if scenario pattern does not cover all those stored in local data file
 				// hence, creates a fake scenario to read the numbers and skip to the next scenario
-				/*
 				scenarioResults = new ScenarioResults(-1, null, null);
-				scenarioResults.parent = this;
-				scenarioResults.readData(stream);
-				*/
+//				scenarioResults.parent = this;
+//				scenarioResults.readData(stream);
 				// Should no longer occur as we get all scenarios from database now
-				throw new RuntimeException("Unexpected unfound scenario!"); //$NON-NLS-1$
+//				throw new RuntimeException("Unexpected unfound scenario!"); //$NON-NLS-1$
 			}
 			scenarioResults.parent = this;
 			scenarioResults.printStream = this.printStream;
@@ -409,9 +407,9 @@ void updateBuild(String buildName, List scenarios, boolean force, File dataDir, 
  * Write the component results data to the file '<component name>.dat' in the given directory.
  */
 void writeData(String buildName, File dir, boolean temp, boolean dirty) {
-	if (!dir.exists() && !dir.mkdirs()) {
-		System.err.println("can't create directory "+dir); //$NON-NLS-1$
-	}
+//	if (!dir.exists() && !dir.mkdirs()) {
+//		System.err.println("can't create directory "+dir); //$NON-NLS-1$
+//	}
 	File tmpFile = new File(dir, getName()+".tmp"); //$NON-NLS-1$
 	File dataFile = new File(dir, getName()+".dat"); //$NON-NLS-1$
 	if (!dirty) { // only possible on final write

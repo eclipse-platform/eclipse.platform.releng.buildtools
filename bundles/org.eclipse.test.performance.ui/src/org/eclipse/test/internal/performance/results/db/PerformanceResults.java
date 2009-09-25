@@ -10,8 +10,15 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.db;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
 
@@ -43,13 +50,8 @@ public class PerformanceResults extends AbstractResults {
 	String[] configDescriptions, sortedConfigDescriptions;
 	private String configPattern;
 
-	final class BuildDateComparator implements Comparator {
-    public int compare(Object o1, Object o2) {
-        String s1 = (String) o1;
-        String s2 = (String) o2;
-        return Util.getBuildDate(s1).compareTo(Util.getBuildDate(s2));
-    }
-    }
+	boolean dbRequired;
+	boolean updateLocalFileNeed;
 
 	/*
 	 * Local class helping to guess remaining time while reading results from DB
@@ -89,11 +91,19 @@ public class PerformanceResults extends AbstractResults {
 	public static final int DEFAULT_FAILURE_THRESHOLD = 10;
 	int failure_threshold = DEFAULT_FAILURE_THRESHOLD;
 
+public PerformanceResults(PrintStream stream) {
+	super(null, null);
+	this.printStream = stream;
+	this.dbRequired = false;
+	setDefaults();
+}
+
 public PerformanceResults(String name, String baseline, String baselinePrefix, PrintStream stream) {
 	super(null, name);
 	this.baselineName = baseline;
 	this.baselinePrefix = baselinePrefix;
 	this.printStream = stream;
+	this.dbRequired = true;
 	setDefaults();
 }
 
@@ -305,25 +315,64 @@ public ScenarioResults getScenarioResults(String scenarioName) {
 	return componentResults == null ? null : (ScenarioResults) componentResults.getResults(scenarioName);
 }
 
+/*
+ * Init configurations from performance results database.
+ */
+private void initConfigs() {
+	// create config names
+	this.configNames = DB_Results.getConfigs();
+	this.configDescriptions = DB_Results.getConfigDescriptions();
+	int length = this.configNames.length;
+	this.sortedConfigNames = new String[length];
+	for (int i = 0; i < length; i++) {
+	    this.sortedConfigNames[i] = this.configNames[i];
+	}
+
+	// Sort the config names
+	Arrays.sort(this.sortedConfigNames);
+	this.sortedConfigDescriptions = new String[length];
+	for (int i=0; i<length; i++) {
+		for (int j=0; j<length; j++) {
+			if (this.sortedConfigNames[i] == this.configNames[j]) { // == is intentional!
+				this.sortedConfigDescriptions[i] = this.configDescriptions[j];
+				break;
+			}
+		}
+	}
+}
+
+/*
+ * Read or update data for a build from a directory supposed to have local files.
+ */
 private String[] read(boolean local, String buildName, String[][] configs, boolean force, File dataDir, String taskName, SubMonitor subMonitor) {
 	if (local && dataDir == null) {
 		throw new IllegalArgumentException("Must specify a directory to read local files!"); //$NON-NLS-1$
 	}
 	subMonitor.setWorkRemaining(100);
 
-	// Reset
-	boolean reset = local || (buildName == null && force);
-	if (reset) reset();
-
 	// Update info
-	setConfigInfo(configs);
+	if (configs == null) {
+		if (this.configNames == null) {
+			initConfigs();
+		}
+	} else {
+		setConfigInfo(configs);
+	}
 	long start = System.currentTimeMillis();
 	int allScenariosSize;
-    try {
-        allScenariosSize = readScenarios(buildName, subMonitor.newChild(10));
-    } catch (OperationCanceledException e) {
-        return null;
-    }
+	if (DB_Results.DB_CONNECTION) {
+		try {
+			allScenariosSize = readScenarios(buildName, subMonitor.newChild(10)) ;
+			if (allScenariosSize < 0) {
+				return null;
+			}
+		} catch (OperationCanceledException e) {
+			return null;
+		}
+	} else {
+		if (this.allScenarios == null) return null;
+		allScenariosSize = this.allScenarios.size();
+	}
 
 	// Create corresponding children
 	int componentsLength = this.components.length;
@@ -331,7 +380,7 @@ private String[] read(boolean local, String buildName, String[][] configs, boole
 	RemainingTimeGuess timeGuess = null;
 	for (int i=0; i<componentsLength; i++) {
 		String componentName = this.components[i];
-		List scenarios = (List) this.allScenarios.get(componentName);
+		List scenarios = this.allScenarios == null ? null : (List) this.allScenarios.get(componentName);
 
 		// Manage monitor
 		int percentage = (int) ((((double)(i+1)) / (componentsLength+1)) * 100);
@@ -348,9 +397,9 @@ private String[] read(boolean local, String buildName, String[][] configs, boole
 		subMonitor.subTask(subTaskBuffer.toString());
 
 		// Get component results
-		if (scenarios == null) continue;
+		if (scenarios == null && !local) continue;
 		ComponentResults componentResults;
-		if (reset) {
+		if (local || (buildName == null && force)) {
 			componentResults = new ComponentResults(this, componentName);
 			addChild(componentResults, true);
 		} else {
@@ -381,6 +430,7 @@ private String[] read(boolean local, String buildName, String[][] configs, boole
 
 	// Update names
 	setAllBuildNames();
+	writeData(dataDir);
 
 	// Print time
 	printGlobalTime(start);
@@ -391,6 +441,10 @@ private String[] read(boolean local, String buildName, String[][] configs, boole
 /**
  * Read all data from performance database for the given configurations
  * and scenario pattern.
+ *
+ * This method is typically called when generated performance results
+ * from a non-UI application.
+ *
  * @param buildName The name of the build
  * @param configs All configurations to extract results. If <code>null</code>,
  * 	then all known configurations ({@link DB_Results#getConfigs()})  are read.
@@ -402,7 +456,7 @@ private String[] read(boolean local, String buildName, String[][] configs, boole
  * 	value compared to the baseline is considered as failing.
  * @param monitor The progress monitor
  *
- * @return All known builds
+ * @return All known build names
  */
 public String[] readAll(String buildName, String[][] configs, String pattern, File dataDir, int threshold, IProgressMonitor monitor) {
 
@@ -415,6 +469,7 @@ public String[] readAll(String buildName, String[][] configs, String pattern, Fi
 	setDefaults();
 
 	// Read local data files first
+	reset(dataDir);
 	String[] names = read(true, null, configs, true, dataDir, null, subMonitor.newChild(100));
 	if (names==null) {
 		// if one local files is missing then force a full DB read!
@@ -426,7 +481,7 @@ public String[] readAll(String buildName, String[][] configs, String pattern, Fi
 	boolean buildMissing = true;
 	if (buildName != null) {
 		this.name = buildName;
-		buildMissing = Arrays.binarySearch(names, buildName, new BuildDateComparator()) < 0;
+		buildMissing = Arrays.binarySearch(names, buildName, Util.BUILD_DATE_COMPARATOR) < 0;
 	}
 
 	// Look for missing builds
@@ -434,7 +489,7 @@ public String[] readAll(String buildName, String[][] configs, String pattern, Fi
 		if (buildName == null) {
 			// Read all missing builds
 			String[] builds = DB_Results.getBuilds();
-			Arrays.sort(builds, new BuildDateComparator());
+			Arrays.sort(builds, Util.BUILD_DATE_COMPARATOR);
 			int lengthDB = builds.length;
 			int lengthLocal = names.length;
 			if (lengthLocal < lengthDB) {
@@ -467,9 +522,8 @@ public String[] readAll(String buildName, String[][] configs, String pattern, Fi
  *
  * @param dataDir The directory where local files are located
  * @param monitor  The progress monitor
- * @return The list of build names read in local files
  */
-public String[] readLocal(File dataDir, IProgressMonitor monitor) {
+public void readLocal(File dataDir, IProgressMonitor monitor) {
 
 	// Print title
 	String taskName = "Read local performance results"; //$NON-NLS-1$
@@ -480,7 +534,80 @@ public String[] readLocal(File dataDir, IProgressMonitor monitor) {
 	subMonitor.setTaskName(taskName);
 
 	// Read
-	return read(true, null, null, true, dataDir, taskName, subMonitor);
+	reset(dataDir);
+	read(true, null, null, true, dataDir, taskName, subMonitor);
+}
+
+void readLocalFile(File dir) {
+	if (!dir.exists()) return;
+	File dataFile = new File(dir, "performances.dat");	//$NON-NLS-1$
+	if (!dataFile.exists()) return;
+	DataInputStream stream = null;
+	try {
+		// Read local file info
+		stream = new DataInputStream(new BufferedInputStream(new FileInputStream(dataFile)));
+		println(" - read performance results local files info: "); //$NON-NLS-1$
+
+		// Read build info
+		String str = stream.readUTF();
+		this.updateLocalFileNeed = this.name == null || !this.name.equals(str);
+		println("		+ name : "+str);
+		this.name = str == ""  ? null : str;
+		str = stream.readUTF();
+		println("		+ baseline : "+str);
+		this.baselineName = str == "" ? null : str;
+		str = stream.readUTF();
+		println("		+ baseline prefix: "+str);
+		this.baselinePrefix = str == "" ? null : str;
+
+		// Write configs info
+		int length = stream.readInt();
+		println("		+ "+length+" configs");
+		this.configNames = new String[length];
+		this.sortedConfigNames = new String[length];
+		this.configDescriptions = new String[length];
+		this.sortedConfigDescriptions = new String[length];
+		for (int i = 0; i < length; i++) {
+			this.configNames[i] = stream.readUTF();
+			this.sortedConfigNames[i] = this.configNames[i];
+			this.configDescriptions[i] = stream.readUTF();
+			this.sortedConfigDescriptions[i] = this.configDescriptions[i];
+		}
+		DB_Results.setConfigs(this.configNames);
+		DB_Results.setConfigDescriptions(this.configDescriptions);
+
+		// Write builds info
+		length = stream.readInt();
+		println("		+ "+length+" builds");
+		this.allBuildNames = new String[length];
+		for (int i = 0; i < length; i++) {
+			this.allBuildNames[i] = stream.readUTF();
+		}
+
+		// Write scenarios info
+		length = stream.readInt();
+		println("		+ "+length+" components");
+		this.components = new String[length];
+		this.allScenarios = new HashMap();
+		for (int i = 0; i < length; i++) {
+			this.components[i] = stream.readUTF();
+			int size = stream.readInt();
+			List scenarios = new ArrayList(size);
+			for (int j=0; j<size; j++) {
+				scenarios.add(new ScenarioResults(stream.readInt(), stream.readUTF(), stream.readUTF()));
+			}
+			this.allScenarios.put(this.components[i], scenarios);
+		}
+		println("	=> read from file "+dataFile); //$NON-NLS-1$
+	} catch (IOException ioe) {
+		println("	!!! "+dataFile+" should be deleted as it contained invalid data !!!"); //$NON-NLS-1$ //$NON-NLS-2$
+	} finally {
+		try {
+	        stream.close();
+        } catch (IOException e) {
+	        // nothing else to do!
+        }
+	}
 }
 
 private int readScenarios(String buildName, SubMonitor subMonitor) throws OperationCanceledException {
@@ -495,6 +622,7 @@ private int readScenarios(String buildName, SubMonitor subMonitor) throws Operat
 	print("	+ get "+titleSuffix); //$NON-NLS-1$
 	subMonitor.subTask("Get "+titleSuffix); //$NON-NLS-1$
 	this.allScenarios = DB_Results.queryAllScenarios(this.scenarioPattern, buildName);
+	if (this.allScenarios == null) return -1;
 	int allScenariosSize = 0;
 	List componentsSet = new ArrayList(this.allScenarios.keySet());
 	Collections.sort(componentsSet);
@@ -511,16 +639,19 @@ private int readScenarios(String buildName, SubMonitor subMonitor) throws Operat
 	return allScenariosSize;
 }
 
-private void reset() {
+void reset(File dataDir) {
 	this.allBuildNames = null;
 	this.children = new ArrayList();
-	this.name = null;
+//	this.name = null;
 	this.components = null;
+	this.allScenarios = null;
+	readLocalFile(dataDir);
 }
 
 private void setAllBuildNames() {
-	SortedSet builds = new TreeSet(new BuildDateComparator());
+	SortedSet builds = new TreeSet(Util.BUILD_DATE_COMPARATOR);
 	int size = size();
+	if (size == 0) return;
 	for (int i=0; i<size; i++) {
 		ComponentResults componentResults = (ComponentResults) this.children.get(i);
 		Set names = componentResults.getAllBuildNames();
@@ -539,22 +670,21 @@ private void setAllBuildNames() {
 }
 
 private void setConfigInfo(String[][] configs) {
-	if (configs == null) {
-		this.configNames = DB_Results.getConfigs();
-		this.sortedConfigNames = DB_Results.getConfigs();
-		this.configDescriptions = DB_Results.getConfigDescriptions();
-	} else {
-		int length = configs.length;
-		this.configNames = new String[length];
-		this.sortedConfigNames = new String[length];
-		this.configDescriptions = new String[length];
-		for (int i=0; i<length; i++) {
-			this.configNames[i] = this.sortedConfigNames[i] = configs[i][0];
-			this.configDescriptions[i] = configs[i][1];
-		}
+	if (configs == null) return;
+
+	// Store config information
+	int length = configs.length;
+	this.configNames = new String[length];
+	this.sortedConfigNames = new String[length];
+	this.configDescriptions = new String[length];
+	for (int i=0; i<length; i++) {
+		this.configNames[i] = this.sortedConfigNames[i] = configs[i][0];
+		this.configDescriptions[i] = configs[i][1];
 	}
+
+	// Sort the config names
 	Arrays.sort(this.sortedConfigNames);
-	int length = this.sortedConfigNames.length;
+	length = this.sortedConfigNames.length;
 	this.sortedConfigDescriptions = new String[length];
 	for (int i=0; i<length; i++) {
 		for (int j=0; j<length; j++) {
@@ -583,8 +713,13 @@ private void setDefaults() {
 		setAllBuildNames();
 		if (this.name == null) { // does not know any build
 			this.name = DB_Results.getLastCurrentBuild();
-			if (this.name == null) {
-				throw new RuntimeException("Cannot find any current build!"); //$NON-NLS-1$
+			if (this.dbRequired) {
+				if (this.name == null) {
+					throw new RuntimeException("Cannot find any current build!"); //$NON-NLS-1$
+				}
+				this.allBuildNames = DB_Results.getBuilds();
+				this.components = DB_Results.getComponents();
+				initConfigs();
 			}
 			if (this.printStream != null) {
 				this.printStream.println("	+ no build specified => use last one: "+this.name); //$NON-NLS-1$
@@ -593,10 +728,10 @@ private void setDefaults() {
 	}
 
 	// Init baseline name if not set
-	if (this.baselineName == null) {
+	if (this.baselineName == null && getName() != null) {
 		String buildDate = Util.getBuildDate(getName());
 		this.baselineName = DB_Results.getLastBaselineBuild(buildDate);
-		if (this.baselineName == null) {
+		if (this.baselineName == null && this.dbRequired) {
 			throw new RuntimeException("Cannot find any baseline to refer!"); //$NON-NLS-1$
 		}
 		if (this.printStream != null) {
@@ -605,7 +740,7 @@ private void setDefaults() {
 	}
 
 	// Init baseline prefix if not set
-	if (this.baselinePrefix == null) {
+	if (this.baselinePrefix == null && this.baselineName != null) {
 		// Assume that baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
 		int index = this.baselineName.lastIndexOf('_');
 		if (index > 0) {
@@ -646,7 +781,7 @@ public String[] updateBuilds(String[] builds, boolean force, File dataDir, IProg
 	switch (length) {
 		case 0:
 			buffer.append("all builds"); //$NON-NLS-1$
-			reset();
+			reset(dataDir);
 			break;
 		case 1:
 			buffer.append("one build"); //$NON-NLS-1$
@@ -688,7 +823,7 @@ public String[] updateBuild(String buildName, boolean force, File dataDir, IProg
 	StringBuffer buffer = new StringBuffer("Update data for "); //$NON-NLS-1$
 	if (buildName == null) {
 		buffer.append("all builds"); //$NON-NLS-1$
-		reset();
+		reset(dataDir);
 	} else {
 		buffer.append("one build"); //$NON-NLS-1$
 	}
@@ -709,6 +844,76 @@ public String[] updateBuild(String buildName, boolean force, File dataDir, IProg
 
 	// Return new list all build names
 	return this.allBuildNames;
+}
+
+/*
+ * Write general information.
+ */
+void writeData(File dir) {
+	if (dir ==null || (!dir.exists() && !dir.mkdirs())) {
+		System.err.println("can't create directory " + dir); //$NON-NLS-1$
+		return;
+	}
+	File dataFile = new File(dir, "performances.dat"); //$NON-NLS-1$
+	if (dataFile.exists()) {
+		if (this.updateLocalFileNeed) {
+			dataFile.delete();
+		} else {
+			return;
+		}
+	} else if (!DB_Results.DB_CONNECTION) {
+		// Only write new local file if there's a database connection
+		// otherwise contents may not be complete...
+		return;
+	}
+	try {
+		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(dataFile)));
+
+		// Write build info
+		stream.writeUTF(this.name == null ? DB_Results.getLastCurrentBuild() : this.name);
+		stream.writeUTF(this.baselineName == null ? DB_Results.getLastBaselineBuild(null) : this.baselineName);
+		stream.writeUTF(this.baselinePrefix == null ? "" : this.baselinePrefix);
+
+		// Write configs info
+		int length = this.sortedConfigNames.length;
+		stream.writeInt(length);
+		for (int i = 0; i < length; i++) {
+			stream.writeUTF(this.sortedConfigNames[i]);
+			stream.writeUTF(this.sortedConfigDescriptions[i]);
+		}
+
+		// Write builds info
+		String[] builds = this.allBuildNames == null ? DB_Results.getBuilds() : this.allBuildNames;
+		length = builds.length;
+		stream.writeInt(length);
+		for (int i = 0; i < length; i++) {
+			stream.writeUTF(builds[i]);
+		}
+
+		// Write scenarios info
+		length = this.components.length;
+		stream.writeInt(length);
+		for (int i = 0; i < length; i++) {
+			stream.writeUTF(this.components[i]);
+			List scenarios = (List) this.allScenarios.get(this.components[i]);
+			int size = scenarios.size();
+			stream.writeInt(size);
+			for (int j=0; j<size; j++) {
+				final ScenarioResults scenarioResults = (ScenarioResults)scenarios.get(j);
+				stream.writeInt(scenarioResults.getId());
+				stream.writeUTF(scenarioResults.getName());
+				stream.writeUTF(scenarioResults.getLabel());
+			}
+		}
+
+		// Close
+		stream.close();
+		println("	=> performance results general data  written in file " + dataFile); //$NON-NLS-1$
+	} catch (FileNotFoundException e) {
+		System.err.println("can't create output file" + dataFile); //$NON-NLS-1$
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
 }
 
 }

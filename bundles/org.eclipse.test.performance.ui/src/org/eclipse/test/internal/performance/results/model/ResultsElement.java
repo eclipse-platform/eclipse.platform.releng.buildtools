@@ -52,6 +52,7 @@ public abstract class ResultsElement implements IAdaptable, IPropertySource, IWo
 	public static final Image HELP_IMAGE = WORKBENCH_SHARED_IMAGES.getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
 	public static final ImageDescriptor HELP_IMAGE_DESCRIPTOR = WORKBENCH_SHARED_IMAGES.getImageDescriptor(ISharedImages.IMG_LCL_LINKTO_HELP);
 	public static final ImageDescriptor FOLDER_IMAGE_DESCRIPTOR = WORKBENCH_SHARED_IMAGES.getImageDescriptor(ISharedImages.IMG_OBJ_FOLDER);
+	public static final ImageDescriptor CONNECT_IMAGE_DESCRIPTOR = WORKBENCH_SHARED_IMAGES.getImageDescriptor(ISharedImages.IMG_ELCL_SYNCED);
 
 	// Model
     ResultsElement parent;
@@ -414,7 +415,7 @@ public final boolean hasError() {
 	return (getStatus() & ERROR_MASK) != 0;
 }
 
-private void initChildren() {
+void initChildren() {
 	AbstractResults[] resultsChildren = this.results.getChildren();
 	int length = resultsChildren.length;
 	this.children = new ResultsElement[length];
@@ -493,6 +494,10 @@ int initStatus(BuildResults buildResults) {
 		}
 	}
 	return this.status;
+}
+
+public boolean isInitialized() {
+	return this.results != null;
 }
 
 /* (non-Javadoc)

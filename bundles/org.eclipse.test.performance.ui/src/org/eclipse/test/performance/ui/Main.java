@@ -12,6 +12,7 @@ package org.eclipse.test.performance.ui;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.test.internal.performance.results.db.DB_Results;
 
 /**
  * Main class to generate performance results of all scenarios matching a given pattern
@@ -33,7 +34,7 @@ public class Main implements IApplication {
  * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
  */
 public Object start(IApplicationContext context) throws Exception {
-
+	DB_Results.DB_CONNECTION = true; // force DB connection while running the application
 	GenerateResults generation = new GenerateResults();
 	String[] args = (String[]) context.getArguments().get("application.args");
 	generation.run(args);

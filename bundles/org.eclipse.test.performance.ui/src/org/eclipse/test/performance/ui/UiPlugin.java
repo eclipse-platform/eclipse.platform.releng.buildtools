@@ -10,15 +10,19 @@
  *******************************************************************************/
 package org.eclipse.test.performance.ui;
 
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 
 /**
  * The main plugin class to be used in the desktop.
  */
-public class UiPlugin extends AbstractUIPlugin {
+public class UiPlugin extends Plugin {
 	//The shared instance.
 	private static UiPlugin plugin;
+	private IPreferenceStore preferenceStore;
 
 	/**
 	 * The constructor.
@@ -50,6 +54,14 @@ public class UiPlugin extends AbstractUIPlugin {
 	 */
 	public static UiPlugin getDefault() {
 		return plugin;
+	}
+
+	public IPreferenceStore getPreferenceStore() {
+		if (this.preferenceStore == null) {
+			this.preferenceStore = new ScopedPreferenceStore(new InstanceScope(), getBundle().getSymbolicName());
+
+		}
+		return this.preferenceStore;
 	}
 
 }

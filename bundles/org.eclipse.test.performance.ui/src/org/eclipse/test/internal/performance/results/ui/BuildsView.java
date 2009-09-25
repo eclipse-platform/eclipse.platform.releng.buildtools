@@ -40,12 +40,11 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
-import org.eclipse.test.internal.performance.results.model.PerformanceResultsElement;
 import org.eclipse.test.internal.performance.results.model.ResultsElement;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.test.performance.ui.GenerateResults;
-import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
@@ -69,7 +68,7 @@ public class BuildsView extends PerformancesView {
 		public void run() {
 
 			// Ask for output directory
-			String resultGenerationDir = BuildsView.this.preferences.get(IPerformancesConstants.PRE_RESULTS_GENERATION_DIR, IPerformancesConstants.DEFAULT_RESULTS_GENERATION_DIR);
+			String resultGenerationDir = BuildsView.this.preferences.get(IPerformancesConstants.PRE_RESULTS_GENERATION_DIR, "");
 			String pathFilter = (BuildsView.this.outputDir == null) ? resultGenerationDir : BuildsView.this.outputDir.getPath();
 			File dir = changeDir(pathFilter, "Select directory to write comparison files");
 			if (dir == null) {
@@ -190,7 +189,7 @@ public class BuildsView extends PerformancesView {
 	 */
 	class UpdateBuildAction extends Action {
 
-		final boolean force;
+		boolean force;
 
 		UpdateBuildAction(boolean force) {
 			super();
@@ -201,8 +200,10 @@ public class BuildsView extends PerformancesView {
 
 			// Verify that directories are set
 			if (BuildsView.this.dataDir == null) {
-				if (!MessageDialog.openConfirm(BuildsView.this.shell, getTitleToolTip(), "No local files directory is set, hence the update could not be written! OK to continue?")) {
-					return;
+				if (changeDataDir() == null) {
+					if (!MessageDialog.openConfirm(BuildsView.this.shell, getTitleToolTip(), "No local files directory is set, hence the update could not be written! OK to continue?")) {
+						return;
+					}
 				}
 			}
 
@@ -227,17 +228,12 @@ public class BuildsView extends PerformancesView {
 			}
 
 			// Reset Components and Builds views input
-			resetInput();
-			getSiblingView().resetInput();
+			refreshInput();
+			getSiblingView().refreshInput();
 		}
 
 		void updateBuilds(IProgressMonitor monitor) {
-			int length = BuildsView.this.buildsResults.length;
-			String[] builds = new String[length];
-			for (int i = 0; i < length; i++) {
-				builds[i] = BuildsView.this.buildsResults[i].getName();
-			}
-			BuildsView.this.results.updateBuilds(builds, this.force, BuildsView.this.dataDir, monitor);
+			BuildsView.this.updateBuilds(monitor, this.force);
 		}
 	}
 
@@ -252,24 +248,14 @@ public class BuildsView extends PerformancesView {
 		UpdateAllBuildsAction(boolean force) {
 			super(force);
 		}
-
-		public boolean isEnabled() {
-			if (this.force) {
-				return true;
-			}
-			String[] elements = buildsToUpdate();
-			return elements != null;
-		}
+//
+//		public boolean isEnabled() {
+//			String[] elements = buildsToUpdate();
+//			return elements != null;
+//		}
 
 		void updateBuilds(IProgressMonitor monitor) {
-			if (this.force) {
-				BuildsView.this.results.updateBuild(null, this.force, BuildsView.this.dataDir, monitor);
-			} else {
-				String[] builds = buildsToUpdate();
-				if (builds != null) {
-					BuildsView.this.results.updateBuilds(builds, this.force, BuildsView.this.dataDir, monitor);
-				}
-			}
+			BuildsView.this.updateAllBuilds(monitor, this.force);
 		}
 	}
 
@@ -298,7 +284,7 @@ public class BuildsView extends PerformancesView {
 	// Actions
 	Action generate;
 	UpdateBuildAction updateBuild, updateAllBuilds;
-	UpdateBuildAction forceUpdateBuild, forceUpdateAllBuilds;
+//	UpdateBuildAction forceUpdateBuild, forceUpdateAllBuilds;
 
 	// SWT resources
 	Font italicFont;
@@ -396,6 +382,7 @@ public void createPartControl(Composite parent) {
 	this.viewer.setSorter(nameSorter);
 
 	// Finalize viewer initialization
+	PlatformUI.getWorkbench().getHelpSystem().setHelp(this.viewer.getControl(), "org.eclipse.test.performance.ui.builds");
 	finalizeViewerCreation();
 }
 
@@ -417,21 +404,17 @@ void fillContextMenu(IMenuManager manager) {
 	super.fillContextMenu(manager);
 	manager.add(this.generate);
 	manager.add(this.updateBuild);
-	manager.add(this.forceUpdateBuild);
-	// Other plug-ins can contribute there actions here
-	manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+//	manager.add(this.forceUpdateBuild);
 }
 
 /*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#fillLocalPullDown(org.eclipse.jface.action.IMenuManager)
+ * Fill the local data drop-down menu
  */
-void fillLocalPullDown(IMenuManager manager) {
-	super.fillLocalPullDown(manager);
+void fillLocalDataDropDown(IMenuManager manager) {
+	super.fillLocalDataDropDown(manager);
 	manager.add(new Separator());
 	manager.add(this.updateAllBuilds);
-	manager.add(this.forceUpdateAllBuilds);
-	manager.add(new Separator());
+//	manager.add(this.forceUpdateAllBuilds);
 }
 
 /*
@@ -439,7 +422,7 @@ void fillLocalPullDown(IMenuManager manager) {
  */
 Object[] getBuilds() {
 	if (this.results == null) {
-		this.results = PerformanceResultsElement.PERF_RESULTS_MODEL;
+		initResults();
 	}
 	return this.results.getBuilds();
 }
@@ -464,19 +447,22 @@ void makeActions() {
 
 	// Generate action
 	this.generate = new GenerateAction();
-	this.generate.setText("Generate");
+	this.generate.setText("&Generate");
 
 	// Update build actions
+	boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
 	this.updateBuild = new UpdateBuildAction(false);
-	this.updateBuild.setText("Update");
-	this.forceUpdateBuild = new UpdateBuildAction(true);
-	this.forceUpdateBuild.setText("Force Update");
+	this.updateBuild.setText("&Update from DB");
+	this.updateBuild.setEnabled(connected);
+//	this.forceUpdateBuild = new UpdateBuildAction(true);
+//	this.forceUpdateBuild.setText("Force Update");
 
 	// Update build action
 	this.updateAllBuilds = new UpdateAllBuildsAction(false);
-	this.updateAllBuilds.setText("Update all");
-	this.forceUpdateAllBuilds = new UpdateAllBuildsAction(true);
-	this.forceUpdateAllBuilds.setText("Force Update all");
+	this.updateAllBuilds.setText("&Update from DB (all)");
+	this.updateAllBuilds.setEnabled(connected);
+//	this.forceUpdateAllBuilds = new UpdateAllBuildsAction(true);
+//	this.forceUpdateAllBuilds.setText("Force Update all");
 
 	// Set filters default
 	this.filterBaselineBuilds.setChecked(false);
@@ -486,18 +472,59 @@ void makeActions() {
 /**
  * Reset the views.
  */
-public void resetViews() {
-	// Close DB connexion
-	DB_Results.shutdown();
+public void resetView() {
 
-	// Reset views content
-	resetInput();
-	getSiblingView().resetInput();
-
-	// May be read local data now
-	if (MessageDialog.openQuestion(this.shell, getTitleToolTip(), "Do you want to read local data right now?")) {
-		changeDataDir();
+	// Look whether database constants has changed or not
+	int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
+	boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
+	String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
+	final boolean sameVersion = DB_Results.getDbVersion().endsWith(Integer.toString(eclipseVersion));
+	final boolean sameConnection = connected == DB_Results.DB_CONNECTION;
+	final boolean sameDB = sameVersion && databaseLocation.equals(DB_Results.getDbLocation());
+	if (sameConnection && sameDB) {
+		// No database preferences has changed do nothing
+		return;
 	}
+
+	// Update database constants
+	boolean updated = DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
+	if (!connected) {
+		if (!updated) {
+			MessageDialog.openError(this.shell, getTitleToolTip(), "Error while updating database results constants!\nOpen error log to see more details on this error");
+		}
+	} else if (updated) {
+		StringBuffer message = new StringBuffer("Database connection has been correctly ");
+		message.append( connected ? "opened." : "closed.");
+		MessageDialog.openInformation(this.shell, getTitleToolTip(), message.toString());
+	} else {
+		MessageDialog.openError(this.shell, getTitleToolTip(), "The database connection cannot be established!\nOpen error log to see more details on this error");
+		DB_Results.updateDbConstants(false, eclipseVersion, databaseLocation);
+	}
+	setTitleToolTip();
+	getSiblingView().setTitleToolTip();
+
+	// Refresh view
+	if (sameVersion) {
+		// Refresh only builds view as the sibling view (Components) contents is based on local data files contents
+		this.results.resetBuildNames();
+		refreshInput();
+	} else {
+		// Reset views content
+		resetInput();
+		getSiblingView().resetInput();
+
+		// May be read local data now
+		if (MessageDialog.openQuestion(this.shell, getTitleToolTip(), "Do you want to read local data right now?")) {
+			changeDataDir();
+		} else {
+			this.dataDir = null;
+			getSiblingView().dataDir = null;
+		}
+	}
+
+	// Update actions
+	this.updateBuild.setEnabled(connected);
+	this.updateAllBuilds.setEnabled(connected);
 }
 
 /*
@@ -514,7 +541,10 @@ public void selectionChanged(SelectionChangedEvent event) {
 		Object[] elements = ((IStructuredSelection)selection).toArray();
 		length = elements == null ? 0 : elements.length;
 		this.buildsResults = new BuildResultsElement[length];
-		if (length == 0) return;
+		if (length == 0) {
+			this.updateAllBuilds.setText("&Update from DB (all)");
+			return;
+		}
 		for (int i=0; i<length; i++) {
 			this.buildsResults[i] = (BuildResultsElement) elements[i];
 		}
@@ -523,26 +553,59 @@ public void selectionChanged(SelectionChangedEvent event) {
 	}
 
 	// Update update build action
-	boolean enableUpdateBuild = true;
-	boolean enableGenerate = true;
+//	boolean enableUpdateBuild = true;
+//	boolean enableGenerate = true;
+	int readBuilds = 0;
 	for (int i=0; i<length; i++) {
 		if (this.buildsResults[i].isRead()) {
-			enableUpdateBuild = false;
+//			enableUpdateBuild = false;
+			readBuilds++;
 		} else {
-			enableGenerate = false;
+//			enableGenerate = false;
 		}
 	}
-	this.updateBuild.setEnabled(enableUpdateBuild);
-	this.forceUpdateBuild.setEnabled(!enableUpdateBuild);
+//	this.updateBuild.setEnabled(enableUpdateBuild);
+//	this.forceUpdateBuild.setEnabled(!enableUpdateBuild);
+	final boolean force = readBuilds < length;
+	this.updateBuild.force = force;
+	this.updateAllBuilds.force = force;
+	this.updateAllBuilds.setText("&Update from DB");
 
 	// Update generate action
-	for (int i=0; i<length; i++) {
-		if (this.buildsResults[i].getName().startsWith(DB_Results.getDbBaselinePrefix())) {
-			enableGenerate = false;
-			break;
+	boolean enableGenerate = !force;
+	if (enableGenerate) {
+		for (int i=0; i<length; i++) {
+			if (this.buildsResults[i].getName().startsWith(DB_Results.getDbBaselinePrefix())) {
+				enableGenerate = false;
+				break;
+			}
 		}
 	}
 	this.generate.setEnabled(enableGenerate);
+}
+
+void updateAllBuilds(IProgressMonitor monitor, boolean force) {
+	if (this.dataDir == null) {
+		changeDataDir();
+	}
+	String[] builds = buildsToUpdate();
+	if (builds == null) {
+		this.results.updateBuild(null, true, this.dataDir, monitor);
+	} else {
+		this.results.updateBuilds(builds, force, this.dataDir, monitor);
+	}
+}
+
+void updateBuilds(IProgressMonitor monitor, boolean force) {
+	if (this.dataDir == null) {
+		changeDataDir();
+	}
+	int length = this.buildsResults.length;
+	String[] builds = new String[length];
+	for (int i = 0; i < length; i++) {
+		builds[i] = this.buildsResults[i].getName();
+	}
+	this.results.updateBuilds(builds, force, this.dataDir, monitor);
 }
 
 }

@@ -12,11 +12,9 @@ package org.eclipse.test.performance.ui;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -525,9 +522,9 @@ private void printComponent(/*PerformanceResults performanceResults, */String co
 	} else {
 		stream.print(Utils.HTML_OPEN);
 	}
-	stream.print("<link href=\"ToolTip.css\" rel=\"stylesheet\" type=\"text/css\">\n");
-	stream.print("<script src=\"ToolTip.js\"></script>\n");
-	stream.print("<script src=\"Fingerprints.js\"></script>\n");
+	stream.print("<link href=\""+Utils.TOOLTIP_STYLE+"\" rel=\"stylesheet\" type=\"text/css\">\n");
+	stream.print("<script src=\""+Utils.TOOLTIP_SCRIPT+"\"></script>\n");
+	stream.print("<script src=\""+Utils.FINGERPRINT_SCRIPT+"\"></script>\n");
 	stream.print(Utils.HTML_DEFAULT_CSS);
 
 	// Print title
@@ -626,25 +623,32 @@ private void printSummary(/*PerformanceResults performanceResults*/) {
 	try {
 		stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 		printSummaryPresentation(stream);
-		List scenarioNames = DB_Results.getScenarios();
-		int size = scenarioNames.size();
+//		List scenarioNames = DB_Results.getScenarios();
+//		int size = scenarioNames.size();
+		String[] components = this.performanceResults.getComponents();
+		int componentsLength = components.length;
 		printSummaryColumnsTitle(stream/*, performanceResults*/);
 		String[] configs = this.performanceResults.getConfigNames(true/*sorted*/);
 		int configsLength = configs.length;
-		for (int i=0; i<size; i++) {
-			String scenarioName = (String) scenarioNames.get(i);
-			if (scenarioName == null) continue;
-			ScenarioResults scenarioResults = this.performanceResults.getScenarioResults(scenarioName);
-			if (scenarioResults != null) {
-				stream.print("<tr>\n");
-				for (int j=0; j<2; j++) {
-					for (int c=0; c<configsLength; c++) {
-						printSummaryScenarioLine(j, configs[c], scenarioResults, stream);
+		for (int i=0; i<componentsLength; i++) {
+			String componentName = components[i];
+			List scenarioNames = this.performanceResults.getComponentScenarios(componentName);
+			int size = scenarioNames.size();
+			for (int s=0; s<size; s++) {
+				String scenarioName = ((ScenarioResults) scenarioNames.get(s)).getName();
+				if (scenarioName == null) continue;
+				ScenarioResults scenarioResults = this.performanceResults.getScenarioResults(scenarioName);
+				if (scenarioResults != null) {
+					stream.print("<tr>\n");
+					for (int j=0; j<2; j++) {
+						for (int c=0; c<configsLength; c++) {
+							printSummaryScenarioLine(j, configs[c], scenarioResults, stream);
+						}
 					}
+					stream.print("<td>");
+					stream.print(scenarioName);
+					stream.print("</td></tr>\n");
 				}
-				stream.print("<td>");
-				stream.print(scenarioName);
-				stream.print("</td></tr>\n");
 			}
 		}
 	} catch (Exception e) {
@@ -846,16 +850,33 @@ public IStatus run(final IProgressMonitor monitor) {
 
 		// Copy images and scripts to output dir
 		Bundle bundle = UiPlugin.getDefault().getBundle();
-		URL images = bundle.getEntry("images");
-		if (images != null) {
-			images = FileLocator.resolve(images);
-			Utils.copyImages(new File(images.getPath()), this.outputDir);
+//		URL images = bundle.getEntry("images");
+//		if (images != null) {
+//			images = FileLocator.resolve(images);
+//			Utils.copyImages(new File(images.getPath()), this.outputDir);
+//		}
+		/* New way to get images
+		File content = FileLocator.getBundleFile(bundle);
+		BundleFile bundleFile;
+		if (content.isDirectory()) {
+			bundleFile = new DirBundleFile(content);
+			Utils.copyImages(bundleFile.getFile("images", true), this.outputDir);
+		} else {
+			bundleFile = new ZipBundleFile(content, null);
+			Enumeration imageFiles = bundle.findEntries("images", "*.gif", false);
+			while (imageFiles.hasMoreElements()) {
+				URL url = (URL) imageFiles.nextElement();
+				Utils.copyFile(bundleFile.getFile("images"+File.separator+, true), this.outputDir);
+			}
 		}
-		URL scripts = bundle.getEntry("scripts");
-		if (scripts != null) {
-			scripts = FileLocator.resolve(scripts);
-			Utils.copyScripts(new File(scripts.getPath()), this.outputDir);
-		}
+		*/
+		// Copy bundle files
+		Utils.copyBundleFiles(bundle, "images", "*.gif", this.outputDir); // images
+		Utils.copyBundleFiles(bundle, "scripts", "*.js", this.outputDir); // java scripts
+		Utils.copyBundleFiles(bundle, "scripts", "*.css", this.outputDir); // styles
+		Utils.copyBundleFiles(bundle, "doc", "*.html", this.outputDir); // doc
+		Utils.copyBundleFiles(bundle, "doc/images", "*.png", this.outputDir); // images for doc
+		/*
 		URL doc = bundle.getEntry("doc");
 		if (doc != null) {
 			doc = FileLocator.resolve(doc);
@@ -884,6 +905,7 @@ public IStatus run(final IProgressMonitor monitor) {
 				}
 			}
 		}
+		*/
 
 		// Print HTML pages and all linked files
 		if (this.printStream != null) {
@@ -970,14 +992,13 @@ private void setDefaults(String buildName, String baseline) {
 	}
 
 	// Verify that build is known
-	String[] builds = DB_Results.getBuilds();
+	String[] builds = this.performanceResults.getAllBuildNames();
 	if (builds == null || builds.length == 0) {
 		System.err.println("Cannot connect to database to generate results build '"+buildName+"'");
 		System.exit(1);
 	}
-	if (Arrays.binarySearch(builds, buildName) < 0) {
-		System.err.println("No results in database for build '"+buildName+"'");
-		System.exit(1);
+	if (Arrays.binarySearch(builds, buildName, Util.BUILD_DATE_COMPARATOR) < 0) {
+		throw new RuntimeException("No results in database for build '"+buildName+"'");
 	}
 	if (this.printStream != null) {
 		this.printStream.println();

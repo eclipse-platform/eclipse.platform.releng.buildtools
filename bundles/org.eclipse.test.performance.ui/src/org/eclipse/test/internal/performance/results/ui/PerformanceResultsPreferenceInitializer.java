@@ -32,11 +32,13 @@ public class PerformanceResultsPreferenceInitializer extends AbstractPreferenceI
 public void initializeDefaultPreferences() {
 	IEclipsePreferences defaultPreferences = ((IScopeContext) new DefaultScope()).getNode(PLUGIN_ID);
 
-	// Eclipse verison
+	// Eclipse version
 	defaultPreferences.putInt(PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
 
-	// Database location
-	defaultPreferences.put(PRE_DATABASE_LOCATION, IPerformancesConstants.DEFAULT_DATABASE_LOCATION);
+	// Database
+	defaultPreferences.putBoolean(PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
+	defaultPreferences.putBoolean(PRE_DATABASE_LOCAL, IPerformancesConstants.DEFAULT_DATABASE_LOCAL);
+	defaultPreferences.put(PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
 
 	// Config descriptors
 	String[][] configDescriptors = PerformanceTestPlugin.getConfigDescriptors();
@@ -59,8 +61,8 @@ public void initializeDefaultPreferences() {
 	}
 
 	// Filters
-	defaultPreferences.putBoolean(PRE_FILTER_NON_FINGERPRINT_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_NON_FINGERPRINT_SCENARIOS);
-	defaultPreferences.putBoolean(PRE_FILTER_NON_MILESTONES_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NON_MILESTONES_BUILDS);
+	defaultPreferences.putBoolean(PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
+	defaultPreferences.putBoolean(PRE_FILTER_OLD_BUILDS, IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS);
 	defaultPreferences.putBoolean(PRE_FILTER_NIGHTLY_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS);
 
 	// Milestones

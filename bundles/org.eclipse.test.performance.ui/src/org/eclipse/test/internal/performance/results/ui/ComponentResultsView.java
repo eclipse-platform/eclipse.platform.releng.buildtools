@@ -20,6 +20,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -30,12 +31,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
 import org.eclipse.test.internal.performance.results.model.ComponentResultsElement;
 import org.eclipse.test.internal.performance.results.model.ConfigResultsElement;
 import org.eclipse.test.internal.performance.results.model.DimResultsElement;
+import org.eclipse.test.internal.performance.results.model.PerformanceResultsElement;
 import org.eclipse.test.internal.performance.results.model.ResultsElement;
 import org.eclipse.test.internal.performance.results.model.ScenarioResultsElement;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
@@ -43,6 +45,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 
@@ -89,8 +92,8 @@ public class ComponentResultsView extends ViewPart implements ISelectionChangedL
 
 	// Action
 	Action fullLineSelection;
-	Action filterNonFingerprints;
-	Action filterNonImportantBuilds;
+	Action filterAdvancedScenarios;
+	Action filterOldBuilds;
 	Action filterNightlyBuilds;
 	ImageDescriptor fullSelectionImageDescriptor;
 
@@ -130,12 +133,17 @@ public void createPartControl(Composite parent) {
 	this.tabFolder = new CTabFolder(parent, SWT.BORDER);
 
 	// Add results view as listener to viewer selection changes
-	PerformancesView performancesView = (PerformancesView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.ComponentsView");
-	if (performancesView != null) {
-		performancesView.viewer.addSelectionChangedListener(this);
-	}
+	Display.getDefault().asyncExec(new Runnable() {
+		public void run() {
+			PerformancesView performancesView = (PerformancesView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.ComponentsView");
+			if (performancesView != null) {
+				performancesView.viewer.addSelectionChangedListener(ComponentResultsView.this);
+			}
+		}
+	});
 
 	// Set actions
+	PlatformUI.getWorkbench().getHelpSystem().setHelp(this.tabFolder, "org.eclipse.test.performance.ui.results");
 	makeActions();
 	contributeToActionBars();
 
@@ -154,8 +162,10 @@ public void createPartControl(Composite parent) {
  * The list of these machines is got from the DB_Results contants.
  */
 void createTabs() {
-	String[] configNames = DB_Results.getConfigs();
-	String[] configDescriptions = DB_Results.getConfigDescriptions();
+	if (this.componentResultsElement == null) return;
+	PerformanceResultsElement performanceResultsElement = (PerformanceResultsElement) this.componentResultsElement.getParent(null);
+	String[] configNames = performanceResultsElement.getConfigs();
+	String[] configDescriptions = performanceResultsElement.getConfigDescriptions();
 	int length = configNames.length;
 	this.tabs = new ConfigTab[length];
 	for (int i=0; i<length; i++) {
@@ -185,16 +195,25 @@ public void dispose() {
 }
 
 /*
- * Fill the local pull-down menu with:
+ * Fill the filters drop-down menu with:
  * 	- filter nightly builds
  * 	- filter non-milestone builds
  *	- filter non-fingerprint scenarios
  */
-void fillLocalPullDown(IMenuManager manager) {
+void fillFiltersDropDown(IMenuManager manager) {
 	manager.add(this.filterNightlyBuilds);
-	manager.add(this.filterNonImportantBuilds);
+	manager.add(this.filterOldBuilds);
 	manager.add(new Separator());
-	manager.add(this.filterNonFingerprints);
+	manager.add(this.filterAdvancedScenarios);
+}
+
+/*
+ * Fill the local pull down menu.
+ */
+void fillLocalPullDown(IMenuManager manager) {
+	MenuManager filtersManager= new MenuManager("Filters");
+	fillFiltersDropDown(filtersManager);
+	manager.add(filtersManager);
 }
 
 /*
@@ -231,36 +250,36 @@ void makeActions() {
 	};
 	this.fullLineSelection.setImageDescriptor(this.fullSelectionImageDescriptor);
 	this.fullLineSelection.setToolTipText("Full line selection");
-	this.fullLineSelection.setChecked(true);
+//	this.fullLineSelection.setChecked(true);
 
 	// Filter non-fingerprints action
-	this.filterNonFingerprints = new Action("Filter non-fingerprint scenarios", IAction.AS_CHECK_BOX) {
+	this.filterAdvancedScenarios = new Action("Advanced &Scenarios", IAction.AS_CHECK_BOX) {
 		public void run() {
-			ComponentResultsView.this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_NON_FINGERPRINT_SCENARIOS, isChecked());
+			ComponentResultsView.this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, isChecked());
 			resetTabFolders(false/*refresh*/);
         }
 	};
-	this.filterNonFingerprints.setChecked(true);
-	this.filterNonFingerprints.setToolTipText("Show only fingerprints scenarios");
+	this.filterAdvancedScenarios.setChecked(true);
+	this.filterAdvancedScenarios.setToolTipText("Filter advanced scenarios (i.e. not fingerprint ones)");
 
 	// Filter non-important builds action
-	this.filterNonImportantBuilds = new Action("Filter non-important builds", IAction.AS_CHECK_BOX) {
+	this.filterOldBuilds = new Action("&Old Builds", IAction.AS_CHECK_BOX) {
 		public void run() {
-			ComponentResultsView.this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_NON_MILESTONES_BUILDS, isChecked());
+			ComponentResultsView.this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_OLD_BUILDS, isChecked());
 			resetTabFolders(false/*refresh*/);
 		}
 	};
-	this.filterNonImportantBuilds.setChecked(false);
-	this.filterNonImportantBuilds.setToolTipText("Show only important builds (i.e. milestones and recent builds)");
+	this.filterOldBuilds.setChecked(false);
+	this.filterOldBuilds.setToolTipText("Filter old builds (i.e. before last milestone) but keep all previous milestones)");
 
-	// Filter baselines action
-	this.filterNightlyBuilds = new Action("Filter nightly builds", IAction.AS_CHECK_BOX) {
+	// Filter nightly action
+	this.filterNightlyBuilds = new Action("&Nightly", IAction.AS_CHECK_BOX) {
 		public void run() {
 			ComponentResultsView.this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS, isChecked());
 			resetTabFolders(false/*refresh*/);
 		}
 	};
-	this.filterNightlyBuilds.setToolTipText("Do not show nightly builds in table");
+	this.filterNightlyBuilds.setToolTipText("Filter nightly builds");
 }
 
 /* (non-Javadoc)
@@ -271,16 +290,16 @@ public void preferenceChange(PreferenceChangeEvent event) {
 	Object newValue = event.getNewValue();
 
 	// Filter non-fingerprints change
-	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_NON_FINGERPRINT_SCENARIOS)) {
-		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_NON_FINGERPRINT_SCENARIOS : "true".equals(newValue);
-		this.filterNonFingerprints.setChecked(checked);
+	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS)) {
+		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS : "true".equals(newValue);
+		this.filterAdvancedScenarios.setChecked(checked);
 		resetTabFolders(false/*refresh*/);
 	}
 
 	// Filter non-milestone change
-	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_NON_MILESTONES_BUILDS)) {
-		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_NON_MILESTONES_BUILDS : "true".equals(newValue);
-		this.filterNonImportantBuilds.setChecked(checked);
+	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_OLD_BUILDS)) {
+		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS : "true".equals(newValue);
+		this.filterOldBuilds.setChecked(checked);
 		resetTabFolders(false/*refresh*/);
 	}
 
@@ -359,21 +378,21 @@ void restoreState() {
 	// Filter baselines action state
 	if (this.viewState != null) {
 		Boolean state = this.viewState.getBoolean(IPerformancesConstants.PRE_FULL_LINE_SELECTION);
-		boolean fullLine = state == null ? false : state.booleanValue();
+		boolean fullLine = state == null ? true : state.booleanValue();
 		this.fullLineSelection.setChecked(fullLine);
 	}
 
 	// Filter non fingerprints action state
-	boolean checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NON_FINGERPRINT_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_NON_FINGERPRINT_SCENARIOS);
-	this.filterNonFingerprints.setChecked(checked);
+	boolean checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
+	this.filterAdvancedScenarios.setChecked(checked);
 
 	// Filter nightly builds action
 	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS);
 	this.filterNightlyBuilds.setChecked(checked);
 
 	// Filter non important builds action state
-	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NON_MILESTONES_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NON_MILESTONES_BUILDS);
-	this.filterNonImportantBuilds.setChecked(checked);
+	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_OLD_BUILDS, IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS);
+	this.filterOldBuilds.setChecked(checked);
 }
 
 /*

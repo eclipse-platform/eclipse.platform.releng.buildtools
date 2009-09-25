@@ -171,13 +171,7 @@ public Object[] getChildren(Object o) {
 		return new Object[0];
 	}
 	if (this.children == null) {
-		BuildResults buildResults = (BuildResults) this.results;
-		Dim[] dimensions = buildResults.getDimensions();
-		int length = dimensions.length;
-		this.children = new DimResultsElement[length];
-		for (int i=0; i<length; i++) {
-			this.children[i] = new DimResultsElement(this.results, this, dimensions[i]);
-		}
+		initChildren();
 	}
 	return this.children;
 }
@@ -280,6 +274,16 @@ public Object getPropertyValue(Object propKey) {
 	return super.getPropertyValue(propKey);
 }
 
+void initChildren() {
+	BuildResults buildResults = (BuildResults) this.results;
+	Dim[] dimensions = buildResults.getDimensions();
+	int length = dimensions.length;
+	this.children = new DimResultsElement[length];
+	for (int i=0; i<length; i++) {
+		this.children[i] = new DimResultsElement(this.results, this, dimensions[i]);
+	}
+}
+
 /*
  * Init information
  */
@@ -290,7 +294,7 @@ void initInfo() {
 
 void initStatus() {
 	if (this.results == null) {
-		if (this.parent.results != null) {
+		if (this.parent.isInitialized()) {
 			if (((PerformanceResultsElement) this.parent).hasRead(this)) {
 				this.status = READ;
 			} else {

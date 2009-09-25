@@ -16,10 +16,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.HashMap;
 
 import org.eclipse.swt.SWT;
@@ -31,6 +33,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.db.Variations;
 import org.eclipse.test.internal.performance.results.utils.Util;
+import org.osgi.framework.Bundle;
 
 
 public class Utils {
@@ -54,14 +57,26 @@ public class Utils {
 		STDERR_FORMAT.setMultiplier(100);
 	}
 	public final static String STANDARD_ERROR_THRESHOLD_STRING = PERCENT_FORMAT.format(STANDARD_ERROR_THRESHOLD);
-	public final static String UNKNOWN_IMAGE="Unknown.gif";
-	public final static String OK_IMAGE="OK.gif";
-	public final static String OK_IMAGE_WARN="OK_caution.gif";
-	public final static String FAIL_IMAGE="FAIL.gif";
-	public final static String FAIL_IMAGE_WARN="FAIL_caution.gif";
-	public final static String FAIL_IMAGE_EXPLAINED="FAIL_greyed.gif";
-	public final static String LIGHT="light.gif";
-	public final static String WARNING_OBJ="warning_obj.gif";
+
+	// Image files
+	public final static String UNKNOWN_IMAGE="images/Unknown.gif";
+	public final static String OK_IMAGE="images/OK.gif";
+	public final static String OK_IMAGE_WARN="images/OK_caution.gif";
+	public final static String FAIL_IMAGE="images/FAIL.gif";
+	public final static String FAIL_IMAGE_WARN="images/FAIL_caution.gif";
+	public final static String FAIL_IMAGE_EXPLAINED="images/FAIL_greyed.gif";
+	public final static String LIGHT="images/light.gif";
+	public final static String WARNING_OBJ="images/warning_obj.gif";
+
+	// Java script files
+	public final static String TOOLTIP_SCRIPT = "scripts/ToolTip.js";
+	public final static String TOOLTIP_STYLE = "scripts/ToolTip.css";
+	public final static String FINGERPRINT_SCRIPT = "scripts/Fingerprints.js";
+
+	// Doc files
+	public final static String HELP = "doc/help.html";
+
+	// Status
 	public final static int OK = 0;
 	public final static int NAN = 0x1;
 	public final static int ERR = 0x2;
@@ -106,41 +121,21 @@ public class Utils {
 	}
 
 	/**
-	 * Copy all image files.
+	 * Copy all bundle files contained in the given path
 	 */
-	public static void copyImages(File images, File output) {
-		Util.copyFile(new File(images, FAIL_IMAGE), new File(output, FAIL_IMAGE));
-		Util.copyFile(new File(images, FAIL_IMAGE_EXPLAINED), new File(output, FAIL_IMAGE_EXPLAINED));
-		Util.copyFile(new File(images, FAIL_IMAGE_WARN), new File(output, FAIL_IMAGE_WARN));
-		Util.copyFile(new File(images, OK_IMAGE), new File(output, OK_IMAGE));
-		Util.copyFile(new File(images, OK_IMAGE_WARN), new File(output, OK_IMAGE_WARN));
-		Util.copyFile(new File(images, UNKNOWN_IMAGE), new File(output, UNKNOWN_IMAGE));
-		Util.copyFile(new File(images, LIGHT), new File(output, LIGHT));
-		Util.copyFile(new File(images, WARNING_OBJ), new File(output, WARNING_OBJ));
-	}
-
-	/**
-	 * Copy all scripts files.
-	 */
-	public static void copyScripts(File scripts, File output) {
-		Util.copyFile(new File(scripts, "ToolTip.css"), new File(output, "ToolTip.css"));
-		Util.copyFile(new File(scripts, "ToolTip.js"), new File(output, "ToolTip.js"));
-		Util.copyFile(new File(scripts, "Fingerprints.js"), new File(output, "Fingerprints.js"));
-	}
-
-	/**
-	 * Copy all doc files.
-	 */
-	public static void copyDoc(File docDir, File output) {
-		File[] docFiles = docDir.listFiles();
-		for (int i=0; i<docFiles.length; i++) {
-			File file = docFiles[i];
-			if (file.isDirectory()) {
-				File subdir = new File(output, file.getName());
-				subdir.mkdir();
-				copyDoc(file, subdir);
-			} else {
-				Util.copyFile(file, new File(output, file.getName()));
+	public static void copyBundleFiles(Bundle bundle, String path, String pattern, File output) {
+		Enumeration imageFiles = bundle.findEntries(path, pattern, false);
+		while (imageFiles.hasMoreElements()) {
+			URL url = (URL) imageFiles.nextElement();
+			try {
+				File outputFile = new File(output, url.getFile());
+				if (!outputFile.getParentFile().exists()) {
+					outputFile.getParentFile().mkdirs();
+				}
+				Util.copyStream(url.openStream(), outputFile);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
@@ -417,4 +412,5 @@ public static void saveImage(File outputFile, Image image) {
 		}
 	}
 }
+
 }

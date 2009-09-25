@@ -29,6 +29,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -87,7 +88,7 @@ public class ConfigTab {
 	double[][] allErrors;
 
 	// Cells management
-	Point origin;
+	Point tableOrigin, tableSize;
 	int columnsCount, rowsCount;
 	List firstLine;
 
@@ -113,8 +114,8 @@ public ConfigTab(String name, String box) {
  */
 Composite createTabFolderPage (ComponentResultsElement componentResultsElement, CTabFolder tabFolder, boolean fullSelection) {
 	// Cache the shell and display.
-	this.shell = tabFolder.getShell ();
-	this.display = this.shell.getDisplay ();
+	this.shell = tabFolder.getShell();
+	this.display = this.shell.getDisplay();
 
 	// Remove old table is present
 	boolean initResources = this.table == null;
@@ -140,7 +141,7 @@ Composite createTabFolderPage (ComponentResultsElement componentResultsElement, 
 	if (initResources) initResources();
 
 	// Add columns to the table
-	boolean fingerprints = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NON_FINGERPRINT_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_NON_FINGERPRINT_SCENARIOS);
+	boolean fingerprints = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
 	String [] columnHeaders = getLayoutDataFieldNames(fingerprints);
 	int length = columnHeaders.length;
 	for (int i = 0; i < length; i++) {
@@ -229,26 +230,42 @@ void createToolTip(String toolTipText, String toolTipMessage, int toolTipStyle, 
  * Get the current cell position (column, row) from a point position.
  */
 Point currentCellPosition(int x, int y) {
-	if (this.origin == null) {
-		this.origin = new Point(0, this.table.getHeaderHeight());
+
+	// Compute the origin of the visible area
+	if (this.tableOrigin == null) {
+		this.tableOrigin = new Point(0, this.table.getHeaderHeight());
 	}
-	int width = this.origin.x;
+
+	// Increment width until over current y position
+	int height= this.tableOrigin.y;
+	int row = this.table.getTopIndex();
+	while (row<this.rowsCount && height<y) {
+		height += this.table.getItemHeight();
+		row++;
+	}
+	if (height < y) {
+		// return when position is over the last line
+		return null;
+	}
+	row--;
+
+	// Increment width until being over current x position
 	int col = 0;
-	while (col<this.columnsCount && width<x) {
-		width += this.table.getColumn(col++).getWidth();
+	TableItem tableItem = this.table.getItem(row);
+	Rectangle bounds = tableItem.getBounds(col);
+	while (col<this.columnsCount) {
+		int max = bounds.x + bounds.width + this.table.getGridLineWidth();
+		if (x <= max) break;
+		if (col == this.columnsCount) {
+			// return when position is over the last column
+			return null;
+		}
+		col++;
+		bounds = tableItem.getBounds(col);
 	}
-	if (col == this.columnsCount && width<x) {
-		return null;
-	}
-	int heigth= this.origin.y;
-	int row = 0;
-	while (row<this.rowsCount && heigth<y) {
-		heigth += this.table.getItem(row++).getBounds().height+1;
-	}
-	if (row == this.rowsCount && heigth<y) {
-		return null;
-	}
-	return new Point(col-1, row-1);
+
+	// Return the found table cell position
+	return new Point(col, row);
 }
 
 /*
@@ -275,7 +292,7 @@ private void disposeTable() {
 		toolTip.dispose();
 	}
 	this.table.dispose();
-	this.origin = null;
+	this.tableOrigin = null;
 	this.firstLine = null;
 }
 
@@ -286,7 +303,7 @@ private void disposeTable() {
 private void fillTableLines(boolean fingerprints) {
 
 	// Get preferences information
-	boolean onlyMilestones = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NON_MILESTONES_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NON_MILESTONES_BUILDS);
+	boolean onlyMilestones = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_OLD_BUILDS, IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS);
 	boolean skipNightlyBuilds = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS);
 
 	// Get model information
@@ -317,7 +334,7 @@ private void fillTableLines(boolean fingerprints) {
 			item = new TableItem (this.table, SWT.NONE);
 			item.setText(milestoneName + " - " + buildName);
 			item.setFont(0, this.boldFont);
-			item.setBackground(this.blueref);
+			if (!onlyMilestones) item.setBackground(this.blueref);
 			italic = this.boldItalicFont;
 		} else {
 			if ((onlyMilestones && Util.getNextMilestone(buildName) != null) ||
