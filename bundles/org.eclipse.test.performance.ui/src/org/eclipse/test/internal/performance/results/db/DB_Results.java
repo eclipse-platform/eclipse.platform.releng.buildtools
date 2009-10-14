@@ -506,17 +506,23 @@ public static void setConfigs(String[] configs) {
  */
 public static String[] getConfigDescriptions() {
 	if (CONFIG_DESCRIPTIONS == null) {
-		String[] configs = getConfigs();
-		int length = configs.length;
+		if (CONFIGS == null) return null;
+		int length = CONFIGS.length;
 		CONFIG_DESCRIPTIONS = new String[length];
 		String[][] configDescriptors = PerformanceTestPlugin.getConfigDescriptors();
 		int cdLength = configDescriptors.length;
 		for (int i = 0; i < length; i++) {
+			boolean found = false;
 			for (int j = 0; j < cdLength; j++) {
-				if (configDescriptors[j][0].equals(configs[i])) {
+				if (configDescriptors[j][0].equals(CONFIGS[i])) {
 			        CONFIG_DESCRIPTIONS[i] = configDescriptors[j][1];
+			        found = true;
 			        break;
 				}
+			}
+			if (!found) {
+				String kind = CONFIGS[i].indexOf("epwin") < 0 ? "Linux" : "Win XP";
+				CONFIG_DESCRIPTIONS[i] = kind+" perf test box "+CONFIGS[i].substring(5);
 			}
         }
 	}
@@ -992,8 +998,6 @@ private void internalQueryAllVariations(String configPattern) {
 		}
 		if (BUILDS_LENGTH == 0) {
 			BUILDS = EMPTY_LIST;
-		} else {
-			System.arraycopy(BUILDS, 0, BUILDS = new String[BUILDS_LENGTH], 0, BUILDS_LENGTH);
 		}
 	} catch (SQLException e) {
 		PerformanceTestPlugin.log(e);
@@ -1175,9 +1179,6 @@ private int storeBuildName(String build) {
 			System.arraycopy(BUILDS, index, array, index+1, length-index);
 		}
 		BUILDS = array;
-	} else if (index < length) {
-		System.arraycopy(BUILDS, index, BUILDS, index+1, length-index);
-		BUILDS[index] = build;
 	}
 	BUILDS_LENGTH++;
 	if (isVersion) {

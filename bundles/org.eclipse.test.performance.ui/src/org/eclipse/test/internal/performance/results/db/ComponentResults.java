@@ -335,8 +335,6 @@ void updateBuild(String buildName, List scenarios, boolean force, File dataDir, 
 
 	// Read all variations
 	println("Component '"+this.name+"':"); //$NON-NLS-1$ //$NON-NLS-2$
-	PerformanceResults performanceResults = getPerformance();
-	DB_Results.queryAllVariations(performanceResults.getConfigurationsPattern());
 
 	// manage monitor
 	int size = scenarios.size();

@@ -351,20 +351,24 @@ private String[] read(boolean local, String buildName, String[][] configs, boole
 	subMonitor.setWorkRemaining(100);
 
 	// Update info
-	if (configs == null) {
-		if (this.configNames == null) {
-			initConfigs();
-		}
-	} else {
-		setConfigInfo(configs);
-	}
 	long start = System.currentTimeMillis();
 	int allScenariosSize;
 	if (DB_Results.DB_CONNECTION) {
 		try {
+			// Read all scenarios
 			allScenariosSize = readScenarios(buildName, subMonitor.newChild(10)) ;
 			if (allScenariosSize < 0) {
 				return null;
+			}
+
+			// Read all builds
+			DB_Results.queryAllVariations(getConfigurationsPattern());
+
+			// Refresh configs
+			if (configs == null) {
+				initConfigs();
+			} else {
+				setConfigInfo(configs);
 			}
 		} catch (OperationCanceledException e) {
 			return null;
@@ -372,6 +376,9 @@ private String[] read(boolean local, String buildName, String[][] configs, boole
 	} else {
 		if (this.allScenarios == null) return null;
 		allScenariosSize = this.allScenarios.size();
+		if (configs != null) {
+			setConfigInfo(configs);
+		}
 	}
 
 	// Create corresponding children
@@ -707,6 +714,13 @@ public void setBaselineName(String buildName) {
 }
 
 private void setDefaults() {
+
+	// Set builds if none
+	if (size() == 0 && DB_Results.DB_CONNECTION) {
+		this.allBuildNames = DB_Results.getBuilds();
+		this.components = DB_Results.getComponents();
+		initConfigs();
+	}
 
 	// Set name if null
 	if (this.name == null) {
