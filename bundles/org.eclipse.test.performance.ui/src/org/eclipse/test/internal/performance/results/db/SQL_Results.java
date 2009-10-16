@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 import org.eclipse.test.internal.performance.InternalDimensions;
+import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.SQL;
 
 /**
@@ -140,10 +141,21 @@ ResultSet queryBuildScenarios(String scenarioPattern, String buildName) throws S
  */
 ResultSet queryDimScalars(int datapointId) throws SQLException {
 	if (this.queryDimScalars == null) {
-		this.queryDimScalars = this.fConnection.prepareStatement("select DIM_ID, VALUE from SCALAR where " + //$NON-NLS-1$
-			"DATAPOINT_ID = ? and " + //$NON-NLS-1$
-			"(DIM_ID = "+InternalDimensions.CPU_TIME.getId()+" or DIM_ID = "+InternalDimensions.ELAPSED_PROCESS.getId()+") " +   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			"order by DIM_ID");  //$NON-NLS-1$
+		StringBuffer buffer = new StringBuffer("select DIM_ID, VALUE from SCALAR where "); //$NON-NLS-1$
+		buffer.append("DATAPOINT_ID = ? and "); //$NON-NLS-1$
+		Dim[] dimensions = DB_Results.getResultsDimensions();
+		int length = dimensions.length;
+		for (int i=0; i<length; i++) {
+			if (i==0) {
+				buffer.append("(");
+			} else {
+				buffer.append(" or ");
+			}
+			buffer.append("DIM_ID = ");
+			buffer.append(dimensions[i].getId());
+		}
+		buffer.append(") order by DIM_ID");
+		this.queryDimScalars = this.fConnection.prepareStatement(buffer.toString());
 	}
 	this.queryDimScalars.setInt(1, datapointId);
 	return this.queryDimScalars.executeQuery();

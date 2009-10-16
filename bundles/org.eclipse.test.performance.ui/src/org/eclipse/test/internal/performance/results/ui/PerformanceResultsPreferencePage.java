@@ -443,11 +443,12 @@ private void initializeDefaults() {
 
 	// Milestones
 	this.milestonesCombo.removeAll();
-	String milestone = store.getDefaultString(PRE_MILESTONE_BUILDS + version + "0");
+	String prefix = PRE_MILESTONE_BUILDS + "." + version;
+	String milestone = store.getDefaultString(prefix + "0");
 	int index = 0;
 	while (milestone != null && milestone.length() > 0) {
 		this.milestonesCombo.add(milestone);
-		milestone = store.getDefaultString(PRE_MILESTONE_BUILDS + version + index);
+		milestone = store.getDefaultString(prefix + index);
 	}
 
 	// Init default default dimension
@@ -495,11 +496,13 @@ private void initializeValues() {
     updateBrowseButtonToolTip(version);
 
 	// Milestones
-	String milestone = store.getString(PRE_MILESTONE_BUILDS + version + "0");
+	String prefix = PRE_MILESTONE_BUILDS + "." + version;
 	int index = 0;
+	String milestone = store.getString(prefix + index);
 	while (milestone != null && milestone.length() > 0) {
 		this.milestonesCombo.add(milestone);
-		milestone = store.getString(PRE_MILESTONE_BUILDS + version + ++index);
+		index++;
+		milestone = store.getString(prefix + index);
 	}
 
 	// Init composite lists

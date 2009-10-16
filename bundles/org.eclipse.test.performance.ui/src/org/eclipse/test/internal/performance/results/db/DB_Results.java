@@ -367,6 +367,7 @@ public class DB_Results {
             BUILDS = null;
             LAST_BASELINE_BUILD = null;
             LAST_CURRENT_BUILD = null;
+            DIMENSIONS = null;
             CONFIGS = null;
             COMPONENTS = null;
             SCENARII = null;

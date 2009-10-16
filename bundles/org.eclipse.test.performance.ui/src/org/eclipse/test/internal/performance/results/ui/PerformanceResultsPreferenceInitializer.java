@@ -67,14 +67,16 @@ public void initializeDefaultPreferences() {
 
 	// Milestones
 	String[] milestones = IPerformancesConstants.V35_MILESTONES;
+	String prefix = PRE_MILESTONE_BUILDS + "." + ECLIPSE_MAINTENANCE_VERSION;
 	length = milestones.length;
 	for (int i = 0; i < length; i++) {
-		defaultPreferences.put(PRE_MILESTONE_BUILDS + ".v35." + i, milestones[i]);
+		defaultPreferences.put(prefix + i, milestones[i]);
 	}
 	milestones = IPerformancesConstants.V36_MILESTONES;
+	prefix = PRE_MILESTONE_BUILDS + "." + ECLIPSE_DEVELOPMENT_VERSION;
 	length = milestones.length;
 	for (int i = 0; i < length; i++) {
-		defaultPreferences.put(PRE_MILESTONE_BUILDS + ".v36." + i, milestones[i]);
+		defaultPreferences.put(prefix + i, milestones[i]);
 	}
 }
 
