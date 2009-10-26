@@ -517,10 +517,11 @@ private void initializeValues() {
 	int count = this.resultsDimensionsList.getItemCount();
 	int[] indices = new int[count];
 	int n = 0;
-	String resultsDimension = store.getString(PRE_RESULTS_DIMENSION + "." + i++);
+	String resultsDimension = store.getString(PRE_RESULTS_DIMENSION + "." + i);
 	while (resultsDimension.length() > 0) {
 		indices[n++] = this.resultsDimensionsList.indexOf(resultsDimension);
-		resultsDimension = store.getString(PRE_RESULTS_DIMENSION + "." + i++);
+		i++;
+		resultsDimension = store.getString(PRE_RESULTS_DIMENSION + "." + i);
 	}
 	if (n < count) {
 		System.arraycopy(indices, 0, indices = new int[n], 0, n);
@@ -777,6 +778,12 @@ private void storeValues() {
 		for (i = 0; i < indices.length; i++) {
 			dimensions[i] = this.resultsDimensionsList.getItem(indices[i]);
 			store.putValue(PRE_RESULTS_DIMENSION + "." + i, dimensions[i]);
+		}
+	}
+	int currentLength = DB_Results.getResultsDimensions().length;
+	if (currentLength > length) {
+		for (i = currentLength - 1; i >= length; i--) {
+			store.putValue(PRE_RESULTS_DIMENSION + "." + i, ""); // reset extra dimensions
 		}
 	}
 	DB_Results.setResultsDimensions(dimensions);

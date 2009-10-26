@@ -272,13 +272,27 @@ Point currentCellPosition(int x, int y) {
  * Dispose all SWT resources.
  */
 public void dispose() {
-	this.boldFont.dispose();
-	this.italicFont.dispose();
-	this.boldItalicFont.dispose();
-	this.darkyellow.dispose();
-	this.lightyellow.dispose();
-	this.lightred.dispose();
-	this.blueref.dispose();
+	if (this.boldFont != null) {
+		this.boldFont.dispose();
+	}
+	if (this.italicFont != null) {
+		this.italicFont.dispose();
+	}
+	if (this.boldItalicFont != null) {
+		this.boldItalicFont.dispose();
+	}
+	if (this.darkyellow != null) {
+		this.darkyellow.dispose();
+	}
+	if (this.lightyellow != null) {
+		this.lightyellow.dispose();
+	}
+	if (this.lightred != null) {
+		this.lightred.dispose();
+	}
+	if (this.blueref != null) {
+		this.blueref.dispose();
+	}
 	disposeTable();
 }
 
