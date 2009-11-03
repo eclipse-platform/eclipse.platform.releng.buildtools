@@ -13,11 +13,14 @@ package org.eclipse.test.internal.performance.results.ui;
 import java.io.File;
 import java.util.Iterator;
 
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferencePage;
+import org.osgi.service.prefs.BackingStoreException;
+
+import org.eclipse.test.internal.performance.PerformanceTestPlugin;
+import org.eclipse.test.internal.performance.results.db.DB_Results;
+import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
+import org.eclipse.test.internal.performance.results.utils.Util;
+import org.eclipse.test.performance.ui.UiPlugin;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.ModifyEvent;
@@ -33,14 +36,16 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
-import org.eclipse.test.internal.performance.PerformanceTestPlugin;
-import org.eclipse.test.internal.performance.results.db.DB_Results;
-import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
-import org.eclipse.test.internal.performance.results.utils.Util;
-import org.eclipse.test.performance.ui.UiPlugin;
+
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferencePage;
+
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.osgi.service.prefs.BackingStoreException;
 
 /**
  * Defines the 'Performances' preferences page.
@@ -703,7 +708,8 @@ public boolean performOk() {
 		IEclipsePreferences preferences = new InstanceScope().getNode(PLUGIN_ID);
 		preferences.flush();
 		BuildsView buildsView = (BuildsView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.BuildsView");
-		buildsView.resetView();
+			if (buildsView != null)
+				buildsView.resetView();
 	} catch (BackingStoreException e) {
 		e.printStackTrace();
 		return false;
