@@ -166,14 +166,19 @@ public class DB_Results {
 	 * 	(see {@link IPerformancesConstants#NETWORK_DATABASE_LOCATION}).
 	 */
 	public static boolean updateDbConstants(boolean connected, int eclipseVersion, String databaseLocation) {
-		shutdown();
-		DB_CONNECTION = connected;
-		DB_LOCATION = databaseLocation == null ? IPerformancesConstants.NETWORK_DATABASE_LOCATION : databaseLocation;
-		DB_NAME = IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion;
-		DB_VERSION = "v" + eclipseVersion;
-		DB_VERSION_REF = "R-3." + (eclipseVersion % 10 - 1);
-		if (connected) {
-			return getDefault().fSQL != null;
+		if (DB_CONNECTION != connected ||
+			((databaseLocation == null && DB_LOCATION != null && !DB_LOCATION.equals(IPerformancesConstants.NETWORK_DATABASE_LOCATION)) ||
+					!DB_LOCATION.equals(databaseLocation)) ||
+			!DB_NAME.equals(IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion)) {
+			shutdown();
+			DB_CONNECTION = connected;
+			DB_LOCATION = databaseLocation == null ? IPerformancesConstants.NETWORK_DATABASE_LOCATION : databaseLocation;
+			DB_NAME = IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion;
+			DB_VERSION = "v" + eclipseVersion;
+			DB_VERSION_REF = "R-3." + (eclipseVersion % 10 - 1);
+			if (connected) {
+				return getDefault().fSQL != null;
+			}
 		}
 		return true;
 	}

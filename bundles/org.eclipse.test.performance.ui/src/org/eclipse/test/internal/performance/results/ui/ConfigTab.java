@@ -300,10 +300,12 @@ public void dispose() {
  * Dispose all SWT controls associated with the table.
  */
 private void disposeTable() {
-	Iterator cells = this.toolTips.keySet().iterator();
-	while (cells.hasNext()) {
-		ToolTip toolTip = (ToolTip) this.toolTips.get(cells.next());
-		toolTip.dispose();
+	if (this.toolTips != null) {
+		Iterator cells = this.toolTips.keySet().iterator();
+		while (cells.hasNext()) {
+			ToolTip toolTip = (ToolTip) this.toolTips.get(cells.next());
+			toolTip.dispose();
+		}
 	}
 	this.table.dispose();
 	this.tableOrigin = null;

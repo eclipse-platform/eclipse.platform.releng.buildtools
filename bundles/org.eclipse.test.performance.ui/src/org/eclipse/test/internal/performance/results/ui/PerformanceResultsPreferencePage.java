@@ -518,15 +518,13 @@ private void initializeValues() {
 	this.defaultDimensionCombo.setText(defaultDimension);
 
 	// Init generated dimensions
-	int i = 0;
 	int count = this.resultsDimensionsList.getItemCount();
 	int[] indices = new int[count];
 	int n = 0;
-	String resultsDimension = store.getString(PRE_RESULTS_DIMENSION + "." + i);
+	String resultsDimension = store.getString(PRE_RESULTS_DIMENSION + "." + n);
 	while (resultsDimension.length() > 0) {
 		indices[n++] = this.resultsDimensionsList.indexOf(resultsDimension);
-		i++;
-		resultsDimension = store.getString(PRE_RESULTS_DIMENSION + "." + i);
+		resultsDimension = store.getString(PRE_RESULTS_DIMENSION + "." + n);
 	}
 	if (n < count) {
 		System.arraycopy(indices, 0, indices = new int[n], 0, n);
@@ -708,8 +706,9 @@ public boolean performOk() {
 		IEclipsePreferences preferences = new InstanceScope().getNode(PLUGIN_ID);
 		preferences.flush();
 		BuildsView buildsView = (BuildsView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.BuildsView");
-			if (buildsView != null)
-				buildsView.resetView();
+		if (buildsView != null) {
+			buildsView.resetView();
+		}
 	} catch (BackingStoreException e) {
 		e.printStackTrace();
 		return false;
