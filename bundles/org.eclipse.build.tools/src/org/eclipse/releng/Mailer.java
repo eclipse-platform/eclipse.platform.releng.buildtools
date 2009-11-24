@@ -15,6 +15,8 @@ package org.eclipse.releng;
  * build related information set in monitor.properties
  */
 
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.*;
 
