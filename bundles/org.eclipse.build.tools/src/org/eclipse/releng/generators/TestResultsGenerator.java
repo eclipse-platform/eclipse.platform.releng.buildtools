@@ -57,6 +57,7 @@ public class TestResultsGenerator extends Task {
 	public Vector platformSpecs;
 	public Vector differentPlatforms;
 	public String testResultsWithProblems = "\n";
+	public String testResultsXmlUrls = "\n";
 
 	private DocumentBuilder parser =null;
 	public ErrorTracker anErrorTracker;
@@ -529,6 +530,13 @@ public class TestResultsGenerator extends Task {
 			File[] xmlFileNames = sourceDirectory.listFiles();
 			Arrays.sort(xmlFileNames)	;
 
+			File sourceDirectoryParent = sourceDirectory.getParentFile();
+			String sourceDirectoryCanonicalPath = null;
+			try {
+				sourceDirectoryCanonicalPath = sourceDirectoryParent.getCanonicalPath();
+			} catch (IOException e) {
+				// ignore
+			}
 			for (int i = 0; i < xmlFileNames.length; i++) {
 				if (xmlFileNames[i].getPath().endsWith(".xml")) {
 					String fullName = xmlFileNames[i].getPath();
@@ -540,6 +548,8 @@ public class TestResultsGenerator extends Task {
 								xmlFileNames[i].getName().length() - 4);
 						testResultsWithProblems =
 							testResultsWithProblems.concat("\n" + testName);
+						testResultsXmlUrls =
+							testResultsXmlUrls.concat("\n" + extractXmlRelativeFileName(sourceDirectoryCanonicalPath, xmlFileNames[i]));
 						anErrorTracker.registerError(
 							fullName.substring(
 								getXmlDirectoryName().length() + 1));
@@ -570,7 +580,20 @@ public class TestResultsGenerator extends Task {
 		}
 
 	}
-
+	private static String extractXmlRelativeFileName(String rootCanonicalPath, File xmlFile) {
+		if (rootCanonicalPath != null) {
+			String xmlFileCanonicalPath = null;
+			try {
+				xmlFileCanonicalPath = xmlFile.getCanonicalPath();
+			} catch (IOException e) {
+				// ignore
+			}
+			if (xmlFileCanonicalPath != null) {
+				return xmlFileCanonicalPath.substring(rootCanonicalPath.length()).replace('\\', '/');
+			}
+		}
+		return "";
+	}
 	private String replace(
 		String source,
 		String original,
@@ -1327,6 +1350,13 @@ public class TestResultsGenerator extends Task {
 	 */
 	public String getTestResultsWithProblems() {
 		return testResultsWithProblems;
+	}
+
+	/**
+	 * @return
+	 */
+	public String getTestResultsXmlUrls() {
+		return testResultsXmlUrls;
 	}
 
 	/**

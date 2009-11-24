@@ -20,7 +20,6 @@ import javax.mail.internet.*;
 
 import java.io.File;
 import java.util.StringTokenizer;
-import javax.activation.*;
 import java.util.Properties;
 
 public class Mailer {
