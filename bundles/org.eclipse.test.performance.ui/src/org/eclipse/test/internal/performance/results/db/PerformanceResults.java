@@ -553,11 +553,15 @@ void readLocalFile(File dir) {
 	try {
 		// Read local file info
 		stream = new DataInputStream(new BufferedInputStream(new FileInputStream(dataFile)));
-		println(" - read performance results local files info: "); //$NON-NLS-1$
 
 		// Read build info
 		String str = stream.readUTF();
-		this.updateLocalFileNeed = this.name == null || !this.name.equals(str);
+		this.updateLocalFileNeed = this.name == null || this.name.compareTo(str) < 0;
+		if (this.updateLocalFileNeed) {
+			println(" - read performance results local files info: "); //$NON-NLS-1$
+		} else {
+			return;
+		}
 		println("		+ name : "+str);
 		this.name = str == ""  ? null : str;
 		str = stream.readUTF();

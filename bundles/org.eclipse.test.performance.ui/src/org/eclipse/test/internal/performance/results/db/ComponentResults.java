@@ -145,7 +145,7 @@ public List getConfigNumbers(String configName, boolean fingerprints, List diffe
 						// no result for this scenario in this build
 						line.add(NO_BUILD_RESULTS);
 					} else {
-						getConfigNumbers(buildResults, configResults.getBaselineBuildResults(buildName), line);
+						line.add(getConfigNumbers(buildResults, configResults.getBaselineBuildResults(buildName)));
 					}
 				}
 			}
@@ -181,10 +181,9 @@ public List getConfigNumbers(String configName, boolean fingerprints, List diffe
 	return differences;
 }
 
-private void getConfigNumbers(BuildResults buildResults, BuildResults baselineResults, List line) {
+double[] getConfigNumbers(BuildResults buildResults, BuildResults baselineResults) {
 	if (baselineResults == null) {
-		line.add(INVALID_RESULTS);
-		return;
+		return INVALID_RESULTS;
 	}
 	double[] values = new double[NUMBERS_LENGTH];
 	for (int i=0 ;i<NUMBERS_LENGTH; i++) {
@@ -197,8 +196,7 @@ private void getConfigNumbers(BuildResults buildResults, BuildResults baselineRe
 	double delta = (baselineValue - buildValue) / baselineValue;
 	values[DELTA_VALUE_INDEX] = delta;
 	if (Double.isNaN(delta)) {
-		line.add(values);
-		return;
+		return values;
 	}
 	long baselineCount = baselineResults.getCount();
 	long currentCount = buildResults.getCount();
@@ -211,7 +209,7 @@ private void getConfigNumbers(BuildResults buildResults, BuildResults baselineRe
 				? currentError / baselineValue
 				: Math.sqrt(baselineError*baselineError + currentError*currentError) / baselineValue;
 	}
-	line.add(values);
+	return values;
 }
 
 private ScenarioResults getScenarioResults(List scenarios, int searchedId) {
@@ -432,15 +430,19 @@ void writeData(String buildName, File dir, boolean temp, boolean dirty) {
 	}
 	try {
 		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-		int size = this.children.size();
-		stream.writeUTF(lastBuildName(0));
-		stream.writeInt(size);
-		for (int i=0; i<size; i++) {
-			ScenarioResults scenarioResults = (ScenarioResults) this.children.get(i);
-			scenarioResults.write(stream);
+		try {
+			int size = this.children.size();
+			stream.writeUTF(lastBuildName(0));
+			stream.writeInt(size);
+			for (int i=0; i<size; i++) {
+				ScenarioResults scenarioResults = (ScenarioResults) this.children.get(i);
+				scenarioResults.write(stream);
+			}
 		}
-		stream.close();
-		println("	=> extracted data "+(temp?"temporarily ":"")+"written in file "+file); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		finally {
+			stream.close();
+			println("	=> extracted data "+(temp?"temporarily ":"")+"written in file "+file); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		}
 	} catch (FileNotFoundException e) {
 		System.err.println("can't create output file"+file); //$NON-NLS-1$
 	} catch (IOException e) {

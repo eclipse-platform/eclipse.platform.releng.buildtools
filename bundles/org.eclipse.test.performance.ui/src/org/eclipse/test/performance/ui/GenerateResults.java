@@ -726,10 +726,11 @@ private void printSummaryScenarioLine(int i, String config, ScenarioResults scen
 	String url = config + "/" + scenarioResults.getFileName()+".html";
 	double[] stats = null;
 	if (i==0) { // baseline results
-		List baselinePrefixes = new ArrayList();
+		List baselinePrefixes;
 		if (this.baselinePrefix == null) {
-			baselinePrefixes.add(DB_Results.getDbBaselinePrefix());
+			baselinePrefixes = Util.BASELINE_BUILD_PREFIXES;
 		} else {
+			baselinePrefixes = new ArrayList();
 			baselinePrefixes.add(this.baselinePrefix);
 		}
 		stats = configResults.getStatistics(baselinePrefixes);
@@ -737,9 +738,9 @@ private void printSummaryScenarioLine(int i, String config, ScenarioResults scen
 		stats = configResults.getStatistics(this.currentBuildPrefixes);
 	}
 	double variation = stats[3];
-	if (variation > 10 && variation < 20) {
+	if (variation > 0.1 && variation < 0.2) {
 		stream.print("<td bgcolor=\"yellow\">");
-	} else if (variation >= 20) {
+	} else if (variation >= 0.2) {
 		stream.print("<td bgcolor=\"FF9900\">");
 	} else {
 		stream.print("<td>");
@@ -747,8 +748,8 @@ private void printSummaryScenarioLine(int i, String config, ScenarioResults scen
 	stream.print("<a href=\"");
 	stream.print(url);
 	stream.print("\"/>");
-	stream.print(variation);
-	stream.print("%</a></td>");
+	stream.print(Util.PERCENTAGE_FORMAT.format(variation));
+	stream.print("</a></td>");
 }
 
 /*

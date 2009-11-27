@@ -20,10 +20,13 @@ import java.io.OutputStream;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.eclipse.test.internal.performance.results.db.BuildResults;
@@ -34,8 +37,45 @@ import org.eclipse.test.internal.performance.results.db.DB_Results;
  * framework
  */
 public final class Util implements IPerformancesConstants {
-private static String[] MILESTONES;
-public static final BuildDateComparator BUILD_DATE_COMPARATOR = new BuildDateComparator();
+
+	// Percentages
+	public static final NumberFormat PERCENTAGE_FORMAT = NumberFormat.getPercentInstance(Locale.US);
+	static {
+		PERCENTAGE_FORMAT.setMaximumFractionDigits(2);
+	}
+	public static final NumberFormat DOUBLE_FORMAT = NumberFormat.getNumberInstance(Locale.US);
+	static {
+		DOUBLE_FORMAT.setMaximumFractionDigits(2);
+	}
+
+	// Strings
+	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+	// Build prefixes
+	public static final List ALL_BUILD_PREFIXES = new ArrayList(3);
+	static {
+		ALL_BUILD_PREFIXES.add("I");
+		ALL_BUILD_PREFIXES.add("N");
+		ALL_BUILD_PREFIXES.add("M");
+	}
+	public static final List BUILD_PREFIXES = new ArrayList(2);
+	static {
+		BUILD_PREFIXES.add("I");
+		BUILD_PREFIXES.add("N");
+	}
+	public static final List MAINTENANCE_BUILD_PREFIXES = new ArrayList(2);
+	static {
+		MAINTENANCE_BUILD_PREFIXES.add("I");
+		MAINTENANCE_BUILD_PREFIXES.add("M");
+	}
+	public static final List BASELINE_BUILD_PREFIXES = new ArrayList(1);
+	static {
+		BASELINE_BUILD_PREFIXES.add(DB_Results.getDbBaselinePrefix());
+	}
+
+	// Milestones constants
+	private static String[] MILESTONES;
+	public static final BuildDateComparator BUILD_DATE_COMPARATOR = new BuildDateComparator();
 
 static class BuildDateComparator implements Comparator {
 	public int compare(Object o1, Object o2) {

@@ -686,7 +686,7 @@ public void modifyText(ModifyEvent event) {
  * @param milestone
  */
 void openMilestoneErrorMessage(String milestone) {
-	MessageDialog.openError(getShell(), getDialogTitle(), milestone+" is an invalid milestone name. Only 'Mx-yyyymmddHHMM' or 'RCx-yyyymmddHHMM' are accepted!");
+	MessageDialog.openError(getShell(), getDialogTitle(), milestone+" is an invalid milestone date. Only 'yyyymmddHHMM' format is accepted!");
 }
 
 /*

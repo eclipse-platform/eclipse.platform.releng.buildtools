@@ -10,9 +10,15 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.model;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Vector;
 
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.test.internal.performance.results.db.*;
+import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
+import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
@@ -99,6 +105,17 @@ public Object getPropertyValue(Object propKey) {
     return super.getPropertyValue(propKey);
 }
 
+/**
+ * Returns whether one of the scenario's config has a summary or not.
+ *
+ * @return <code>true</code> if one of the scenario's config has a summary
+ * 	<code>false</code> otherwise.
+ */
+public boolean hasSummary() {
+	if (this.results == null) return false;
+	return ((ScenarioResults)this.results).hasSummary();
+}
+
 void initStatus() {
 	if (onlyFingerprints()) {
 		if (hasSummary()) {
@@ -110,15 +127,23 @@ void initStatus() {
 		super.initStatus();
 	}
 }
-/**
- * Returns whether one of the scenario's config has a summary or not.
- *
- * @return <code>true</code> if one of the scenario's config has a summary
- * 	<code>false</code> otherwise.
- */
-public boolean hasSummary() {
-	if (this.results == null) return false;
-	return ((ScenarioResults)this.results).hasSummary();
+
+void writeStatus(DataOutputStream stream) throws IOException {
+	// Write status for scenarios having error
+	if ((getStatus() & ERROR_MASK) != 0) {
+		StringBuffer buffer = new StringBuffer("	");
+		buffer.append(getLabel(null));
+		IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+		String comment = preferences.get(getId(), null);
+		if (comment != null) {
+			buffer.append("											");
+			buffer.append(comment);
+		}
+		buffer.append(Util.LINE_SEPARATOR);
+		stream.write(buffer.toString().getBytes());
+		// write status for each children
+		super.writeStatus(stream);
+	}
 }
 
 }

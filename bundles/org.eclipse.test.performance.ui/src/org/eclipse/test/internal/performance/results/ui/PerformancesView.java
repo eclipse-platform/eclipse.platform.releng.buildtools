@@ -206,7 +206,7 @@ File changeDataDir() {
 }
 
 /*
- * Change the directory where the local data files are present.
+ * Select a directory.
  */
 File changeDir(String filter, String msg) {
     DirectoryDialog dialog = new DirectoryDialog(getSite().getShell(), SWT.OPEN);

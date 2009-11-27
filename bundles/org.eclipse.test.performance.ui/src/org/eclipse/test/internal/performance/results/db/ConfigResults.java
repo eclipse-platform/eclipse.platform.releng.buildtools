@@ -169,6 +169,23 @@ public List getBuildsMatchingPrefixes(List prefixes) {
 }
 
 /**
+ * Returns the values for the current configuration.
+ *
+ * @return Values in an array of double:
+ * 	<ul>
+ * 		<li>{@link ComponentResults#BUILD_VALUE_INDEX}: the build value in milliseconds</li>
+ * 		<li>{@link ComponentResults#BASELINE_VALUE_INDEX}: the baseline value in milliseconds</li>
+ * 		<li>{@link ComponentResults#DELTA_VALUE_INDEX}: the difference between the build value and its more recent baseline</li>
+ * 		<li>{@link ComponentResults#DELTA_ERROR_INDEX}: the error made while computing the difference</li>
+ * 		<li>{@link ComponentResults#BUILD_ERROR_INDEX}: the error made while measuring the build value</li>
+ * 		<li>{@link ComponentResults#BASELINE_ERROR_INDEX}: the error made while measuring the baseline value</li>
+ * 	</ul>
+ */
+public double[] getConfigNumbers() {
+	return ((ComponentResults) this.parent.parent).getConfigNumbers(getCurrentBuildResults(), getBaselineBuildResults());
+}
+
+/**
  * Return the deviation value and its associated standard error for the default dimension
  * (currently {@link InternalDimensions#ELAPSED_PROCESS}).
  *
@@ -274,13 +291,15 @@ public String getLabel() {
  * Get all dimension builds default dimension statistics for all builds.
  *
  * @return An array of double built as follows:
- * 	- 0:	numbers of values
- * 	- 1:	mean of values
- * 	- 2:	standard deviation of these values
- * 	- 3:	coefficient of variation of these values
+ * <ul>
+ * <li>0:	numbers of values</li>
+ * <li>1:	mean of values</li>
+ * <li>2:	standard deviation of these values</li>
+ * <li>3:	coefficient of variation of these values</li>
+ * </ul>
  */
 public double[] getStatistics() {
-	return getStatistics(null, DB_Results.getDefaultDimension().getId());
+	return getStatistics(Util.ALL_BUILD_PREFIXES, DB_Results.getDefaultDimension().getId());
 }
 
 /**
@@ -290,10 +309,12 @@ public double[] getStatistics() {
  * @param prefixes List of prefixes to filter builds. If <code>null</code>
  * 	then all the builds are taken to compute statistics.
  * @return An array of double built as follows:
- * 	- 0:	numbers of values
- * 	- 1:	mean of values
- * 	- 2:	standard deviation of these values
- * 	- 3:	coefficient of variation of these values
+ * <ul>
+ * <li>0:	numbers of values</li>
+ * <li>1:	mean of values</li>
+ * <li>2:	standard deviation of these values</li>
+ * <li>3:	coefficient of variation of these values</li>
+ * </ul>
  */
 public double[] getStatistics(List prefixes) {
 	return getStatistics(prefixes, DB_Results.getDefaultDimension().getId());
@@ -307,10 +328,12 @@ public double[] getStatistics(List prefixes) {
  * 	then all the builds are taken to compute statistics.
  * @param dim_id The id of the dimension on which the statistics must be computed
  * @return An array of double built as follows:
- * 	- 0:	numbers of values
- * 	- 1:	mean of values
- * 	- 2:	standard deviation of these values
- * 	- 3:	coefficient of variation of these values
+ * <ul>
+ * <li>0:	numbers of values</li>
+ * <li>1:	mean of values</li>
+ * <li>2:	standard deviation of these values</li>
+ * <li>3:	coefficient of variation of these values</li>
+ * </ul>
  */
 public double[] getStatistics(List prefixes, int dim_id) {
 	int size = size();
@@ -346,7 +369,7 @@ public double[] getStatistics(List prefixes, int dim_id) {
 		stddev += Math.pow(values[i] - mean, 2);
 	}
 	stddev = Math.sqrt((stddev / (count - 1)));
-	variation = Math.round(((stddev) / mean) * 100 * 100) / 100;
+	variation = stddev / mean;
 	return new double[] { count, mean, stddev, variation };
 }
 

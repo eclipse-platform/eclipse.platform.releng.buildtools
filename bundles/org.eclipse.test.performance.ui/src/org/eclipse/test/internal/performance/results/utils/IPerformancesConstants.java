@@ -21,6 +21,7 @@ public interface IPerformancesConstants {
 	// State constants
     public static final String PRE_FILTER_BASELINE_BUILDS = PREFIX + "filter.baseline.builds"; //$NON-NLS-1$
     public static final String PRE_FULL_LINE_SELECTION  = PREFIX + "full.line.selection"; //$NON-NLS-1$
+    public static final String PRE_WRITE_RESULTS_DIR = PREFIX + "write.results.dir"; //$NON-NLS-1$
 
 	    // Preference constants
     public static final String PRE_ECLIPSE_VERSION = PREFIX + "eclipse.version"; //$NON-NLS-1$

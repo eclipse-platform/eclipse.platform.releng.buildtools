@@ -25,7 +25,7 @@ import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 public class BuildResultsElement extends ResultsElement {
 
-	    // Property descriptors
+	// Property descriptors
     static final String P_ID_BUILD_DATE = "BuildResultsElement.date"; //$NON-NLS-1$
     static final String P_ID_BUILD_BASELINE = "BuildResultsElement.baseline"; //$NON-NLS-1$
     static final String P_ID_BUILD_COMMENT = "BuildResultsElement.comment"; //$NON-NLS-1$
@@ -274,6 +274,24 @@ public Object getPropertyValue(Object propKey) {
 	return super.getPropertyValue(propKey);
 }
 
+/**
+ * Return the statistics of the build along its history.
+ *
+ * @return An array of double built as follows:
+ * <ul>
+ * <li>0:	numbers of values</li>
+ * <li>1:	mean of values</li>
+ * <li>2:	standard deviation of these values</li>
+ * <li>3:	coefficient of variation of these values</li>
+ * </ul>
+ */
+double[] getStatistics() {
+	if (this.statistics  == null) {
+		this.statistics = ((ConfigResults)getBuildResults().getParent()).getStatistics(Util.BASELINE_BUILD_PREFIXES);
+	}
+	return this.statistics;
+}
+
 void initChildren() {
 	BuildResults buildResults = (BuildResults) this.results;
 	Dim[] dimensions = buildResults.getDimensions();
@@ -303,6 +321,9 @@ void initStatus() {
 		} else {
 			this.status = UNKNOWN;
 		}
+	} else if (getBuildResults().isBaseline()) {
+		// TODO (frederic) report high variation in baseline results along history
+		this.status = READ;
 	} else {
 		initStatus(getBuildResults());
 	}

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.model;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -56,11 +58,13 @@ public abstract class ResultsElement implements IAdaptable, IPropertySource, IWo
 
 	// Model
     ResultsElement parent;
-//    private ImageDescriptor imageDescriptor;
 	AbstractResults results;
 	ResultsElement[] children;
 	String name;
 	int status = -1;
+
+	// Stats
+    double[] statistics;
 
 	// Status constants
 	// state
@@ -84,7 +88,7 @@ public abstract class ResultsElement implements IAdaptable, IPropertySource, IWo
 	static final int BIG_DELTA = 0x1000;
 	public static final int ERROR_MASK = 0xF000;
 
-	      // Property descriptors
+	// Property descriptors
 	static final String P_ID_STATUS_INFO = "ResultsElement.status_info"; //$NON-NLS-1$
 	static final String P_ID_STATUS_WARNING = "ResultsElement.status_warning"; //$NON-NLS-1$
 	static final String P_ID_STATUS_ERROR = "ResultsElement.status_error"; //$NON-NLS-1$
@@ -155,7 +159,6 @@ public abstract class ResultsElement implements IAdaptable, IPropertySource, IWo
 		warningDescriptor.setCategory("Status");
 		return warningDescriptor;
 	}
-    double deviation = -1;
 
 ResultsElement() {
 }
@@ -406,6 +409,21 @@ public final int getStatus() {
 }
 
 /**
+ * Return the statistics of the build along its history.
+ *
+ * @return An array of double built as follows:
+ * <ul>
+ * <li>0:	numbers of values</li>
+ * <li>1:	mean of values</li>
+ * <li>2:	standard deviation of these values</li>
+ * <li>3:	coefficient of variation of these values</li>
+ * </ul>
+ */
+double[] getStatistics() {
+	return this.statistics;
+}
+
+/**
  * Returns whether the element (or one in its hierarchy) has an error.
  *
  * @return <code> true</code> if the element or one in its hierarchy has an error,
@@ -443,49 +461,59 @@ void initStatus() {
 
 int initStatus(BuildResults buildResults) {
 	this.status = READ;
+
+	// Get values
 	double buildValue = buildResults.getValue();
 	ConfigResults configResults = (ConfigResults) buildResults.getParent();
 	BuildResults baselineResults = configResults.getBaselineBuildResults(buildResults.getName());
 	double baselineValue = baselineResults.getValue();
 	double delta = (baselineValue - buildValue) / baselineValue;
+
+	// Store if there's no baseline
 	if (Double.isNaN(delta)) {
 		this.status |= NO_BASELINE;
 	}
+
+	// Store if there's only one run
 	long baselineCount = baselineResults.getCount();
 	long currentCount = buildResults.getCount();
 	double error = Double.NaN;
 	if (baselineCount == 1 || currentCount == 1) {
 		this.status |= SINGLE_RUN;
-	} else {
-		double ttestValue = Util.computeTTest(baselineResults, buildResults);
-		int degreeOfFreedom = (int) (baselineResults.getCount()+buildResults.getCount()-2);
-		if (ttestValue >= 0 && StatisticsUtil.getStudentsT(degreeOfFreedom, StatisticsUtil.T90) >= ttestValue) {
-			this.status |= STUDENT_TTEST;
-		}
-		double baselineError = baselineResults.getError();
-		double currentError = buildResults.getError();
-		error = Double.isNaN(baselineError)
-				? currentError / baselineValue
-				: Math.sqrt(baselineError*baselineError + currentError*currentError) / baselineValue;
-		if (error > 0.03) {
-			this.status |= BIG_ERROR;
-		}
-		if (delta < -0.1) {
-			this.status |= BIG_DELTA;
-			double currentBuildValue = buildResults.getValue();
-			double diff = Math.abs(baselineValue - currentBuildValue);
-			if (currentBuildValue < 100 || diff < 100) { // moderate the status when
-				// diff is less than 100ms
-				this.status |= SMALL_VALUE;
-			} else {
-				if (this.deviation < 0) {
-					double[] stats = ((ConfigResults)buildResults.getParent()).getStatistics();
-					this.deviation = stats[3];
-				}
-				if (this.deviation > 20) { // invalidate the status when the test
+	}
+
+	// Store if the T-test is not good
+	double ttestValue = Util.computeTTest(baselineResults, buildResults);
+	int degreeOfFreedom = (int) (baselineResults.getCount()+buildResults.getCount()-2);
+	if (ttestValue >= 0 && StatisticsUtil.getStudentsT(degreeOfFreedom, StatisticsUtil.T90) >= ttestValue) {
+		this.status |= STUDENT_TTEST;
+	}
+
+	// Store if there's a big error (over 3%)
+	double baselineError = baselineResults.getError();
+	double currentError = buildResults.getError();
+	error = Double.isNaN(baselineError)
+			? currentError / baselineValue
+			: Math.sqrt(baselineError*baselineError + currentError*currentError) / baselineValue;
+	if (error > 0.03) {
+		this.status |= BIG_ERROR;
+	}
+
+	// Store if there's a big delta (over 10%)
+	if (delta < -0.1) {
+		this.status |= BIG_DELTA;
+		double currentBuildValue = buildResults.getValue();
+		double diff = Math.abs(baselineValue - currentBuildValue);
+		if (currentBuildValue < 100 || diff < 100) { // moderate the status when
+			// diff is less than 100ms
+			this.status |= SMALL_VALUE;
+		} else {
+			double[] stats = getStatistics();
+			if (stats != null) {
+				if (stats[3] > 0.2) { // invalidate the status when the test
 					// historical deviation is over 20%
 					this.status |= NOT_RELIABLE;
-				} else if (this.deviation > 10) { // moderate the status when the test
+				} else if (stats[3] > 0.1) { // moderate the status when the test
 					// historical deviation is between 10%
 					// and 20%
 					this.status |= NOT_STABLE;
@@ -493,6 +521,7 @@ int initStatus(BuildResults buildResults) {
 			}
 		}
 	}
+
 	return this.status;
 }
 
@@ -549,11 +578,22 @@ public void setPropertyValue(Object name, Object value) {
 void setImageDescriptor(ImageDescriptor desc) {
 //    this.imageDescriptor = desc;
 }
+
 public String toString() {
 	if (this.results == null) {
 		return getName();
 	}
 	return this.results.toString();
+}
+
+/*
+ * Write the element status in the given stream
+ */
+void writeStatus(DataOutputStream stream) throws IOException {
+	int length = this.children.length;
+	for (int i=0; i<length; i++) {
+		this.children[i].writeStatus(stream);
+	}
 }
 
 }

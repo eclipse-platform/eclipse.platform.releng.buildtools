@@ -10,11 +10,9 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.ui;
 
-import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -52,12 +50,6 @@ import org.eclipse.test.internal.performance.results.utils.Util;
  * Tab to display all performances results numbers for a configuration (i.e a performance machine).
  */
 public class ConfigTab {
-
-	// Formats
-	static final NumberFormat PERCENTAGE_FORMAT = NumberFormat.getPercentInstance(Locale.US);
-	static {
-		PERCENTAGE_FORMAT.setMaximumFractionDigits(2);
-	}
 
 	// Colors
 	static final Display DEFAULT_DISPLAY = Display.getDefault();
@@ -333,7 +325,7 @@ private void fillTableLines(boolean fingerprints) {
 
 	// Read each information line (one line per build results)
 	Object[] scenarios = this.results.getChildren(null);
-	double[] deviations = new double[scenarios.length];
+	ConfigResultsElement[] configs = new ConfigResultsElement[scenarios.length];
 	int row = 0;
 	while (lines.hasNext()) {
 		List line = (List) lines.next();
@@ -397,7 +389,7 @@ private void fillTableLines(boolean fingerprints) {
 				double error = values[ComponentResults.DELTA_ERROR_INDEX];
 
 				// Set text with delta value
-				item.setText(col, PERCENTAGE_FORMAT.format(delta));
+				item.setText(col, Util.PERCENTAGE_FORMAT.format(delta));
 
 				// Compute the tooltip to display on the cell
 				if (error > 0.03) {
@@ -415,7 +407,7 @@ private void fillTableLines(boolean fingerprints) {
 					} else {
 						toolTipMessage += ".\n";
 					}
-					toolTipMessage += "The error on this result is "+PERCENTAGE_FORMAT.format(error)+", hence it may be not reliable";
+					toolTipMessage += "The error on this result is "+Util.PERCENTAGE_FORMAT.format(error)+", hence it may be not reliable";
 					toolTipStyle |= SWT.ICON_WARNING;
 				}
 				if (delta < -0.1) {
@@ -464,12 +456,13 @@ private void fillTableLines(boolean fingerprints) {
 				}
 
 				// Add information in tooltip when history shows big variation
-				if (deviations[col-1] < 0) {
-					ConfigResultsElement configResultsElement = (ConfigResultsElement) scenarioResultsElement.getResultsElement(this.configName);
-					double[] stats = configResultsElement.getStatistics();
-					deviations[col-1] = stats[3];
+				ConfigResultsElement configResultsElement = configs[col-1];
+				if (configResultsElement == null) {
+					configResultsElement = (ConfigResultsElement) scenarioResultsElement.getResultsElement(this.configName);
+					configs[col-1] = configResultsElement;
 				}
-				if (deviations[col-1] > 20) {
+				double deviation = configResultsElement.getStatistics()[3];
+				if (deviation > 0.2) {
 					// deviation is over 20% over the entire history
 					if (toolTipText == null) {
 						toolTipText = "";
@@ -482,11 +475,11 @@ private void fillTableLines(boolean fingerprints) {
 					} else {
 						toolTipMessage += ".\n";
 					}
-					toolTipMessage += "The results history shows that the variation of its delta is over 20% ("+PERCENTAGE_FORMAT.format(deviations[col-1])+"), hence its result is surely not reliable";
+					toolTipMessage += "The results history shows that the variation of its delta is over 20% ("+Util.PERCENTAGE_FORMAT.format(deviation)+"), hence its result is surely not reliable";
 					// set the text in italic
 					item.setFont(col, italic2);
 					toolTipStyle |= SWT.ICON_INFORMATION;
-				} else if (deviations[col-1] > 10) { // moderate the status when the test
+				} else if (deviation > 0.1) { // moderate the status when the test
 					// deviation is between 10% and 20% over the entire history
 					if (toolTipText == null) {
 						toolTipText = "";
@@ -499,7 +492,7 @@ private void fillTableLines(boolean fingerprints) {
 					} else {
 						toolTipMessage += ".\n";
 					}
-					toolTipMessage += "The results history shows that the variation of its delta is between 10% and 20% ("+PERCENTAGE_FORMAT.format(deviations[col-1])+"), hence its result may not be really reliable";
+					toolTipMessage += "The results history shows that the variation of its delta is between 10% and 20% ("+Util.PERCENTAGE_FORMAT.format(deviation)+"), hence its result may not be really reliable";
 					// set the text in italic
 					item.setFont(col, italic2);
 					if (toolTipStyle == SWT.BALLOON && delta >= -0.1) {

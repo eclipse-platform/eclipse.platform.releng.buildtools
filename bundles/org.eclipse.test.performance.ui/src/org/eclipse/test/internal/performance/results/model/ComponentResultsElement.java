@@ -10,16 +10,22 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.model;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.test.internal.performance.results.db.AbstractResults;
 import org.eclipse.test.internal.performance.results.db.ComponentResults;
 import org.eclipse.test.internal.performance.results.db.PerformanceResults;
 import org.eclipse.test.internal.performance.results.db.ScenarioResults;
+import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
+import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
@@ -194,6 +200,24 @@ void initStatus() {
 		this.status = UNREAD;
 	} else {
 		super.initStatus();
+	}
+}
+
+void writeStatus(DataOutputStream stream) throws IOException {
+	// Write status for scenarios having error
+	if ((getStatus() & ERROR_MASK) != 0) {
+		StringBuffer buffer = new StringBuffer(getName());
+		IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+		String comment = preferences.get(getId(), null);
+		if (comment != null) {
+			buffer.append("												");
+			buffer.append(comment);
+		}
+		buffer.append(Util.LINE_SEPARATOR);
+		stream.write(buffer.toString().getBytes());
+		// write status for each children
+		super.writeStatus(stream);
+		stream.write(Util.LINE_SEPARATOR.getBytes());
 	}
 }
 

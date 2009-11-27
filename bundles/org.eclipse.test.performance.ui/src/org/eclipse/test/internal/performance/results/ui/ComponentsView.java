@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.ui;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -18,8 +19,8 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChange
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -41,6 +42,7 @@ import org.eclipse.test.internal.performance.results.model.ResultsElement;
 import org.eclipse.test.internal.performance.results.model.ScenarioResultsElement;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
@@ -93,9 +95,11 @@ public class ComponentsView extends PerformancesView {
 
 	// Internal
 	Set expandedComponents = new HashSet();
+	File resultsDir = null;
 
 	// Actions
 	Action filterAdvancedScenarios;
+	Action writeStatus;
 
 	// SWT resources
 	Font boldFont;
@@ -222,12 +226,10 @@ void fillFiltersDropDown(IMenuManager manager) {
 	manager.add(this.filterAdvancedScenarios);
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#fillLocalToolBar(org.eclipse.jface.action.IToolBarManager)
- */
-void fillLocalToolBar(IToolBarManager manager) {
-	super.fillLocalToolBar(manager);
+void fillLocalPullDown(IMenuManager manager) {
+	super.fillLocalPullDown(manager);
+	manager.add(new Separator());
+	manager.add(this.writeStatus);
 }
 
 /*
@@ -306,6 +308,15 @@ void makeActions() {
 	this.filterAdvancedScenarios.setChecked(true);
 	this.filterAdvancedScenarios.setToolTipText("Filter advanced scenarios (i.e. not fingerprint ones)");
 
+	// Write status
+	this.writeStatus = new Action("Write status") {
+		public void run() {
+			writeStatus();
+        }
+	};
+	this.writeStatus.setEnabled(true);
+	this.writeStatus.setToolTipText("Write component status to a file");
+
 	// Set filters default
 	this.filterBaselineBuilds.setChecked(true);
 	this.filterNightlyBuilds.setChecked(false);
@@ -347,6 +358,11 @@ void restoreState() {
 	if (this.viewState == null) {
 		this.filterBaselineBuilds.setChecked(true);
 		this.viewFilters.add(FILTER_BASELINE_BUILDS);
+	} else {
+		String dir = this.viewState.getString(IPerformancesConstants.PRE_WRITE_RESULTS_DIR);
+		if (dir != null) {
+			this.resultsDir = new File(dir);
+		}
 	}
 
 	// Filter non fingerprints action state
@@ -355,6 +371,13 @@ void restoreState() {
 	if (checked) {
 		this.viewFilters.add(FILTER_ADVANCED_SCENARIOS);
 	}
+}
+
+public void saveState(IMemento memento) {
+	if (this.resultsDir != null) {
+		memento.putString(IPerformancesConstants.PRE_WRITE_RESULTS_DIR, this.resultsDir.getPath());
+	}
+	super.saveState(memento);
 }
 
 /**
@@ -399,6 +422,39 @@ public void selectionChanged(SelectionChangedEvent event) {
 				eventComponentElement = (ResultsElement) eventComponentElement.getParent(null);
 			}
 			this.expandedComponents.add(eventComponentElement);
+		}
+	}
+}
+
+protected void writeStatus() {
+	String filter = (this.resultsDir == null) ? null : this.resultsDir.getPath();
+	File newDir = changeDir(filter, "Select a directory to write the status");
+	if (newDir != null) {
+		this.resultsDir = newDir;
+		if (this.filterAdvancedScenarios.isChecked()) {
+			newDir = new File(newDir, "fingerprints");
+		} else {
+			newDir = new File(newDir, "all");
+		}
+		newDir.mkdir();
+		File resultsFile = new File(newDir, this.results.getName()+".log");
+		if (resultsFile.exists()) {
+			int i=0;
+			while (true) {
+				String newFileName = this.results.getName()+"_";
+				if (i<10) newFileName += "0";
+				newFileName += i+".log";
+				File renamedFile = new File(newDir, newFileName);
+				if (resultsFile.renameTo(renamedFile)) break;
+				i++;
+			}
+		}
+		ResultsElement[] components = this.results.getChildren();
+		int length = components.length;
+		for (int i=0; i<length; i++) {
+			if (!this.results.writeStatus(resultsFile)) {
+				MessageDialog.openWarning(this.shell, getTitleToolTip(), "The component is not read, hence no results can be written!");
+			}
 		}
 	}
 }

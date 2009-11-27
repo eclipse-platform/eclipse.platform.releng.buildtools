@@ -10,7 +10,12 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.model;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.test.internal.performance.results.db.*;
@@ -191,6 +196,50 @@ public void updateBuilds(String[] builds, boolean force, File dataDir, IProgress
 public void setFingerprints(boolean fingerprints) {
 	this.fingerprints = fingerprints;
 	resetStatus();
+}
+
+/*
+ * Write the component status in the given file
+ */
+public boolean writeStatus(File resultsFile) {
+	if (this.results == null) {
+		return false;
+	}
+	// Write status only for component with error
+	try {
+		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(resultsFile)));
+		try {
+			// Print columns title
+			StringBuffer buffer = new StringBuffer();
+			buffer.append("Component");
+			buffer.append("	Scenario");
+			buffer.append("	Machine");
+			buffer.append("			Build		");
+			buffer.append("		History		");
+			buffer.append("	Comment");
+			buffer.append(Util.LINE_SEPARATOR);
+			buffer.append("			value");
+			buffer.append("	baseline");
+			buffer.append("	variation");
+			buffer.append("	delta");
+			buffer.append("	error");
+			buffer.append("	n");
+			buffer.append("	mean");
+			buffer.append("	deviation");
+			buffer.append("	coeff");
+			buffer.append(Util.LINE_SEPARATOR);
+			stream.write(buffer.toString().getBytes());
+			writeStatus(stream);
+		}
+		finally {
+			stream.close();
+		}
+	} catch (FileNotFoundException e) {
+		System.err.println("Can't create output file"+resultsFile); //$NON-NLS-1$
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
+	return true;
 }
 
 }

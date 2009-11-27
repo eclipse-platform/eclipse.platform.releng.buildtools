@@ -19,6 +19,7 @@ import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.results.db.BuildResults;
 import org.eclipse.test.internal.performance.results.db.ConfigResults;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
+import org.eclipse.test.internal.performance.results.utils.Util;
 
 /**
  * Class used to fill details file of scenario builds data.
@@ -153,17 +154,17 @@ private void printRowDoubles(double[][] stats, int idx) {
 		double value = stats[i][idx];
 		String dimName = this.dimensions[i].getName();
 		if (idx == 3) {
-			if (value>10 && value<20) {
+			if (value > 0.1 && value < 0.2) {
 				this.stream.print("<td bgcolor=\"yellow\" title=\"");
-			} else if (value>=20) {
+			} else if (value >= 0.2) {
 				this.stream.print("<td bgcolor=\"FF9900\" title=\"");
 			} else {
 				this.stream.print("<td title=\"");
 			}
 			this.stream.print(dimName);
 			this.stream.print("\">");
-			this.stream.print(value);
-			this.stream.print("%</td>");
+			this.stream.print(Util.PERCENTAGE_FORMAT.format(value));
+			this.stream.print("</td>");
 		} else {
 			printDimTitle(dimName);
 			this.stream.print(this.dimensions[i].getDisplayValue(value));

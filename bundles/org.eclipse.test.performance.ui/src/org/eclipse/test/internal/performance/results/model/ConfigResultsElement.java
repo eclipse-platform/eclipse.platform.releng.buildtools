@@ -10,11 +10,17 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.model;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.test.internal.performance.results.db.*;
+import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
+import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
@@ -180,15 +186,6 @@ public String getLabel(Object o) {
 	return description.substring(0, index);
 }
 
-void initStatus() {
-	ConfigResults configResults = getConfigResults();
-	if (configResults.isValid()) {
-		initStatus(configResults.getCurrentBuildResults());
-	} else {
-		this.status = MISSING;
-	}
-}
-
 /*
  * (non-Javadoc)
  *
@@ -255,17 +252,78 @@ public Object getPropertyValue(Object propKey) {
 }
 
 /**
- * Get all dimension builds default dimension statistics for all builds.
+ * Return the statistics of the build along its history.
  *
  * @return An array of double built as follows:
- * 	- 0:	numbers of values
- * 	- 1:	mean of values
- * 	- 2:	standard deviation of these values
- * 	- 3:	coefficient of variation of these values
+ * <ul>
+ * <li>0:	numbers of values</li>
+ * <li>1:	mean of values</li>
+ * <li>2:	standard deviation of these values</li>
+ * <li>3:	coefficient of variation of these values</li>
+ * </ul>
  */
 public double[] getStatistics() {
-	if (this.results == null) return null;
-	return getConfigResults().getStatistics();
+	if (this.statistics  == null) {
+		this.statistics = getConfigResults().getStatistics(Util.BASELINE_BUILD_PREFIXES);
+	}
+	return this.statistics;
+}
+
+void initStatus() {
+	ConfigResults configResults = getConfigResults();
+	if (configResults.isValid()) {
+		initStatus(configResults.getCurrentBuildResults());
+	} else {
+		this.status = MISSING;
+	}
+}
+
+/*
+ * Write the element status in the given stream
+ */
+void writeStatus(DataOutputStream stream) throws IOException {
+	if ((this.status & BIG_DELTA) != 0) {
+		ConfigResults configResults = getConfigResults();
+		double[] values = configResults.getConfigNumbers();
+		double buildValue = values[ComponentResults.BUILD_VALUE_INDEX];
+		double baselineValue = values[ComponentResults.BASELINE_VALUE_INDEX];
+		double delta = values[ComponentResults.DELTA_VALUE_INDEX];
+		double error = values[ComponentResults.DELTA_ERROR_INDEX];
+		StringBuffer buffer = new StringBuffer("		");
+		buffer.append(configResults.getName());
+		buffer.append("	");
+		buffer.append(buildValue);
+		buffer.append("	");
+		buffer.append(baselineValue);
+		buffer.append("	");
+		buffer.append(buildValue-baselineValue);
+		buffer.append("	");
+		buffer.append(Util.PERCENTAGE_FORMAT.format(delta));
+		buffer.append("	");
+		buffer.append(Util.PERCENTAGE_FORMAT.format(error));
+		double[] stats = getStatistics();
+		if (stats != null) {
+			buffer.append("	");
+			buffer.append((int) stats[0]);
+			buffer.append("	");
+			buffer.append(Util.DOUBLE_FORMAT.format(stats[1]));
+			buffer.append("	");
+			buffer.append(Util.DOUBLE_FORMAT.format(stats[2]));
+			buffer.append("	");
+			buffer.append(Util.PERCENTAGE_FORMAT.format(stats[3]));
+		}
+		IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+		String comment = preferences.get(getId(), null);
+		if (comment != null) {
+			if (stats == null) {
+				buffer.append("				");
+			}
+			buffer.append("	");
+			buffer.append(comment);
+		}
+		buffer.append(Util.LINE_SEPARATOR);
+		stream.write(buffer.toString().getBytes());
+	}
 }
 
 }
