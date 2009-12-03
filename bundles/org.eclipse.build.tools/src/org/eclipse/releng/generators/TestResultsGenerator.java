@@ -531,6 +531,9 @@ public class TestResultsGenerator extends Task {
 			Arrays.sort(xmlFileNames)	;
 
 			File sourceDirectoryParent = sourceDirectory.getParentFile();
+			if (sourceDirectoryParent != null) {
+				sourceDirectoryParent = sourceDirectoryParent.getParentFile();
+			}
 			String sourceDirectoryCanonicalPath = null;
 			try {
 				sourceDirectoryCanonicalPath = sourceDirectoryParent.getCanonicalPath();
@@ -584,12 +587,13 @@ public class TestResultsGenerator extends Task {
 		if (rootCanonicalPath != null) {
 			String xmlFileCanonicalPath = null;
 			try {
-				xmlFileCanonicalPath = xmlFile.getCanonicalPath();
+				xmlFileCanonicalPath = xmlFile.getCanonicalPath();		
 			} catch (IOException e) {
 				// ignore
 			}
 			if (xmlFileCanonicalPath != null) {
-				return xmlFileCanonicalPath.substring(rootCanonicalPath.length()).replace('\\', '/');
+				// + 1 to remove the '\'
+				return xmlFileCanonicalPath.substring(rootCanonicalPath.length() + 1).replace('\\', '/');
 			}
 		}
 		return "";
