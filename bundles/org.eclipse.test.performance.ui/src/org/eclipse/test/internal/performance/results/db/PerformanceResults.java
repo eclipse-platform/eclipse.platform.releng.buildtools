@@ -51,7 +51,7 @@ public class PerformanceResults extends AbstractResults {
 	private String configPattern;
 
 	boolean dbRequired;
-	boolean updateLocalFileNeed;
+	boolean needToUpdateLocalFile;
 
 	/*
 	 * Local class helping to guess remaining time while reading results from DB
@@ -556,12 +556,11 @@ void readLocalFile(File dir) {
 
 		// Read build info
 		String str = stream.readUTF();
-		this.updateLocalFileNeed = this.name == null || this.name.compareTo(str) < 0;
-		if (this.updateLocalFileNeed) {
-			println(" - read performance results local files info: "); //$NON-NLS-1$
-		} else {
+		this.needToUpdateLocalFile = this.name == null || this.name.compareTo(str) > 0;
+		if (this.name != null && this.name.compareTo(str) >= 0) {
 			return;
 		}
+		println(" - read performance results local files info: "); //$NON-NLS-1$
 		println("		+ name : "+str);
 		this.name = str == ""  ? null : str;
 		str = stream.readUTF();
@@ -868,21 +867,21 @@ public String[] updateBuild(String buildName, boolean force, File dataDir, IProg
  * Write general information.
  */
 void writeData(File dir) {
+	if (!DB_Results.DB_CONNECTION) {
+		// Only write new local file if there's a database connection
+		// otherwise contents may not be complete...
+		return;
+	}
 	if (dir ==null || (!dir.exists() && !dir.mkdirs())) {
 		System.err.println("can't create directory " + dir); //$NON-NLS-1$
 		return;
 	}
 	File dataFile = new File(dir, "performances.dat"); //$NON-NLS-1$
 	if (dataFile.exists()) {
-		if (this.updateLocalFileNeed) {
-			dataFile.delete();
-		} else {
+		if (!this.needToUpdateLocalFile) {
 			return;
 		}
-	} else if (!DB_Results.DB_CONNECTION) {
-		// Only write new local file if there's a database connection
-		// otherwise contents may not be complete...
-		return;
+		dataFile.delete();
 	}
 	try {
 		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(dataFile)));
