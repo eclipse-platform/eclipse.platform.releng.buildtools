@@ -201,7 +201,7 @@ public void setFingerprints(boolean fingerprints) {
 /*
  * Write the component status in the given file
  */
-public boolean writeStatus(File resultsFile) {
+public boolean writeStatus(File resultsFile, boolean full) {
 	if (this.results == null) {
 		return false;
 	}
@@ -214,22 +214,26 @@ public boolean writeStatus(File resultsFile) {
 			buffer.append("Component");
 			buffer.append("	Scenario");
 			buffer.append("	Machine");
-			buffer.append("			Build		");
-			buffer.append("		History		");
+			if (full) {
+				buffer.append("			Build		");
+				buffer.append("		History		");
+			}
 			buffer.append("	Comment");
 			buffer.append(Util.LINE_SEPARATOR);
-			buffer.append("			value");
-			buffer.append("	baseline");
-			buffer.append("	variation");
-			buffer.append("	delta");
-			buffer.append("	error");
-			buffer.append("	n");
-			buffer.append("	mean");
-			buffer.append("	deviation");
-			buffer.append("	coeff");
-			buffer.append(Util.LINE_SEPARATOR);
+			if (full) {
+				buffer.append("			value");
+				buffer.append("	baseline");
+				buffer.append("	variation");
+				buffer.append("	delta");
+				buffer.append("	error");
+				buffer.append("	n");
+				buffer.append("	mean");
+				buffer.append("	deviation");
+				buffer.append("	coeff");
+				buffer.append(Util.LINE_SEPARATOR);
+			}
 			stream.write(buffer.toString().getBytes());
-			writeStatus(stream);
+			writeStatus(stream, full);
 		}
 		finally {
 			stream.close();

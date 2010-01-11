@@ -589,10 +589,10 @@ public String toString() {
 /*
  * Write the element status in the given stream
  */
-void writeStatus(DataOutputStream stream) throws IOException {
+void writeStatus(DataOutputStream stream, boolean full) throws IOException {
 	int length = this.children.length;
 	for (int i=0; i<length; i++) {
-		this.children[i].writeStatus(stream);
+		this.children[i].writeStatus(stream, full);
 	}
 }
 

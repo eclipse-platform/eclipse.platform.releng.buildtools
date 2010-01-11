@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.test.internal.performance.results.db.BuildResults;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
 
@@ -507,5 +508,28 @@ private Util() {
  */
 public static void setMilestones(String[] items) {
 	MILESTONES = items;
+}
+
+/**
+ * Init the milestones from preferences
+ *
+ * @param preferences The preferences from which got milestones list
+ */
+public static void initMilestones(IEclipsePreferences preferences) {
+	int eclipseVersion = preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
+	String prefix = IPerformancesConstants.PRE_MILESTONE_BUILDS + "." + eclipseVersion;
+	int index = 0;
+	String milestone = preferences.get(prefix + index, null);
+	String[] milestones = new String[20];
+	while (milestone != null) {
+		milestones[index] = milestone;
+		index++;
+		milestone = preferences.get(prefix + index, null);
+	}
+	int length = milestones.length;
+	if (index < length) {
+		System.arraycopy(milestones, 0, milestones = new String[index], 0, index);
+	}
+	MILESTONES = milestones;
 }
 }

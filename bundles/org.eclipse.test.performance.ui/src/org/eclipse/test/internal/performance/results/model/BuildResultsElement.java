@@ -362,5 +362,11 @@ public boolean isUnknown() {
 public String toString() {
 	return getName();
 }
+public boolean isBefore(String build) {
+	if (this.results != null) {
+		return Util.getBuildDate(this.name).compareTo(Util.getBuildDate(build)) <= 0;
+	}
+	return true;
+}
 
 }

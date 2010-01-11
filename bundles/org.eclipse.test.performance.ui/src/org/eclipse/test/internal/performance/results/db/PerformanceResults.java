@@ -556,8 +556,8 @@ void readLocalFile(File dir) {
 
 		// Read build info
 		String str = stream.readUTF();
-		this.needToUpdateLocalFile = this.name == null || this.name.compareTo(str) > 0;
-		if (this.name != null && this.name.compareTo(str) >= 0) {
+		this.needToUpdateLocalFile = this.name == null || Util.getBuildDate(this.name).compareTo(Util.getBuildDate(str)) > 0;
+		if (this.name != null && Util.getBuildDate(this.name).compareTo(Util.getBuildDate(str)) >= 0) {
 			return;
 		}
 		println(" - read performance results local files info: "); //$NON-NLS-1$
@@ -672,10 +672,12 @@ private void setAllBuildNames() {
 	if (buildsSize > 0) {
 		builds.toArray(this.allBuildNames);
 		int idx = this.allBuildNames.length-1;
-		this.name = this.allBuildNames[idx--];
+		String lastBuildName = this.allBuildNames[idx--];
 		while (this.name.startsWith(DB_Results.getDbBaselinePrefix())) {
-			this.name = this.allBuildNames[idx--];
+			lastBuildName = this.allBuildNames[idx--];
 		}
+		this.needToUpdateLocalFile = this.name == null || Util.getBuildDate(lastBuildName).compareTo(Util.getBuildDate(this.name)) > 0;
+		this.name = lastBuildName;
 	}
 }
 

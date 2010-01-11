@@ -41,6 +41,7 @@ import org.eclipse.test.internal.performance.results.model.PerformanceResultsEle
 import org.eclipse.test.internal.performance.results.model.ResultsElement;
 import org.eclipse.test.internal.performance.results.model.ScenarioResultsElement;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
+import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
@@ -112,6 +113,7 @@ public ComponentResultsView() {
 	this.fullSelectionImageDescriptor = ImageDescriptor.createFromFile(getClass(), "icallout_obj.gif");
 	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
 	this.preferences.addPreferenceChangeListener(this);
+	Util.initMilestones(this.preferences);
 }
 
 /*

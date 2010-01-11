@@ -32,6 +32,7 @@ public interface IPerformancesConstants {
     public static final String PRE_RESULTS_GENERATION_DIR = PREFIX + "results.generation.dir"; //$NON-NLS-1$
     public static final String PRE_CONFIG_DESCRIPTOR_NAME = PREFIX + "config.descriptor.name"; //$NON-NLS-1$
     public static final String PRE_CONFIG_DESCRIPTOR_DESCRIPTION = PREFIX + "config.descriptor.description"; //$NON-NLS-1$
+    public static final String PRE_LAST_BUILD = PREFIX + "last.build"; //$NON-NLS-1$
     public static final String PRE_DEFAULT_DIMENSION = PREFIX + "default.dimension"; //$NON-NLS-1$
     public static final String PRE_RESULTS_DIMENSION = PREFIX + "results.dimension"; //$NON-NLS-1$
     public static final String PRE_MILESTONE_BUILDS = PREFIX + "milestone.builds"; //$NON-NLS-1$
@@ -39,6 +40,7 @@ public interface IPerformancesConstants {
     public static final String PRE_FILTER_ADVANCED_SCENARIOS = PREFIX + "filter.non.fingerprints.scenarios"; //$NON-NLS-1$
     public static final String PRE_FILTER_OLD_BUILDS = PREFIX + "filter.non.milestones.builds"; //$NON-NLS-1$
     public static final String PRE_FILTER_NIGHTLY_BUILDS = PREFIX + "filter.nightly.builds"; //$NON-NLS-1$
+    public static final String PRE_FILTER_LAST_BUILDS = PREFIX + "filter.last.builds"; //$NON-NLS-1$
 
 	// Other constants
 	public static final int ECLIPSE_MAINTENANCE_VERSION = 35;
@@ -50,6 +52,7 @@ public interface IPerformancesConstants {
 	public static final int DEFAULT_ECLIPSE_VERSION = ECLIPSE_DEVELOPMENT_VERSION;
 	public static final boolean DEFAULT_FILTER_ADVANCED_SCENARIOS = true;
 	public static final boolean DEFAULT_FILTER_OLD_BUILDS = false;
+	public static final boolean DEFAULT_FILTER_LAST_BUILDS = false;
 	public static final boolean DEFAULT_FILTER_NIGHTLY_BUILDS = false;
 	public static final boolean DEFAULT_DATABASE_CONNECTION = false;
 	public static final boolean DEFAULT_DATABASE_LOCAL = false;

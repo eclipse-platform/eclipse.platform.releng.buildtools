@@ -61,6 +61,8 @@ public class PerformanceResultsPreferencePage extends PreferencePage
 	private Button dbRelengRadioButton;
 	private Button dbLocalRadioButton;
 	private CCombo defaultDimensionCombo;
+//	private Button lastBuildCheckBox;
+	private CCombo lastBuildCombo;
 	private List resultsDimensionsList;
 	private CCombo milestonesCombo;
 	private Label dbLocationLabel;
@@ -166,10 +168,22 @@ protected Control createContents(Composite parent) {
 	this.milestonesCombo = createCombo(compositeMilestones);
 	this.milestonesCombo.setToolTipText("Enter the date of the milestone as yyyymmddHHMM");
 
-	// Default dimension layout
-	StringBuffer tooltip = new StringBuffer("Select the default dimension which will be used for performance results\n");
-	tooltip.append("When changed, the new selected dimension is automatically added to the dimensions list below...");
+	// Last build
+	StringBuffer tooltip = new StringBuffer("Select the last build to display performance results\n");
+	tooltip.append("If set then performance results won't be displayed for any build after this date...");
 	String tooltipText = tooltip.toString();
+	Composite compositeLastBuild = createComposite(parent, 3, 1);
+//	this.lastBuildCheckBox = createCheckBox(compositeLastBuild, "Until last build");
+	createLabel(compositeLastBuild, "Last build: ", false);
+	this.lastBuildCombo = createCombo(compositeLastBuild);
+	this.lastBuildCombo.setEditable(false);
+	this.lastBuildCombo.setToolTipText(tooltipText);
+	initBuildsList();
+
+	// Default dimension layout
+	tooltip = new StringBuffer("Select the default dimension which will be used for performance results\n");
+	tooltip.append("When changed, the new selected dimension is automatically added to the dimensions list below...");
+	tooltipText = tooltip.toString();
 	Composite compositeDefaultDimension = createComposite(parent, 3, 1);
 	createLabel(compositeDefaultDimension, "Default dimension: ", false);
 	this.defaultDimensionCombo = createCombo(compositeDefaultDimension);
@@ -414,6 +428,17 @@ void initDimensionsLists() {
 	}
 }
 
+/*
+ * Init he contents of the dimensions list controls.
+ */
+private void initBuildsList() {
+	String[] builds = DB_Results.getBuilds();
+	int length = builds.length;
+	for (int i=0; i<length; i++) {
+		this.lastBuildCombo.add(builds[i]);
+	}
+}
+
 /**
  * Initializes states of the controls using default values in the preference
  * store.
@@ -455,6 +480,16 @@ private void initializeDefaults() {
 		this.milestonesCombo.add(milestone);
 		milestone = store.getDefaultString(prefix + index);
 	}
+
+	// Init last build
+	String lastBuild = store.getDefaultString(PRE_LAST_BUILD);
+//	if (lastBuild.length() == 0) {
+//		this.lastBuildCheckBox.setSelection(false);
+//		this.lastBuildCombo.setEnabled(false);
+//	} else {
+//		this.lastBuildCombo.setEnabled(true);
+//	}
+	this.lastBuildCombo.setText(lastBuild);
 
 	// Init default default dimension
 	String defaultDimension = store.getDefaultString(PRE_DEFAULT_DIMENSION);
@@ -509,6 +544,16 @@ private void initializeValues() {
 		index++;
 		milestone = store.getString(prefix + index);
 	}
+
+	// Init last build
+	String lastBuild = store.getString(PRE_LAST_BUILD);
+//	if (lastBuild.length() == 0) {
+//		this.lastBuildCheckBox.setSelection(false);
+//		this.lastBuildCombo.setEnabled(false);
+//	} else {
+//		this.lastBuildCombo.setEnabled(true);
+//	}
+	this.lastBuildCombo.setText(lastBuild);
 
 	// Init composite lists
 	initDimensionsLists();
@@ -766,9 +811,13 @@ private void storeValues() {
 	// Set milestones
 	count  = this.milestonesCombo.getItemCount();
 	for (i=0; i<count; i++) {
-		store.putValue(PRE_MILESTONE_BUILDS + version + i, this.milestonesCombo.getItem(i));
+		store.putValue(PRE_MILESTONE_BUILDS + "." + version + i, this.milestonesCombo.getItem(i));
 	}
 	Util.setMilestones(this.milestonesCombo.getItems());
+
+	// Set last build
+	String lastBuild = this.lastBuildCombo.getText();
+	store.putValue(PRE_LAST_BUILD, lastBuild);
 
 	// Set default dimension
 	String defaultDimension = this.defaultDimensionCombo.getText();
@@ -892,6 +941,10 @@ public void widgetSelected(SelectionEvent event) {
 		resultsDimensions[length] = defaultDimension;
 		this.resultsDimensionsList.setSelection(resultsDimensions);
 	}
+
+//	if (source == this.lastBuildCheckBox) {
+//		this.lastBuildCombo.setEnabled(this.lastBuildCheckBox.getSelection());
+//	}
 
 	if (source == this.mVersionRadioButton) {
 		if (this.mVersionRadioButton.getSelection()) {

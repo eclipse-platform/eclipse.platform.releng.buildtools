@@ -100,6 +100,7 @@ public class ComponentsView extends PerformancesView {
 	// Actions
 	Action filterAdvancedScenarios;
 	Action writeStatus;
+	Action writeFullStatus;
 
 	// SWT resources
 	Font boldFont;
@@ -222,6 +223,7 @@ public void dispose() {
 void fillFiltersDropDown(IMenuManager manager) {
 	super.fillFiltersDropDown(manager);
 	manager.add(this.filterOldBuilds);
+	manager.add(this.filterLastBuilds);
 	manager.add(new Separator());
 	manager.add(this.filterAdvancedScenarios);
 }
@@ -230,6 +232,7 @@ void fillLocalPullDown(IMenuManager manager) {
 	super.fillLocalPullDown(manager);
 	manager.add(new Separator());
 	manager.add(this.writeStatus);
+	manager.add(this.writeFullStatus);
 }
 
 /*
@@ -311,7 +314,16 @@ void makeActions() {
 	// Write status
 	this.writeStatus = new Action("Write status") {
 		public void run() {
-			writeStatus();
+			writeStatus(false/*not full*/);
+        }
+	};
+	this.writeStatus.setEnabled(true);
+	this.writeStatus.setToolTipText("Write component status to a file");
+
+	// Write full status
+	this.writeFullStatus = new Action("Write full status") {
+		public void run() {
+			writeStatus(true/*full*/);
         }
 	};
 	this.writeStatus.setEnabled(true);
@@ -426,7 +438,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 	}
 }
 
-protected void writeStatus() {
+protected void writeStatus(boolean full) {
 	String filter = (this.resultsDir == null) ? null : this.resultsDir.getPath();
 	File newDir = changeDir(filter, "Select a directory to write the status");
 	if (newDir != null) {
@@ -437,11 +449,15 @@ protected void writeStatus() {
 			newDir = new File(newDir, "all");
 		}
 		newDir.mkdir();
-		File resultsFile = new File(newDir, this.results.getName()+".log");
+		if (full) {
+			newDir = new File(newDir, "full");
+		}
+		String prefix = this.results.getName();
+		File resultsFile = new File(newDir, prefix+".log");
 		if (resultsFile.exists()) {
 			int i=0;
 			while (true) {
-				String newFileName = this.results.getName()+"_";
+				String newFileName = prefix+"_";
 				if (i<10) newFileName += "0";
 				newFileName += i+".log";
 				File renamedFile = new File(newDir, newFileName);
@@ -452,7 +468,7 @@ protected void writeStatus() {
 		ResultsElement[] components = this.results.getChildren();
 		int length = components.length;
 		for (int i=0; i<length; i++) {
-			if (!this.results.writeStatus(resultsFile)) {
+			if (!this.results.writeStatus(resultsFile, full)) {
 				MessageDialog.openWarning(this.shell, getTitleToolTip(), "The component is not read, hence no results can be written!");
 			}
 		}

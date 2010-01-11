@@ -48,6 +48,7 @@ import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
 import org.eclipse.test.internal.performance.results.model.PerformanceResultsElement;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
+import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewPart;
@@ -114,6 +115,16 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	        return true;
         }
 	};
+	static String LAST_BUILD;
+	final static ViewerFilter FILTER_LAST_BUILDS = new ViewerFilter() {
+		public boolean select(Viewer v, Object parentElement, Object element) {
+			if (LAST_BUILD != null && element instanceof BuildResultsElement) {
+				BuildResultsElement buildElement = (BuildResultsElement) element;
+				return buildElement.isBefore(LAST_BUILD);
+			}
+	        return true;
+        }
+	};
 	Set viewFilters = new HashSet();
 
 	// SWT resources
@@ -136,6 +147,7 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	Action filterBaselineBuilds;
 	Action filterNightlyBuilds;
 	Action filterOldBuilds;
+	Action filterLastBuilds;
 //	Action dbConnection;
 
 	// Eclipse preferences
@@ -170,13 +182,22 @@ static IViewPart getWorkbenchView(String viewId) {
  * The constructor.
  */
 public PerformancesView() {
+
+	// Get preferences
 	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+
+	// Init db constants
 	int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
 	String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
 	boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
 	DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
 	this.preferences.addPreferenceChangeListener(this);
+
+	// Init tool tip
 	setTitleToolTip();
+
+	// Init milestones
+	Util.initMilestones(this.preferences);
 }
 
 File changeDataDir() {
@@ -287,6 +308,19 @@ void fillLocalPullDown(IMenuManager manager) {
  */
 void fillLocalToolBar(IToolBarManager manager) {
 	// no default toolbar action
+}
+
+/*
+ * Filter non fingerprints scenarios action run.
+ */
+void filterLastBuilds(boolean filter, boolean updatePreference) {
+	if (filter) {
+		this.viewFilters.add(FILTER_LAST_BUILDS);
+	} else {
+		this.viewFilters.remove(FILTER_LAST_BUILDS);
+	}
+	this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_LAST_BUILDS, filter);
+	updateFilters();
 }
 
 /*
@@ -440,6 +474,20 @@ void makeActions() {
 	};
 	this.filterOldBuilds.setChecked(false);
 	this.filterOldBuilds.setToolTipText("Filter old builds (i.e. before last milestone) but keep all previous milestones)");
+
+	// Filter non-important builds action
+	this.filterLastBuilds = new Action("&Last Builds", IAction.AS_CHECK_BOX) {
+		public void run() {
+			filterLastBuilds(isChecked(), true/*update preference*/);
+		}
+	};
+	final String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
+	this.filterLastBuilds.setChecked(false);
+	if (lastBuild == null) {
+		this.filterLastBuilds.setEnabled(false);
+	} else {
+		this.filterLastBuilds.setToolTipText("Filter last builds (i.e. after "+lastBuild+" build)");
+	}
 }
 
 /* (non-Javadoc)
@@ -447,7 +495,7 @@ void makeActions() {
  */
 public void preferenceChange(PreferenceChangeEvent event) {
 	String propertyName = event.getKey();
-//	String newValue = (String) event.getNewValue();
+	String newValue = (String) event.getNewValue();
 
 	// Eclipse version change
 	if (propertyName.equals(IPerformancesConstants.PRE_ECLIPSE_VERSION)) {
@@ -473,6 +521,16 @@ public void preferenceChange(PreferenceChangeEvent event) {
 //		String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
 //		DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
 //		setTitleToolTip();
+	}
+
+	// Last build
+	if (propertyName.equals(IPerformancesConstants.PRE_LAST_BUILD)) {
+		LAST_BUILD = newValue;
+		if (newValue == null) {
+			this.filterLastBuilds.setEnabled(false);
+		} else {
+			this.filterLastBuilds.setToolTipText("Filter last builds (i.e. after "+newValue+" build)");
+		}
 	}
 }
 
@@ -549,6 +607,13 @@ void restoreState() {
 	this.filterOldBuilds.setChecked(checked);
 	if (checked) {
 		this.viewFilters.add(FILTER_OLD_BUILDS);
+	}
+
+	// Filter last builds action state
+	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_LAST_BUILDS, IPerformancesConstants.DEFAULT_FILTER_LAST_BUILDS);
+	this.filterLastBuilds.setChecked(checked);
+	if (checked) {
+		this.viewFilters.add(FILTER_LAST_BUILDS);
 	}
 }
 

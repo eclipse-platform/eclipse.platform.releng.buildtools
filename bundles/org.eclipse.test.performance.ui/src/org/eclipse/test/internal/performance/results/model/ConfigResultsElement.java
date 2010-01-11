@@ -281,7 +281,7 @@ void initStatus() {
 /*
  * Write the element status in the given stream
  */
-void writeStatus(DataOutputStream stream) throws IOException {
+void writeStatus(DataOutputStream stream, boolean full) throws IOException {
 	if ((this.status & BIG_DELTA) != 0) {
 		ConfigResults configResults = getConfigResults();
 		double[] values = configResults.getConfigNumbers();
@@ -291,31 +291,34 @@ void writeStatus(DataOutputStream stream) throws IOException {
 		double error = values[ComponentResults.DELTA_ERROR_INDEX];
 		StringBuffer buffer = new StringBuffer("		");
 		buffer.append(configResults.getName());
-		buffer.append("	");
-		buffer.append(buildValue);
-		buffer.append("	");
-		buffer.append(baselineValue);
-		buffer.append("	");
-		buffer.append(buildValue-baselineValue);
-		buffer.append("	");
-		buffer.append(Util.PERCENTAGE_FORMAT.format(delta));
-		buffer.append("	");
-		buffer.append(Util.PERCENTAGE_FORMAT.format(error));
-		double[] stats = getStatistics();
-		if (stats != null) {
+		double[] stats = null;
+		if (full) {
 			buffer.append("	");
-			buffer.append((int) stats[0]);
+			buffer.append(buildValue);
 			buffer.append("	");
-			buffer.append(Util.DOUBLE_FORMAT.format(stats[1]));
+			buffer.append(baselineValue);
 			buffer.append("	");
-			buffer.append(Util.DOUBLE_FORMAT.format(stats[2]));
+			buffer.append(buildValue-baselineValue);
 			buffer.append("	");
-			buffer.append(Util.PERCENTAGE_FORMAT.format(stats[3]));
+			buffer.append(Util.PERCENTAGE_FORMAT.format(delta));
+			buffer.append("	");
+			buffer.append(Util.PERCENTAGE_FORMAT.format(error));
+			stats = getStatistics();
+			if (stats != null) {
+				buffer.append("	");
+				buffer.append((int) stats[0]);
+				buffer.append("	");
+				buffer.append(Util.DOUBLE_FORMAT.format(stats[1]));
+				buffer.append("	");
+				buffer.append(Util.DOUBLE_FORMAT.format(stats[2]));
+				buffer.append("	");
+				buffer.append(Util.PERCENTAGE_FORMAT.format(stats[3]));
+			}
 		}
 		IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
 		String comment = preferences.get(getId(), null);
 		if (comment != null) {
-			if (stats == null) {
+			if (stats == null && full) {
 				buffer.append("				");
 			}
 			buffer.append("	");

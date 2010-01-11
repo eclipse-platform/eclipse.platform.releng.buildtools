@@ -203,20 +203,24 @@ void initStatus() {
 	}
 }
 
-void writeStatus(DataOutputStream stream) throws IOException {
+void writeStatus(DataOutputStream stream, boolean full) throws IOException {
 	// Write status for scenarios having error
 	if ((getStatus() & ERROR_MASK) != 0) {
 		StringBuffer buffer = new StringBuffer(getName());
 		IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
 		String comment = preferences.get(getId(), null);
 		if (comment != null) {
-			buffer.append("												");
+			if (full) {
+				buffer.append("												");
+			} else {
+				buffer.append("			");
+			}
 			buffer.append(comment);
 		}
 		buffer.append(Util.LINE_SEPARATOR);
 		stream.write(buffer.toString().getBytes());
 		// write status for each children
-		super.writeStatus(stream);
+		super.writeStatus(stream, full);
 		stream.write(Util.LINE_SEPARATOR.getBytes());
 	}
 }
