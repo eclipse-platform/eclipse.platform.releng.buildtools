@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,8 +15,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.test.internal.performance.results.db.ComponentResults;
+import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
+import org.eclipse.test.internal.performance.results.model.ComponentResultsElement;
+import org.eclipse.test.internal.performance.results.model.ConfigResultsElement;
+import org.eclipse.test.internal.performance.results.model.ResultsElement;
+import org.eclipse.test.internal.performance.results.model.ScenarioResultsElement;
+import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
+import org.eclipse.test.internal.performance.results.utils.Util;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.MouseEvent;
@@ -36,14 +43,9 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolTip;
-import org.eclipse.test.internal.performance.results.db.ComponentResults;
-import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
-import org.eclipse.test.internal.performance.results.model.ComponentResultsElement;
-import org.eclipse.test.internal.performance.results.model.ConfigResultsElement;
-import org.eclipse.test.internal.performance.results.model.ResultsElement;
-import org.eclipse.test.internal.performance.results.model.ScenarioResultsElement;
-import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
-import org.eclipse.test.internal.performance.results.utils.Util;
+
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 
 
 /**
@@ -396,18 +398,8 @@ private void fillTableLines(boolean fingerprints) {
 					// error is over the 3% threshold
 					item.setImage(col, ResultsElement.WARN_IMAGE);
 					item.setForeground(col, this.darkyellow);
-					if (toolTipText == null) {
-						toolTipText = "";
-					} else {
-						toolTipText += ", ";
-					}
-					toolTipText += "May be not reliable";
-					if (toolTipMessage == null) {
-						toolTipMessage = "";
-					} else {
-						toolTipMessage += ".\n";
-					}
-					toolTipMessage += "The error on this result is "+Util.PERCENTAGE_FORMAT.format(error)+", hence it may be not reliable";
+						toolTipText= "May be not reliable";
+						toolTipMessage= "The error on this result is " + Util.PERCENTAGE_FORMAT.format(error) + ", hence it may be not reliable";
 					toolTipStyle |= SWT.ICON_WARNING;
 				}
 				if (delta < -0.1) {
