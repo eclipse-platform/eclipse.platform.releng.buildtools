@@ -39,16 +39,6 @@ import org.eclipse.test.internal.performance.results.utils.Util;
  */
 public class ComponentResults extends AbstractResults {
 
-public static final double[] INVALID_RESULTS = new double[] {2};
-public static final double[] NO_BUILD_RESULTS = new double[0];
-public static final int BUILD_VALUE_INDEX = 0;
-public static final int BASELINE_VALUE_INDEX = 1;
-public static final int DELTA_VALUE_INDEX = 2;
-public static final int DELTA_ERROR_INDEX = 3;
-public static final int BUILD_ERROR_INDEX = 4;
-public static final int BASELINE_ERROR_INDEX = 5;
-private static final int NUMBERS_LENGTH = 6;
-
 public ComponentResults(AbstractResults parent, String name) {
 	super(parent, name);
 	this.printStream = parent.printStream;
@@ -145,7 +135,7 @@ public List getConfigNumbers(String configName, boolean fingerprints, List diffe
 						// no result for this scenario in this build
 						line.add(NO_BUILD_RESULTS);
 					} else {
-						line.add(getConfigNumbers(buildResults, configResults.getBaselineBuildResults(buildName)));
+						line.add(configResults.getNumbers(buildResults, configResults.getBaselineBuildResults(buildName)));
 					}
 				}
 			}
@@ -181,6 +171,7 @@ public List getConfigNumbers(String configName, boolean fingerprints, List diffe
 	return differences;
 }
 
+/*
 double[] getConfigNumbers(BuildResults buildResults, BuildResults baselineResults) {
 	if (baselineResults == null) {
 		return INVALID_RESULTS;
@@ -190,7 +181,7 @@ double[] getConfigNumbers(BuildResults buildResults, BuildResults baselineResult
 		values[i] = Double.NaN;
 	}
 	double buildValue = buildResults.getValue();
-	values[BUILD_VALUE_INDEX] = buildValue;;
+	values[BUILD_VALUE_INDEX] = buildValue;
 	double baselineValue = baselineResults.getValue();
 	values[BASELINE_VALUE_INDEX] = baselineValue;
 	double delta = (baselineValue - buildValue) / baselineValue;
@@ -211,6 +202,7 @@ double[] getConfigNumbers(BuildResults buildResults, BuildResults baselineResult
 	}
 	return values;
 }
+*/
 
 private ScenarioResults getScenarioResults(List scenarios, int searchedId) {
 	int size = scenarios.size();

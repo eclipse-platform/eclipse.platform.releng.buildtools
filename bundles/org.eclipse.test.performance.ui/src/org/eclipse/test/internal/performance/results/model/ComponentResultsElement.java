@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.model;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -203,26 +201,32 @@ void initStatus() {
 	}
 }
 
-void writeStatus(DataOutputStream stream, boolean full) throws IOException {
+StringBuffer writableStatus(StringBuffer buffer, int kind, StringBuffer excluded) {
 	// Write status for scenarios having error
 	if ((getStatus() & ERROR_MASK) != 0) {
-		StringBuffer buffer = new StringBuffer(getName());
-		IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
-		String comment = preferences.get(getId(), null);
-		if (comment != null) {
-			if (full) {
-				buffer.append("												");
-			} else {
-				buffer.append("			");
+
+		// Get children status
+		StringBuffer childrenBuffer = super.writableStatus(new StringBuffer(), kind, excluded);
+
+		// Write status on file if not excluded
+		if (childrenBuffer.length() > 0) {
+			buffer.append(getName());
+			IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+			String comment = preferences.get(getId(), null);
+			if (comment != null) {
+				if ((kind & IPerformancesConstants.STATUS_VALUES) != 0) {
+					buffer.append("												");
+				} else {
+					buffer.append("			");
+				}
+				buffer.append(comment);
 			}
-			buffer.append(comment);
+			buffer.append(Util.LINE_SEPARATOR);
+			buffer.append(childrenBuffer);
+			buffer.append(Util.LINE_SEPARATOR);
 		}
-		buffer.append(Util.LINE_SEPARATOR);
-		stream.write(buffer.toString().getBytes());
-		// write status for each children
-		super.writeStatus(stream, full);
-		stream.write(Util.LINE_SEPARATOR.getBytes());
 	}
+	return buffer;
 }
 
 }

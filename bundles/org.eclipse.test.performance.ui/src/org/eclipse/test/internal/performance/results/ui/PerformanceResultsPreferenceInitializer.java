@@ -40,6 +40,9 @@ public void initializeDefaultPreferences() {
 	defaultPreferences.putBoolean(PRE_DATABASE_LOCAL, IPerformancesConstants.DEFAULT_DATABASE_LOCAL);
 	defaultPreferences.put(PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
 
+	// Status
+	defaultPreferences.putInt(PRE_WRITE_STATUS, IPerformancesConstants.DEFAULT_WRITE_STATUS);
+
 	// Config descriptors
 	String[][] configDescriptors = PerformanceTestPlugin.getConfigDescriptors();
 	int cdLength = configDescriptors.length;

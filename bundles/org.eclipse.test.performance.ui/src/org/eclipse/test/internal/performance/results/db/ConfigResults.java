@@ -76,7 +76,7 @@ public BuildResults getBaselineBuildResults() {
  * Return the baseline build results run just before the given build name.
  *
  * @param buildName The build name
- * @return The {@link BuildResults baseline results} preceeding the given build name
+ * @return The {@link BuildResults baseline results} preceding the given build name
  * 	or <code>null</code> if none was found.
  */
 public BuildResults getBaselineBuildResults(String buildName) {
@@ -147,6 +147,25 @@ public List getBuilds(String buildPattern) {
 }
 
 /**
+ * Returns the build results before a given build name.
+ *
+ * @param buildName Name of the last build (included)
+ * @return The list of the builds which precedes the given build name.
+ */
+public List getBuildsBefore(String buildName) {
+	String buildDate = Util.getBuildDate(buildName);
+	List builds = new ArrayList();
+	int size = size();
+	for (int i=0; i<size; i++) {
+		BuildResults buildResults = (BuildResults) this.children.get(i);
+		if (buildName == null || buildResults.getDate().compareTo(buildDate) <= 0) {
+			builds.add(buildResults);
+		}
+	}
+	return builds;
+}
+
+/**
  * Returns a list of build results which names starts with one of the given prefixes.
  *
  * @param prefixes List of expected prefixes
@@ -169,20 +188,86 @@ public List getBuildsMatchingPrefixes(List prefixes) {
 }
 
 /**
- * Returns the values for the current configuration.
+ * Get all results numbers for the max last builds.
+ *
+ * @param max The number of last builds to get numbers.
+ * @return An 2 dimensions array of doubles. At the first level of the array each slot
+ * 		represents one build. That means that the dimension of the array matches
+ * 		the given numbers as soon as there are enough builds in the database.
+ * <p>
+ * 		The slots of the second level are the numbers values:
+ * 	<ul>
+ * 		<li>{@link #BUILD_VALUE_INDEX}: the build value in milliseconds</li>
+ * 		<li>{@link #BASELINE_VALUE_INDEX}: the baseline value in milliseconds</li>
+ * 		<li>{@link #DELTA_VALUE_INDEX}: the difference between the build value and its more recent baseline</li>
+ * 		<li>{@link #DELTA_ERROR_INDEX}: the error made while computing the difference</li>
+ * 		<li>{@link #BUILD_ERROR_INDEX}: the error made while measuring the build value</li>
+ * 		<li>{@link #BASELINE_ERROR_INDEX}: the error made while measuring the baseline value</li>
+ * 	</ul>
+*/
+public double[][] getLastNumbers(int max) {
+
+	// Return null if no previous builds are expected
+	if (max <= 0) return null;
+
+	// Add numbers for each previous build
+	int size = size();
+	double[][] numbers = new double[max][];
+	int n = 0;
+	for (int i=size-1; i>=0 && n<max; i--) {
+		BuildResults buildResults = (BuildResults) this.children.get(i);
+		if (!buildResults.isBaseline()) {
+			numbers[n] = getNumbers(buildResults, getBaselineBuildResults(buildResults.getName()));
+			n++;
+		}
+	}
+
+	// Return the numbers
+	return numbers;
+}
+
+/**
+ * Returns interesting numbers for the current configuration.
  *
  * @return Values in an array of double:
  * 	<ul>
- * 		<li>{@link ComponentResults#BUILD_VALUE_INDEX}: the build value in milliseconds</li>
- * 		<li>{@link ComponentResults#BASELINE_VALUE_INDEX}: the baseline value in milliseconds</li>
- * 		<li>{@link ComponentResults#DELTA_VALUE_INDEX}: the difference between the build value and its more recent baseline</li>
- * 		<li>{@link ComponentResults#DELTA_ERROR_INDEX}: the error made while computing the difference</li>
- * 		<li>{@link ComponentResults#BUILD_ERROR_INDEX}: the error made while measuring the build value</li>
- * 		<li>{@link ComponentResults#BASELINE_ERROR_INDEX}: the error made while measuring the baseline value</li>
+ * 		<li>{@link AbstractResults#BUILD_VALUE_INDEX}: the build value in milliseconds</li>
+ * 		<li>{@link AbstractResults#BASELINE_VALUE_INDEX}: the baseline value in milliseconds</li>
+ * 		<li>{@link AbstractResults#DELTA_VALUE_INDEX}: the difference between the build value and its more recent baseline</li>
+ * 		<li>{@link AbstractResults#DELTA_ERROR_INDEX}: the error made while computing the difference</li>
+ * 		<li>{@link AbstractResults#BUILD_ERROR_INDEX}: the error made while measuring the build value</li>
+ * 		<li>{@link AbstractResults#BASELINE_ERROR_INDEX}: the error made while measuring the baseline value</li>
  * 	</ul>
  */
-public double[] getConfigNumbers() {
-	return ((ComponentResults) this.parent.parent).getConfigNumbers(getCurrentBuildResults(), getBaselineBuildResults());
+double[] getNumbers(BuildResults buildResults, BuildResults baselineResults) {
+	if (baselineResults == null) {
+		return null;
+	}
+	double[] values = new double[NUMBERS_LENGTH];
+	for (int i=0 ;i<NUMBERS_LENGTH; i++) {
+		values[i] = Double.NaN;
+	}
+	double buildValue = buildResults.getValue();
+	values[BUILD_VALUE_INDEX] = buildValue;
+	double baselineValue = baselineResults.getValue();
+	values[BASELINE_VALUE_INDEX] = baselineValue;
+	double buildDelta = (baselineValue - buildValue) / baselineValue;
+	values[DELTA_VALUE_INDEX] = buildDelta;
+	if (Double.isNaN(buildDelta)) {
+		return values;
+	}
+	long baselineCount = baselineResults.getCount();
+	long currentCount = buildResults.getCount();
+	if (baselineCount > 1 && currentCount > 1) {
+		double baselineError = baselineResults.getError();
+		double currentError = buildResults.getError();
+		values[BASELINE_ERROR_INDEX] = baselineError;
+		values[BUILD_ERROR_INDEX] = currentError;
+		values[DELTA_ERROR_INDEX] = Double.isNaN(baselineError)
+				? currentError / baselineValue
+				: Math.sqrt(baselineError*baselineError + currentError*currentError) / baselineValue;
+	}
+	return values;
 }
 
 /**
@@ -519,7 +604,10 @@ void readData(DataInputStream stream) throws IOException {
 	for (int i=0; i<size; i++) {
 		BuildResults buildResults = new BuildResults(this);
 		buildResults.readData(stream);
-		addChild(buildResults, true);
+		String lastBuildName = getPerformance().lastBuildName;
+		if (lastBuildName == null || buildResults.getDate().compareTo(Util.getBuildDate(lastBuildName)) <= 0) {
+			addChild(buildResults, true);
+		}
 	}
 }
 

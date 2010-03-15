@@ -11,6 +11,7 @@
 package org.eclipse.test.internal.performance.results.ui;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.osgi.service.prefs.BackingStoreException;
@@ -33,9 +34,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Text;
 
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
@@ -61,13 +64,29 @@ public class PerformanceResultsPreferencePage extends PreferencePage
 	private Button dbRelengRadioButton;
 	private Button dbLocalRadioButton;
 	private CCombo defaultDimensionCombo;
-//	private Button lastBuildCheckBox;
 	private CCombo lastBuildCombo;
 	private List resultsDimensionsList;
 	private CCombo milestonesCombo;
 	private Label dbLocationLabel;
+
+	// Status SWT objects
+	private Button statusValuesCheckBox;
+	private Button statusErrorNoneRadioButton;
+	private Button statusErrorNoticeableRadioButton;
+	private Button statusErrorSuspiciousRadioButton;
+	private Button statusErrorWeirdRadioButton;
+	private Button statusErrorInvalidRadioButton;
+	private Button statusSmallBuildValueCheckBox;
+	private Button statusSmallDeltaValueCheckBox;
+	private Button statusStatisticNoneRadioButton;
+	private Button statusStatisticErraticRadioButton;
+	private Button statusStatisticUnstableRadioButton;
+	private Text statusBuildsToConfirm;
+
 	// TODO See whether config descriptors need to be set as preferences or not...
 	// private Table configDescriptorsTable;
+
+	private BuildsView buildsView;
 
 /**
  * Utility method that creates a push button instance and sets the default
@@ -143,77 +162,119 @@ private Composite createComposite(Composite parent, int numColumns, int hSpan) {
  */
 protected Control createContents(Composite parent) {
 
-	// Eclipse version choice
-	Composite composite_eclipseVersion = createComposite(parent, 5, 1);
-	createLabel(composite_eclipseVersion, "Eclipse version", false);
-	Composite composite_versionChoice = createComposite(composite_eclipseVersion, 5, 1);
-	this.mVersionRadioButton = createRadioButton(composite_versionChoice, "v"+ECLIPSE_MAINTENANCE_VERSION);
-	this.dVersionRadionButton = createRadioButton(composite_versionChoice, "v"+ECLIPSE_DEVELOPMENT_VERSION);
+	this.buildsView = (BuildsView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.BuildsView");
+	if (this.buildsView == null) {
+		Label errorLabel = createLabel(parent, "No performances preferences can be set because the build view has not been created yet!", false);
+		errorLabel.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+	} else {
+		// Eclipse version choice
+		Composite composite_eclipseVersion = createComposite(parent, 5, 1);
+		createLabel(composite_eclipseVersion, "Eclipse version", false);
+		Composite composite_versionChoice = createComposite(composite_eclipseVersion, 5, 1);
+		this.mVersionRadioButton = createRadioButton(composite_versionChoice, "v"+ECLIPSE_MAINTENANCE_VERSION);
+		this.dVersionRadionButton = createRadioButton(composite_versionChoice, "v"+ECLIPSE_DEVELOPMENT_VERSION);
 
-	// Database location
-	Composite compositeDatabase = createComposite(parent, 5, 1);
-	Group databaseGroup = createGroup(compositeDatabase, "Database");
-	Composite compositeDatabaseConnection = createComposite(databaseGroup, 3, 5);
-	this.dbConnectionCheckBox = createCheckBox(compositeDatabaseConnection, "Connected");
-	this.dbRelengRadioButton = createRadioButton(compositeDatabaseConnection, "Releng");
-	this.dbLocalRadioButton = createRadioButton(compositeDatabaseConnection, "Local");
-	this.dbLocationLabel = createLabel(databaseGroup, "Location", false);
-	this.databaseLocationCombo = createCombo(databaseGroup);
-	this.databaseLocationCombo.setEditable(false);
-    this.dbLocalBrowseButton = createPushButton(databaseGroup, "Browse");
+		// Database location
+		Composite compositeDatabase = createComposite(parent, 5, 1);
+		Group databaseGroup = createGroup(compositeDatabase, "Database", 5);
+		Composite compositeDatabaseConnection = createComposite(databaseGroup, 3, 5);
+		this.dbConnectionCheckBox = createCheckBox(compositeDatabaseConnection, "Connected");
+		this.dbRelengRadioButton = createRadioButton(compositeDatabaseConnection, "Releng");
+		this.dbLocalRadioButton = createRadioButton(compositeDatabaseConnection, "Local");
+		this.dbLocationLabel = createLabel(databaseGroup, "Location", false);
+		this.databaseLocationCombo = createCombo(databaseGroup);
+		this.databaseLocationCombo.setEditable(false);
+	    this.dbLocalBrowseButton = createPushButton(databaseGroup, "Browse");
 
-	// Milestones
-	Composite compositeMilestones = createComposite(parent, 3, 1);
-	createLabel(compositeMilestones, "Milestones", false);
-	this.milestonesCombo = createCombo(compositeMilestones);
-	this.milestonesCombo.setToolTipText("Enter the date of the milestone as yyyymmddHHMM");
+		// Status
+		Composite compositeStatus = createComposite(parent, 1, 3);
+		Group statusGroup = createGroup(compositeStatus, "Status", 1);
+		this.statusValuesCheckBox = createCheckBox(statusGroup, "Values");
+		this.statusValuesCheckBox.setToolTipText("Include numbers while writing status");
+		Group statusErrorGroup = createGroup(statusGroup, "Error level", 5);
+		statusErrorGroup.setToolTipText("Exclude from the written status failures depending on their build result error...");
+		this.statusErrorNoneRadioButton = createRadioButton(statusErrorGroup, "None");
+		this.statusErrorNoneRadioButton.setToolTipText("Do not exclude failures if they have a noticeable error");
+		this.statusErrorInvalidRadioButton = createRadioButton(statusErrorGroup, "Invalid");
+		this.statusErrorInvalidRadioButton.setToolTipText("Exclude all invalid failures (i.e. result error is over 100%)");
+		this.statusErrorWeirdRadioButton = createRadioButton(statusErrorGroup, "Weird");
+		this.statusErrorWeirdRadioButton.setToolTipText("Exclude all weird failures (i.e. result error is over 50%)");
+		this.statusErrorSuspiciousRadioButton = createRadioButton(statusErrorGroup, "Suspicious");
+		this.statusErrorSuspiciousRadioButton.setToolTipText("Exclude all suspicious failures (i.e. result error is over 25%)");
+		this.statusErrorNoticeableRadioButton = createRadioButton(statusErrorGroup, "Noticeable");
+		this.statusErrorNoticeableRadioButton.setToolTipText("Exclude all failures which have a noticeable error (i.e result error is over 3%)");
+		Group statusSmallGroup = createGroup(statusGroup, "Small value", 5);
+		statusErrorGroup.setToolTipText("Exclude from the written status failures depending on their value");
+		this.statusSmallBuildValueCheckBox = createCheckBox(statusSmallGroup, "Build value");
+		this.statusSmallBuildValueCheckBox.setToolTipText("Exclude all failures which have a build result value smaller than 100ms");
+		this.statusSmallDeltaValueCheckBox = createCheckBox(statusSmallGroup, "Delta value");
+		this.statusSmallDeltaValueCheckBox.setToolTipText("Exclude all failures which have a delta result value smaller than 100ms");
+		Group statusStatisticsGroup = createGroup(statusGroup, "Statistics", 5);
+		statusStatisticsGroup.setToolTipText("Exclude from the written status failures depending on build results statistics...");
+		this.statusStatisticNoneRadioButton = createRadioButton(statusStatisticsGroup, "None");
+		this.statusStatisticNoneRadioButton.setToolTipText("Do not exclude failures which have bad baseline results statistics (i.e. variation is over 10%)");
+		this.statusStatisticUnstableRadioButton = createRadioButton(statusStatisticsGroup, "Unstable");
+		this.statusStatisticUnstableRadioButton.setToolTipText("Exclude all failures which have unstable baseline results statistics (i.e. variation is between 10% and 20%)");
+		this.statusStatisticErraticRadioButton = createRadioButton(statusStatisticsGroup, "Erratic");
+		this.statusStatisticErraticRadioButton.setToolTipText("Exclude all failures which have erratic baseline results statistics (i.e. variation is over 20%)");
+		createLabel(statusGroup, "Builds to confirm:", false);
+		this.statusBuildsToConfirm = createTextField(statusGroup);
+		this.statusBuildsToConfirm.setToolTipText("The number of previous builds to take into account to confirm a regression");
 
-	// Last build
-	StringBuffer tooltip = new StringBuffer("Select the last build to display performance results\n");
-	tooltip.append("If set then performance results won't be displayed for any build after this date...");
-	String tooltipText = tooltip.toString();
-	Composite compositeLastBuild = createComposite(parent, 3, 1);
-//	this.lastBuildCheckBox = createCheckBox(compositeLastBuild, "Until last build");
-	createLabel(compositeLastBuild, "Last build: ", false);
-	this.lastBuildCombo = createCombo(compositeLastBuild);
-	this.lastBuildCombo.setEditable(false);
-	this.lastBuildCombo.setToolTipText(tooltipText);
-	initBuildsList();
+		// Milestones
+		Composite compositeMilestones = createComposite(parent, 3, 1);
+		createLabel(compositeMilestones, "Milestones", false);
+		this.milestonesCombo = createCombo(compositeMilestones);
+		this.milestonesCombo.setToolTipText("Enter the date of the milestone as yyyymmddHHMM");
 
-	// Default dimension layout
-	tooltip = new StringBuffer("Select the default dimension which will be used for performance results\n");
-	tooltip.append("When changed, the new selected dimension is automatically added to the dimensions list below...");
-	tooltipText = tooltip.toString();
-	Composite compositeDefaultDimension = createComposite(parent, 3, 1);
-	createLabel(compositeDefaultDimension, "Default dimension: ", false);
-	this.defaultDimensionCombo = createCombo(compositeDefaultDimension);
-	this.defaultDimensionCombo.setEditable(false);
-	this.defaultDimensionCombo.setToolTipText(tooltipText);
+		// Last build
+		StringBuffer tooltip = new StringBuffer("Select the last build to display performance results\n");
+		tooltip.append("If set then performance results won't be displayed for any build after this date...");
+		String tooltipText = tooltip.toString();
+		Composite compositeLastBuild = createComposite(parent, 3, 1);
+	//	this.lastBuildCheckBox = createCheckBox(compositeLastBuild, "Until last build");
+		createLabel(compositeLastBuild, "Last build: ", false);
+		this.lastBuildCombo = createCombo(compositeLastBuild);
+		this.lastBuildCombo.setEditable(false);
+		this.lastBuildCombo.setToolTipText(tooltipText);
+		this.lastBuildCombo.add("");
+		initBuildsList();
 
-	// Results dimensions layout
-	tooltip = new StringBuffer("Select the dimensions which will be used while generating performance results\n");
-	tooltip.append("When changed, the default dimension above is automatically added to the new list...");
-	tooltipText = tooltip.toString();
-	Composite compositeResultsDimensions = createComposite(parent, 3, 1);
-	createLabel(compositeResultsDimensions, "Results dimensions: ", true/*beginning*/);
-	this.resultsDimensionsList = createList(compositeResultsDimensions);
-	this.resultsDimensionsList.setToolTipText(tooltipText);
+		// Default dimension layout
+		tooltip = new StringBuffer("Select the default dimension which will be used for performance results\n");
+		tooltip.append("When changed, the new selected dimension is automatically added to the dimensions list below...");
+		tooltipText = tooltip.toString();
+		Composite compositeDefaultDimension = createComposite(parent, 3, 1);
+		createLabel(compositeDefaultDimension, "Default dimension: ", false);
+		this.defaultDimensionCombo = createCombo(compositeDefaultDimension);
+		this.defaultDimensionCombo.setEditable(false);
+		this.defaultDimensionCombo.setToolTipText(tooltipText);
 
-	// Config descriptors layout
-	/* TODO See whether config descriptors need to be set as preferences or not...
-	Composite compositeConfigDescriptors = createComposite(parent, 3);
-	createLabel(compositeConfigDescriptors, "Config descriptors: ", false);
-	this.configDescriptorsTable = createTable(compositeConfigDescriptors);
-	TableColumn firstColumn = new TableColumn(this.configDescriptorsTable, SWT.LEFT);
-	firstColumn.setText ("Name");
-	firstColumn.setWidth(50);
-	TableColumn secondColumn = new TableColumn(this.configDescriptorsTable, SWT.FILL | SWT.LEFT);
-	secondColumn.setText ("Description");
-	secondColumn.setWidth(300);
-	*/
+		// Results dimensions layout
+		tooltip = new StringBuffer("Select the dimensions which will be used while generating performance results\n");
+		tooltip.append("When changed, the default dimension above is automatically added to the new list...");
+		tooltipText = tooltip.toString();
+		Composite compositeResultsDimensions = createComposite(parent, 3, 1);
+		createLabel(compositeResultsDimensions, "Results dimensions: ", true/*beginning*/);
+		this.resultsDimensionsList = createList(compositeResultsDimensions);
+		this.resultsDimensionsList.setToolTipText(tooltipText);
 
-	// init values
-	initializeValues();
+		// Config descriptors layout
+		/* TODO See whether config descriptors need to be set as preferences or not...
+		Composite compositeConfigDescriptors = createComposite(parent, 3);
+		createLabel(compositeConfigDescriptors, "Config descriptors: ", false);
+		this.configDescriptorsTable = createTable(compositeConfigDescriptors);
+		TableColumn firstColumn = new TableColumn(this.configDescriptorsTable, SWT.LEFT);
+		firstColumn.setText ("Name");
+		firstColumn.setWidth(50);
+		TableColumn secondColumn = new TableColumn(this.configDescriptorsTable, SWT.FILL | SWT.LEFT);
+		secondColumn.setText ("Description");
+		secondColumn.setWidth(300);
+		*/
+
+		// init values
+		initializeValues();
+	}
 
 	// font = null;
 	Composite contents = new Composite(parent, SWT.NULL);
@@ -231,9 +292,9 @@ protected Control createContents(Composite parent) {
  *            the text for the new label
  * @return the new label
  */
-private Group createGroup(Composite parent, String text) {
+private Group createGroup(Composite parent, String text, int columns) {
 	Group group = new Group(parent, SWT.NONE);
-	group.setLayout(new GridLayout(5, false));
+	group.setLayout(new GridLayout(columns, false));
 	group.setText(text);
 	GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 //	data.horizontalSpan = 1;
@@ -348,7 +409,7 @@ private Table createTable(Composite parent) {
  * @param parent
  *            the parent of the new text field
  * @return the new text field
- *
+ */
 private Text createTextField(Composite parent) {
 	Text text = new Text(parent, SWT.SINGLE | SWT.BORDER);
 	text.addModifyListener(this);
@@ -433,8 +494,9 @@ void initDimensionsLists() {
  */
 private void initBuildsList() {
 	String[] builds = DB_Results.getBuilds();
+	Arrays.sort(builds, Util.BUILD_DATE_COMPARATOR);
 	int length = builds.length;
-	for (int i=0; i<length; i++) {
+	for (int i=length-1; i>=0; i--) {
 		this.lastBuildCombo.add(builds[i]);
 	}
 }
@@ -459,6 +521,10 @@ private void initializeDefaults() {
 	this.databaseLocationCombo.removeAll();
 	this.databaseLocationCombo.setText(store.getString(PRE_DATABASE_LOCATION));
 	updateDatabaseGroup();
+
+	// Init default status values
+	int writeStatus = store.getDefaultInt(PRE_WRITE_STATUS);
+	initStatusValues(writeStatus);
 
 	// Init eclipse version
 	this.mVersionRadioButton.setSelection(false);
@@ -506,6 +572,7 @@ private void initializeDefaults() {
 private void initializeValues() {
 	IPreferenceStore store = getPreferenceStore();
 
+	// Init database info
 	this.dbConnectionCheckBox.setSelection(store.getBoolean(PRE_DATABASE_CONNECTION));
 	final boolean dbLocal = store.getBoolean(PRE_DATABASE_LOCAL);
 	if (dbLocal) {
@@ -525,6 +592,9 @@ private void initializeValues() {
 	}
 	updateDatabaseGroup();
 
+	// Init status values
+	int writeStatus = store.getInt(PRE_WRITE_STATUS);
+	initStatusValues(writeStatus);
 
 	// Init eclipse version
 	int version = store.getInt(PRE_ECLIPSE_VERSION);
@@ -590,6 +660,50 @@ private void initializeValues() {
 		descriptorDescription = store.getString(PRE_CONFIG_DESCRIPTOR_DESCRIPTION + "." + d++);
 	}
 	*/
+}
+
+/**
+ * @param store
+ */
+private void initStatusValues(int writeStatus) {
+	this.statusValuesCheckBox.setSelection((writeStatus & STATUS_VALUES) != 0);
+	switch (writeStatus & STATUS_ERROR_LEVEL_MASK) {
+		case STATUS_ERROR_NONE:
+			this.statusErrorNoneRadioButton.setSelection(true);
+			break;
+		case STATUS_ERROR_NOTICEABLE:
+			this.statusErrorNoticeableRadioButton.setSelection(true);
+			break;
+		case STATUS_ERROR_SUSPICIOUS:
+			this.statusErrorSuspiciousRadioButton.setSelection(true);
+			break;
+		case STATUS_ERROR_WEIRD:
+			this.statusErrorWeirdRadioButton.setSelection(true);
+			break;
+		case STATUS_ERROR_INVALID:
+			this.statusErrorInvalidRadioButton.setSelection(true);
+			break;
+	}
+	switch (writeStatus & STATUS_SMALL_VALUE_MASK) {
+		case STATUS_SMALL_VALUE_BUILD:
+			this.statusSmallBuildValueCheckBox.setSelection(true);
+			break;
+		case STATUS_SMALL_VALUE_DELTA:
+			this.statusSmallDeltaValueCheckBox.setSelection(true);
+			break;
+	}
+	switch (writeStatus & STATUS_STATISTICS_MASK) {
+		case 0:
+			this.statusStatisticNoneRadioButton.setSelection(true);
+			break;
+		case STATUS_STATISTICS_ERRATIC:
+			this.statusStatisticErraticRadioButton.setSelection(true);
+			break;
+		case STATUS_STATISTICS_UNSTABLE:
+			this.statusStatisticUnstableRadioButton.setSelection(true);
+			break;
+	}
+	this.statusBuildsToConfirm.setText(String.valueOf(writeStatus & STATUS_BUILDS_NUMBER_MASK));
 }
 
 /**
@@ -724,6 +838,25 @@ public void modifyText(ModifyEvent event) {
 			this.milestonesCombo.setText("");
 		}
 	}
+
+	// Verify the 'builds to confirm' number
+	if (event.getSource() == this.statusBuildsToConfirm) {
+		try {
+			int number = Integer.parseInt(this.statusBuildsToConfirm.getText());
+			if (number < 1 ) {
+				this.statusBuildsToConfirm.setText("1");
+			} else {
+				int buildsNumber = DB_Results.getBuildsNumber();
+				if (number > buildsNumber) {
+					this.statusBuildsToConfirm.setText(String.valueOf(buildsNumber));
+				}
+			}
+		}
+		catch (NumberFormatException nfe) {
+			this.statusBuildsToConfirm.setText("1");
+		}
+
+	}
 }
 
 
@@ -746,17 +879,17 @@ protected void performDefaults() {
  * (non-Javadoc) Method declared on PreferencePage
  */
 public boolean performOk() {
-	storeValues();
-	try {
-		IEclipsePreferences preferences = new InstanceScope().getNode(PLUGIN_ID);
-		preferences.flush();
-		BuildsView buildsView = (BuildsView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.BuildsView");
-		if (buildsView != null) {
-			buildsView.resetView();
+	final boolean hasBuildsView = this.buildsView != null;
+	if (hasBuildsView) {
+		storeValues();
+		try {
+			IEclipsePreferences preferences = new InstanceScope().getNode(PLUGIN_ID);
+			preferences.flush();
+			this.buildsView.resetView();
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
+			return false;
 		}
-	} catch (BackingStoreException e) {
-		e.printStackTrace();
-		return false;
 	}
 	return true;
 }
@@ -807,6 +940,38 @@ private void storeValues() {
 		store.setToDefault(PRE_DATABASE_LOCATION+"."+i);
 		i++;
 	}
+
+	// Set status values
+	int writeStatus = 0;
+	if (this.statusValuesCheckBox.getSelection()) {
+		writeStatus |= STATUS_VALUES;
+	}
+	if (this.statusErrorNoneRadioButton.getSelection()) {
+		writeStatus |= STATUS_ERROR_NONE;
+	} else if (this.statusErrorNoticeableRadioButton.getSelection()) {
+		writeStatus |= STATUS_ERROR_NOTICEABLE;
+	} else if (this.statusErrorSuspiciousRadioButton.getSelection()) {
+		writeStatus |= STATUS_ERROR_SUSPICIOUS;
+	} else if (this.statusErrorWeirdRadioButton.getSelection()) {
+		writeStatus |= STATUS_ERROR_WEIRD;
+	} else if (this.statusErrorInvalidRadioButton.getSelection()) {
+		writeStatus |= STATUS_ERROR_INVALID;
+	}
+	if (this.statusSmallBuildValueCheckBox.getSelection()) {
+		writeStatus |= STATUS_SMALL_VALUE_BUILD;
+	}
+	if (this.statusSmallDeltaValueCheckBox.getSelection()) {
+		writeStatus |= STATUS_SMALL_VALUE_DELTA;
+	}
+	if (this.statusStatisticNoneRadioButton.getSelection()) {
+		writeStatus &= ~STATUS_STATISTICS_MASK;
+	} else if (this.statusStatisticErraticRadioButton.getSelection()) {
+		writeStatus |= STATUS_STATISTICS_ERRATIC;
+	} else if (this.statusStatisticUnstableRadioButton.getSelection()) {
+		writeStatus |= STATUS_STATISTICS_UNSTABLE;
+	}
+	writeStatus += Integer.parseInt(this.statusBuildsToConfirm.getText());
+	store.setValue(PRE_WRITE_STATUS, writeStatus);
 
 	// Set milestones
 	count  = this.milestonesCombo.getItemCount();

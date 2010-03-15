@@ -198,6 +198,10 @@ public PerformancesView() {
 
 	// Init milestones
 	Util.initMilestones(this.preferences);
+
+	// Init last build
+	String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
+	LAST_BUILD = lastBuild.length() == 0 ? null : lastBuild;
 }
 
 File changeDataDir() {
@@ -214,6 +218,14 @@ File changeDataDir() {
 			refresh = true;
 		}
 		if (refresh) {
+			// Confirm the read when there's a last build set
+			if (LAST_BUILD != null) {
+				if (!MessageDialog.openConfirm(PerformancesView.this.shell, getTitleToolTip(), "Only builds before "+LAST_BUILD+" will be taken into account!\nDo you want to continue?")) {
+					return null;
+				}
+			}
+
+			// Read local files
 			readLocalFiles();
 
 			// Refresh views
@@ -495,7 +507,7 @@ void makeActions() {
  */
 public void preferenceChange(PreferenceChangeEvent event) {
 	String propertyName = event.getKey();
-	String newValue = (String) event.getNewValue();
+//	String newValue = (String) event.getNewValue();
 
 	// Eclipse version change
 	if (propertyName.equals(IPerformancesConstants.PRE_ECLIPSE_VERSION)) {
@@ -525,12 +537,14 @@ public void preferenceChange(PreferenceChangeEvent event) {
 
 	// Last build
 	if (propertyName.equals(IPerformancesConstants.PRE_LAST_BUILD)) {
-		LAST_BUILD = newValue;
-		if (newValue == null) {
-			this.filterLastBuilds.setEnabled(false);
-		} else {
-			this.filterLastBuilds.setToolTipText("Filter last builds (i.e. after "+newValue+" build)");
-		}
+//		if (newValue == null || newValue.length() == 0) {
+//			this.filterLastBuilds.setEnabled(false);
+//			LAST_BUILD = null;
+//		} else {
+//			this.filterLastBuilds.setEnabled(true);
+//			this.filterLastBuilds.setToolTipText("Filter last builds (i.e. after "+newValue+" build)");
+//			LAST_BUILD = newValue;
+//		}
 	}
 }
 
@@ -544,7 +558,7 @@ void readLocalFiles() {
 		public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 			try {
 				monitor.beginTask("Read local files", 1000);
-				PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor);
+				PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor, LAST_BUILD);
 				monitor.done();
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -10,14 +10,10 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.model;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.test.internal.performance.results.db.*;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
@@ -281,52 +277,211 @@ void initStatus() {
 /*
  * Write the element status in the given stream
  */
-void writeStatus(DataOutputStream stream, boolean full) throws IOException {
+StringBuffer writableStatus(StringBuffer buffer, int kind, StringBuffer excluded) {
 	if ((this.status & BIG_DELTA) != 0) {
+
+		// Get numbers
+		int buildsNumber = kind & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
 		ConfigResults configResults = getConfigResults();
-		double[] values = configResults.getConfigNumbers();
-		double buildValue = values[ComponentResults.BUILD_VALUE_INDEX];
-		double baselineValue = values[ComponentResults.BASELINE_VALUE_INDEX];
-		double delta = values[ComponentResults.DELTA_VALUE_INDEX];
-		double error = values[ComponentResults.DELTA_ERROR_INDEX];
-		StringBuffer buffer = new StringBuffer("		");
-		buffer.append(configResults.getName());
-		double[] stats = null;
-		if (full) {
-			buffer.append("	");
-			buffer.append(buildValue);
-			buffer.append("	");
-			buffer.append(baselineValue);
-			buffer.append("	");
-			buffer.append(buildValue-baselineValue);
-			buffer.append("	");
-			buffer.append(Util.PERCENTAGE_FORMAT.format(delta));
-			buffer.append("	");
-			buffer.append(Util.PERCENTAGE_FORMAT.format(error));
-			stats = getStatistics();
-			if (stats != null) {
-				buffer.append("	");
-				buffer.append((int) stats[0]);
-				buffer.append("	");
-				buffer.append(Util.DOUBLE_FORMAT.format(stats[1]));
-				buffer.append("	");
-				buffer.append(Util.DOUBLE_FORMAT.format(stats[2]));
-				buffer.append("	");
-				buffer.append(Util.PERCENTAGE_FORMAT.format(stats[3]));
+		double[][] numbers = configResults.getLastNumbers(buildsNumber);
+
+		// if there are several builds to confirm the regression, then verify all deltas
+		if (buildsNumber > 1) {
+			int confirmed = 1;
+			for (int i=1; i<buildsNumber; i++) {
+				if (numbers[i][AbstractResults.DELTA_VALUE_INDEX] < -0.1) {
+					confirmed++;
+				}
+			}
+			float ratio = ((float) confirmed) / buildsNumber;
+			if (ratio < 0.8) {
+				// more than 20% of previous build didn't fail, hence skip result
+				if (excluded != null) {
+					excluded.append(configResults+" excluded from status because only "+confirmed+" builds failed on last "+buildsNumber+" ones!");
+					excluded.append(Util.LINE_SEPARATOR);
+				}
+				return buffer;
 			}
 		}
+
+		// Add values
+		double[] values = numbers[0];
+		double buildValue = values[AbstractResults.BUILD_VALUE_INDEX];
+		double baselineValue = values[AbstractResults.BASELINE_VALUE_INDEX];
+		double delta = values[AbstractResults.DELTA_VALUE_INDEX];
+		double error = values[AbstractResults.DELTA_ERROR_INDEX];
+		StringBuffer localBuffer = new StringBuffer("		");
+		localBuffer.append(configResults.getName());
+		double[] stats = null;
+		boolean printValues = (kind & IPerformancesConstants.STATUS_VALUES) != 0;
+		if (printValues) {
+			localBuffer.append("	");
+			localBuffer.append(buildValue);
+			localBuffer.append("	");
+			localBuffer.append(baselineValue);
+			localBuffer.append("	");
+			localBuffer.append(buildValue-baselineValue);
+			localBuffer.append("	");
+			localBuffer.append(Util.PERCENTAGE_FORMAT.format(delta));
+			localBuffer.append("	");
+			localBuffer.append(Util.PERCENTAGE_FORMAT.format(error));
+			stats = getStatistics();
+			if (stats != null) {
+				localBuffer.append("	");
+				localBuffer.append((int) stats[0]);
+				localBuffer.append("	");
+				localBuffer.append(Util.DOUBLE_FORMAT.format(stats[1]));
+				localBuffer.append("	");
+				localBuffer.append(Util.DOUBLE_FORMAT.format(stats[2]));
+				localBuffer.append("	");
+				localBuffer.append(Util.PERCENTAGE_FORMAT.format(stats[3]));
+			}
+		}
+
+		/* Add comment
 		IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
 		String comment = preferences.get(getId(), null);
 		if (comment != null) {
-			if (stats == null && full) {
+			if (stats == null && printValues) {
 				buffer.append("				");
 			}
 			buffer.append("	");
 			buffer.append(comment);
 		}
+		*/
+
+		// Add status info
+		if (this.status != BIG_DELTA) { // there's some other info in the status
+//			if (comment == null) {
+				if (stats == null && printValues) {
+					localBuffer.append("				");
+				}
+//			}
+			localBuffer.append("	");
+			String separator = "";
+
+			// Error
+			if ((this.status & BIG_ERROR) != 0) {
+				int statusErrorLevel = kind & IPerformancesConstants.STATUS_ERROR_LEVEL_MASK;
+				if (statusErrorLevel == IPerformancesConstants.STATUS_ERROR_NOTICEABLE) {
+					// Skip result
+					if (excluded != null) {
+						excluded.append(configResults+" excluded from status due to a noticeable error!");
+						excluded.append(Util.LINE_SEPARATOR);
+					}
+					return buffer;
+				}
+				localBuffer.append(separator);
+				localBuffer.append("error (");
+				localBuffer.append(Util.PERCENTAGE_FORMAT.format(error));
+				localBuffer.append(")");
+				separator = "+";
+				double ratio = -(error/delta);
+				if (ratio > 1) {
+					switch (statusErrorLevel) {
+						case IPerformancesConstants.STATUS_ERROR_INVALID:
+						case IPerformancesConstants.STATUS_ERROR_WEIRD:
+						case IPerformancesConstants.STATUS_ERROR_SUSPICIOUS:
+							// Skip result
+							if (excluded != null) {
+								excluded.append(configResults+" excluded from status due to an invalid error!");
+								excluded.append(Util.LINE_SEPARATOR);
+							}
+							return buffer;
+					}
+					localBuffer.append(": invalid measure!");
+				} else if (ratio > 0.5) {
+					switch (statusErrorLevel) {
+						case IPerformancesConstants.STATUS_ERROR_WEIRD:
+						case IPerformancesConstants.STATUS_ERROR_SUSPICIOUS:
+							// Skip result
+							if (excluded != null) {
+								excluded.append(configResults+" excluded from status due to a weird error!");
+								excluded.append(Util.LINE_SEPARATOR);
+							}
+							return buffer;
+					}
+					localBuffer.append(": weird measure!");
+				} else if (ratio > 0.25) {
+					if (statusErrorLevel == IPerformancesConstants.STATUS_ERROR_SUSPICIOUS) {
+						// Skip result
+						if (excluded != null) {
+							excluded.append(configResults+" excluded from status due to a suspicious error!");
+							excluded.append(Util.LINE_SEPARATOR);
+						}
+						return buffer;
+					}
+					localBuffer.append(": suspicious measure!");
+				}
+			}
+
+			// Small value
+			if ((this.status & SMALL_VALUE) != 0) {
+				int statusSmallValue = kind & IPerformancesConstants.STATUS_SMALL_VALUE_MASK;
+				localBuffer.append(separator);
+				if (buildValue < 100) {
+					if (statusSmallValue == IPerformancesConstants.STATUS_SMALL_VALUE_BUILD) {
+						// Skip result
+						if (excluded != null) {
+							excluded.append(configResults+" excluded from status due to a small build value!");
+							excluded.append(Util.LINE_SEPARATOR);
+						}
+						return buffer;
+					}
+					localBuffer.append("small build value (");
+					localBuffer.append((int)buildValue);
+					localBuffer.append("ms)");
+				}
+				int diff = (int) Math.abs(baselineValue - buildValue);
+				if (diff < 100) {
+					if (statusSmallValue == IPerformancesConstants.STATUS_SMALL_VALUE_DELTA) {
+						// Skip result
+						if (excluded != null) {
+							excluded.append(configResults+" excluded from status due to a small delta value!");
+							excluded.append(Util.LINE_SEPARATOR);
+						}
+						return buffer;
+					}
+					localBuffer.append("small delta value (");
+					localBuffer.append(diff);
+					localBuffer.append("ms)");
+				}
+				separator = "+";
+			}
+
+			// Statistics
+			if ((this.status & NOT_RELIABLE) != 0) {
+				if ((kind & IPerformancesConstants.STATUS_STATISTICS_ERRATIC) != 0) {
+					// Skip result
+					if (excluded != null) {
+						excluded.append(configResults+" excluded from status due to erratic statistics!");
+						excluded.append(Util.LINE_SEPARATOR);
+					}
+					return buffer;
+				}
+				localBuffer.append(separator);
+				localBuffer.append("erratic");
+				separator = "+";
+			} else if ((this.status & NOT_STABLE) != 0) {
+				if ((kind & IPerformancesConstants.STATUS_STATISTICS_UNSTABLE) != 0) {
+					// Skip result
+					if (excluded != null) {
+						excluded.append(configResults+" excluded from status due to unstable statistics!");
+						excluded.append(Util.LINE_SEPARATOR);
+					}
+					return buffer;
+				}
+				localBuffer.append(separator);
+				localBuffer.append("unstable");
+				separator = "+";
+			}
+		}
+
+		// Write status
+		buffer.append(localBuffer);
 		buffer.append(Util.LINE_SEPARATOR);
-		stream.write(buffer.toString().getBytes());
 	}
+	return buffer;
 }
 
 }

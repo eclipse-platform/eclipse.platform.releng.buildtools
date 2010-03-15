@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.model;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -500,7 +498,7 @@ int initStatus(BuildResults buildResults) {
 	}
 
 	// Store if there's a big delta (over 10%)
-	if (delta < -0.1) {
+	if (delta <= -0.1) {
 		this.status |= BIG_DELTA;
 		double currentBuildValue = buildResults.getValue();
 		double diff = Math.abs(baselineValue - currentBuildValue);
@@ -589,11 +587,13 @@ public String toString() {
 /*
  * Write the element status in the given stream
  */
-void writeStatus(DataOutputStream stream, boolean full) throws IOException {
+StringBuffer writableStatus(StringBuffer buffer, int kind, StringBuffer excluded) {
 	int length = this.children.length;
 	for (int i=0; i<length; i++) {
-		this.children[i].writeStatus(stream, full);
+		this.children[i].writableStatus(buffer, kind, excluded);
 	}
+	return buffer;
 }
+
 
 }

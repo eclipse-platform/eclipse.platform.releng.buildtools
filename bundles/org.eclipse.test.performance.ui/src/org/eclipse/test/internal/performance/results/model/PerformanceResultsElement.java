@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.test.internal.performance.results.db.*;
+import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
 
 public class PerformanceResultsElement extends ResultsElement {
@@ -27,6 +28,7 @@ public class PerformanceResultsElement extends ResultsElement {
 public static PerformanceResultsElement PERF_RESULTS_MODEL = new PerformanceResultsElement();
 
 	String[] buildNames;
+	String lastBuildName;
 	boolean fingerprints = true;
 
 public PerformanceResultsElement() {
@@ -155,9 +157,11 @@ public boolean isInitialized() {
 	return super.isInitialized() && this.results.size() > 0;
 }
 
-public void readLocal(File dataDir, IProgressMonitor monitor) {
+public void readLocal(File dataDir, IProgressMonitor monitor, String lastBuild) {
 	reset(null);
-	getPerformanceResults().readLocal(dataDir, monitor);
+	PerformanceResults performanceResults = getPerformanceResults();
+	performanceResults.setLastBuildName(lastBuild);
+	performanceResults.readLocal(dataDir, monitor);
 }
 
 public void reset(String buildName) {
@@ -198,29 +202,100 @@ public void setFingerprints(boolean fingerprints) {
 	resetStatus();
 }
 
+public void setLastBuildName(String lastBuildName) {
+	this.lastBuildName = lastBuildName;
+	this.name = null;
+}
+
 /*
  * Write the component status in the given file
  */
-public boolean writeStatus(File resultsFile, boolean full) {
+public StringBuffer writeStatus(File resultsFile, int kind) {
 	if (this.results == null) {
-		return false;
+		return null;
 	}
+	boolean values = (kind & IPerformancesConstants.STATUS_VALUES) != 0;
 	// Write status only for component with error
+	StringBuffer excluded = new StringBuffer();
 	try {
 		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(resultsFile)));
 		try {
-			// Print columns title
 			StringBuffer buffer = new StringBuffer();
+			// Print build name
+			buffer.append("Status for ");
+			buffer.append(getPerformanceResults().getName());
+			buffer.append(Util.LINE_SEPARATOR);
+			// Print status options
+			if ((kind & ~IPerformancesConstants.STATUS_VALUES) > 0) {
+				buffer.append("Options: ");
+				buffer.append(Util.LINE_SEPARATOR);
+				final int errorLevel = kind & IPerformancesConstants.STATUS_ERROR_LEVEL_MASK;
+				if (errorLevel != 0) {
+					buffer.append("	error level: ");
+					switch (errorLevel) {
+						case IPerformancesConstants.STATUS_ERROR_NONE:
+							buffer.append("include all failures whatever the error level is");
+							break;
+						case IPerformancesConstants.STATUS_ERROR_NOTICEABLE:
+							buffer.append("all failures with at least a noticeable error (> 3%) are excluded!");
+							break;
+						case IPerformancesConstants.STATUS_ERROR_SUSPICIOUS:
+							buffer.append("all failures with at least a suspicious error (> 25%) are excluded!");
+							break;
+						case IPerformancesConstants.STATUS_ERROR_WEIRD:
+							buffer.append("all failures with at least a weird error (> 50%) are excluded!");
+							break;
+						case IPerformancesConstants.STATUS_ERROR_INVALID:
+							buffer.append("all failures with an invalid error (> 100%) are excluded!");
+							break;
+					}
+					buffer.append(Util.LINE_SEPARATOR);
+				}
+				final int smallValue = kind & IPerformancesConstants.STATUS_SMALL_VALUE_MASK;
+				if (smallValue > 0) {
+					buffer.append("	small value: ");
+					switch (smallValue) {
+						case IPerformancesConstants.STATUS_SMALL_VALUE_BUILD:
+							buffer.append("all failures with a small build value (<100ms) are excluded!");
+							break;
+						case IPerformancesConstants.STATUS_SMALL_VALUE_DELTA:
+							buffer.append("all failures with a small delta value (<100ms) are excluded!");
+							break;
+						case IPerformancesConstants.STATUS_SMALL_VALUE_MASK:
+							buffer.append("all failures with a small build or delta value (<100ms) are excluded!");
+							break;
+					}
+					buffer.append(Util.LINE_SEPARATOR);
+				}
+				final int stats = kind & IPerformancesConstants.STATUS_STATISTICS_MASK;
+				if (stats > 0) {
+					buffer.append("	statistics: ");
+					switch (stats) {
+						case IPerformancesConstants.STATUS_STATISTICS_ERRATIC:
+							buffer.append("all failures with erratic baseline results (variation > 20%) are excluded!");
+							break;
+						case IPerformancesConstants.STATUS_STATISTICS_UNSTABLE:
+							buffer.append("all failures with unstable baseline results (10% < variation < 20%) are excluded!");
+							break;
+					}
+					buffer.append(Util.LINE_SEPARATOR);
+				}
+				int buildsNumber = kind & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
+				buffer.append("	builds to confirm a regression: ");
+				buffer.append(buildsNumber);
+				buffer.append(Util.LINE_SEPARATOR);
+			}
+			// Print columns title
 			buffer.append("Component");
 			buffer.append("	Scenario");
 			buffer.append("	Machine");
-			if (full) {
+			if (values) {
 				buffer.append("			Build		");
 				buffer.append("		History		");
 			}
 			buffer.append("	Comment");
 			buffer.append(Util.LINE_SEPARATOR);
-			if (full) {
+			if (values) {
 				buffer.append("			value");
 				buffer.append("	baseline");
 				buffer.append("	variation");
@@ -233,7 +308,10 @@ public boolean writeStatus(File resultsFile, boolean full) {
 				buffer.append(Util.LINE_SEPARATOR);
 			}
 			stream.write(buffer.toString().getBytes());
-			writeStatus(stream, full);
+			StringBuffer componentBuffer = writableStatus(new StringBuffer(), kind, excluded);
+			if (componentBuffer.length() > 0) {
+				stream.write(componentBuffer.toString().getBytes());
+			}
 		}
 		finally {
 			stream.close();
@@ -243,7 +321,7 @@ public boolean writeStatus(File resultsFile, boolean full) {
 	} catch (IOException e) {
 		e.printStackTrace();
 	}
-	return true;
+	return excluded;
 }
 
 }

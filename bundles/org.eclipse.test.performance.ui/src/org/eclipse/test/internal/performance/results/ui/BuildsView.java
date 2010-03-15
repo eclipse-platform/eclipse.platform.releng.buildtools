@@ -408,6 +408,15 @@ void fillContextMenu(IMenuManager manager) {
 }
 
 /*
+ * (non-Javadoc)
+ * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#fillLocalPullDown(org.eclipse.jface.action.IMenuManager)
+ */
+void fillFiltersDropDown(IMenuManager manager) {
+	super.fillFiltersDropDown(manager);
+	manager.add(this.filterLastBuilds);
+}
+
+/*
  * Fill the local data drop-down menu
  */
 void fillLocalDataDropDown(IMenuManager manager) {
@@ -474,20 +483,59 @@ void makeActions() {
  */
 public void resetView() {
 
+	boolean debug = true;
+
 	// Look whether database constants has changed or not
 	int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
 	boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
 	String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
+	String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
+	boolean noLastBuild = lastBuild.length() == 0;
+	if (debug) {
+		System.out.println("Reset View:");
+		System.out.println("	- eclispe version = "+eclipseVersion);
+		System.out.println("	- connected       = "+connected);
+		System.out.println("	- db location     = "+databaseLocation);
+		System.out.println("	- last build      = "+(noLastBuild?"<none>":lastBuild));
+	}
 	final boolean sameVersion = DB_Results.getDbVersion().endsWith(Integer.toString(eclipseVersion));
 	final boolean sameConnection = connected == DB_Results.DB_CONNECTION;
 	final boolean sameDB = sameVersion && databaseLocation.equals(DB_Results.getDbLocation());
+	boolean sameLastBuild = (noLastBuild && LAST_BUILD == null) || lastBuild.equals(LAST_BUILD);
+	if (debug) {
+		System.out.println("	- same version:    "+sameVersion);
+		System.out.println("	- same connection: "+sameConnection);
+		System.out.println("	- same DB:         "+sameDB);
+		System.out.println("	- same last build: "+sameLastBuild);
+	}
+	final PerformancesView siblingView = getSiblingView();
 	if (sameConnection && sameDB) {
+		if (!sameLastBuild) {
+			// Set last build
+			LAST_BUILD = noLastBuild ? null : lastBuild;
+			this.results.setLastBuildName(LAST_BUILD);
+			siblingView.results.setLastBuildName(LAST_BUILD);
+
+			// Reset views content
+			resetInput();
+			siblingView.resetInput();
+
+			// May be read local data now
+			File newDataDir = changeDataDir();
+			if (newDataDir == null) {
+				this.dataDir = null;
+				siblingView.dataDir = null;
+			}
+		}
 		// No database preferences has changed do nothing
 		return;
 	}
 
 	// Update database constants
 	boolean updated = DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
+	if (debug) {
+		System.out.println("	- updated:         "+updated);
+	}
 	if (!connected) {
 		if (!updated) {
 			MessageDialog.openError(this.shell, getTitleToolTip(), "Error while updating database results constants!\nOpen error log to see more details on this error");
@@ -501,24 +549,24 @@ public void resetView() {
 		DB_Results.updateDbConstants(false, eclipseVersion, databaseLocation);
 	}
 	setTitleToolTip();
-	getSiblingView().setTitleToolTip();
+	siblingView.setTitleToolTip();
 
 	// Refresh view
-	if (sameVersion) {
+	if (sameVersion && sameLastBuild) {
 		// Refresh only builds view as the sibling view (Components) contents is based on local data files contents
 		this.results.resetBuildNames();
 		refreshInput();
 	} else {
 		// Reset views content
 		resetInput();
-		getSiblingView().resetInput();
+		siblingView.resetInput();
 
 		// May be read local data now
 		if (MessageDialog.openQuestion(this.shell, getTitleToolTip(), "Do you want to read local data right now?")) {
 			changeDataDir();
 		} else {
 			this.dataDir = null;
-			getSiblingView().dataDir = null;
+			siblingView.dataDir = null;
 		}
 	}
 

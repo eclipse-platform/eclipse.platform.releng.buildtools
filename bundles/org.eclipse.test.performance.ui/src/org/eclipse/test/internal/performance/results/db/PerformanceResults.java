@@ -42,6 +42,7 @@ public class PerformanceResults extends AbstractResults {
 
 	String[] allBuildNames = null;
 	Map allScenarios;
+	String lastBuildName; // Name of the last used build
 	String baselineName; // Name of the baseline build used for comparison
 	String baselinePrefix;
 	private String scenarioPattern = "%"; //$NON-NLS-1$
@@ -670,14 +671,24 @@ private void setAllBuildNames() {
 	int buildsSize = builds.size();
 	this.allBuildNames = new String[buildsSize];
 	if (buildsSize > 0) {
-		builds.toArray(this.allBuildNames);
-		int idx = this.allBuildNames.length-1;
-		String lastBuildName = this.allBuildNames[idx--];
-		while (this.name.startsWith(DB_Results.getDbBaselinePrefix())) {
-			lastBuildName = this.allBuildNames[idx--];
+		int n = 0;
+		Iterator buildNames = builds.iterator();
+		while (buildNames.hasNext()) {
+			String buildName = (String) buildNames.next();
+			if (this.lastBuildName == null || Util.getBuildDate(buildName).compareTo(Util.getBuildDate(this.lastBuildName)) <= 0) {
+				this.allBuildNames[n++] = buildName;
+			}
 		}
-		this.needToUpdateLocalFile = this.name == null || Util.getBuildDate(lastBuildName).compareTo(Util.getBuildDate(this.name)) > 0;
-		this.name = lastBuildName;
+		if (n < buildsSize) {
+			System.arraycopy(this.allBuildNames, 0, this.allBuildNames = new String[n], 0, n);
+		}
+		int idx = n-1;
+		String lastBuild = this.allBuildNames[idx--];
+		while (lastBuild.startsWith(DB_Results.getDbBaselinePrefix())) {
+			lastBuild = this.allBuildNames[idx--];
+		}
+		this.needToUpdateLocalFile = this.name == null || Util.getBuildDate(lastBuild).compareTo(Util.getBuildDate(this.name)) > 0;
+		this.name = lastBuild;
 	}
 }
 
@@ -779,6 +790,20 @@ private void setDefaults() {
 		this.printStream.println();
 		this.printStream.flush();
 	}
+}
+
+public void setLastBuildName(String lastBuildName) {
+	this.lastBuildName = lastBuildName;
+//	if (lastBuildName == null) {
+//		int idx = this.allBuildNames.length-1;
+//		String lastBuild = this.allBuildNames[idx--];
+//		while (this.name.startsWith(DB_Results.getDbBaselinePrefix())) {
+//			lastBuild = this.allBuildNames[idx--];
+//		}
+//		this.name = lastBuild;
+//	} else {
+//		this.name = lastBuildName;
+//	}
 }
 
 /**

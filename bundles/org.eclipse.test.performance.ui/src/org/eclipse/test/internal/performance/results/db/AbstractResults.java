@@ -25,6 +25,16 @@ import org.eclipse.test.internal.performance.results.utils.Util;
  */
 public abstract class AbstractResults implements Comparable {
 
+	public static final double[] INVALID_RESULTS = new double[] {2};
+	public static final double[] NO_BUILD_RESULTS = new double[0];
+	public static final int BUILD_VALUE_INDEX = 0;
+	public static final int BASELINE_VALUE_INDEX = 1;
+	public static final int DELTA_VALUE_INDEX = 2;
+	public static final int DELTA_ERROR_INDEX = 3;
+	public static final int BUILD_ERROR_INDEX = 4;
+	public static final int BASELINE_ERROR_INDEX = 5;
+	public static final int NUMBERS_LENGTH = 6;
+
 	AbstractResults parent;
 	int id = -1;
 	String name;

@@ -369,7 +369,9 @@ void setValue(int build_id, int dim_id, int config_id, int step, long value) {
  */
 boolean updateBuild(String buildName, boolean force) {
 
-	if (knowsBuild(buildName) && !force)  return false;
+	if (!force && knowsBuild(buildName)) {
+		return false;
+	}
 
 	// Get values
 	print("	+ scenario '"+getShortName()+"': values..."); //$NON-NLS-1$ //$NON-NLS-2$

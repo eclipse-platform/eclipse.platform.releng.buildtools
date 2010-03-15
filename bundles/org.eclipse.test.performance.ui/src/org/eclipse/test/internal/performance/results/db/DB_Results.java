@@ -433,6 +433,18 @@ public static String[] getBuilds() {
 }
 
 /**
+ * Returns the number of builds stored int the database.
+ *
+ * @return The number of builds stored in the database.
+ */
+public static int getBuildsNumber() {
+	if (BUILDS == null) {
+		queryAllVariations("%"); //$NON-NLS-1$
+	}
+	return BUILDS_LENGTH;
+}
+
+/**
  * Get component name from a scenario.
  *
  * @param scenarioName The name of the scenario

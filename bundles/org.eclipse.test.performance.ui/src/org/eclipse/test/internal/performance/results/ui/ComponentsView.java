@@ -10,11 +10,17 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.ui;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -100,16 +106,26 @@ public class ComponentsView extends PerformancesView {
 	// Actions
 	Action filterAdvancedScenarios;
 	Action writeStatus;
-	Action writeFullStatus;
 
 	// SWT resources
 	Font boldFont;
+
+	// Write Status
+	static int WRITE_STATUS;
 
 /**
  * Default constructor.
  */
 public ComponentsView() {
 //	this.onlyFingerprintsImageDescriptor = ImageDescriptor.createFromFile(getClass(), "filter_ps.gif");
+	super();
+
+	// Get preferences
+	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+
+	// Init status
+	WRITE_STATUS = this.preferences.getInt(IPerformancesConstants.PRE_WRITE_STATUS, IPerformancesConstants.DEFAULT_WRITE_STATUS);
+
 }
 
 /*
@@ -232,7 +248,6 @@ void fillLocalPullDown(IMenuManager manager) {
 	super.fillLocalPullDown(manager);
 	manager.add(new Separator());
 	manager.add(this.writeStatus);
-	manager.add(this.writeFullStatus);
 }
 
 /*
@@ -314,16 +329,7 @@ void makeActions() {
 	// Write status
 	this.writeStatus = new Action("Write status") {
 		public void run() {
-			writeStatus(false/*not full*/);
-        }
-	};
-	this.writeStatus.setEnabled(true);
-	this.writeStatus.setToolTipText("Write component status to a file");
-
-	// Write full status
-	this.writeFullStatus = new Action("Write full status") {
-		public void run() {
-			writeStatus(true/*full*/);
+			writeStatus();
         }
 	};
 	this.writeStatus.setEnabled(true);
@@ -355,12 +361,12 @@ public void preferenceChange(PreferenceChangeEvent event) {
 		this.filterOldBuilds.setChecked(checked);
 	}
 
-	// Filter nightly builds change
-	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS)) {
-		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS : "true".equals(newValue);
-		filterNightlyBuilds(checked, false/*do not update preference*/);
-		this.filterNightlyBuilds.setChecked(checked);
+	// Write status
+	if (propertyName.equals(IPerformancesConstants.PRE_WRITE_STATUS)) {
+		WRITE_STATUS = newValue == null ? IPerformancesConstants.DEFAULT_WRITE_STATUS : Integer.parseInt((String)newValue);
 	}
+
+	super.preferenceChange(event);
 }
 
 void restoreState() {
@@ -438,7 +444,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 	}
 }
 
-protected void writeStatus(boolean full) {
+protected void writeStatus() {
 	String filter = (this.resultsDir == null) ? null : this.resultsDir.getPath();
 	File newDir = changeDir(filter, "Select a directory to write the status");
 	if (newDir != null) {
@@ -449,28 +455,57 @@ protected void writeStatus(boolean full) {
 			newDir = new File(newDir, "all");
 		}
 		newDir.mkdir();
-		if (full) {
-			newDir = new File(newDir, "full");
+		if ((WRITE_STATUS & IPerformancesConstants.STATUS_VALUES) != 0) {
+			newDir = new File(newDir, "values");
 		}
+		int buildsNumber = WRITE_STATUS & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
+		if (buildsNumber > 1) {
+			newDir = new File(newDir, Integer.toString(buildsNumber));
+		}
+		newDir.mkdirs();
 		String prefix = this.results.getName();
 		File resultsFile = new File(newDir, prefix+".log");
+		File exclusionFile = new File(newDir, prefix+"_excluded.log");
 		if (resultsFile.exists()) {
 			int i=0;
 			while (true) {
 				String newFileName = prefix+"_";
 				if (i<10) newFileName += "0";
-				newFileName += i+".log";
-				File renamedFile = new File(newDir, newFileName);
-				if (resultsFile.renameTo(renamedFile)) break;
+				newFileName += i;
+				File renamedFile = new File(newDir, newFileName+".log");
+				if (resultsFile.renameTo(renamedFile)) {
+					File renamedExclusionFile = new File(newDir, newFileName+"_excluded.log");
+					exclusionFile.renameTo(renamedExclusionFile);
+					break;
+				}
 				i++;
 			}
 		}
 		ResultsElement[] components = this.results.getChildren();
 		int length = components.length;
+		StringBuffer fullExcluded = new StringBuffer();
 		for (int i=0; i<length; i++) {
-			if (!this.results.writeStatus(resultsFile, full)) {
+			StringBuffer excluded = this.results.writeStatus(resultsFile, WRITE_STATUS);
+			if (excluded == null) {
 				MessageDialog.openWarning(this.shell, getTitleToolTip(), "The component is not read, hence no results can be written!");
+			} else {
+				fullExcluded.append(excluded);
 			}
+		}
+
+		// Write exclusion file
+		try {
+				DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(exclusionFile)));
+			try {
+				stream.write(fullExcluded.toString().getBytes());
+			}
+			finally {
+				stream.close();
+			}
+		} catch (FileNotFoundException e) {
+			System.err.println("Can't create exclusion file"+exclusionFile); //$NON-NLS-1$
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }

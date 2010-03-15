@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,15 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.test.internal.performance.results.db.ComponentResults;
-import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
-import org.eclipse.test.internal.performance.results.model.ComponentResultsElement;
-import org.eclipse.test.internal.performance.results.model.ConfigResultsElement;
-import org.eclipse.test.internal.performance.results.model.ResultsElement;
-import org.eclipse.test.internal.performance.results.model.ScenarioResultsElement;
-import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
-import org.eclipse.test.internal.performance.results.utils.Util;
-
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.MouseEvent;
@@ -43,9 +36,14 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolTip;
-
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.test.internal.performance.results.db.AbstractResults;
+import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
+import org.eclipse.test.internal.performance.results.model.ComponentResultsElement;
+import org.eclipse.test.internal.performance.results.model.ConfigResultsElement;
+import org.eclipse.test.internal.performance.results.model.ResultsElement;
+import org.eclipse.test.internal.performance.results.model.ScenarioResultsElement;
+import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
+import org.eclipse.test.internal.performance.results.utils.Util;
 
 
 /**
@@ -375,20 +373,20 @@ private void fillTableLines(boolean fingerprints) {
 			}
 			// Otherwise get values for a scenario
 			double[] values = (double[]) line.get(col);
-			if (values == ComponentResults.NO_BUILD_RESULTS) {
+			if (values == AbstractResults.NO_BUILD_RESULTS) {
 				item.setText(col, "Missing");
 				item.setForeground(col, GRAY);
 				item.setFont(col, italic2);
-			} else if (values == ComponentResults.INVALID_RESULTS) {
+			} else if (values == AbstractResults.INVALID_RESULTS) {
 				item.setText(col, "Invalid");
 				item.setForeground(col, RED);
 				item.setFont(col, italic2);
 			} else {
 				// Get values array
-				double buildValue = values[ComponentResults.BUILD_VALUE_INDEX];
-				double baselineValue = values[ComponentResults.BASELINE_VALUE_INDEX];
-				double delta = values[ComponentResults.DELTA_VALUE_INDEX];
-				double error = values[ComponentResults.DELTA_ERROR_INDEX];
+				double buildValue = values[AbstractResults.BUILD_VALUE_INDEX];
+				double baselineValue = values[AbstractResults.BASELINE_VALUE_INDEX];
+				double delta = values[AbstractResults.DELTA_VALUE_INDEX];
+				double error = values[AbstractResults.DELTA_ERROR_INDEX];
 
 				// Set text with delta value
 				item.setText(col, Util.PERCENTAGE_FORMAT.format(delta));
@@ -398,8 +396,8 @@ private void fillTableLines(boolean fingerprints) {
 					// error is over the 3% threshold
 					item.setImage(col, ResultsElement.WARN_IMAGE);
 					item.setForeground(col, this.darkyellow);
-						toolTipText= "May be not reliable";
-						toolTipMessage= "The error on this result is " + Util.PERCENTAGE_FORMAT.format(error) + ", hence it may be not reliable";
+					toolTipText = "May be not reliable";
+					toolTipMessage = "The error on this result is "+Util.PERCENTAGE_FORMAT.format(error)+", hence it may be not reliable";
 					toolTipStyle |= SWT.ICON_WARNING;
 				}
 				if (delta < -0.1) {
@@ -453,7 +451,7 @@ private void fillTableLines(boolean fingerprints) {
 					configResultsElement = (ConfigResultsElement) scenarioResultsElement.getResultsElement(this.configName);
 					configs[col-1] = configResultsElement;
 				}
-				double deviation = configResultsElement.getStatistics()[3];
+				double deviation = configResultsElement == null ? 0 : configResultsElement.getStatistics()[3];
 				if (deviation > 0.2) {
 					// deviation is over 20% over the entire history
 					if (toolTipText == null) {

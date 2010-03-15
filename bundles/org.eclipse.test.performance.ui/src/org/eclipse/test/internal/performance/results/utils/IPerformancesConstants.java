@@ -23,7 +23,7 @@ public interface IPerformancesConstants {
     public static final String PRE_FULL_LINE_SELECTION  = PREFIX + "full.line.selection"; //$NON-NLS-1$
     public static final String PRE_WRITE_RESULTS_DIR = PREFIX + "write.results.dir"; //$NON-NLS-1$
 
-	    // Preference constants
+	// Preference constants
     public static final String PRE_ECLIPSE_VERSION = PREFIX + "eclipse.version"; //$NON-NLS-1$
     public static final String PRE_DATABASE_CONNECTION = PREFIX + "database.connection"; //$NON-NLS-1$
     public static final String PRE_DATABASE_LOCAL = PREFIX + "local"; //$NON-NLS-1$
@@ -57,10 +57,33 @@ public interface IPerformancesConstants {
 	public static final boolean DEFAULT_DATABASE_CONNECTION = false;
 	public static final boolean DEFAULT_DATABASE_LOCAL = false;
 
+	// Status
+    public static final String PRE_WRITE_STATUS = PREFIX + "write.status"; //$NON-NLS-1$
+	public static final int STATUS_BUILDS_NUMBER_MASK= 0x00FF;
+	public static final int DEFAULT_BUILDS_NUMBER = 1;
+	public static final int STATUS_VALUES = 0x0100;
+	public static final int STATUS_ERROR_NONE = 0x0200;
+	public static final int STATUS_ERROR_NOTICEABLE = 0x0400;
+	public static final int STATUS_ERROR_SUSPICIOUS = 0x0600;
+	public static final int STATUS_ERROR_WEIRD = 0x0800;
+	public static final int STATUS_ERROR_INVALID = 0x0A00;
+	public static final int STATUS_ERROR_LEVEL_MASK = 0x0E00;
+	public static final int STATUS_SMALL_VALUE_BUILD = 0x1000;
+	public static final int STATUS_SMALL_VALUE_DELTA = 0x2000;
+	public static final int STATUS_SMALL_VALUE_MASK = 0x3000;
+	public static final int STATUS_STATISTICS_ERRATIC = 0x4000;
+	public static final int STATUS_STATISTICS_UNSTABLE = 0x8000;
+	public static final int STATUS_STATISTICS_MASK = 0xC000;
+	public static final int DEFAULT_WRITE_STATUS = STATUS_ERROR_NONE | DEFAULT_BUILDS_NUMBER;
+
 	// Default milestones nowadays
 	public static final String[] V36_MILESTONES = new String[] {
 		"M1-200908060100",
 		"M2-200909170100",
+		"M3-200910301201",
+		"M4-200912101301",
+		"M5-201001291300",
+		"M6-201003121448",
 	};
 	public static final String[] V35_MILESTONES = new String[] {
 		        "M1-200808071402",
