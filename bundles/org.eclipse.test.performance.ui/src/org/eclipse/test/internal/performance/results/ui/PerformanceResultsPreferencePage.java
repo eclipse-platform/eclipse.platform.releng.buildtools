@@ -519,7 +519,7 @@ private void initializeDefaults() {
 		this.dbRelengRadioButton.setSelection(true);
 	}
 	this.databaseLocationCombo.removeAll();
-	this.databaseLocationCombo.setText(store.getString(PRE_DATABASE_LOCATION));
+	this.databaseLocationCombo.setText(store.getDefaultString(PRE_DATABASE_LOCATION));
 	updateDatabaseGroup();
 
 	// Init default status values
@@ -544,7 +544,7 @@ private void initializeDefaults() {
 	int index = 0;
 	while (milestone != null && milestone.length() > 0) {
 		this.milestonesCombo.add(milestone);
-		milestone = store.getDefaultString(prefix + index);
+		milestone = store.getDefaultString(prefix + ++index);
 	}
 
 	// Init last build
@@ -611,8 +611,7 @@ private void initializeValues() {
 	String milestone = store.getString(prefix + index);
 	while (milestone != null && milestone.length() > 0) {
 		this.milestonesCombo.add(milestone);
-		index++;
-		milestone = store.getString(prefix + index);
+		milestone = store.getString(prefix + ++index);
 	}
 
 	// Init last build
@@ -667,6 +666,11 @@ private void initializeValues() {
  */
 private void initStatusValues(int writeStatus) {
 	this.statusValuesCheckBox.setSelection((writeStatus & STATUS_VALUES) != 0);
+	this.statusErrorNoneRadioButton.setSelection(false);
+	this.statusErrorNoticeableRadioButton.setSelection(false);
+	this.statusErrorSuspiciousRadioButton.setSelection(false);
+	this.statusErrorWeirdRadioButton.setSelection(false);
+	this.statusErrorInvalidRadioButton.setSelection(false);
 	switch (writeStatus & STATUS_ERROR_LEVEL_MASK) {
 		case STATUS_ERROR_NONE:
 			this.statusErrorNoneRadioButton.setSelection(true);
@@ -684,6 +688,8 @@ private void initStatusValues(int writeStatus) {
 			this.statusErrorInvalidRadioButton.setSelection(true);
 			break;
 	}
+	this.statusSmallBuildValueCheckBox.setSelection(false);
+	this.statusSmallDeltaValueCheckBox.setSelection(false);
 	switch (writeStatus & STATUS_SMALL_VALUE_MASK) {
 		case STATUS_SMALL_VALUE_BUILD:
 			this.statusSmallBuildValueCheckBox.setSelection(true);
@@ -692,6 +698,9 @@ private void initStatusValues(int writeStatus) {
 			this.statusSmallDeltaValueCheckBox.setSelection(true);
 			break;
 	}
+	this.statusStatisticNoneRadioButton.setSelection(false);
+	this.statusStatisticErraticRadioButton.setSelection(false);
+	this.statusStatisticUnstableRadioButton.setSelection(false);
 	switch (writeStatus & STATUS_STATISTICS_MASK) {
 		case 0:
 			this.statusStatisticNoneRadioButton.setSelection(true);
@@ -733,9 +742,32 @@ public void modifyText(ModifyEvent event) {
 		// Verify the only digits are entered
 		String milestoneDate = this.milestonesCombo.getText();
 		final int mLength = milestoneDate.length();
-		if (mLength > 0 && !Character.isDigit(milestoneDate.charAt(mLength-1))) {
-			openMilestoneErrorMessage(milestoneDate);
-			return;
+		if (mLength > 0) {
+			for (int i=0; i<mLength; i++) {
+				if (!Character.isDigit(milestoneDate.charAt(i))) {
+					String[] items = this.milestonesCombo.getItems();
+					int length = items.length;
+					for (int j=0; j<length; j++) {
+						if (items[j].equals(milestoneDate)) {
+							// already existing milestone, leave silently
+							if (MessageDialog.openQuestion(getShell(), getDialogTitle(), "Do you want to select milestone "+milestoneDate+" as the last build?")) {
+								String builds[] = this.lastBuildCombo.getItems();
+								int bLength = builds.length;
+								String milestone = milestoneDate.substring(milestoneDate.indexOf('-')+1);
+								for (int b=0; b<bLength; b++) {
+									if (builds[b].length() > 0 && Util.getBuildDate(builds[b]).equals(milestone)) {
+										this.lastBuildCombo.select(b);
+										break;
+									}
+								}
+							}
+							return;
+						}
+					}
+					openMilestoneErrorMessage(milestoneDate);
+					return;
+				}
+			}
 		}
 
 		// Do not verify further until a complete milestone date is entered
@@ -855,7 +887,6 @@ public void modifyText(ModifyEvent event) {
 		catch (NumberFormatException nfe) {
 			this.statusBuildsToConfirm.setText("1");
 		}
-
 	}
 }
 
@@ -974,11 +1005,19 @@ private void storeValues() {
 	store.setValue(PRE_WRITE_STATUS, writeStatus);
 
 	// Set milestones
+	String prefix = PRE_MILESTONE_BUILDS + "." + version;
 	count  = this.milestonesCombo.getItemCount();
 	for (i=0; i<count; i++) {
-		store.putValue(PRE_MILESTONE_BUILDS + "." + version + i, this.milestonesCombo.getItem(i));
+		store.putValue(prefix + i, this.milestonesCombo.getItem(i));
 	}
 	Util.setMilestones(this.milestonesCombo.getItems());
+
+	// Unset previous additional milestones
+	String milestone = store.getString(prefix + count);
+	while (milestone != null && milestone.length() > 0) {
+		store.putValue(prefix + count++, "");
+		milestone = store.getString(prefix + count);
+	}
 
 	// Set last build
 	String lastBuild = this.lastBuildCombo.getText();

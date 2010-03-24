@@ -60,7 +60,7 @@ public interface IPerformancesConstants {
 	// Status
     public static final String PRE_WRITE_STATUS = PREFIX + "write.status"; //$NON-NLS-1$
 	public static final int STATUS_BUILDS_NUMBER_MASK= 0x00FF;
-	public static final int DEFAULT_BUILDS_NUMBER = 1;
+	public static final int DEFAULT_BUILDS_NUMBER = 3;
 	public static final int STATUS_VALUES = 0x0100;
 	public static final int STATUS_ERROR_NONE = 0x0200;
 	public static final int STATUS_ERROR_NOTICEABLE = 0x0400;

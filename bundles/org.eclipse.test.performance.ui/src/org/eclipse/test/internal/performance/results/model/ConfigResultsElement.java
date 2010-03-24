@@ -451,13 +451,15 @@ StringBuffer writableStatus(StringBuffer buffer, int kind, StringBuffer excluded
 
 			// Statistics
 			if ((this.status & NOT_RELIABLE) != 0) {
-				if ((kind & IPerformancesConstants.STATUS_STATISTICS_ERRATIC) != 0) {
-					// Skip result
-					if (excluded != null) {
-						excluded.append(configResults+" excluded from status due to erratic statistics!");
-						excluded.append(Util.LINE_SEPARATOR);
-					}
-					return buffer;
+				switch (kind & IPerformancesConstants.STATUS_STATISTICS_MASK) {
+					case IPerformancesConstants.STATUS_STATISTICS_UNSTABLE:
+					case IPerformancesConstants.STATUS_STATISTICS_ERRATIC:
+						// Skip result
+						if (excluded != null) {
+							excluded.append(configResults+" excluded from status due to erratic statistics!");
+							excluded.append(Util.LINE_SEPARATOR);
+						}
+						return buffer;
 				}
 				localBuffer.append(separator);
 				localBuffer.append("erratic");

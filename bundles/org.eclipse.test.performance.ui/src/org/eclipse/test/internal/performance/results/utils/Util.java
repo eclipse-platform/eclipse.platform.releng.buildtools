@@ -270,18 +270,40 @@ public static String getMilestoneDate(int index) {
 }
 
 /**
- * Returns the name the milestone matching the given date.
+ * Returns the milestone matching the given build name.
+ *
+ * @param buildName The name of the build
+ * @return The milestone as a string (e.g. M1)
+ */
+public static String getMilestone(String buildName) {
+	if (buildName != null && buildName.length() >= 12) {
+		int length = getMilestonesLength();
+		String buildDate = getBuildDate(buildName, DB_Results.getDbBaselinePrefix());
+		for (int i=0; i<length; i++) {
+			int start = MILESTONES[i].indexOf(buildDate);
+			if (start > 0) {
+				return MILESTONES[i];
+			}
+		}
+	}
+	return null;
+}
+
+/**
+ * Returns the name the milestone matching the given build name.
  *
  * @param buildName The name of the build
  * @return The milestone name as a string (e.g. M1)
  */
 public static String getMilestoneName(String buildName) {
-	int length = getMilestonesLength();
-	String buildDate = getBuildDate(buildName, DB_Results.getDbBaselinePrefix());
-	for (int i=0; i<length; i++) {
-		int start = MILESTONES[i].indexOf(buildDate);
-		if (start > 0) {
-			return MILESTONES[i].substring(0, start - 1);
+	if (buildName != null && buildName.length() >= 12) {
+		int length = getMilestonesLength();
+		String buildDate = getBuildDate(buildName, DB_Results.getDbBaselinePrefix());
+		for (int i=0; i<length; i++) {
+			int start = MILESTONES[i].indexOf(buildDate);
+			if (start > 0) {
+				return MILESTONES[i].substring(0, start - 1);
+			}
 		}
 	}
 	return null;

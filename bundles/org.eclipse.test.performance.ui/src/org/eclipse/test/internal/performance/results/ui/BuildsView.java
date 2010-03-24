@@ -620,7 +620,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 	this.updateAllBuilds.setText("&Update from DB");
 
 	// Update generate action
-	boolean enableGenerate = !force;
+	boolean enableGenerate = true;
 	if (enableGenerate) {
 		for (int i=0; i<length; i++) {
 			if (this.buildsResults[i].getName().startsWith(DB_Results.getDbBaselinePrefix())) {

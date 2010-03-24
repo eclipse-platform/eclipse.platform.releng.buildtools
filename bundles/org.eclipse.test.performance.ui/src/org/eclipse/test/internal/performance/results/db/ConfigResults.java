@@ -470,6 +470,7 @@ private void initialize() {
 	// Set baseline and current builds
 	BuildResults lastBaseline = null;
 	int size = size();
+	if (size == 0) return;
 	for (int i=0; i<size; i++) {
 		BuildResults buildResults = (BuildResults) this.children.get(i);
 		if (buildResults.values != null) {

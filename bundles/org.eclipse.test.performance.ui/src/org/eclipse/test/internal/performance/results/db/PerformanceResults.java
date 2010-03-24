@@ -494,29 +494,13 @@ public String[] readAll(String buildName, String[][] configs, String pattern, Fi
 
 	// Look for missing builds
 	if (buildMissing) {
-		if (buildName == null) {
-			// Read all missing builds
-			String[] builds = DB_Results.getBuilds();
-			Arrays.sort(builds, Util.BUILD_DATE_COMPARATOR);
-			int lengthDB = builds.length;
-			int lengthLocal = names.length;
-			if (lengthLocal < lengthDB) {
-				int length= lengthDB-lengthLocal;
-				String[] addedBuilds = new String[length];
-				int idx = length-1;
-				int idxDB = lengthDB-1;
-				while (!this.allBuildNames[lengthLocal-1].equals(builds[idxDB])) {
-					addedBuilds[idx] = builds[idxDB];
-					idxDB--;
-					idx--;
-				}
-				for (int i=idx+1; i<length; i++) {
-					read(false, addedBuilds[i], configs, true, dataDir, null, subMonitor.newChild(900));
-				}
+		String[] builds = DB_Results.getBuilds();
+		Arrays.sort(builds, Util.BUILD_DATE_COMPARATOR);
+		for (int i=builds.length-1; i>=0; i--) {
+			if (Arrays.binarySearch(names, builds[i], Util.BUILD_DATE_COMPARATOR) >= 0) {
+				break;
 			}
-		} else {
-			// Read the missing build
-			read(false, buildName, configs, true, dataDir, null, subMonitor.newChild(900));
+			read(false, builds[i], configs, true, dataDir, null, subMonitor.newChild(900));
 		}
 	}
 	return this.allBuildNames;
