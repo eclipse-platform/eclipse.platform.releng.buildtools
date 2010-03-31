@@ -212,7 +212,7 @@ public double[][] getLastNumbers(int max) {
 
 	// Add numbers for each previous build
 	int size = size();
-	double[][] numbers = new double[max][];
+	double[][] numbers = new double[Math.min(max, size)][];
 	int n = 0;
 	for (int i=size-1; i>=0 && n<max; i--) {
 		BuildResults buildResults = (BuildResults) this.children.get(i);

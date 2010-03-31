@@ -278,22 +278,31 @@ void initStatus() {
  * Write the element status in the given stream
  */
 StringBuffer writableStatus(StringBuffer buffer, int kind, StringBuffer excluded) {
-	if ((this.status & BIG_DELTA) != 0) {
+	if ((this.status & BIG_DELTA) != 0) { // there's a failure on this config
 
 		// Get numbers
 		int buildsNumber = kind & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
 		ConfigResults configResults = getConfigResults();
 		double[][] numbers = configResults.getLastNumbers(buildsNumber);
+		int numbersLength = numbers.length;
 
 		// if there are several builds to confirm the regression, then verify all deltas
-		if (buildsNumber > 1) {
+		if (numbersLength > 1) {
+			if (numbersLength < buildsNumber) {
+				// there's not enough builds to wee whether there's a real regression, hence skip result
+				if (excluded != null) {
+					excluded.append(configResults+" excluded from status because there's only "+numbersLength+" builds available although "+buildsNumber+" is required to decide a regression is confirmed or not!");
+					excluded.append(Util.LINE_SEPARATOR);
+				}
+				return buffer;
+			}
 			int confirmed = 1;
-			for (int i=1; i<buildsNumber; i++) {
+			for (int i=1; i<numbersLength; i++) {
 				if (numbers[i][AbstractResults.DELTA_VALUE_INDEX] < -0.1) {
 					confirmed++;
 				}
 			}
-			float ratio = ((float) confirmed) / buildsNumber;
+			float ratio = ((float) confirmed) / numbersLength;
 			if (ratio < 0.8) {
 				// more than 20% of previous build didn't fail, hence skip result
 				if (excluded != null) {
