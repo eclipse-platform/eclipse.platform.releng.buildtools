@@ -210,7 +210,8 @@ public boolean hasSummary() {
 	int size = size();
 	for (int i=0; i<size; i++) {
 		ConfigResults configResults = (ConfigResults) this.children.get(i);
-		if (configResults.getCurrentBuildResults().hasSummary()) return true;
+		BuildResults currentBuildResults = configResults.getCurrentBuildResults();
+		if (currentBuildResults != null && currentBuildResults.hasSummary()) return true;
 	}
 	return false;
 }
