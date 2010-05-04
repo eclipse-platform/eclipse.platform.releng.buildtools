@@ -673,6 +673,12 @@ private void setAllBuildNames() {
 		}
 		this.needToUpdateLocalFile = this.name == null || Util.getBuildDate(lastBuild).compareTo(Util.getBuildDate(this.name)) > 0;
 		this.name = lastBuild;
+		if (this.baselineName != null) {
+			String lastBuildDate = Util.getBuildDate(lastBuild);
+			if (Util.getBuildDate(this.baselineName).compareTo(lastBuildDate) > 0) {
+				this.baselineName = DB_Results.getLastBaselineBuild(lastBuildDate);
+			}
+		}
 	}
 }
 

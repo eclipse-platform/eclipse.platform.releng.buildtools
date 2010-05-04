@@ -158,7 +158,7 @@ public boolean isInitialized() {
 }
 
 public void readLocal(File dataDir, IProgressMonitor monitor, String lastBuild) {
-	reset(null);
+	reset(lastBuild);
 	PerformanceResults performanceResults = getPerformanceResults();
 	performanceResults.setLastBuildName(lastBuild);
 	performanceResults.readLocal(dataDir, monitor);
@@ -166,7 +166,7 @@ public void readLocal(File dataDir, IProgressMonitor monitor, String lastBuild) 
 
 public void reset(String buildName) {
 	if (buildName == null) {
-		this.results = new PerformanceResults(System.out);
+		this.results = new PerformanceResults(this.lastBuildName, null, null, System.out);
 	} else {
 		this.results = new PerformanceResults(buildName, null, null, System.out);
 	}
