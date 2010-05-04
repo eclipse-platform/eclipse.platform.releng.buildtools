@@ -550,7 +550,9 @@ void readLocalFile(File dir) {
 		this.name = str == ""  ? null : str;
 		str = stream.readUTF();
 		println("		+ baseline : "+str);
-		this.baselineName = str == "" ? null : str;
+		if (this.baselineName == null) {
+			this.baselineName = str == "" ? null : str;
+		}
 		str = stream.readUTF();
 		println("		+ baseline prefix: "+str);
 		this.baselinePrefix = str == "" ? null : str;
