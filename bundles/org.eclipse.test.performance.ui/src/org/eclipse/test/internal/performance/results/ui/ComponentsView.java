@@ -16,10 +16,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.jface.action.Action;
@@ -27,6 +29,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -329,7 +332,29 @@ void makeActions() {
 	// Write status
 	this.writeStatus = new Action("Write status") {
 		public void run() {
-			writeStatus();
+
+			// Get write directory
+			String filter = (ComponentsView.this.resultsDir == null) ? null : ComponentsView.this.resultsDir.getPath();
+			final File writeDir = changeDir(filter, "Select a directory to write the status");
+			if (writeDir != null) {
+				IRunnableWithProgress runnable = new IRunnableWithProgress() {
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						try {
+							writeStatus(writeDir);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				};
+				// Run with progress monitor
+				try {
+					PlatformUI.getWorkbench().getProgressService().busyCursorWhile(runnable);
+				} catch (InvocationTargetException e) {
+					// skip
+				} catch (InterruptedException e) {
+					// skip
+				}
+			}
         }
 	};
 	this.writeStatus.setEnabled(true);
@@ -444,60 +469,56 @@ public void selectionChanged(SelectionChangedEvent event) {
 	}
 }
 
-protected void writeStatus() {
-	String filter = (this.resultsDir == null) ? null : this.resultsDir.getPath();
-	File newDir = changeDir(filter, "Select a directory to write the status");
-	if (newDir != null) {
-		this.resultsDir = newDir;
+protected void writeStatus(File writeDir) {
+		this.resultsDir = writeDir;
 		if (this.filterAdvancedScenarios.isChecked()) {
-			newDir = new File(newDir, "fingerprints");
+			writeDir = new File(writeDir, "fingerprints");
 		} else {
-			newDir = new File(newDir, "all");
+			writeDir = new File(writeDir, "all");
 		}
-		newDir.mkdir();
+		writeDir.mkdir();
 		if ((WRITE_STATUS & IPerformancesConstants.STATUS_VALUES) != 0) {
-			newDir = new File(newDir, "values");
+			writeDir = new File(writeDir, "values");
 		}
 		int buildsNumber = WRITE_STATUS & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
 		if (buildsNumber > 1) {
-			newDir = new File(newDir, Integer.toString(buildsNumber));
+			writeDir = new File(writeDir, Integer.toString(buildsNumber));
 		}
-		newDir.mkdirs();
+		writeDir.mkdirs();
 		String prefix = this.results.getName();
-		File resultsFile = new File(newDir, prefix+".log");
-		File exclusionFile = new File(newDir, prefix+"_excluded.log");
+		File resultsFile = new File(writeDir, prefix+".log");
+		File exclusionDir = new File(writeDir, "excluded");
+		exclusionDir.mkdir();
+		File exclusionFile = new File(exclusionDir, prefix+".log");
 		if (resultsFile.exists()) {
 			int i=0;
+			File saveDir = new File(writeDir, "save");
+			saveDir.mkdir();
 			while (true) {
 				String newFileName = prefix+"_";
 				if (i<10) newFileName += "0";
 				newFileName += i;
-				File renamedFile = new File(newDir, newFileName+".log");
+				File renamedFile = new File(saveDir, newFileName+".log");
 				if (resultsFile.renameTo(renamedFile)) {
-					File renamedExclusionFile = new File(newDir, newFileName+"_excluded.log");
+					File renamedExclusionFile = new File(exclusionDir, newFileName+".log");
 					exclusionFile.renameTo(renamedExclusionFile);
 					break;
 				}
 				i++;
 			}
 		}
-		ResultsElement[] components = this.results.getChildren();
-		int length = components.length;
-		StringBuffer fullExcluded = new StringBuffer();
-		for (int i=0; i<length; i++) {
-			StringBuffer excluded = this.results.writeStatus(resultsFile, WRITE_STATUS);
-			if (excluded == null) {
-				MessageDialog.openWarning(this.shell, getTitleToolTip(), "The component is not read, hence no results can be written!");
-			} else {
-				fullExcluded.append(excluded);
-			}
+
+		// Write status
+		StringBuffer excluded = this.results.writeStatus(resultsFile, WRITE_STATUS);
+		if (excluded == null) {
+			MessageDialog.openWarning(this.shell, getTitleToolTip(), "The component is not read, hence no results can be written!");
 		}
 
 		// Write exclusion file
 		try {
-				DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(exclusionFile)));
+			DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(exclusionFile)));
 			try {
-				stream.write(fullExcluded.toString().getBytes());
+				stream.write(excluded.toString().getBytes());
 			}
 			finally {
 				stream.close();
@@ -507,6 +528,5 @@ protected void writeStatus() {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
 }
 }
