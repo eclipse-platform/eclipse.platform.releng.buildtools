@@ -16,12 +16,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.jface.action.Action;
@@ -29,7 +27,6 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -337,23 +334,7 @@ void makeActions() {
 			String filter = (ComponentsView.this.resultsDir == null) ? null : ComponentsView.this.resultsDir.getPath();
 			final File writeDir = changeDir(filter, "Select a directory to write the status");
 			if (writeDir != null) {
-				IRunnableWithProgress runnable = new IRunnableWithProgress() {
-					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-						try {
-							writeStatus(writeDir);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				};
-				// Run with progress monitor
-				try {
-					PlatformUI.getWorkbench().getProgressService().busyCursorWhile(runnable);
-				} catch (InvocationTargetException e) {
-					// skip
-				} catch (InterruptedException e) {
-					// skip
-				}
+				writeStatus(writeDir);
 			}
         }
 	};
