@@ -657,7 +657,7 @@ public static String getLastBaselineBuild(String date) {
 	String lastBaselineBuild = null;
 	for (int i=0; i<BUILDS_LENGTH; i++) {
 		String build = BUILDS[i];
-		if (build.startsWith(DB_BASELINE_PREFIX)) {
+		if (build.startsWith(DB_VERSION_REF)) {
 			String buildDate = build.substring(build.indexOf('_')+1);
 			if (buildDate.compareTo(date) < 0) {
 				if (lastBaselineBuild == null || build.compareTo(lastBaselineBuild) > 0) {
