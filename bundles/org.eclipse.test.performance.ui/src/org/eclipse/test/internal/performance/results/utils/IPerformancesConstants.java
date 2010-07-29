@@ -48,7 +48,7 @@ public interface IPerformancesConstants {
 
 	// Default values
 	public static final String DATABASE_NAME_PREFIX = "perfDb";
-	public static final String NETWORK_DATABASE_LOCATION = "net://trelenggtk.ottawa.ibm.com:1528";
+	public static final String NETWORK_DATABASE_LOCATION = "net://minsky.ottawa.ibm.com:1528";
 	public static final int DEFAULT_ECLIPSE_VERSION = ECLIPSE_DEVELOPMENT_VERSION;
 	public static final boolean DEFAULT_FILTER_ADVANCED_SCENARIOS = true;
 	public static final boolean DEFAULT_FILTER_OLD_BUILDS = false;
