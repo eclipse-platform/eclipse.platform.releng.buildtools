@@ -466,17 +466,19 @@ protected void writeStatus(File writeDir) {
 			writeDir = new File(writeDir, Integer.toString(buildsNumber));
 		}
 		writeDir.mkdirs();
-		String prefix = this.results.getName();
-		File resultsFile = new File(writeDir, prefix+".log");
+		final String buildName = this.results.getName();
+		String buildDate = buildName.substring(1);
+		String buildPrefix = buildDate + "_" + buildName.charAt(0);
+		File resultsFile = new File(writeDir, buildPrefix+".log");
 		File exclusionDir = new File(writeDir, "excluded");
 		exclusionDir.mkdir();
-		File exclusionFile = new File(exclusionDir, prefix+".log");
+		File exclusionFile = new File(exclusionDir, buildPrefix+".log");
 		if (resultsFile.exists()) {
 			int i=0;
 			File saveDir = new File(writeDir, "save");
 			saveDir.mkdir();
 			while (true) {
-				String newFileName = prefix+"_";
+				String newFileName = buildPrefix+"_";
 				if (i<10) newFileName += "0";
 				newFileName += i;
 				File renamedFile = new File(saveDir, newFileName+".log");

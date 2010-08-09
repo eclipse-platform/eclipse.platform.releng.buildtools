@@ -43,8 +43,8 @@ public interface IPerformancesConstants {
     public static final String PRE_FILTER_LAST_BUILDS = PREFIX + "filter.last.builds"; //$NON-NLS-1$
 
 	// Other constants
-	public static final int ECLIPSE_MAINTENANCE_VERSION = 35;
-	public static final int ECLIPSE_DEVELOPMENT_VERSION = 36;
+	public static final int ECLIPSE_MAINTENANCE_VERSION = 36;
+	public static final int ECLIPSE_DEVELOPMENT_VERSION = 37;
 
 	// Default values
 	public static final String DATABASE_NAME_PREFIX = "perfDb";
@@ -77,6 +77,8 @@ public interface IPerformancesConstants {
 	public static final int DEFAULT_WRITE_STATUS = STATUS_ERROR_NONE | DEFAULT_BUILDS_NUMBER;
 
 	// Default milestones nowadays
+	public static final String[] V37_MILESTONES = new String[] {
+	};
 	public static final String[] V36_MILESTONES = new String[] {
 		"M1-200908060100",
 		"M2-200909170100",
@@ -85,6 +87,7 @@ public interface IPerformancesConstants {
 		"M5-201001291300",
 		"M6-201003121448",
 	};
+	/** @deprecated */
 	public static final String[] V35_MILESTONES = new String[] {
 		        "M1-200808071402",
 		        "M2-200809180100",

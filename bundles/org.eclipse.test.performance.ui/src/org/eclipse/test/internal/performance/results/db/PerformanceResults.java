@@ -670,7 +670,7 @@ private void setAllBuildNames() {
 		}
 		int idx = n-1;
 		String lastBuild = this.allBuildNames[idx--];
-		while (lastBuild.startsWith(DB_Results.getDbBaselinePrefix())) {
+		while (idx > 0 && lastBuild.startsWith(DB_Results.getDbBaselinePrefix())) {
 			lastBuild = this.allBuildNames[idx--];
 		}
 		this.needToUpdateLocalFile = this.name == null || Util.getBuildDate(lastBuild).compareTo(Util.getBuildDate(this.name)) > 0;
@@ -737,7 +737,8 @@ private void setDefaults() {
 			this.name = DB_Results.getLastCurrentBuild();
 			if (this.dbRequired) {
 				if (this.name == null) {
-					throw new RuntimeException("Cannot find any current build!"); //$NON-NLS-1$
+//					throw new RuntimeException("Cannot find any current build!"); //$NON-NLS-1$
+					this.name = "No current build!";
 				}
 				this.allBuildNames = DB_Results.getBuilds();
 				this.components = DB_Results.getComponents();

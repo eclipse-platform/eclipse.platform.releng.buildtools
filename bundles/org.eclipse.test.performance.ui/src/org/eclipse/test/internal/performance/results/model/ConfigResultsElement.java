@@ -298,7 +298,7 @@ StringBuffer writableStatus(StringBuffer buffer, int kind, StringBuffer excluded
 			}
 			int confirmed = 1;
 			for (int i=1; i<numbersLength; i++) {
-				if (numbers[i][AbstractResults.DELTA_VALUE_INDEX] < -0.1) {
+				if (numbers[i] != null && numbers[i][AbstractResults.DELTA_VALUE_INDEX] < -0.1) {
 					confirmed++;
 				}
 			}

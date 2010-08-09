@@ -98,12 +98,13 @@ private static void initMilestones() {
 		switch (minorVersion) {
 			case '3':
 			case '4':
-				throw new RuntimeException("Version "+mainVersion+'.'+minorVersion+" is no longer supported!");
 			case '5':
-				MILESTONES = V35_MILESTONES;
-				break;
+				throw new RuntimeException("Version "+mainVersion+'.'+minorVersion+" is no longer supported!");
 			case '6':
 				MILESTONES = V36_MILESTONES;
+				break;
+			case '7':
+				MILESTONES = V37_MILESTONES;
 				break;
 			default:
 				throw new RuntimeException("Version "+mainVersion+'.'+minorVersion+" is not supported yet!");
