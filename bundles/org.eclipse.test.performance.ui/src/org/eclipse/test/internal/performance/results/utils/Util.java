@@ -527,7 +527,7 @@ private Util() {
 /**
  * Set the milestones.
  *
- * @param items The milestones list (e.g. {@link IPerformancesConstants#V35_MILESTONES}).
+ * @param items The milestones list (e.g. {@link IPerformancesConstants#V37_MILESTONES}).
  */
 public static void setMilestones(String[] items) {
 	MILESTONES = items;
