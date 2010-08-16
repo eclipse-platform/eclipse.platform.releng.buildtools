@@ -433,7 +433,7 @@ protected IPreferenceStore doGetPreferenceStore() {
 }
 
 /**
- * @return
+ * @return The dialog title
  */
 String getDialogTitle() {
 	String title = DB_Results.getDbTitle();
@@ -662,7 +662,7 @@ private void initializeValues() {
 }
 
 /**
- * @param store
+ * @param writeStatus The observed status to write
  */
 private void initStatusValues(int writeStatus) {
 	this.statusValuesCheckBox.setSelection((writeStatus & STATUS_VALUES) != 0);
