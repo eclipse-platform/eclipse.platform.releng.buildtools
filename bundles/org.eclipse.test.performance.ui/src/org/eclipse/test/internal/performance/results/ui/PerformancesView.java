@@ -201,7 +201,7 @@ public PerformancesView() {
 
 	// Init last build
 	String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-	LAST_BUILD = lastBuild.length() == 0 ? null : lastBuild;
+	LAST_BUILD = lastBuild == null || lastBuild.length() == 0 ? null : lastBuild;
 }
 
 File changeDataDir() {
