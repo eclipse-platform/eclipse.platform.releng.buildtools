@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -278,13 +278,14 @@ public class BuildsView extends PerformancesView {
 	// Results model
 	BuildResultsElement[] buildsResults;
 
-	// Generation info
+	// Directories
 	File outputDir;
 
 	// Actions
 	Action generate;
 	UpdateBuildAction updateBuild, updateAllBuilds;
 //	UpdateBuildAction forceUpdateBuild, forceUpdateAllBuilds;
+	Action writeComparison;
 
 	// SWT resources
 	Font italicFont;
@@ -405,6 +406,8 @@ void fillContextMenu(IMenuManager manager) {
 	manager.add(this.generate);
 	manager.add(this.updateBuild);
 //	manager.add(this.forceUpdateBuild);
+	manager.add(new Separator());
+	manager.add(this.writeComparison);
 }
 
 /*
@@ -472,6 +475,21 @@ void makeActions() {
 	this.updateAllBuilds.setEnabled(connected);
 //	this.forceUpdateAllBuilds = new UpdateAllBuildsAction(true);
 //	this.forceUpdateAllBuilds.setText("Force Update all");
+
+	// Write values
+	this.writeComparison = new Action("Write comparison") {
+		public void run() {
+
+			// Get write directory
+			String filter = (BuildsView.this.resultsDir == null) ? null : BuildsView.this.resultsDir.getPath();
+			final File writeDir = changeDir(filter, "Select a directory to write the comparison between two builds");
+			if (writeDir != null) {
+				writeComparison(writeDir);
+			}
+        }
+	};
+	this.writeComparison.setEnabled(false);
+	this.writeComparison.setToolTipText("Write comparison between two builds");
 
 	// Set filters default
 	this.filterBaselineBuilds.setChecked(false);
@@ -585,6 +603,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 	// Update selected element
 	Object selection = this.viewer.getSelection();
 	int length = 0;
+	this.writeComparison.setEnabled(false);
 	if (selection instanceof IStructuredSelection) {
 		Object[] elements = ((IStructuredSelection)selection).toArray();
 		length = elements == null ? 0 : elements.length;
@@ -596,6 +615,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 		for (int i=0; i<length; i++) {
 			this.buildsResults[i] = (BuildResultsElement) elements[i];
 		}
+		this.writeComparison.setEnabled(length==2);
 	} else {
 		return;
 	}
@@ -654,6 +674,37 @@ void updateBuilds(IProgressMonitor monitor, boolean force) {
 		builds[i] = this.buildsResults[i].getName();
 	}
 	this.results.updateBuilds(builds, force, this.dataDir, monitor);
+}
+
+protected void writeComparison(File writeDir) {
+	this.resultsDir = writeDir;
+	writeDir = new File(writeDir, "values");
+	if (this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, false)) {
+		writeDir = new File(writeDir, "fingerprints");
+	} else {
+		writeDir = new File(writeDir, "all");
+	}
+	writeDir.mkdirs();
+	final String buildName = this.buildsResults[0].getName();
+	String buildDate = buildName.substring(1);
+	String buildPrefix = "Comparison" + buildDate + "_" + buildName.charAt(0);
+	File resultsFile = new File(writeDir, buildPrefix+".html");
+	if (resultsFile.exists()) {
+		int i=0;
+		File saveDir = new File(writeDir, "save");
+		saveDir.mkdir();
+		while (true) {
+			String newFileName = buildPrefix+"_";
+			if (i<10) newFileName += "0";
+			newFileName += i;
+			File renamedFile = new File(saveDir, newFileName+".html");
+			if (resultsFile.renameTo(renamedFile)) {
+				break;
+			}
+			i++;
+		}
+	}
+	this.results.writeComparison(resultsFile, buildName, this.buildsResults[1].getName());
 }
 
 }

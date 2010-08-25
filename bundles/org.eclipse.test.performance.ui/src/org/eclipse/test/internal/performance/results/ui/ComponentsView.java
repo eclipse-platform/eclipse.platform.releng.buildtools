@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -101,7 +101,6 @@ public class ComponentsView extends PerformancesView {
 
 	// Internal
 	Set expandedComponents = new HashSet();
-	File resultsDir = null;
 
 	// Actions
 	Action filterAdvancedScenarios;
@@ -382,11 +381,6 @@ void restoreState() {
 	if (this.viewState == null) {
 		this.filterBaselineBuilds.setChecked(true);
 		this.viewFilters.add(FILTER_BASELINE_BUILDS);
-	} else {
-		String dir = this.viewState.getString(IPerformancesConstants.PRE_WRITE_RESULTS_DIR);
-		if (dir != null) {
-			this.resultsDir = new File(dir);
-		}
 	}
 
 	// Filter non fingerprints action state
@@ -398,9 +392,6 @@ void restoreState() {
 }
 
 public void saveState(IMemento memento) {
-	if (this.resultsDir != null) {
-		memento.putString(IPerformancesConstants.PRE_WRITE_RESULTS_DIR, this.resultsDir.getPath());
-	}
 	super.saveState(memento);
 }
 
@@ -451,65 +442,65 @@ public void selectionChanged(SelectionChangedEvent event) {
 }
 
 protected void writeStatus(File writeDir) {
-		this.resultsDir = writeDir;
-		if (this.filterAdvancedScenarios.isChecked()) {
-			writeDir = new File(writeDir, "fingerprints");
-		} else {
-			writeDir = new File(writeDir, "all");
-		}
-		writeDir.mkdir();
-		if ((WRITE_STATUS & IPerformancesConstants.STATUS_VALUES) != 0) {
-			writeDir = new File(writeDir, "values");
-		}
-		int buildsNumber = WRITE_STATUS & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
-		if (buildsNumber > 1) {
-			writeDir = new File(writeDir, Integer.toString(buildsNumber));
-		}
-		writeDir.mkdirs();
-		final String buildName = this.results.getName();
-		String buildDate = buildName.substring(1);
-		String buildPrefix = buildDate + "_" + buildName.charAt(0);
-		File resultsFile = new File(writeDir, buildPrefix+".log");
-		File exclusionDir = new File(writeDir, "excluded");
-		exclusionDir.mkdir();
-		File exclusionFile = new File(exclusionDir, buildPrefix+".log");
-		if (resultsFile.exists()) {
-			int i=0;
-			File saveDir = new File(writeDir, "save");
-			saveDir.mkdir();
-			while (true) {
-				String newFileName = buildPrefix+"_";
-				if (i<10) newFileName += "0";
-				newFileName += i;
-				File renamedFile = new File(saveDir, newFileName+".log");
-				if (resultsFile.renameTo(renamedFile)) {
-					File renamedExclusionFile = new File(exclusionDir, newFileName+".log");
-					exclusionFile.renameTo(renamedExclusionFile);
-					break;
-				}
-				i++;
+	this.resultsDir = writeDir;
+	if (this.filterAdvancedScenarios.isChecked()) {
+		writeDir = new File(writeDir, "fingerprints");
+	} else {
+		writeDir = new File(writeDir, "all");
+	}
+	writeDir.mkdir();
+	if ((WRITE_STATUS & IPerformancesConstants.STATUS_VALUES) != 0) {
+		writeDir = new File(writeDir, "values");
+	}
+	int buildsNumber = WRITE_STATUS & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
+	if (buildsNumber > 1) {
+		writeDir = new File(writeDir, Integer.toString(buildsNumber));
+	}
+	writeDir.mkdirs();
+	final String buildName = this.results.getName();
+	String buildDate = buildName.substring(1);
+	String buildPrefix = buildDate + "_" + buildName.charAt(0);
+	File resultsFile = new File(writeDir, buildPrefix+".log");
+	File exclusionDir = new File(writeDir, "excluded");
+	exclusionDir.mkdir();
+	File exclusionFile = new File(exclusionDir, buildPrefix+".log");
+	if (resultsFile.exists()) {
+		int i=0;
+		File saveDir = new File(writeDir, "save");
+		saveDir.mkdir();
+		while (true) {
+			String newFileName = buildPrefix+"_";
+			if (i<10) newFileName += "0";
+			newFileName += i;
+			File renamedFile = new File(saveDir, newFileName+".log");
+			if (resultsFile.renameTo(renamedFile)) {
+				File renamedExclusionFile = new File(exclusionDir, newFileName+".log");
+				exclusionFile.renameTo(renamedExclusionFile);
+				break;
 			}
+			i++;
 		}
+	}
 
-		// Write status
-		StringBuffer excluded = this.results.writeStatus(resultsFile, WRITE_STATUS);
-		if (excluded == null) {
-			MessageDialog.openWarning(this.shell, getTitleToolTip(), "The component is not read, hence no results can be written!");
-		}
+	// Write status
+	StringBuffer excluded = this.results.writeStatus(resultsFile, WRITE_STATUS);
+	if (excluded == null) {
+		MessageDialog.openWarning(this.shell, getTitleToolTip(), "The component is not read, hence no results can be written!");
+	}
 
-		// Write exclusion file
+	// Write exclusion file
+	try {
+		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(exclusionFile)));
 		try {
-			DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(exclusionFile)));
-			try {
-				stream.write(excluded.toString().getBytes());
-			}
-			finally {
-				stream.close();
-			}
-		} catch (FileNotFoundException e) {
-			System.err.println("Can't create exclusion file"+exclusionFile); //$NON-NLS-1$
-		} catch (IOException e) {
-			e.printStackTrace();
+			stream.write(excluded.toString().getBytes());
 		}
+		finally {
+			stream.close();
+		}
+	} catch (FileNotFoundException e) {
+		System.err.println("Can't create exclusion file"+exclusionFile); //$NON-NLS-1$
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
 }
 }

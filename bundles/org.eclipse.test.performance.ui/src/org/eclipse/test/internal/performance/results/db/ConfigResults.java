@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -239,7 +239,7 @@ public double[][] getLastNumbers(int max) {
  * 		<li>{@link AbstractResults#BASELINE_ERROR_INDEX}: the error made while measuring the baseline value</li>
  * 	</ul>
  */
-double[] getNumbers(BuildResults buildResults, BuildResults baselineResults) {
+public double[] getNumbers(BuildResults buildResults, BuildResults baselineResults) {
 	if (baselineResults == null) {
 		return null;
 	}

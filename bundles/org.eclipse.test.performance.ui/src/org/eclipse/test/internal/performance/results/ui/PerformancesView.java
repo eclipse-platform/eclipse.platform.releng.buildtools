@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -133,8 +133,9 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	TreeViewer viewer;
 	IPropertySheetPage propertyPage;
 
-	// Data info
+	// Directories
 	File dataDir;
+	File resultsDir = null;
 
 	// Views
 	IMemento viewState;
@@ -607,6 +608,10 @@ void restoreState() {
 		if (filterBaselinesValue) {
 			this.viewFilters.add(FILTER_BASELINE_BUILDS);
 		}
+		String dir = this.viewState.getString(IPerformancesConstants.PRE_WRITE_RESULTS_DIR);
+		if (dir != null) {
+			this.resultsDir = new File(dir);
+		}
 	}
 
 	// Filter nightly builds action
@@ -638,6 +643,9 @@ public void saveState(IMemento memento) {
 		this.preferences.flush();
 	} catch (BackingStoreException e) {
 		// ignore
+	}
+	if (this.resultsDir != null) {
+		memento.putString(IPerformancesConstants.PRE_WRITE_RESULTS_DIR, this.resultsDir.getPath());
 	}
 }
 
