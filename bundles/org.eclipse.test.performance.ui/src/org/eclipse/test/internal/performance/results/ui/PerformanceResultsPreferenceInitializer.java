@@ -43,6 +43,11 @@ public void initializeDefaultPreferences() {
 	// Status
 	defaultPreferences.putInt(PRE_WRITE_STATUS, IPerformancesConstants.DEFAULT_WRITE_STATUS);
 
+	// Comparison
+	defaultPreferences.putInt(PRE_COMPARISON_THRESHOLD_FAILURE, IPerformancesConstants.DEFAULT_COMPARISON_THRESHOLD_FAILURE);
+	defaultPreferences.putInt(PRE_COMPARISON_THRESHOLD_ERROR, IPerformancesConstants.DEFAULT_COMPARISON_THRESHOLD_ERROR);
+	defaultPreferences.putInt(PRE_COMPARISON_THRESHOLD_IMPROVEMENT, IPerformancesConstants.DEFAULT_COMPARISON_THRESHOLD_IMPROVEMENT);
+
 	// Config descriptors
 	String[][] configDescriptors = PerformanceTestPlugin.getConfigDescriptors();
 	int cdLength = configDescriptors.length;

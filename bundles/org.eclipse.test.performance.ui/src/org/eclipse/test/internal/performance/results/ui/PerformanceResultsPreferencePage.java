@@ -82,6 +82,9 @@ public class PerformanceResultsPreferencePage extends PreferencePage
 	private Button statusStatisticErraticRadioButton;
 	private Button statusStatisticUnstableRadioButton;
 	private Text statusBuildsToConfirm;
+	private Text comparisonThresholdFailure;
+	private Text comparisonThresholdError;
+	private Text comparisonThresholdImprovement;
 
 	// TODO See whether config descriptors need to be set as preferences or not...
 	// private Table configDescriptorsTable;
@@ -220,6 +223,21 @@ protected Control createContents(Composite parent) {
 		createLabel(statusGroup, "Builds to confirm:", false);
 		this.statusBuildsToConfirm = createTextField(statusGroup);
 		this.statusBuildsToConfirm.setToolTipText("The number of previous builds to take into account to confirm a regression");
+
+		// Comparison
+		Composite compositeComparison = createComposite(parent, 1, 3);
+		Group comparisonGroup = createGroup(compositeComparison, "Comparison", 1);
+		Group thresholdsGroup = createGroup(comparisonGroup, "Thresholds", 6);
+//		Composite compositeFailureThreshold = createComposite(comparisonGroup, 2, 2);
+		createLabel(thresholdsGroup, "Failure:", false);
+		this.comparisonThresholdFailure = createTextField(thresholdsGroup);
+		this.comparisonThresholdFailure.setToolTipText("The threshold in percentage to report a failure");
+		createLabel(thresholdsGroup, "Error:", false);
+		this.comparisonThresholdError = createTextField(thresholdsGroup);
+		this.comparisonThresholdError.setToolTipText("The threshold in percentage to report an error");
+		createLabel(thresholdsGroup, "Improvement:", false);
+		this.comparisonThresholdImprovement = createTextField(thresholdsGroup);
+		this.comparisonThresholdImprovement.setToolTipText("The threshold in percentage to report an improvement");
 
 		// Milestones
 		Composite compositeMilestones = createComposite(parent, 3, 1);
@@ -526,6 +544,11 @@ private void initializeDefaults() {
 	int writeStatus = store.getDefaultInt(PRE_WRITE_STATUS);
 	initStatusValues(writeStatus);
 
+	// Init comparison thresholds
+	this.comparisonThresholdFailure.setText(String.valueOf(store.getDefaultInt(PRE_COMPARISON_THRESHOLD_FAILURE)));
+	this.comparisonThresholdError.setText(String.valueOf(store.getDefaultInt(PRE_COMPARISON_THRESHOLD_ERROR)));
+	this.comparisonThresholdImprovement.setText(String.valueOf(store.getDefaultInt(PRE_COMPARISON_THRESHOLD_IMPROVEMENT)));
+
 	// Init eclipse version
 	this.mVersionRadioButton.setSelection(false);
 	this.dVersionRadionButton.setSelection(false);
@@ -595,6 +618,11 @@ private void initializeValues() {
 	// Init status values
 	int writeStatus = store.getInt(PRE_WRITE_STATUS);
 	initStatusValues(writeStatus);
+
+	// Init comparison thresholds
+	this.comparisonThresholdFailure.setText(String.valueOf(store.getInt(PRE_COMPARISON_THRESHOLD_FAILURE)));
+	this.comparisonThresholdError.setText(String.valueOf(store.getInt(PRE_COMPARISON_THRESHOLD_ERROR)));
+	this.comparisonThresholdImprovement.setText(String.valueOf(store.getInt(PRE_COMPARISON_THRESHOLD_IMPROVEMENT)));
 
 	// Init eclipse version
 	int version = store.getInt(PRE_ECLIPSE_VERSION);
@@ -1003,6 +1031,11 @@ private void storeValues() {
 	}
 	writeStatus += Integer.parseInt(this.statusBuildsToConfirm.getText());
 	store.setValue(PRE_WRITE_STATUS, writeStatus);
+
+	// Init comparison thresholds
+	store.setValue(PRE_COMPARISON_THRESHOLD_FAILURE, Integer.parseInt(this.comparisonThresholdFailure.getText()));
+	store.setValue(PRE_COMPARISON_THRESHOLD_ERROR, Integer.parseInt(this.comparisonThresholdError.getText()));
+	store.setValue(PRE_COMPARISON_THRESHOLD_IMPROVEMENT, Integer.parseInt(this.comparisonThresholdImprovement.getText()));
 
 	// Set milestones
 	String prefix = PRE_MILESTONE_BUILDS + "." + version;

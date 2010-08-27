@@ -25,14 +25,14 @@ import org.eclipse.test.performance.ui.Utils;
  * This class is responsible to print html table with the difference between two
  * builds for all the scenarios and the configuration of a specific component.
  */
-public class ScenariosComparisonTable {
+public class BuildsComparisonTable {
 
 	private static final double DEFAULT_FAILURE_THRESHOLD = PerformanceResults.DEFAULT_FAILURE_THRESHOLD / 100.0 / 2;
 	private String component;
 	private PrintStream stream;
 	String buildName, referenceName;
 
-public ScenariosComparisonTable(String name, PrintStream stream, String build, String reference) {
+public BuildsComparisonTable(String name, PrintStream stream, String build, String reference) {
     this.component = name;
     this.stream = stream;
     this.buildName = build;

@@ -27,6 +27,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -38,6 +39,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
 import org.eclipse.test.internal.performance.results.model.ResultsElement;
@@ -274,6 +276,7 @@ public class BuildsView extends PerformancesView {
 
 	// Views
 	PerformancesView componentsView;
+	BuildsComparisonView buildsComparisonView = null;
 
 	// Results model
 	BuildResultsElement[] buildsResults;
@@ -382,6 +385,16 @@ public void createPartControl(Composite parent) {
 	};
 	this.viewer.setSorter(nameSorter);
 
+	// Add results view as listener to viewer selection changes
+	Display.getDefault().asyncExec(new Runnable() {
+		public void run() {
+			ISelectionChangedListener listener = getComparisonView();
+			if (listener != null) {
+				BuildsView.this.viewer.addSelectionChangedListener(listener);
+			}
+		}
+	});
+
 	// Finalize viewer initialization
 	PlatformUI.getWorkbench().getHelpSystem().setHelp(this.viewer.getControl(), "org.eclipse.test.performance.ui.builds");
 	finalizeViewerCreation();
@@ -437,6 +450,16 @@ Object[] getBuilds() {
 		initResults();
 	}
 	return this.results.getBuilds();
+}
+
+/*
+ * Return the components results view.
+ */
+BuildsComparisonView getComparisonView() {
+	if (this.buildsComparisonView == null) {
+		this.buildsComparisonView = (BuildsComparisonView) getWorkbenchView("org.eclipse.test.internal.performance.results.ui.BuildsComparisonView");
+	}
+	return this.buildsComparisonView;
 }
 
 /*

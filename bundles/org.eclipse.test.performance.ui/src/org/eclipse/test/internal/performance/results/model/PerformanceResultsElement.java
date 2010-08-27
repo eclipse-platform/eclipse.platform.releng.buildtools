@@ -20,7 +20,7 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.test.internal.performance.results.db.*;
-import org.eclipse.test.internal.performance.results.ui.ScenariosComparisonTable;
+import org.eclipse.test.internal.performance.results.ui.BuildsComparisonTable;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.test.performance.ui.Utils;
@@ -363,7 +363,7 @@ public void writeComparison(File resultsFile, String build, String reference) {
 		try {
 			int length = this.children.length;
 			for (int i=0; i<length; i++) {
-				ScenariosComparisonTable table = new ScenariosComparisonTable(this.children[i].getName(), stream, build, reference);
+				BuildsComparisonTable table = new BuildsComparisonTable(this.children[i].getName(), stream, build, reference);
 				table.print(getPerformanceResults());
 			}
 		}

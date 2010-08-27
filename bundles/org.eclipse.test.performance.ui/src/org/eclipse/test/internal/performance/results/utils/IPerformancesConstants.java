@@ -76,6 +76,14 @@ public interface IPerformancesConstants {
 	public static final int STATUS_STATISTICS_MASK = 0xC000;
 	public static final int DEFAULT_WRITE_STATUS = STATUS_ERROR_NONE | DEFAULT_BUILDS_NUMBER;
 
+	// Comparison
+    public static final String PRE_COMPARISON_THRESHOLD_FAILURE = PREFIX + "comparison.threshold.failure"; //$NON-NLS-1$
+	public static final int DEFAULT_COMPARISON_THRESHOLD_FAILURE = 10;
+    public static final String PRE_COMPARISON_THRESHOLD_ERROR = PREFIX + "comparison.threshold.error"; //$NON-NLS-1$
+	public static final int DEFAULT_COMPARISON_THRESHOLD_ERROR = 3;
+    public static final String PRE_COMPARISON_THRESHOLD_IMPROVEMENT = PREFIX + "comparison.threshold.imporvement"; //$NON-NLS-1$
+	public static final int DEFAULT_COMPARISON_THRESHOLD_IMPROVEMENT = 10;
+
 	// Default milestones nowadays
 	public static final String[] V37_MILESTONES = new String[] {
 	};
