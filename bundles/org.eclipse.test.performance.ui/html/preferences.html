@@ -14,14 +14,14 @@ This must be done carefully otherwise, either no data could be read by the tool
 and/or generatead results could be puzzled.
 </p><p>
 
-<h3>Eclipse version</h3>
+<h3><a name="eclipse_version">Eclipse version</h3>
 <p><img src="images/preferences-eclipse-versions.png" alt="Preferences Eclipse versions"/></p>
 <p>
 The Eclipse version on which the performance results belongs to. There are
 only two possible choice: the maintenance and the current versions.
 </p>
 
-<h3>Database</h3>
+<h3><a name="database">Database</h3>
 <p><img src="images/preferences-database.png" alt="Preferences Database"/></p>
 <p>
 By default the tool does not connect to any performance results database as common
@@ -34,12 +34,60 @@ Note that the folder for the local database must be the parent of the
 <code>perfDb3x</code> folder otherwise you'll get an error message.
 </p>
 
-<h3>Status</h3>
-<p><img src="images/preferences-milestones.png" alt="Preferences Milestones"/></p>
+<h3><a name="status">Status</h3>
+<p><img src="images/preferences-status.png" alt="Preferences Status"/></p>
 <p>
-TODO</p>
+The status preferences can be set to exclude some tests while written
+the status file (see <a href="components.html#writestatus">Write status</a>).
+</p><p>
+Flying over each check-box or radio buttons gives a short explanation of each
+preference value
+</p><p>
+Here are the detailed explanation of these status preferences:
+<ul>
+<li><b>Values</b>: Check-box to include the values of the failing tests in the
+status file. Note that is not recommended to do so when status want to be
+compared between builds</li>
+<li><b>Error level</b>: Level of the error from which the test result is
+excluded from the file:
+<ul>
+<li>None: the test is always included in the status file whatever the error
+level is</li>
+<li>Invalid: the test is not included when the error level is over 100%</li>
+<li>Weird: the test is not included when the error level is over 50%</li>
+<li>Suspicious: the test is not included when the error level is over 25%</li>
+<li>Noticeable: the test is not included when the error level is over 3%</li>
+</ul>
+</li>
+<li><b>Small value</b>: The test is not included when a small value is detected:
+<ul>
+<li>Build value: the test is not included when the value for this build test value
+is below than 100ms (<i>as the test duration is below the recommended minimum
+value it's not necessary to strongly survey it...</i>)</li>
+<li>Delta value: the test is not included when the value of the difference between
+the build and the baseline is below than 100ms (<i>as the regression is below
+what a normal user can detect, it may not be necessary to report it...</i>)</li>
+</ul>
+</li>
+<li><b>Statistics</b>: Level of deviation of test history since the first build
+from which the test result is not included in the status file:
+<ul>
+<li>None: the test is always included in the status file whatever the deviation
+is</li>
+<li>Unstable: the test is not included when the deviation is over 10%</li>
+<li>Erratic: the test is not included when the error level is over 20%</li>
+</ul>
+</li>
+<li><b>Builds to confirm</b>: The number of builds to confirm a regression.
+As tests may have <i>natural</i> variation, it's often necessary to have several
+builds to confirm that a regression really occurs. This preference allow to
+define how many consecutive builds must show a regression before including
+a test result in the status file...
+</li>
+</ul>
+</p>
 
-<h3>Milestones</h3>
+<h3><a name="milestones">Milestones</h3>
 <p><img src="images/preferences-milestones.png" alt="Preferences Milestones"/></p>
 <p>
 These are the list of the version milestones. Each milestone is a date string
@@ -48,16 +96,19 @@ date must be added to this preference to let the tool to identify it in the buil
 list and emphasize it...
 </p>
 
-<h3>Last build</h3>
+<h3><a name="lastbuild">Last build</h3>
 <p><img src="images/preferences-lastbuild.png" alt="Preferences Last build"/></p>
 <p>
-The last build on which verifications and/or generation want to be done.
+The last build on which verifications and/or generation want to be done. When
+not set (which is the default value) the last build of the database is taken
+into account.
+</p><p>
 All builds after the selected one are ignored by the tool likewise they would
 have no local data. Changing this value will trigger the initialization of
 the local data which will be read again.
 </p>
 
-<h2>Default dimension</h2>
+<h2><a name="defaultdim">Default dimension</h2>
 <p><img src="images/preferences-default-dim.png" alt="Preferences Default dimension"/></p>
 <p>
 This is the dimension used to compute delta and make the verification. Currently
@@ -68,7 +119,7 @@ described below, hence a new selected dimensions will always be automatically
 added to the list...</i>
 </p>
 
-<h2>Results dimensions</h2>
+<h2><a name="resultsdim">Results dimensions</h2>
 <p><img src="images/preferences-results-dim.png" alt="Preferences Results dimension"/></p>
 <p>
 These are dimensions displayed in the scenario data HTML pages. Currently there

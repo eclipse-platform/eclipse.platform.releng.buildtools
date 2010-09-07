@@ -47,7 +47,8 @@ Several icons are displayed on tree element, here are their meaning.
 The red cross means that there's at least one scenario on one machine for
 the last build with a failure (i.e. a regression over 10%).
 </p><p>
-The warning icon means that some warnings occur for some results. The current possible warning are:
+The warning icon means that some warnings occur for some results.
+The current possible warning are:
 <ul>
 <li>error over the 3% threshold on test(s)</li>
 <li>unreliable test(s): the deviation through the test(s) history is over 20%</li>
@@ -88,5 +89,22 @@ As baselines results are not really useful for the survey, the filter is activat
 by default in this view. Currently the survey only concerns the fingerprints
 scenario, hence the corresponding filter is also activated by default.
 </p>
+
+<h2><a name="writestatus">Write status</h2>
+<p>
+From this view, it is also possible to write the status file for the last
+active build (see <a href="preferences.html#lastbuild">Last build</a>) by
+using the <b>Write status</b> item of the View menu:
+</p>
+<p><img src="images/write-status-menu.png" alt="Write status menu item"/></p>
+<p>
+The written status file will contain all scenarios which have failures,
+except those excluded by the status preferences set in the preferences page
+(see <a href="preferences.html#status">Status</a>)
+</p><p>
+Then it's easy to see the new regression occurring in a build when comparing
+to the previous build status file:
+</p>
+<p><img src="images/write-status-comparison.png" alt="Compare write status files"/></p>
 </body>
 </html>
