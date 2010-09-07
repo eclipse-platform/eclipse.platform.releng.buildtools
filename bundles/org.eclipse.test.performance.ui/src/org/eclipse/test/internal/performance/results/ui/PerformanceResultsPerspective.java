@@ -43,6 +43,7 @@ private void addViews() {
 			0.5f,
 			this.factory.getEditorArea());
 	bottom.addView("org.eclipse.test.internal.performance.results.ui.ComponentsResultsView");
+	bottom.addView("org.eclipse.test.internal.performance.results.ui.BuildsComparisonView");
 
 	// Components and Builds view put on perspective top left
 	IFolderLayout topLeft =
@@ -53,6 +54,7 @@ private void addViews() {
 			this.factory.getEditorArea());
 	topLeft.addView("org.eclipse.test.internal.performance.results.ui.ComponentsView"); //NON-NLS-1
 	topLeft.addView("org.eclipse.test.internal.performance.results.ui.BuildsView"); //NON-NLS-1
+	topLeft.addView(IPageLayout.ID_PROJECT_EXPLORER); //NON-NLS-1
 
 	// Properties view put on perspective top right
 	IFolderLayout topRight =
