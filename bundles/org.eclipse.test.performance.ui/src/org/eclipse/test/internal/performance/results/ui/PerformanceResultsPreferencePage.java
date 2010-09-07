@@ -903,8 +903,8 @@ public void modifyText(ModifyEvent event) {
 	if (event.getSource() == this.statusBuildsToConfirm) {
 		try {
 			int number = Integer.parseInt(this.statusBuildsToConfirm.getText());
-			if (number < 1 ) {
-				this.statusBuildsToConfirm.setText("1");
+			if (number < 0) {
+				this.statusBuildsToConfirm.setText("0");
 			} else {
 				int buildsNumber = DB_Results.getBuildsNumber();
 				if (number > buildsNumber) {
