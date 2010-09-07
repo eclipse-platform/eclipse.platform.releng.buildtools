@@ -839,8 +839,9 @@ public void modifyText(ModifyEvent event) {
 		String lastMilestone = length == 0 ? null : milestones[length-1];
 
 		// Verify that the added milestone is valid
-		final String databaseLocation = this.databaseLocationCombo.getText();
-		char version = databaseLocation.charAt(databaseLocation.length()-1);
+		char version = (char) ('0' + (this.mVersionRadioButton.getSelection()
+			? ECLIPSE_MAINTENANCE_VERSION
+			: ECLIPSE_DEVELOPMENT_VERSION) - 30);
 
 		// Verify that the milestone follow the last one
 		String milestoneName;
