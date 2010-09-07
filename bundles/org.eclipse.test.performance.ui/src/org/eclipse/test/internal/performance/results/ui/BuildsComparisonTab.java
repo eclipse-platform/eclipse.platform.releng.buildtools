@@ -97,8 +97,7 @@ public BuildsComparisonTab(String name) {
 /**
  * Creates the tab folder page.
  *
- * @param tabFolder org.eclipse.swt.widgets.TabFolder
- * @param fullSelection Tells whether the table should have a full line selection or not
+ * @param view The view on which to create the tab folder page
  * @return the new page for the tab folder
  */
 Composite createTabFolderPage (BuildsComparisonView view) {

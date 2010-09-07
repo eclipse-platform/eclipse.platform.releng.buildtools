@@ -450,9 +450,6 @@ protected IPreferenceStore doGetPreferenceStore() {
 	return UiPlugin.getDefault().getPreferenceStore();
 }
 
-/**
- * @return
- */
 String getDialogTitle() {
 	String title = DB_Results.getDbTitle();
 	if (title == null) {
@@ -689,9 +686,6 @@ private void initializeValues() {
 	*/
 }
 
-/**
- * @param store
- */
 private void initStatusValues(int writeStatus) {
 	this.statusValuesCheckBox.setSelection((writeStatus & STATUS_VALUES) != 0);
 	this.statusErrorNoneRadioButton.setSelection(false);
