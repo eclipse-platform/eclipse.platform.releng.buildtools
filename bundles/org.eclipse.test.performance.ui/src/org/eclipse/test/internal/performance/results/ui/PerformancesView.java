@@ -496,7 +496,7 @@ void readLocalFiles(final String lastBuild) {
 void refresh(String lastBuild) {
 
 	// Read local files
-	PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, null, lastBuild);
+	readLocalFiles(lastBuild);
 
 	// Refresh views
 	refreshInput();
