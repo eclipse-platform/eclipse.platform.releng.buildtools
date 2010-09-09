@@ -10,12 +10,6 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.ui;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -26,7 +20,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -96,7 +89,7 @@ public class ComponentsView extends PerformancesView {
 	};
 
 	// Views
-	PerformancesView buildsView;
+	BuildsView buildsView;
 	ComponentResultsView componentResultsView = null;
 
 	// Internal
@@ -104,13 +97,13 @@ public class ComponentsView extends PerformancesView {
 
 	// Actions
 	Action filterAdvancedScenarios;
-	Action writeStatus;
+//	Action writeStatus;
 
 	// SWT resources
 	Font boldFont;
 
 	// Write Status
-	static int WRITE_STATUS;
+//	static int WRITE_STATUS;
 
 /**
  * Default constructor.
@@ -123,7 +116,7 @@ public ComponentsView() {
 	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
 
 	// Init status
-	WRITE_STATUS = this.preferences.getInt(IPerformancesConstants.PRE_WRITE_STATUS, IPerformancesConstants.DEFAULT_WRITE_STATUS);
+//	WRITE_STATUS = this.preferences.getInt(IPerformancesConstants.PRE_WRITE_STATUS, IPerformancesConstants.DEFAULT_WRITE_STATUS);
 
 }
 
@@ -238,15 +231,15 @@ public void dispose() {
 void fillFiltersDropDown(IMenuManager manager) {
 	super.fillFiltersDropDown(manager);
 	manager.add(this.filterOldBuilds);
-	manager.add(this.filterLastBuilds);
+//	manager.add(this.filterLastBuilds);
 	manager.add(new Separator());
 	manager.add(this.filterAdvancedScenarios);
 }
 
 void fillLocalPullDown(IMenuManager manager) {
 	super.fillLocalPullDown(manager);
-	manager.add(new Separator());
-	manager.add(this.writeStatus);
+//	manager.add(new Separator());
+//	manager.add(this.writeStatus);
 }
 
 /*
@@ -280,6 +273,8 @@ Font getBoldFont(Font font) {
  */
 Object[] getElements() {
 	if (this.results == null) {
+//		String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
+//		initResults(lastBuild.length() == 0 ? null : lastBuild);
 		initResults();
 		if (this.filterAdvancedScenarios != null) {
 			this.results.setFingerprints(this.filterAdvancedScenarios.isChecked());
@@ -303,7 +298,7 @@ ComponentResultsView getResultsView() {
  */
 PerformancesView getSiblingView() {
 	if (this.buildsView == null) {
-		this.buildsView = (PerformancesView) getWorkbenchView("org.eclipse.test.internal.performance.results.ui.BuildsView");
+		this.buildsView = (BuildsView) getWorkbenchView("org.eclipse.test.internal.performance.results.ui.BuildsView");
 	}
 	return this.buildsView;
 }
@@ -325,7 +320,7 @@ void makeActions() {
 	this.filterAdvancedScenarios.setChecked(true);
 	this.filterAdvancedScenarios.setToolTipText("Filter advanced scenarios (i.e. not fingerprint ones)");
 
-	// Write status
+	/* Write status
 	this.writeStatus = new Action("Write status") {
 		public void run() {
 
@@ -339,6 +334,7 @@ void makeActions() {
 	};
 	this.writeStatus.setEnabled(true);
 	this.writeStatus.setToolTipText("Write component status to a file");
+	*/
 
 	// Set filters default
 	this.filterBaselineBuilds.setChecked(true);
@@ -366,10 +362,11 @@ public void preferenceChange(PreferenceChangeEvent event) {
 		this.filterOldBuilds.setChecked(checked);
 	}
 
-	// Write status
+	/* Write status
 	if (propertyName.equals(IPerformancesConstants.PRE_WRITE_STATUS)) {
 		WRITE_STATUS = newValue == null ? IPerformancesConstants.DEFAULT_WRITE_STATUS : Integer.parseInt((String)newValue);
 	}
+	*/
 
 	super.preferenceChange(event);
 }
@@ -441,6 +438,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 	}
 }
 
+/*
 protected void writeStatus(File writeDir) {
 	this.resultsDir = writeDir;
 	if (this.filterAdvancedScenarios.isChecked()) {
@@ -503,4 +501,5 @@ protected void writeStatus(File writeDir) {
 		e.printStackTrace();
 	}
 }
+*/
 }

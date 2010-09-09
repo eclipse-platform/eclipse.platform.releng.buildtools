@@ -213,7 +213,7 @@ public void setLastBuildName(String lastBuildName) {
 /*
  * Write the component status in the given file
  */
-public StringBuffer writeStatus(File resultsFile, int kind) {
+public StringBuffer writeFailures(File resultsFile, int kind) {
 	if (this.results == null) {
 		return null;
 	}
@@ -311,7 +311,7 @@ public StringBuffer writeStatus(File resultsFile, int kind) {
 				buffer.append(Util.LINE_SEPARATOR);
 			}
 			stream.write(buffer.toString().getBytes());
-			StringBuffer componentBuffer = writableStatus(new StringBuffer(), kind, excluded);
+			StringBuffer componentBuffer = getFailures(new StringBuffer(), kind, excluded);
 			if (componentBuffer.length() > 0) {
 				stream.write(componentBuffer.toString().getBytes());
 			}

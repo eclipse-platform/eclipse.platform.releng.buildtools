@@ -585,12 +585,12 @@ public String toString() {
 }
 
 /*
- * Write the element status in the given stream
+ * Write the failures of the element in the given buffer
  */
-StringBuffer writableStatus(StringBuffer buffer, int kind, StringBuffer excluded) {
-	int length = this.children.length;
+StringBuffer getFailures(StringBuffer buffer, int kind, StringBuffer excluded) {
+	int length = getChildren().length;
 	for (int i=0; i<length; i++) {
-		this.children[i].writableStatus(buffer, kind, excluded);
+		this.children[i].getFailures(buffer, kind, excluded);
 	}
 	return buffer;
 }

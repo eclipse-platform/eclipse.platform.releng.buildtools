@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.ui;
 
+import java.io.File;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
@@ -27,6 +28,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
 import org.eclipse.test.internal.performance.results.model.PerformanceResultsElement;
@@ -59,6 +61,7 @@ import org.eclipse.ui.part.ViewPart;
 public class BuildsComparisonView extends ViewPart implements ISelectionChangedListener, IPreferenceChangeListener {
 
 	// SWT resources
+	Shell shell;
 	CTabFolder tabFolder;
 
 	// Model information
@@ -67,6 +70,10 @@ public class BuildsComparisonView extends ViewPart implements ISelectionChangedL
 
 	// Action
 	Action filterAdvancedScenarios;
+	Action writeComparison;
+
+	// Write Status
+	static int WRITE_STATUS;
 
 	// Views
 	BuildsView buildsView;
@@ -107,6 +114,7 @@ void contributeToActionBars() {
 public void createPartControl(Composite parent) {
 
 	// Create the tab folder
+	this.shell = parent.getShell ();
 	this.tabFolder = new CTabFolder(parent, SWT.BORDER);
 
 	// Add results view as listener to viewer selection changes
@@ -193,7 +201,7 @@ void fillLocalPullDown(IMenuManager manager) {
  * 	- change line selection display
  */
 void fillLocalToolBar(IToolBarManager manager) {
-	//manager.add(this.fullLineSelection);
+	manager.add(this.writeComparison);
 }
 
 /*
@@ -243,6 +251,22 @@ void makeActions() {
 	};
 	this.filterAdvancedScenarios.setChecked(true);
 	this.filterAdvancedScenarios.setToolTipText("Filter advanced scenarios (i.e. not fingerprint ones)");
+
+	// Write comparison
+	this.writeComparison = new Action("Write comparison") {
+		public void run() {
+
+			// Get write directory
+			BuildsView bView = getBuildsView();
+			String filter = (bView.resultsDir == null) ? null : bView.resultsDir.getPath();
+			final File writeDir = bView.changeDir(filter, "Select a directory to write the comparison between two builds");
+			if (writeDir != null) {
+				writeComparison(writeDir);
+			}
+        }
+	};
+	this.writeComparison.setEnabled(false);
+	this.writeComparison.setToolTipText("Write comparison between two builds");
 }
 
 /* (non-Javadoc)
@@ -340,6 +364,36 @@ public void selectionChanged(SelectionChangedEvent event) {
  */
 public void setFocus() {
 	// do nothing
+}
+
+protected void writeComparison(File writeDir) {
+	getBuildsView().resultsDir = writeDir;
+	writeDir = new File(writeDir, "values");
+	if (this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, false)) {
+		writeDir = new File(writeDir, "fingerprints");
+	} else {
+		writeDir = new File(writeDir, "all");
+	}
+	writeDir.mkdirs();
+	String buildDate = this.currentBuild.substring(1);
+	String buildPrefix = "Comparison" + buildDate + "_" + this.currentBuild.charAt(0);
+	File resultsFile = new File(writeDir, buildPrefix+".html");
+	if (resultsFile.exists()) {
+		int i=0;
+		File saveDir = new File(writeDir, "save");
+		saveDir.mkdir();
+		while (true) {
+			String newFileName = buildPrefix+"_";
+			if (i<10) newFileName += "0";
+			newFileName += i;
+			File renamedFile = new File(saveDir, newFileName+".html");
+			if (resultsFile.renameTo(renamedFile)) {
+				break;
+			}
+			i++;
+		}
+	}
+	this.results.writeComparison(resultsFile, this.currentBuild, this.referenceBuild);
 }
 
 }

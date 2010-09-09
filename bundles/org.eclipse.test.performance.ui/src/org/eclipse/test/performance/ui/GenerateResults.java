@@ -185,14 +185,11 @@ PerformanceResults performanceResults;
 public GenerateResults() {
 }
 
-public GenerateResults(PerformanceResults results, String current, String baseline, boolean fingerprints, File data, File output) {
+public GenerateResults(boolean fingerprints, File data) {
 	this.dataDir = data;
-	this.outputDir = output;
 	this.genFingerPrints = fingerprints;
 	this.genAll = !fingerprints;
-	this.performanceResults = results;
 	this.printStream = System.out;
-	setDefaults(current, baseline);
 }
 
 /*
@@ -824,17 +821,24 @@ private void printUsage() {
  */
 public IStatus run(String[] args) {
 	parse(args);
-	return run((IProgressMonitor) null);
+	return generate(null);
 }
 
 /**
- * Run the generation using a progress monitor.
+ * Run the generation.
+ */
+public IStatus run(PerformanceResults results, String buildName, String baseline, File output, final IProgressMonitor monitor) {
+	this.performanceResults = results;
+	this.outputDir = output;
+	setDefaults(buildName, baseline);
+	return generate(monitor);
+}
+
+/*
  * Note that all necessary information to generate properly must be set before
  * calling this method
- *
- * @see #run(String[])
  */
-public IStatus run(final IProgressMonitor monitor) {
+private IStatus generate(final IProgressMonitor monitor) {
 	long begin = System.currentTimeMillis();
 	int work = 1100;
     int dataWork = 1000 * this.performanceResults.getConfigBoxes(false).length;
@@ -842,6 +846,7 @@ public IStatus run(final IProgressMonitor monitor) {
 	    work += dataWork;
     }
 	SubMonitor subMonitor = SubMonitor.convert(monitor, work);
+	subMonitor.setTaskName("Generate perf results for build "+this.performanceResults.getName());
 	try {
 
 		// Print whole scenarios summary
@@ -913,8 +918,9 @@ public IStatus run(final IProgressMonitor monitor) {
 			this.printStream.print("	- components main page");
 		}
 		long start = System.currentTimeMillis();
-		subMonitor.setTaskName("Write fingerprints: 0%");
-		subMonitor.subTask("Global...");
+//		subMonitor.setTaskName("Write fingerprints: 0%");
+//		subMonitor.subTask("Global...");
+		subMonitor.subTask("Write fingerprints: global (0%)...");
 		printComponent(/*performanceResults, */"global_fp");
 		subMonitor.worked(100);
 		if (subMonitor.isCanceled()) throw new OperationCanceledException();
@@ -924,8 +930,9 @@ public IStatus run(final IProgressMonitor monitor) {
 		int progress = 0;
 		for (int i=0; i<length; i++) {
 			int percentage = (int) ((progress / ((double) length)) * 100);
-			subMonitor.setTaskName("Write fingerprints: "+percentage+"%");
-			subMonitor.subTask(components[i]+"...");
+//			subMonitor.setTaskName("Write fingerprints: "+percentage+"%");
+//			subMonitor.subTask(components[i]+"...");
+			subMonitor.subTask("Write fingerprints: "+components[i]+" ("+percentage+"%)...");
 			printComponent(/*performanceResults, */components[i]);
 			subMonitor.worked(step);
 			if (subMonitor.isCanceled()) throw new OperationCanceledException();

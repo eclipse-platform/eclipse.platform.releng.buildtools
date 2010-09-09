@@ -11,7 +11,12 @@
 package org.eclipse.test.internal.performance.results.ui;
 
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -114,45 +119,17 @@ public class BuildsView extends PerformancesView {
 			final boolean fingerprints = MessageDialog.openQuestion(BuildsView.this.shell, getTitleToolTip(), "Generate only fingerprints?");
 
 			// Generate all selected builds
-			int length = BuildsView.this.buildsResults.length;
-			for (int i = 0; i < length; i++) {
-				generate(i, baselineName, fingerprints);
-			}
-		}
-
-		/*
-		 * Generate the HTML pages.
-		 */
-		private void generate(int i, final String baselineName, final boolean fingerprints) {
-			// Create output directory
-			final String buildName = BuildsView.this.buildsResults[i].getName();
-			final File genDir = new File(BuildsView.this.outputDir, buildName);
-			if (!genDir.exists() && !genDir.mkdir()) {
-				MessageDialog.openError(BuildsView.this.shell, getTitleToolTip(), "Cannot create " + genDir.getPath() + " to generate results!");
-				return;
-			}
-
-			// Create runnable
 			IRunnableWithProgress runnable = new IRunnableWithProgress() {
-
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 					try {
-						monitor.beginTask("Generate performance results", 10000);
-						GenerateResults generation = new GenerateResults(BuildsView.this.results.getPerformanceResults(),
-						    buildName,
-						    baselineName,
-						    fingerprints,
-						    BuildsView.this.dataDir,
-						    genDir);
-						GenerateAction.this.status = generation.run(monitor);
+						monitor.beginTask("Generate performance results", BuildsView.this.buildsResults.length*2);
+						generate(baselineName, fingerprints, monitor);
 						monitor.done();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}
 			};
-
-			// Run with progress monitor
 			ProgressMonitorDialog readProgress = new ProgressMonitorDialog(getSite().getShell());
 			try {
 				readProgress.run(true, true, runnable);
@@ -160,6 +137,54 @@ public class BuildsView extends PerformancesView {
 				// skip
 			} catch (InterruptedException e) {
 				// skip
+			}
+
+		}
+
+		void generate(final String baselineName, final boolean fingerprints, IProgressMonitor monitor) {
+
+			// Generate result for the build
+			GenerateResults generation = new GenerateResults(fingerprints, BuildsView.this.dataDir);
+
+			// Loop on selected builds
+			final String lastBuildName = BuildsView.this.lastBuild == null ? DB_Results.getLastCurrentBuild() : BuildsView.this.lastBuild;
+			String previousBuild = lastBuildName;
+			int length = BuildsView.this.buildsResults.length;
+			for (int i=0; i<length; i++) {
+
+				BuildResultsElement currentBuild = BuildsView.this.buildsResults[i];
+				String buildName = currentBuild.getName();
+				monitor.setTaskName("Generate perf results for build "+buildName);
+
+				// Create output directory
+				File genDir = new File(BuildsView.this.outputDir, buildName);
+				if (!genDir.exists() && !genDir.mkdir()) {
+					MessageDialog.openError(BuildsView.this.shell, getTitleToolTip(), "Cannot create " + genDir.getPath() + " to generate results!");
+					return;
+				}
+
+				// See if it's necessary to refresh data
+				if (!buildName.equals(previousBuild)) {
+					monitor.subTask("Get local data...");
+					BuildsView.this.results.readLocal(BuildsView.this.dataDir, null, buildName);
+					monitor.worked(1);
+				}
+
+				// Generate result for the build
+				GenerateAction.this.status = generation.run(BuildsView.this.results.getPerformanceResults(), buildName, baselineName, genDir, monitor);
+
+				// Store previous build
+				previousBuild = buildName;
+				if (monitor.isCanceled()) {
+					break;
+				}
+			}
+
+			// Refresh data if necessary
+			if (!lastBuildName.equals(previousBuild)) {
+				monitor.subTask("Put back local data for "+lastBuildName+"...");
+				BuildsView.this.results.readLocal(BuildsView.this.dataDir, null, BuildsView.this.lastBuild);
+				monitor.worked(1);
 			}
 
 			// Results
@@ -202,7 +227,7 @@ public class BuildsView extends PerformancesView {
 
 			// Verify that directories are set
 			if (BuildsView.this.dataDir == null) {
-				if (changeDataDir() == null) {
+				if (changeDataDir(null) == null) {
 					if (!MessageDialog.openConfirm(BuildsView.this.shell, getTitleToolTip(), "No local files directory is set, hence the update could not be written! OK to continue?")) {
 						return;
 					}
@@ -275,11 +300,12 @@ public class BuildsView extends PerformancesView {
 	}
 
 	// Views
-	PerformancesView componentsView;
+	ComponentsView componentsView;
 	BuildsComparisonView buildsComparisonView = null;
 
 	// Results model
 	BuildResultsElement[] buildsResults;
+	String lastBuild;
 
 	// Directories
 	File outputDir;
@@ -288,7 +314,7 @@ public class BuildsView extends PerformancesView {
 	Action generate;
 	UpdateBuildAction updateBuild, updateAllBuilds;
 //	UpdateBuildAction forceUpdateBuild, forceUpdateAllBuilds;
-	Action writeComparison;
+	Action writeBuildsFailures;
 
 	// SWT resources
 	Font italicFont;
@@ -299,6 +325,13 @@ public class BuildsView extends PerformancesView {
 public BuildsView() {
 	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
 	this.preferences.addPreferenceChangeListener(this);
+
+	/* Init last build
+	this.lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
+	if (this.lastBuild.length() == 0) {
+		this.lastBuild = null;
+	}
+	*/
 }
 
 /*
@@ -420,7 +453,7 @@ void fillContextMenu(IMenuManager manager) {
 	manager.add(this.updateBuild);
 //	manager.add(this.forceUpdateBuild);
 	manager.add(new Separator());
-	manager.add(this.writeComparison);
+	manager.add(this.writeBuildsFailures);
 }
 
 /*
@@ -429,7 +462,7 @@ void fillContextMenu(IMenuManager manager) {
  */
 void fillFiltersDropDown(IMenuManager manager) {
 	super.fillFiltersDropDown(manager);
-	manager.add(this.filterLastBuilds);
+//	manager.add(this.filterLastBuilds);
 }
 
 /*
@@ -447,6 +480,7 @@ void fillLocalDataDropDown(IMenuManager manager) {
  */
 Object[] getBuilds() {
 	if (this.results == null) {
+//		initResults(this.lastBuild);
 		initResults();
 	}
 	return this.results.getBuilds();
@@ -467,7 +501,7 @@ BuildsComparisonView getComparisonView() {
  */
 PerformancesView getSiblingView() {
 	if (this.componentsView == null) {
-		this.componentsView = (PerformancesView) getWorkbenchView("org.eclipse.test.internal.performance.results.ui.ComponentsView");
+		this.componentsView = (ComponentsView) getWorkbenchView("org.eclipse.test.internal.performance.results.ui.ComponentsView");
 	}
 	return this.componentsView;
 }
@@ -499,20 +533,45 @@ void makeActions() {
 //	this.forceUpdateAllBuilds = new UpdateAllBuildsAction(true);
 //	this.forceUpdateAllBuilds.setText("Force Update all");
 
-	// Write values
-	this.writeComparison = new Action("Write comparison") {
+	// Write status
+	this.writeBuildsFailures = new Action("Write failures") {
 		public void run() {
-
-			// Get write directory
 			String filter = (BuildsView.this.resultsDir == null) ? null : BuildsView.this.resultsDir.getPath();
-			final File writeDir = changeDir(filter, "Select a directory to write the comparison between two builds");
+			final File writeDir = changeDir(filter, "Select a directory to write the files");
 			if (writeDir != null) {
-				writeComparison(writeDir);
+
+				// Create runnable
+				IRunnableWithProgress runnable = new IRunnableWithProgress() {
+
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						try {
+							monitor.beginTask("Write failures", BuildsView.this.buildsResults.length*2);
+							writeBuildsFailures(writeDir, monitor);
+							monitor.done();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				};
+
+				// Run with progress monitor
+				ProgressMonitorDialog readProgress = new ProgressMonitorDialog(getSite().getShell());
+				try {
+					readProgress.run(true, true, runnable);
+				} catch (InvocationTargetException e) {
+					// skip
+				} catch (InterruptedException e) {
+					// skip
+				}
+
+				// Refresh views
+				refreshInput();
+				getSiblingView().refreshInput();
 			}
         }
 	};
-	this.writeComparison.setEnabled(false);
-	this.writeComparison.setToolTipText("Write comparison between two builds");
+	this.writeBuildsFailures.setEnabled(true);
+	this.writeBuildsFailures.setToolTipText("Write component status to a file");
 
 	// Set filters default
 	this.filterBaselineBuilds.setChecked(false);
@@ -530,44 +589,49 @@ public void resetView() {
 	int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
 	boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
 	String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
-	String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-	boolean noLastBuild = lastBuild.length() == 0;
+//	String lastBuildValue = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
+//	boolean noLastBuild = lastBuildValue.length() == 0;
 	if (debug) {
 		System.out.println("Reset View:");
 		System.out.println("	- eclispe version = "+eclipseVersion);
 		System.out.println("	- connected       = "+connected);
 		System.out.println("	- db location     = "+databaseLocation);
-		System.out.println("	- last build      = "+(noLastBuild?"<none>":lastBuild));
+//		System.out.println("	- last build      = "+(noLastBuild?"<none>":lastBuildValue));
 	}
 	final boolean sameVersion = DB_Results.getDbVersion().endsWith(Integer.toString(eclipseVersion));
 	final boolean sameConnection = connected == DB_Results.DB_CONNECTION;
 	final boolean sameDB = sameVersion && databaseLocation.equals(DB_Results.getDbLocation());
-	boolean sameLastBuild = (noLastBuild && LAST_BUILD == null) || lastBuild.equals(LAST_BUILD);
+//	boolean sameLastBuild = (noLastBuild && this.lastBuild == null) || lastBuildValue.equals(this.lastBuild);
 	if (debug) {
 		System.out.println("	- same version:    "+sameVersion);
 		System.out.println("	- same connection: "+sameConnection);
 		System.out.println("	- same DB:         "+sameDB);
-		System.out.println("	- same last build: "+sameLastBuild);
+//		System.out.println("	- same last build: "+sameLastBuild);
 	}
 	final PerformancesView siblingView = getSiblingView();
 	if (sameConnection && sameDB) {
-		if (!sameLastBuild) {
-			// Set last build
-			LAST_BUILD = noLastBuild ? null : lastBuild;
-			this.results.setLastBuildName(LAST_BUILD);
-			siblingView.results.setLastBuildName(LAST_BUILD);
-
-			// Reset views content
-			resetInput();
-			siblingView.resetInput();
-
-			// May be read local data now
-			File newDataDir = changeDataDir();
-			if (newDataDir == null) {
-				this.dataDir = null;
-				siblingView.dataDir = null;
-			}
-		}
+//		if (!sameLastBuild) {
+//			// Set last build
+//			this.lastBuild = noLastBuild ? null : lastBuildValue;
+//			this.results.setLastBuildName(this.lastBuild);
+//			siblingView.results.setLastBuildName(this.lastBuild);
+//
+//			// Reset views content
+//			resetInput();
+//			siblingView.resetInput();
+//
+//			// May be read local data now
+//			/*
+//			File newDataDir = changeDataDir(this.lastBuild);
+//			if (newDataDir == null) {
+//				this.dataDir = null;
+//				siblingView.dataDir = null;
+//			}
+//			*/
+//
+//			// Refresh views
+//			refresh(this.lastBuild);
+//		}
 		// No database preferences has changed do nothing
 		return;
 	}
@@ -593,7 +657,7 @@ public void resetView() {
 	siblingView.setTitleToolTip();
 
 	// Refresh view
-	if (sameVersion && sameLastBuild) {
+	if (sameVersion /*&& sameLastBuild*/) {
 		// Refresh only builds view as the sibling view (Components) contents is based on local data files contents
 		this.results.resetBuildNames();
 		refreshInput();
@@ -604,7 +668,7 @@ public void resetView() {
 
 		// May be read local data now
 		if (MessageDialog.openQuestion(this.shell, getTitleToolTip(), "Do you want to read local data right now?")) {
-			changeDataDir();
+			changeDataDir(this.lastBuild);
 		} else {
 			this.dataDir = null;
 			siblingView.dataDir = null;
@@ -626,7 +690,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 	// Update selected element
 	Object selection = this.viewer.getSelection();
 	int length = 0;
-	this.writeComparison.setEnabled(false);
+	this.writeBuildsFailures.setEnabled(false);
 	if (selection instanceof IStructuredSelection) {
 		Object[] elements = ((IStructuredSelection)selection).toArray();
 		length = elements == null ? 0 : elements.length;
@@ -638,7 +702,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 		for (int i=0; i<length; i++) {
 			this.buildsResults[i] = (BuildResultsElement) elements[i];
 		}
-		this.writeComparison.setEnabled(length==2);
+		this.writeBuildsFailures.setEnabled(true);
 	} else {
 		return;
 	}
@@ -677,7 +741,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 
 void updateAllBuilds(IProgressMonitor monitor, boolean force) {
 	if (this.dataDir == null) {
-		changeDataDir();
+		changeDataDir(null);
 	}
 	String[] builds = buildsToUpdate();
 	if (builds == null) {
@@ -689,7 +753,7 @@ void updateAllBuilds(IProgressMonitor monitor, boolean force) {
 
 void updateBuilds(IProgressMonitor monitor, boolean force) {
 	if (this.dataDir == null) {
-		changeDataDir();
+		changeDataDir(null);
 	}
 	int length = this.buildsResults.length;
 	String[] builds = new String[length];
@@ -699,19 +763,72 @@ void updateBuilds(IProgressMonitor monitor, boolean force) {
 	this.results.updateBuilds(builds, force, this.dataDir, monitor);
 }
 
-protected void writeComparison(File writeDir) {
+protected void writeBuildsFailures(File writeDir, IProgressMonitor monitor) {
+
+	// Loop on selected builds
+	final String lastBuildName = this.lastBuild == null ? DB_Results.getLastCurrentBuild() : this.lastBuild;
+	String previousBuild = lastBuildName;
+	int length = this.buildsResults.length;
+	for (int i=0; i<length; i++) {
+
+		// See if it's necessary to refresh data
+		BuildResultsElement currentBuild = this.buildsResults[i];
+		String currentBuildName = currentBuild.getName();
+		monitor.setTaskName("Write failures for build "+currentBuildName);
+		if (!currentBuildName.equals(previousBuild)) {
+			monitor.subTask("read local files...");
+			this.results.readLocal(this.dataDir, null, currentBuildName);
+			monitor.worked(1);
+		}
+
+		// Write the failures for the selected build
+		monitor.subTask("write file...");
+		writeFailures(writeDir, currentBuildName);
+		monitor.worked(1);
+
+		// Store previous build
+		previousBuild = currentBuildName;
+		if (monitor.isCanceled()) {
+			return;
+		}
+	}
+
+	// Refresh data if necessary
+	if (!lastBuildName.equals(previousBuild)) {
+		monitor.subTask("read local files...");
+		this.results.readLocal(this.dataDir, null, this.lastBuild);
+		monitor.worked(1);
+	}
+}
+
+protected void writeFailures(File writeDir, String buildName) {
+
+	// Set the write directory
 	this.resultsDir = writeDir;
-	writeDir = new File(writeDir, "values");
-	if (this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, false)) {
+	boolean filterAdvancedScenarios = 	this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
+	if (filterAdvancedScenarios) {
 		writeDir = new File(writeDir, "fingerprints");
 	} else {
 		writeDir = new File(writeDir, "all");
 	}
+	writeDir.mkdir();
+	int writeStatusValue = this.preferences.getInt(IPerformancesConstants.PRE_WRITE_STATUS, IPerformancesConstants.DEFAULT_WRITE_STATUS);
+	if ((writeStatusValue & IPerformancesConstants.STATUS_VALUES) != 0) {
+		writeDir = new File(writeDir, "values");
+	}
+	int buildsNumber = writeStatusValue & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
+	if (buildsNumber > 1) {
+		writeDir = new File(writeDir, Integer.toString(buildsNumber));
+	}
 	writeDir.mkdirs();
-	final String buildName = this.buildsResults[0].getName();
+
+	// Create the written file
 	String buildDate = buildName.substring(1);
-	String buildPrefix = "Comparison" + buildDate + "_" + buildName.charAt(0);
-	File resultsFile = new File(writeDir, buildPrefix+".html");
+	String buildPrefix = buildDate + "_" + buildName.charAt(0);
+	File resultsFile = new File(writeDir, buildPrefix+".log");
+	File exclusionDir = new File(writeDir, "excluded");
+	exclusionDir.mkdir();
+	File exclusionFile = new File(exclusionDir, buildPrefix+".log");
 	if (resultsFile.exists()) {
 		int i=0;
 		File saveDir = new File(writeDir, "save");
@@ -720,14 +837,36 @@ protected void writeComparison(File writeDir) {
 			String newFileName = buildPrefix+"_";
 			if (i<10) newFileName += "0";
 			newFileName += i;
-			File renamedFile = new File(saveDir, newFileName+".html");
+			File renamedFile = new File(saveDir, newFileName+".log");
 			if (resultsFile.renameTo(renamedFile)) {
+				File renamedExclusionFile = new File(exclusionDir, newFileName+".log");
+				exclusionFile.renameTo(renamedExclusionFile);
 				break;
 			}
 			i++;
 		}
 	}
-	this.results.writeComparison(resultsFile, buildName, this.buildsResults[1].getName());
+
+	// Write status
+	StringBuffer excluded = this.results.writeFailures(resultsFile, writeStatusValue);
+	if (excluded == null) {
+		MessageDialog.openWarning(this.shell, getTitleToolTip(), "The component is not read, hence no results can be written!");
+	}
+
+	// Write exclusion file
+	try {
+		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(exclusionFile)));
+		try {
+			stream.write(excluded.toString().getBytes());
+		}
+		finally {
+			stream.close();
+		}
+	} catch (FileNotFoundException e) {
+		System.err.println("Can't create exclusion file"+exclusionFile); //$NON-NLS-1$
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
 }
 
 }

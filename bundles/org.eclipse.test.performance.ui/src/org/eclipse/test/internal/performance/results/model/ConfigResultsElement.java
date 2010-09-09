@@ -277,7 +277,7 @@ void initStatus() {
 /*
  * Write the element status in the given stream
  */
-StringBuffer writableStatus(StringBuffer buffer, int kind, StringBuffer excluded) {
+StringBuffer getFailures(StringBuffer buffer, int kind, StringBuffer excluded) {
 	if ((this.status & BIG_DELTA) != 0) { // there's a failure on this config
 
 		// Get numbers

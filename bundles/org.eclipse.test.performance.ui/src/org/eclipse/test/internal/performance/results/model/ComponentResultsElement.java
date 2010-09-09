@@ -201,12 +201,12 @@ void initStatus() {
 	}
 }
 
-StringBuffer writableStatus(StringBuffer buffer, int kind, StringBuffer excluded) {
+StringBuffer getFailures(StringBuffer buffer, int kind, StringBuffer excluded) {
 	// Write status for scenarios having error
 	if ((getStatus() & ERROR_MASK) != 0) {
 
 		// Get children status
-		StringBuffer childrenBuffer = super.writableStatus(new StringBuffer(), kind, excluded);
+		StringBuffer childrenBuffer = super.getFailures(new StringBuffer(), kind, excluded);
 
 		// Write status on file if not excluded
 		if (childrenBuffer.length() > 0) {

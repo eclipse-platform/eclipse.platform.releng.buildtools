@@ -115,16 +115,18 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	        return true;
         }
 	};
-	static String LAST_BUILD;
-	final static ViewerFilter FILTER_LAST_BUILDS = new ViewerFilter() {
+//	String lastBuild;
+	/*
+	final ViewerFilter lastBuildsFilter = new ViewerFilter() {
 		public boolean select(Viewer v, Object parentElement, Object element) {
-			if (LAST_BUILD != null && element instanceof BuildResultsElement) {
+			if (hasLastBuild() && element instanceof BuildResultsElement) {
 				BuildResultsElement buildElement = (BuildResultsElement) element;
-				return buildElement.isBefore(LAST_BUILD);
+				return buildElement.isBefore(getLastBuild());
 			}
 	        return true;
         }
 	};
+	*/
 	Set viewFilters = new HashSet();
 
 	// SWT resources
@@ -148,7 +150,7 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	Action filterBaselineBuilds;
 	Action filterNightlyBuilds;
 	Action filterOldBuilds;
-	Action filterLastBuilds;
+//	Action filterLastBuilds;
 //	Action dbConnection;
 
 	// Eclipse preferences
@@ -200,12 +202,15 @@ public PerformancesView() {
 	// Init milestones
 	Util.initMilestones(this.preferences);
 
-	// Init last build
-	String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-	LAST_BUILD = lastBuild == null || lastBuild.length() == 0 ? null : lastBuild;
+	/* Init last build
+	this.lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
+	if (this.lastBuild.length() == 0) {
+		this.lastBuild = null;
+	}
+	*/
 }
 
-File changeDataDir() {
+File changeDataDir(String lastBuild) {
 	String localDataDir = this.preferences.get(IPerformancesConstants.PRE_LOCAL_DATA_DIR, "");
 	String filter = (this.dataDir == null) ? localDataDir : this.dataDir.getPath();
 	File dir = this.dataDir;
@@ -220,20 +225,13 @@ File changeDataDir() {
 		}
 		if (refresh) {
 			// Confirm the read when there's a last build set
-			if (LAST_BUILD != null) {
-				if (!MessageDialog.openConfirm(PerformancesView.this.shell, getTitleToolTip(), "Only builds before "+LAST_BUILD+" will be taken into account!\nDo you want to continue?")) {
+			if (lastBuild != null) {
+				if (!MessageDialog.openConfirm(PerformancesView.this.shell, getTitleToolTip(), "Only builds before "+lastBuild+" will be taken into account!\nDo you want to continue?")) {
 					return null;
 				}
 			}
-
-			// Read local files
-			readLocalFiles();
-
-			// Refresh views
-			refreshInput();
-			PerformancesView resultsView = getSiblingView();
-			resultsView.refreshInput();
-			return resultsView.dataDir = this.dataDir;
+			refresh(lastBuild);
+			return getSiblingView().dataDir = this.dataDir;
 		}
 	}
 	return null;
@@ -325,16 +323,17 @@ void fillLocalToolBar(IToolBarManager manager) {
 
 /*
  * Filter non fingerprints scenarios action run.
- */
+ *
 void filterLastBuilds(boolean filter, boolean updatePreference) {
 	if (filter) {
-		this.viewFilters.add(FILTER_LAST_BUILDS);
+		this.viewFilters.add(this.lastBuildsFilter);
 	} else {
-		this.viewFilters.remove(FILTER_LAST_BUILDS);
+		this.viewFilters.remove(this.lastBuildsFilter);
 	}
 	this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_LAST_BUILDS, filter);
 	updateFilters();
 }
+*/
 
 /*
  * Filter non milestone builds action run.
@@ -428,6 +427,7 @@ public void init(IViewSite site, IMemento memento) throws PartInitException {
 /*
  * Init results
  */
+//void initResults(String lastBuild) {
 void initResults() {
 	this.results = PerformanceResultsElement.PERF_RESULTS_MODEL;
 	if (this.results.isInitialized()) {
@@ -438,7 +438,8 @@ void initResults() {
 			File dir = new File(localDataDir);
 			if (dir.exists() && dir.isDirectory()) {
 				this.dataDir = dir;
-				readLocalFiles();
+//				readLocalFiles(lastBuild);
+				readLocalFiles(null);
 			}
 		}
 	}
@@ -452,7 +453,7 @@ void makeActions() {
 	// Change data dir action
 	this.changeDataDir = new Action("&Read...") {
 		public void run() {
-			changeDataDir();
+			changeDataDir(null);
 		}
 	};
 	this.changeDataDir.setToolTipText("Change the directory of the local data files");
@@ -489,18 +490,18 @@ void makeActions() {
 	this.filterOldBuilds.setToolTipText("Filter old builds (i.e. before last milestone) but keep all previous milestones)");
 
 	// Filter non-important builds action
-	this.filterLastBuilds = new Action("&Last Builds", IAction.AS_CHECK_BOX) {
-		public void run() {
-			filterLastBuilds(isChecked(), true/*update preference*/);
-		}
-	};
-	final String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-	this.filterLastBuilds.setChecked(false);
-	if (lastBuild == null) {
-		this.filterLastBuilds.setEnabled(false);
-	} else {
-		this.filterLastBuilds.setToolTipText("Filter last builds (i.e. after "+lastBuild+" build)");
-	}
+//	this.filterLastBuilds = new Action("&Last Builds", IAction.AS_CHECK_BOX) {
+//		public void run() {
+//			filterLastBuilds(isChecked(), true/*update preference*/);
+//		}
+//	};
+//	final String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
+//	this.filterLastBuilds.setChecked(false);
+//	if (this.lastBuild == null) {
+//		this.filterLastBuilds.setEnabled(false);
+//	} else {
+//		this.filterLastBuilds.setToolTipText("Filter last builds (i.e. after "+this.lastBuild+" build)");
+//	}
 }
 
 /* (non-Javadoc)
@@ -536,7 +537,7 @@ public void preferenceChange(PreferenceChangeEvent event) {
 //		setTitleToolTip();
 	}
 
-	// Last build
+	/* Last build
 	if (propertyName.equals(IPerformancesConstants.PRE_LAST_BUILD)) {
 //		if (newValue == null || newValue.length() == 0) {
 //			this.filterLastBuilds.setEnabled(false);
@@ -547,19 +548,20 @@ public void preferenceChange(PreferenceChangeEvent event) {
 //			LAST_BUILD = newValue;
 //		}
 	}
+	*/
 }
 
 /*
  * Read local files
  */
-void readLocalFiles() {
+void readLocalFiles(final String lastBuild) {
 
 	// Create runnable to read local files
 	IRunnableWithProgress runnable = new IRunnableWithProgress() {
 		public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 			try {
 				monitor.beginTask("Read local files", 1000);
-				PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor, LAST_BUILD);
+				PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor, lastBuild);
 				monitor.done();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -576,6 +578,19 @@ void readLocalFiles() {
 	} catch (InterruptedException e) {
 		// skip
 	}
+}
+
+/*
+ * Refresh the views.
+ */
+void refresh(String lastBuild) {
+
+	// Read local files
+	PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, null, lastBuild);
+
+	// Refresh views
+	refreshInput();
+	getSiblingView().refreshInput();
 }
 
 /*
@@ -629,11 +644,11 @@ void restoreState() {
 	}
 
 	// Filter last builds action state
-	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_LAST_BUILDS, IPerformancesConstants.DEFAULT_FILTER_LAST_BUILDS);
-	this.filterLastBuilds.setChecked(checked);
-	if (checked) {
-		this.viewFilters.add(FILTER_LAST_BUILDS);
-	}
+//	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_LAST_BUILDS, IPerformancesConstants.DEFAULT_FILTER_LAST_BUILDS);
+//	this.filterLastBuilds.setChecked(checked);
+//	if (checked) {
+//		this.viewFilters.add(this.lastBuildsFilter);
+//	}
 }
 
 public void saveState(IMemento memento) {
