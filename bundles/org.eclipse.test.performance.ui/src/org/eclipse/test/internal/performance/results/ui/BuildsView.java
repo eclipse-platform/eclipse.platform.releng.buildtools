@@ -325,13 +325,6 @@ public class BuildsView extends PerformancesView {
 public BuildsView() {
 	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
 	this.preferences.addPreferenceChangeListener(this);
-
-	/* Init last build
-	this.lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-	if (this.lastBuild.length() == 0) {
-		this.lastBuild = null;
-	}
-	*/
 }
 
 /*
@@ -454,15 +447,6 @@ void fillContextMenu(IMenuManager manager) {
 //	manager.add(this.forceUpdateBuild);
 	manager.add(new Separator());
 	manager.add(this.writeBuildsFailures);
-}
-
-/*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#fillLocalPullDown(org.eclipse.jface.action.IMenuManager)
- */
-void fillFiltersDropDown(IMenuManager manager) {
-	super.fillFiltersDropDown(manager);
-//	manager.add(this.filterLastBuilds);
 }
 
 /*
@@ -589,49 +573,22 @@ public void resetView() {
 	int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
 	boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
 	String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
-//	String lastBuildValue = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-//	boolean noLastBuild = lastBuildValue.length() == 0;
 	if (debug) {
 		System.out.println("Reset View:");
 		System.out.println("	- eclispe version = "+eclipseVersion);
 		System.out.println("	- connected       = "+connected);
 		System.out.println("	- db location     = "+databaseLocation);
-//		System.out.println("	- last build      = "+(noLastBuild?"<none>":lastBuildValue));
 	}
 	final boolean sameVersion = DB_Results.getDbVersion().endsWith(Integer.toString(eclipseVersion));
 	final boolean sameConnection = connected == DB_Results.DB_CONNECTION;
 	final boolean sameDB = sameVersion && databaseLocation.equals(DB_Results.getDbLocation());
-//	boolean sameLastBuild = (noLastBuild && this.lastBuild == null) || lastBuildValue.equals(this.lastBuild);
 	if (debug) {
 		System.out.println("	- same version:    "+sameVersion);
 		System.out.println("	- same connection: "+sameConnection);
 		System.out.println("	- same DB:         "+sameDB);
-//		System.out.println("	- same last build: "+sameLastBuild);
 	}
 	final PerformancesView siblingView = getSiblingView();
 	if (sameConnection && sameDB) {
-//		if (!sameLastBuild) {
-//			// Set last build
-//			this.lastBuild = noLastBuild ? null : lastBuildValue;
-//			this.results.setLastBuildName(this.lastBuild);
-//			siblingView.results.setLastBuildName(this.lastBuild);
-//
-//			// Reset views content
-//			resetInput();
-//			siblingView.resetInput();
-//
-//			// May be read local data now
-//			/*
-//			File newDataDir = changeDataDir(this.lastBuild);
-//			if (newDataDir == null) {
-//				this.dataDir = null;
-//				siblingView.dataDir = null;
-//			}
-//			*/
-//
-//			// Refresh views
-//			refresh(this.lastBuild);
-//		}
 		// No database preferences has changed do nothing
 		return;
 	}
@@ -657,7 +614,7 @@ public void resetView() {
 	siblingView.setTitleToolTip();
 
 	// Refresh view
-	if (sameVersion /*&& sameLastBuild*/) {
+	if (sameVersion) {
 		// Refresh only builds view as the sibling view (Components) contents is based on local data files contents
 		this.results.resetBuildNames();
 		refreshInput();

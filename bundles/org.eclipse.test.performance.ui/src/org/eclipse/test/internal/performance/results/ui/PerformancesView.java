@@ -20,9 +20,9 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -115,18 +115,6 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	        return true;
         }
 	};
-//	String lastBuild;
-	/*
-	final ViewerFilter lastBuildsFilter = new ViewerFilter() {
-		public boolean select(Viewer v, Object parentElement, Object element) {
-			if (hasLastBuild() && element instanceof BuildResultsElement) {
-				BuildResultsElement buildElement = (BuildResultsElement) element;
-				return buildElement.isBefore(getLastBuild());
-			}
-	        return true;
-        }
-	};
-	*/
 	Set viewFilters = new HashSet();
 
 	// SWT resources
@@ -150,7 +138,6 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	Action filterBaselineBuilds;
 	Action filterNightlyBuilds;
 	Action filterOldBuilds;
-//	Action filterLastBuilds;
 //	Action dbConnection;
 
 	// Eclipse preferences
@@ -201,13 +188,6 @@ public PerformancesView() {
 
 	// Init milestones
 	Util.initMilestones(this.preferences);
-
-	/* Init last build
-	this.lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-	if (this.lastBuild.length() == 0) {
-		this.lastBuild = null;
-	}
-	*/
 }
 
 File changeDataDir(String lastBuild) {
@@ -322,20 +302,6 @@ void fillLocalToolBar(IToolBarManager manager) {
 }
 
 /*
- * Filter non fingerprints scenarios action run.
- *
-void filterLastBuilds(boolean filter, boolean updatePreference) {
-	if (filter) {
-		this.viewFilters.add(this.lastBuildsFilter);
-	} else {
-		this.viewFilters.remove(this.lastBuildsFilter);
-	}
-	this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_LAST_BUILDS, filter);
-	updateFilters();
-}
-*/
-
-/*
  * Filter non milestone builds action run.
  */
 void filterNightlyBuilds(boolean filter, boolean updatePreference) {
@@ -427,7 +393,6 @@ public void init(IViewSite site, IMemento memento) throws PartInitException {
 /*
  * Init results
  */
-//void initResults(String lastBuild) {
 void initResults() {
 	this.results = PerformanceResultsElement.PERF_RESULTS_MODEL;
 	if (this.results.isInitialized()) {
@@ -438,7 +403,6 @@ void initResults() {
 			File dir = new File(localDataDir);
 			if (dir.exists() && dir.isDirectory()) {
 				this.dataDir = dir;
-//				readLocalFiles(lastBuild);
 				readLocalFiles(null);
 			}
 		}
@@ -488,67 +452,13 @@ void makeActions() {
 	};
 	this.filterOldBuilds.setChecked(false);
 	this.filterOldBuilds.setToolTipText("Filter old builds (i.e. before last milestone) but keep all previous milestones)");
-
-	// Filter non-important builds action
-//	this.filterLastBuilds = new Action("&Last Builds", IAction.AS_CHECK_BOX) {
-//		public void run() {
-//			filterLastBuilds(isChecked(), true/*update preference*/);
-//		}
-//	};
-//	final String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-//	this.filterLastBuilds.setChecked(false);
-//	if (this.lastBuild == null) {
-//		this.filterLastBuilds.setEnabled(false);
-//	} else {
-//		this.filterLastBuilds.setToolTipText("Filter last builds (i.e. after "+this.lastBuild+" build)");
-//	}
 }
 
 /* (non-Javadoc)
  * @see org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener#preferenceChange(org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent)
  */
 public void preferenceChange(PreferenceChangeEvent event) {
-	String propertyName = event.getKey();
-//	String newValue = (String) event.getNewValue();
-
-	// Eclipse version change
-	if (propertyName.equals(IPerformancesConstants.PRE_ECLIPSE_VERSION)) {
-//		int eclipseVersion = newValue == null ? IPerformancesConstants.DEFAULT_ECLIPSE_VERSION : Integer.parseInt(newValue);
-//		String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
-//		boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
-//		DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
-//		setTitleToolTip();
-	}
-
-	// Database location change
-	if (propertyName.equals(IPerformancesConstants.PRE_DATABASE_LOCATION)) {
-//		boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
-//		int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
-//		DB_Results.updateDbConstants(connected, eclipseVersion, newValue);
-//		setTitleToolTip();
-	}
-
-	// Database connection
-	if (propertyName.equals(IPerformancesConstants.PRE_DATABASE_CONNECTION)) {
-//		boolean connected = newValue == null ? IPerformancesConstants.DEFAULT_DATABASE_CONNECTION : newValue.equals(Boolean.TRUE);
-//		int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
-//		String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
-//		DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
-//		setTitleToolTip();
-	}
-
-	/* Last build
-	if (propertyName.equals(IPerformancesConstants.PRE_LAST_BUILD)) {
-//		if (newValue == null || newValue.length() == 0) {
-//			this.filterLastBuilds.setEnabled(false);
-//			LAST_BUILD = null;
-//		} else {
-//			this.filterLastBuilds.setEnabled(true);
-//			this.filterLastBuilds.setToolTipText("Filter last builds (i.e. after "+newValue+" build)");
-//			LAST_BUILD = newValue;
-//		}
-	}
-	*/
+	// do nothing
 }
 
 /*
@@ -642,13 +552,6 @@ void restoreState() {
 	if (checked) {
 		this.viewFilters.add(FILTER_OLD_BUILDS);
 	}
-
-	// Filter last builds action state
-//	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_LAST_BUILDS, IPerformancesConstants.DEFAULT_FILTER_LAST_BUILDS);
-//	this.filterLastBuilds.setChecked(checked);
-//	if (checked) {
-//		this.viewFilters.add(this.lastBuildsFilter);
-//	}
 }
 
 public void saveState(IMemento memento) {

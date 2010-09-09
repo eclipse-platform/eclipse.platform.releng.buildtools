@@ -244,20 +244,6 @@ protected Control createContents(Composite parent) {
 		this.milestonesCombo = createCombo(compositeMilestones);
 		this.milestonesCombo.setToolTipText("Enter the date of the milestone as yyyymmddHHMM");
 
-		/* Last build
-		StringBuffer tooltip = new StringBuffer("Select the last build to display performance results\n");
-		tooltip.append("If set then performance results won't be displayed for any build after this date...");
-		String tooltipText = tooltip.toString();
-		Composite compositeLastBuild = createComposite(parent, 3, 1);
-	//	this.lastBuildCheckBox = createCheckBox(compositeLastBuild, "Until last build");
-		createLabel(compositeLastBuild, "Last build: ", false);
-		this.lastBuildCombo = createCombo(compositeLastBuild);
-		this.lastBuildCombo.setEditable(false);
-		this.lastBuildCombo.setToolTipText(tooltipText);
-		this.lastBuildCombo.add("");
-		initBuildsList();
-		*/
-
 		// Default dimension layout
 		StringBuffer tooltip = new StringBuffer("Select the default dimension which will be used for performance results\n");
 		tooltip.append("When changed, the new selected dimension is automatically added to the dimensions list below...");
@@ -504,19 +490,6 @@ void initDimensionsLists() {
 	}
 }
 
-/*
- * Init he contents of the dimensions list controls.
- *
-private void initBuildsList() {
-	String[] builds = DB_Results.getBuilds();
-	Arrays.sort(builds, Util.BUILD_DATE_COMPARATOR);
-	int length = builds.length;
-	for (int i=length-1; i>=0; i--) {
-		this.lastBuildCombo.add(builds[i]);
-	}
-}
-*/
-
 /**
  * Initializes states of the controls using default values in the preference
  * store.
@@ -567,17 +540,6 @@ private void initializeDefaults() {
 		this.milestonesCombo.add(milestone);
 		milestone = store.getDefaultString(prefix + ++index);
 	}
-
-	/* Init last build
-	String lastBuild = store.getDefaultString(PRE_LAST_BUILD);
-//	if (lastBuild.length() == 0) {
-//		this.lastBuildCheckBox.setSelection(false);
-//		this.lastBuildCombo.setEnabled(false);
-//	} else {
-//		this.lastBuildCombo.setEnabled(true);
-//	}
-	this.lastBuildCombo.setText(lastBuild);
-	*/
 
 	// Init default default dimension
 	String defaultDimension = store.getDefaultString(PRE_DEFAULT_DIMENSION);
@@ -640,17 +602,6 @@ private void initializeValues() {
 		this.milestonesCombo.add(milestone);
 		milestone = store.getString(prefix + ++index);
 	}
-
-	/* Init last build
-	String lastBuild = store.getString(PRE_LAST_BUILD);
-//	if (lastBuild.length() == 0) {
-//		this.lastBuildCheckBox.setSelection(false);
-//		this.lastBuildCombo.setEnabled(false);
-//	} else {
-//		this.lastBuildCombo.setEnabled(true);
-//	}
-	this.lastBuildCombo.setText(lastBuild);
-	*/
 
 	// Init composite lists
 	initDimensionsLists();
@@ -774,19 +725,6 @@ public void modifyText(ModifyEvent event) {
 					int length = items.length;
 					for (int j=0; j<length; j++) {
 						if (items[j].equals(milestoneDate)) {
-							/* already existing milestone, leave silently
-							if (MessageDialog.openQuestion(getShell(), getDialogTitle(), "Do you want to select milestone "+milestoneDate+" as the last build?")) {
-								String builds[] = this.lastBuildCombo.getItems();
-								int bLength = builds.length;
-								String milestone = milestoneDate.substring(milestoneDate.indexOf('-')+1);
-								for (int b=0; b<bLength; b++) {
-									if (builds[b].length() > 0 && Util.getBuildDate(builds[b]).equals(milestone)) {
-										this.lastBuildCombo.select(b);
-										break;
-									}
-								}
-							}
-							*/
 							return;
 						}
 					}
@@ -1050,11 +988,6 @@ private void storeValues() {
 		store.putValue(prefix + count++, "");
 		milestone = store.getString(prefix + count);
 	}
-
-	/* Set last build
-	String lastBuild = this.lastBuildCombo.getText();
-	store.putValue(PRE_LAST_BUILD, lastBuild);
-	*/
 
 	// Set default dimension
 	String defaultDimension = this.defaultDimensionCombo.getText();

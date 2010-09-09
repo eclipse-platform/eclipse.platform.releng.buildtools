@@ -97,27 +97,18 @@ public class ComponentsView extends PerformancesView {
 
 	// Actions
 	Action filterAdvancedScenarios;
-//	Action writeStatus;
 
 	// SWT resources
 	Font boldFont;
-
-	// Write Status
-//	static int WRITE_STATUS;
 
 /**
  * Default constructor.
  */
 public ComponentsView() {
-//	this.onlyFingerprintsImageDescriptor = ImageDescriptor.createFromFile(getClass(), "filter_ps.gif");
 	super();
 
 	// Get preferences
 	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
-
-	// Init status
-//	WRITE_STATUS = this.preferences.getInt(IPerformancesConstants.PRE_WRITE_STATUS, IPerformancesConstants.DEFAULT_WRITE_STATUS);
-
 }
 
 /*
@@ -156,8 +147,6 @@ public void createPartControl(Composite parent) {
 		public Font getFont(Object element) {
 			Font font = super.getFont(element);
 			if (element instanceof ScenarioResultsElement) {
-//				Action fingerprints = ComponentsView.this.filterNonFingerprints;
-//				if (fingerprints != null && !fingerprints.isChecked()) {
 				boolean fingerprints = ComponentsView.this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
 				if (!fingerprints) {
 					ScenarioResultsElement scenarioElement = (ScenarioResultsElement) element;
@@ -220,7 +209,6 @@ public void dispose() {
 	if (this.boldFont != null) {
 		this.boldFont.dispose();
 	}
-//	JFaceResources.getResources().destroyImage(this.onlyFingerprintsImageDescriptor);
 	super.dispose();
 }
 
@@ -231,15 +219,8 @@ public void dispose() {
 void fillFiltersDropDown(IMenuManager manager) {
 	super.fillFiltersDropDown(manager);
 	manager.add(this.filterOldBuilds);
-//	manager.add(this.filterLastBuilds);
 	manager.add(new Separator());
 	manager.add(this.filterAdvancedScenarios);
-}
-
-void fillLocalPullDown(IMenuManager manager) {
-	super.fillLocalPullDown(manager);
-//	manager.add(new Separator());
-//	manager.add(this.writeStatus);
 }
 
 /*
@@ -273,8 +254,6 @@ Font getBoldFont(Font font) {
  */
 Object[] getElements() {
 	if (this.results == null) {
-//		String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-//		initResults(lastBuild.length() == 0 ? null : lastBuild);
 		initResults();
 		if (this.filterAdvancedScenarios != null) {
 			this.results.setFingerprints(this.filterAdvancedScenarios.isChecked());
@@ -320,22 +299,6 @@ void makeActions() {
 	this.filterAdvancedScenarios.setChecked(true);
 	this.filterAdvancedScenarios.setToolTipText("Filter advanced scenarios (i.e. not fingerprint ones)");
 
-	/* Write status
-	this.writeStatus = new Action("Write status") {
-		public void run() {
-
-			// Get write directory
-			String filter = (ComponentsView.this.resultsDir == null) ? null : ComponentsView.this.resultsDir.getPath();
-			final File writeDir = changeDir(filter, "Select a directory to write the status");
-			if (writeDir != null) {
-				writeStatus(writeDir);
-			}
-        }
-	};
-	this.writeStatus.setEnabled(true);
-	this.writeStatus.setToolTipText("Write component status to a file");
-	*/
-
 	// Set filters default
 	this.filterBaselineBuilds.setChecked(true);
 	this.filterNightlyBuilds.setChecked(false);
@@ -361,12 +324,6 @@ public void preferenceChange(PreferenceChangeEvent event) {
 		filterOldBuilds(checked, false/*do not update preference*/);
 		this.filterOldBuilds.setChecked(checked);
 	}
-
-	/* Write status
-	if (propertyName.equals(IPerformancesConstants.PRE_WRITE_STATUS)) {
-		WRITE_STATUS = newValue == null ? IPerformancesConstants.DEFAULT_WRITE_STATUS : Integer.parseInt((String)newValue);
-	}
-	*/
 
 	super.preferenceChange(event);
 }
@@ -437,69 +394,4 @@ public void selectionChanged(SelectionChangedEvent event) {
 		}
 	}
 }
-
-/*
-protected void writeStatus(File writeDir) {
-	this.resultsDir = writeDir;
-	if (this.filterAdvancedScenarios.isChecked()) {
-		writeDir = new File(writeDir, "fingerprints");
-	} else {
-		writeDir = new File(writeDir, "all");
-	}
-	writeDir.mkdir();
-	if ((WRITE_STATUS & IPerformancesConstants.STATUS_VALUES) != 0) {
-		writeDir = new File(writeDir, "values");
-	}
-	int buildsNumber = WRITE_STATUS & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
-	if (buildsNumber > 1) {
-		writeDir = new File(writeDir, Integer.toString(buildsNumber));
-	}
-	writeDir.mkdirs();
-	final String buildName = this.results.getName();
-	String buildDate = buildName.substring(1);
-	String buildPrefix = buildDate + "_" + buildName.charAt(0);
-	File resultsFile = new File(writeDir, buildPrefix+".log");
-	File exclusionDir = new File(writeDir, "excluded");
-	exclusionDir.mkdir();
-	File exclusionFile = new File(exclusionDir, buildPrefix+".log");
-	if (resultsFile.exists()) {
-		int i=0;
-		File saveDir = new File(writeDir, "save");
-		saveDir.mkdir();
-		while (true) {
-			String newFileName = buildPrefix+"_";
-			if (i<10) newFileName += "0";
-			newFileName += i;
-			File renamedFile = new File(saveDir, newFileName+".log");
-			if (resultsFile.renameTo(renamedFile)) {
-				File renamedExclusionFile = new File(exclusionDir, newFileName+".log");
-				exclusionFile.renameTo(renamedExclusionFile);
-				break;
-			}
-			i++;
-		}
-	}
-
-	// Write status
-	StringBuffer excluded = this.results.writeStatus(resultsFile, WRITE_STATUS);
-	if (excluded == null) {
-		MessageDialog.openWarning(this.shell, getTitleToolTip(), "The component is not read, hence no results can be written!");
-	}
-
-	// Write exclusion file
-	try {
-		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(exclusionFile)));
-		try {
-			stream.write(excluded.toString().getBytes());
-		}
-		finally {
-			stream.close();
-		}
-	} catch (FileNotFoundException e) {
-		System.err.println("Can't create exclusion file"+exclusionFile); //$NON-NLS-1$
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
-}
-*/
 }
