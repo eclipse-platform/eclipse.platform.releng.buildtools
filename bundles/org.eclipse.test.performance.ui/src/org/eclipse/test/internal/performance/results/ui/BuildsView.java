@@ -733,7 +733,7 @@ protected void writeBuildsFailures(File writeDir, IProgressMonitor monitor) {
 		String currentBuildName = currentBuild.getName();
 		monitor.setTaskName("Write failures for build "+currentBuildName);
 		if (!currentBuildName.equals(previousBuild)) {
-			monitor.subTask("read local files...");
+			monitor.subTask("Get local data...");
 			this.results.readLocal(this.dataDir, null, currentBuildName);
 			monitor.worked(1);
 		}
@@ -752,7 +752,7 @@ protected void writeBuildsFailures(File writeDir, IProgressMonitor monitor) {
 
 	// Refresh data if necessary
 	if (!lastBuildName.equals(previousBuild)) {
-		monitor.subTask("read local files...");
+		monitor.subTask("Put back local data for "+lastBuildName+"...");
 		this.results.readLocal(this.dataDir, null, this.lastBuild);
 		monitor.worked(1);
 	}
