@@ -344,6 +344,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 	String firstBuildResults = null;
 	String secondBuildResults = null;
 	if (selection.length == 2) {
+		this.tabFolder.setVisible(true);
 		if (selection[0] instanceof BuildResultsElement) {
 			firstBuildResults = ((BuildResultsElement) selection[0]).getName();
 		}
@@ -355,6 +356,10 @@ public void selectionChanged(SelectionChangedEvent event) {
 			this.referenceBuild = secondBuildResults;
 			resetTabFolders(true);
 		}
+		this.writeComparison.setEnabled(true);
+	} else {
+		this.writeComparison.setEnabled(false);
+		this.tabFolder.setVisible(false);
 	}
 }
 

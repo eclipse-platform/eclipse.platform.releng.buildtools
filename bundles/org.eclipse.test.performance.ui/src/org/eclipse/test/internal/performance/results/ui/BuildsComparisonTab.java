@@ -364,7 +364,37 @@ private void fillTable(PerformanceResultsElement results, String currentBuild, S
 				final double error = values[AbstractResults.DELTA_ERROR_INDEX];
 
 				// Set text with delta value
-				item.setText(col, Util.PERCENTAGE_FORMAT.format(delta));
+				final StringBuffer address = new StringBuffer("http://fullmoon.ottawa.ibm.com/downloads/drops/");
+				address.append(currentBuild);
+				address.append("/performance/");
+				address.append(configResults.getName());
+				address.append('/');
+				address.append(scenarioResults.getFileName());
+				address.append(".html");
+				StringBuffer buffer = new StringBuffer("<a href=\"");
+				buffer.append(address);
+				buffer.append("\">");
+				final String itemText = Util.PERCENTAGE_FORMAT.format(delta);
+				buffer.append(itemText);
+				buffer.append("</a>");
+
+				// Simple text
+				item.setText(col, itemText);
+
+				/* Link + Editor
+				Link link = new Link(this.table, SWT.CENTER);
+				link.setText(buffer.toString());
+				link.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(SelectionEvent e) {
+						Program.launch(address.toString());
+					}
+				});
+				final TableEditor editor = new TableEditor(this.table);
+				editor.grabHorizontal = editor.grabVertical = true;
+				editor.verticalAlignment = SWT.CENTER;
+				editor.horizontalAlignment = SWT.CENTER;
+				editor.setEditor(link, item, col);
+				*/
 
 				// Compute the tooltip to display on the cell
 				if (error > errorThreshold) {
@@ -455,6 +485,10 @@ private void fillTable(PerformanceResultsElement results, String currentBuild, S
 		}
 	}
 	this.rowsCount = size;
+}
+
+protected Shell getShell() {
+	return this.shell;
 }
 
 /*
