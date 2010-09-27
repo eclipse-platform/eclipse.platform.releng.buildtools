@@ -43,6 +43,11 @@ public void initializeDefaultPreferences() {
 	// Status
 	defaultPreferences.putInt(PRE_WRITE_STATUS, IPerformancesConstants.DEFAULT_WRITE_STATUS);
 
+	// Comparison
+	defaultPreferences.putInt(PRE_COMPARISON_THRESHOLD_FAILURE, IPerformancesConstants.DEFAULT_COMPARISON_THRESHOLD_FAILURE);
+	defaultPreferences.putInt(PRE_COMPARISON_THRESHOLD_ERROR, IPerformancesConstants.DEFAULT_COMPARISON_THRESHOLD_ERROR);
+	defaultPreferences.putInt(PRE_COMPARISON_THRESHOLD_IMPROVEMENT, IPerformancesConstants.DEFAULT_COMPARISON_THRESHOLD_IMPROVEMENT);
+
 	// Config descriptors
 	String[][] configDescriptors = PerformanceTestPlugin.getConfigDescriptors();
 	int cdLength = configDescriptors.length;
@@ -69,13 +74,13 @@ public void initializeDefaultPreferences() {
 	defaultPreferences.putBoolean(PRE_FILTER_NIGHTLY_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS);
 
 	// Milestones
-	String[] milestones = IPerformancesConstants.V35_MILESTONES;
+	String[] milestones = IPerformancesConstants.V36_MILESTONES;
 	String prefix = PRE_MILESTONE_BUILDS + "." + ECLIPSE_MAINTENANCE_VERSION;
 	length = milestones.length;
 	for (int i = 0; i < length; i++) {
 		defaultPreferences.put(prefix + i, milestones[i]);
 	}
-	milestones = IPerformancesConstants.V36_MILESTONES;
+	milestones = IPerformancesConstants.V37_MILESTONES;
 	prefix = PRE_MILESTONE_BUILDS + "." + ECLIPSE_DEVELOPMENT_VERSION;
 	length = milestones.length;
 	for (int i = 0; i < length; i++) {

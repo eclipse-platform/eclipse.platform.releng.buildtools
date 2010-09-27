@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.results.db.ConfigResults;
-import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.db.PerformanceResults;
 import org.eclipse.test.internal.performance.results.db.ScenarioResults;
 import org.eclipse.test.internal.performance.results.utils.Util;
@@ -186,14 +185,11 @@ PerformanceResults performanceResults;
 public GenerateResults() {
 }
 
-public GenerateResults(PerformanceResults results, String current, String baseline, boolean fingerprints, File data, File output) {
+public GenerateResults(boolean fingerprints, File data) {
 	this.dataDir = data;
-	this.outputDir = output;
 	this.genFingerPrints = fingerprints;
 	this.genAll = !fingerprints;
-	this.performanceResults = results;
 	this.printStream = System.out;
-	setDefaults(current, baseline);
 }
 
 /*
@@ -825,17 +821,24 @@ private void printUsage() {
  */
 public IStatus run(String[] args) {
 	parse(args);
-	return run((IProgressMonitor) null);
+	return generate(null);
 }
 
 /**
- * Run the generation using a progress monitor.
+ * Run the generation.
+ */
+public IStatus run(PerformanceResults results, String buildName, String baseline, File output, final IProgressMonitor monitor) {
+	this.performanceResults = results;
+	this.outputDir = output;
+	setDefaults(buildName, baseline);
+	return generate(monitor);
+}
+
+/*
  * Note that all necessary information to generate properly must be set before
  * calling this method
- *
- * @see #run(String[])
  */
-public IStatus run(final IProgressMonitor monitor) {
+private IStatus generate(final IProgressMonitor monitor) {
 	long begin = System.currentTimeMillis();
 	int work = 1100;
     int dataWork = 1000 * this.performanceResults.getConfigBoxes(false).length;
@@ -843,6 +846,7 @@ public IStatus run(final IProgressMonitor monitor) {
 	    work += dataWork;
     }
 	SubMonitor subMonitor = SubMonitor.convert(monitor, work);
+	subMonitor.setTaskName("Generate perf results for build "+this.performanceResults.getName());
 	try {
 
 		// Print whole scenarios summary
@@ -914,8 +918,9 @@ public IStatus run(final IProgressMonitor monitor) {
 			this.printStream.print("	- components main page");
 		}
 		long start = System.currentTimeMillis();
-		subMonitor.setTaskName("Write fingerprints: 0%");
-		subMonitor.subTask("Global...");
+//		subMonitor.setTaskName("Write fingerprints: 0%");
+//		subMonitor.subTask("Global...");
+		subMonitor.subTask("Write fingerprints: global (0%)...");
 		printComponent(/*performanceResults, */"global_fp");
 		subMonitor.worked(100);
 		if (subMonitor.isCanceled()) throw new OperationCanceledException();
@@ -925,8 +930,9 @@ public IStatus run(final IProgressMonitor monitor) {
 		int progress = 0;
 		for (int i=0; i<length; i++) {
 			int percentage = (int) ((progress / ((double) length)) * 100);
-			subMonitor.setTaskName("Write fingerprints: "+percentage+"%");
-			subMonitor.subTask(components[i]+"...");
+//			subMonitor.setTaskName("Write fingerprints: "+percentage+"%");
+//			subMonitor.subTask(components[i]+"...");
+			subMonitor.subTask("Write fingerprints: "+components[i]+" ("+percentage+"%)...");
 			printComponent(/*performanceResults, */components[i]);
 			subMonitor.worked(step);
 			if (subMonitor.isCanceled()) throw new OperationCanceledException();
@@ -1012,7 +1018,8 @@ private void setDefaults(String buildName, String baseline) {
 		if (index > 0) {
 			this.baselinePrefix = baseline.substring(0, index);
 		} else {
-			this.baselinePrefix = DB_Results.getDbBaselinePrefix();
+//			this.baselinePrefix = DB_Results.getDbBaselinePrefix();
+			this.baselinePrefix = baseline;
 		}
 	}
 

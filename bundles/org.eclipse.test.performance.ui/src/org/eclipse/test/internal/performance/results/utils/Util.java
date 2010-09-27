@@ -78,6 +78,9 @@ public final class Util implements IPerformancesConstants {
 	private static String[] MILESTONES;
 	public static final BuildDateComparator BUILD_DATE_COMPARATOR = new BuildDateComparator();
 
+	// Components constants
+	public static final String ORG_ECLIPSE = "org.eclipse.";
+
 static class BuildDateComparator implements Comparator {
 	public int compare(Object o1, Object o2) {
 		String s1 = (String) o1;
@@ -98,12 +101,13 @@ private static void initMilestones() {
 		switch (minorVersion) {
 			case '3':
 			case '4':
-				throw new RuntimeException("Version "+mainVersion+'.'+minorVersion+" is no longer supported!");
 			case '5':
-				MILESTONES = V35_MILESTONES;
-				break;
+				throw new RuntimeException("Version "+mainVersion+'.'+minorVersion+" is no longer supported!");
 			case '6':
 				MILESTONES = V36_MILESTONES;
+				break;
+			case '7':
+				MILESTONES = V37_MILESTONES;
 				break;
 			default:
 				throw new RuntimeException("Version "+mainVersion+'.'+minorVersion+" is not supported yet!");
@@ -117,6 +121,84 @@ private static void initMilestones() {
 public static final int ONE_MINUTE = 60000;
 public static final long ONE_HOUR = 3600000L;
 public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmm"); //$NON-NLS-1$
+
+/**
+ * Return the name to display for the given component.
+ * <p>
+ * This name is built from the name of the component selected in the Components view.
+ * The rules to build the name are:
+ * <ol>
+ * <li>If the component name does not start with "org.eclipse" then the part name is just
+ * 		"<b>component name</b>"</li>
+ * <li>Otherwise, remove "org.eclipse." form the component name and count
+ * 		the tokens separated by a dot ('.')
+ * 		<ul>
+ * 		<li>If there's only one remaining token, then the part name is "<b>Platform/</b>"
+ * 			followed by:
+ * 			<ul>
+ * 			<li>"<b><i>TOKEN</i></b>" if token is less than 3 characters,</li>
+ * 			<li>"<b><i>Token</i></b>" otherwise</li>
+ * 			</ul>
+ * 		</li>
+ * 		<li>Otherwise then the part name is "<b><i>FIRST_TOKEN</i></b>" followed by:
+ * 			<ul>
+ * 			<li>for each followed additional token:
+ * 				<ul>
+ * 				<li>"<b><i>TOKEN</i></b>" if token is less than 3 characters,</li>
+ * 				<li>"<b><i>Token</i></b>" otherwise</li>
+ * 				</ul>
+ * 			</li>
+ * 			</ul>
+ * 		</li>
+ * 		</ul>
+ * </ol>
+ * E.g.
+ * 	- org.eclipse.ui -> "Platform/UI"
+ * 	- org.eclipse.swt -> "Platform/SWT"
+ * 	- org.eclipse.team -> "Platform/Team"
+ * 	- org.eclipse.jdt.ui -> "JDT/UI"
+ * 	- org.eclipse.jdt.core -> "JDT/Core"
+ * 	- org.eclipse.pde.api.tools -> "PDE/API Tools"
+ */
+public static String componentDisplayName(String componentName) {
+	String partName;
+	StringBuffer buffer = null;
+	if (componentName.startsWith(ORG_ECLIPSE)) {
+		partName = componentName.substring(ORG_ECLIPSE.length());
+		StringTokenizer tokenizer = new StringTokenizer(partName, ".");
+		while (tokenizer.hasMoreTokens()) {
+			String token = tokenizer.nextToken();
+			if (buffer == null) {
+				if (tokenizer.hasMoreTokens()) {
+					buffer = new StringBuffer("'"+token.toUpperCase());
+					buffer.append('/');
+				} else {
+					buffer = new StringBuffer("'Platform/");
+					if (token.length() > 3) {
+						buffer.append(Character.toUpperCase(token.charAt(0)));
+						buffer.append(token.substring(1));
+					} else {
+						buffer.append(token.toUpperCase());
+					}
+				}
+			} else {
+				if (token.length() > 3) {
+					buffer.append(Character.toUpperCase(token.charAt(0)));
+					buffer.append(token.substring(1));
+				} else {
+					buffer.append(token.toUpperCase());
+				}
+				if (tokenizer.hasMoreTokens()) buffer.append(' ');
+			}
+		}
+	} else {
+		buffer = new StringBuffer("'");
+		buffer.append(componentName);
+		buffer.append("'");
+	}
+	buffer.append("' results");
+	return buffer.toString();
+}
 
 /**
  * Compute the student t-test values.
@@ -526,7 +608,7 @@ private Util() {
 /**
  * Set the milestones.
  *
- * @param items The milestones list (e.g. {@link IPerformancesConstants#V35_MILESTONES}).
+ * @param items The milestones list (e.g. {@link IPerformancesConstants#V37_MILESTONES}).
  */
 public static void setMilestones(String[] items) {
 	MILESTONES = items;

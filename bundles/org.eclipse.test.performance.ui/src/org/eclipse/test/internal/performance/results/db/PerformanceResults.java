@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -670,7 +670,7 @@ private void setAllBuildNames() {
 		}
 		int idx = n-1;
 		String lastBuild = this.allBuildNames[idx--];
-		while (lastBuild.startsWith(DB_Results.getDbBaselinePrefix())) {
+		while (idx > 0 && lastBuild.startsWith(DB_Results.getDbBaselinePrefix())) {
 			lastBuild = this.allBuildNames[idx--];
 		}
 		this.needToUpdateLocalFile = this.name == null || Util.getBuildDate(lastBuild).compareTo(Util.getBuildDate(this.name)) > 0;
@@ -719,6 +719,16 @@ private void setConfigInfo(String[][] configs) {
  */
 public void setBaselineName(String buildName) {
 	this.baselineName = buildName;
+	if (this.baselinePrefix == null || !this.baselineName.startsWith(this.baselinePrefix)) {
+		// Usually hat baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
+		int index = this.baselineName.lastIndexOf('_');
+		if (index > 0) {
+			this.baselinePrefix = this.baselineName.substring(0, index);
+		} else {
+//				this.baselinePrefix = DB_Results.getDbBaselinePrefix();
+			this.baselinePrefix = this.baselineName;
+		}
+	}
 }
 
 private void setDefaults() {
@@ -737,7 +747,8 @@ private void setDefaults() {
 			this.name = DB_Results.getLastCurrentBuild();
 			if (this.dbRequired) {
 				if (this.name == null) {
-					throw new RuntimeException("Cannot find any current build!"); //$NON-NLS-1$
+//					throw new RuntimeException("Cannot find any current build!"); //$NON-NLS-1$
+					this.name = "No current build!";
 				}
 				this.allBuildNames = DB_Results.getBuilds();
 				this.components = DB_Results.getComponents();
@@ -762,13 +773,16 @@ private void setDefaults() {
 	}
 
 	// Init baseline prefix if not set
-	if (this.baselinePrefix == null && this.baselineName != null) {
-		// Assume that baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
-		int index = this.baselineName.lastIndexOf('_');
-		if (index > 0) {
-			this.baselinePrefix = this.baselineName.substring(0, index);
-		} else {
-			this.baselinePrefix = DB_Results.getDbBaselinePrefix();
+	if (this.baselineName != null) {
+		if (this.baselinePrefix == null || !this.baselineName.startsWith(this.baselinePrefix)) {
+			// Usually hat baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
+			int index = this.baselineName.lastIndexOf('_');
+			if (index > 0) {
+				this.baselinePrefix = this.baselineName.substring(0, index);
+			} else {
+//				this.baselinePrefix = DB_Results.getDbBaselinePrefix();
+				this.baselinePrefix = this.baselineName;
+			}
 		}
 	}
 

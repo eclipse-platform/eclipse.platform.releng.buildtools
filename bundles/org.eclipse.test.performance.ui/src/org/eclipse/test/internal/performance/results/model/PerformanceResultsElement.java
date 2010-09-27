@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,11 +16,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.test.internal.performance.results.db.*;
+import org.eclipse.test.internal.performance.results.ui.BuildsComparisonTable;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
+import org.eclipse.test.performance.ui.Utils;
 
 public class PerformanceResultsElement extends ResultsElement {
 
@@ -58,7 +61,7 @@ public String[] getBaselines() {
 	return baselines;
 }
 
-String[] getBuildNames() {
+public String[] getBuildNames() {
 	if (this.buildNames == null) {
 		this.buildNames = DB_Results.DB_CONNECTION
 			? DB_Results.getBuilds()
@@ -210,7 +213,7 @@ public void setLastBuildName(String lastBuildName) {
 /*
  * Write the component status in the given file
  */
-public StringBuffer writeStatus(File resultsFile, int kind) {
+public StringBuffer writeFailures(File resultsFile, int kind) {
 	if (this.results == null) {
 		return null;
 	}
@@ -308,7 +311,7 @@ public StringBuffer writeStatus(File resultsFile, int kind) {
 				buffer.append(Util.LINE_SEPARATOR);
 			}
 			stream.write(buffer.toString().getBytes());
-			StringBuffer componentBuffer = writableStatus(new StringBuffer(), kind, excluded);
+			StringBuffer componentBuffer = getFailures(new StringBuffer(), kind, excluded);
 			if (componentBuffer.length() > 0) {
 				stream.write(componentBuffer.toString().getBytes());
 			}
@@ -322,6 +325,55 @@ public StringBuffer writeStatus(File resultsFile, int kind) {
 		e.printStackTrace();
 	}
 	return excluded;
+}
+
+/*
+ * Write the comparison between two builds in the given file
+ */
+public void writeComparison(File resultsFile, String build, String reference) {
+	if (this.results == null) {
+		return;
+	}
+	try {
+		// Create the stream
+		PrintStream stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(resultsFile)));
+
+		// Print main title
+		stream.print("<link href=\""+Utils.TOOLTIP_STYLE+"\" rel=\"stylesheet\" type=\"text/css\">\n");
+		stream.print("<script src=\""+Utils.TOOLTIP_SCRIPT+"\"></script>\n");
+		stream.print("<script src=\""+Utils.FINGERPRINT_SCRIPT+"\"></script>\n");
+		stream.print(Utils.HTML_DEFAULT_CSS);
+		stream.print("<body>");
+		stream.print("<h2>Performance comparison of ");
+		stream.print(build);
+		stream.print(" relative to ");
+		int index = reference.indexOf('_');
+		if (index > 0) {
+			stream.print(reference.substring(0, index));
+			stream.print(" (");
+			index = reference.lastIndexOf('_');
+			stream.print(reference.substring(index+1, reference.length()));
+			stream.print(')');
+		} else {
+			stream.print(reference);
+		}
+		stream.print("</h2>\n");
+
+		// Print a comparison table for each component
+		try {
+			int length = this.children.length;
+			for (int i=0; i<length; i++) {
+				BuildsComparisonTable table = new BuildsComparisonTable(this.children[i].getName(), stream, build, reference);
+				table.print(getPerformanceResults());
+			}
+		}
+		finally {
+			stream.print("</body>");
+			stream.close();
+		}
+	} catch (FileNotFoundException e) {
+		System.err.println("Can't create output file"+resultsFile); //$NON-NLS-1$
+	}
 }
 
 }

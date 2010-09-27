@@ -32,7 +32,6 @@ public interface IPerformancesConstants {
     public static final String PRE_RESULTS_GENERATION_DIR = PREFIX + "results.generation.dir"; //$NON-NLS-1$
     public static final String PRE_CONFIG_DESCRIPTOR_NAME = PREFIX + "config.descriptor.name"; //$NON-NLS-1$
     public static final String PRE_CONFIG_DESCRIPTOR_DESCRIPTION = PREFIX + "config.descriptor.description"; //$NON-NLS-1$
-    public static final String PRE_LAST_BUILD = PREFIX + "last.build"; //$NON-NLS-1$
     public static final String PRE_DEFAULT_DIMENSION = PREFIX + "default.dimension"; //$NON-NLS-1$
     public static final String PRE_RESULTS_DIMENSION = PREFIX + "results.dimension"; //$NON-NLS-1$
     public static final String PRE_MILESTONE_BUILDS = PREFIX + "milestone.builds"; //$NON-NLS-1$
@@ -40,19 +39,17 @@ public interface IPerformancesConstants {
     public static final String PRE_FILTER_ADVANCED_SCENARIOS = PREFIX + "filter.non.fingerprints.scenarios"; //$NON-NLS-1$
     public static final String PRE_FILTER_OLD_BUILDS = PREFIX + "filter.non.milestones.builds"; //$NON-NLS-1$
     public static final String PRE_FILTER_NIGHTLY_BUILDS = PREFIX + "filter.nightly.builds"; //$NON-NLS-1$
-    public static final String PRE_FILTER_LAST_BUILDS = PREFIX + "filter.last.builds"; //$NON-NLS-1$
 
 	// Other constants
-	public static final int ECLIPSE_MAINTENANCE_VERSION = 35;
-	public static final int ECLIPSE_DEVELOPMENT_VERSION = 36;
+	public static final int ECLIPSE_MAINTENANCE_VERSION = 36;
+	public static final int ECLIPSE_DEVELOPMENT_VERSION = 37;
 
 	// Default values
 	public static final String DATABASE_NAME_PREFIX = "perfDb";
-	public static final String NETWORK_DATABASE_LOCATION = "net://trelenggtk.ottawa.ibm.com:1528";
+	public static final String NETWORK_DATABASE_LOCATION = "net://minsky.ottawa.ibm.com:1528";
 	public static final int DEFAULT_ECLIPSE_VERSION = ECLIPSE_DEVELOPMENT_VERSION;
 	public static final boolean DEFAULT_FILTER_ADVANCED_SCENARIOS = true;
 	public static final boolean DEFAULT_FILTER_OLD_BUILDS = false;
-	public static final boolean DEFAULT_FILTER_LAST_BUILDS = false;
 	public static final boolean DEFAULT_FILTER_NIGHTLY_BUILDS = false;
 	public static final boolean DEFAULT_DATABASE_CONNECTION = false;
 	public static final boolean DEFAULT_DATABASE_LOCAL = false;
@@ -76,7 +73,17 @@ public interface IPerformancesConstants {
 	public static final int STATUS_STATISTICS_MASK = 0xC000;
 	public static final int DEFAULT_WRITE_STATUS = STATUS_ERROR_NONE | DEFAULT_BUILDS_NUMBER;
 
+	// Comparison
+    public static final String PRE_COMPARISON_THRESHOLD_FAILURE = PREFIX + "comparison.threshold.failure"; //$NON-NLS-1$
+	public static final int DEFAULT_COMPARISON_THRESHOLD_FAILURE = 10;
+    public static final String PRE_COMPARISON_THRESHOLD_ERROR = PREFIX + "comparison.threshold.error"; //$NON-NLS-1$
+	public static final int DEFAULT_COMPARISON_THRESHOLD_ERROR = 3;
+    public static final String PRE_COMPARISON_THRESHOLD_IMPROVEMENT = PREFIX + "comparison.threshold.imporvement"; //$NON-NLS-1$
+	public static final int DEFAULT_COMPARISON_THRESHOLD_IMPROVEMENT = 10;
+
 	// Default milestones nowadays
+	public static final String[] V37_MILESTONES = new String[] {
+	};
 	public static final String[] V36_MILESTONES = new String[] {
 		"M1-200908060100",
 		"M2-200909170100",
@@ -85,6 +92,7 @@ public interface IPerformancesConstants {
 		"M5-201001291300",
 		"M6-201003121448",
 	};
+	/** @deprecated */
 	public static final String[] V35_MILESTONES = new String[] {
 		        "M1-200808071402",
 		        "M2-200809180100",

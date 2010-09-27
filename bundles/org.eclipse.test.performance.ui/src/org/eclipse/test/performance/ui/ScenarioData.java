@@ -170,7 +170,9 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
 		final String configBox = configBoxes[i];
 
 		// Manage monitor
-		subMonitor.setTaskName("Generating data for "+configBox);
+//		subMonitor.setTaskName("Generating data for "+configBox);
+		final String subTaskPrefix = "Generating data: "+configBox;
+		subMonitor.subTask(subTaskPrefix);
 		if (subMonitor.isCanceled()) throw new OperationCanceledException();
 
 		long start = System.currentTimeMillis();
@@ -184,8 +186,9 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
 
 			// Manage monitor
 			int percentage = (int) ((progress++ / total) * 100);
-			subMonitor.setTaskName("Generating data for "+configBox+": "+percentage+"%");
-			subMonitor.subTask("Component "+componentResults.getName()+"...");
+//			subMonitor.setTaskName("Generating data for "+configBox+": "+percentage+"%");
+//			subMonitor.subTask("Component "+componentResults.getName()+"...");
+			subMonitor.subTask(subTaskPrefix + " (" +componentResults.getName()+ ") "+ percentage + "%...");
 
 			Display display = Display.getDefault();
 		     display.syncExec(

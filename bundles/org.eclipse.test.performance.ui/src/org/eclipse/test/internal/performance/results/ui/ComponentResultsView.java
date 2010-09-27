@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.test.internal.performance.results.ui;
 
-import java.util.StringTokenizer;
-
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
@@ -80,9 +78,6 @@ import org.eclipse.ui.part.ViewPart;
  * @see ConfigTab Folder tab containing all the results for a configuration.
  */
 public class ComponentResultsView extends ViewPart implements ISelectionChangedListener, IPreferenceChangeListener {
-
-	// Constants
-	private static final String ORG_ECLIPSE = "org.eclipse.";
 
 	// SWT resources
 	CTabFolder tabFolder;
@@ -337,7 +332,7 @@ void resetTabFolders(boolean init) {
 
 	// Set the part name when possible
 	if (this.componentResultsElement != null) {
-		setPartName();
+		setPartName(Util.componentDisplayName(this.componentResultsElement.getName()));
 	}
 
 	// If this is the first display then look for the first error to set the selection on it
@@ -486,7 +481,7 @@ public void setFocus() {
  * 	- org.eclipse.jdt.ui -> "JDT/UI"
  * 	- org.eclipse.jdt.core -> "JDT/Core"
  * 	- org.eclipse.pde.api.tools -> "PDE/API Tools"
- */
+ *
 protected void setPartName() {
 	String componentName = this.componentResultsElement.getName();
 	String partName;
@@ -527,5 +522,6 @@ protected void setPartName() {
 	buffer.append("' results");
 	setPartName(buffer.toString());
 }
+*/
 
 }

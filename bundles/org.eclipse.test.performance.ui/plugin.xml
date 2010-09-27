@@ -49,6 +49,14 @@
             name="Component Results"
             restorable="true">
       </view>
+      <view
+            category="Performances"
+            class="org.eclipse.test.internal.performance.results.ui.BuildsComparisonView"
+            icon="icons/compare_view.gif"
+            id="org.eclipse.test.internal.performance.results.ui.BuildsComparisonView"
+            name="Builds comparison"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">

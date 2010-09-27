@@ -11,7 +11,6 @@
 package org.eclipse.test.internal.performance.results.ui;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import org.osgi.service.prefs.BackingStoreException;
@@ -64,7 +63,7 @@ public class PerformanceResultsPreferencePage extends PreferencePage
 	private Button dbRelengRadioButton;
 	private Button dbLocalRadioButton;
 	private CCombo defaultDimensionCombo;
-	private CCombo lastBuildCombo;
+//	private CCombo lastBuildCombo;
 	private List resultsDimensionsList;
 	private CCombo milestonesCombo;
 	private Label dbLocationLabel;
@@ -82,6 +81,9 @@ public class PerformanceResultsPreferencePage extends PreferencePage
 	private Button statusStatisticErraticRadioButton;
 	private Button statusStatisticUnstableRadioButton;
 	private Text statusBuildsToConfirm;
+	private Text comparisonThresholdFailure;
+	private Text comparisonThresholdError;
+	private Text comparisonThresholdImprovement;
 
 	// TODO See whether config descriptors need to be set as preferences or not...
 	// private Table configDescriptorsTable;
@@ -221,29 +223,31 @@ protected Control createContents(Composite parent) {
 		this.statusBuildsToConfirm = createTextField(statusGroup);
 		this.statusBuildsToConfirm.setToolTipText("The number of previous builds to take into account to confirm a regression");
 
+		// Comparison
+		Composite compositeComparison = createComposite(parent, 1, 3);
+		Group comparisonGroup = createGroup(compositeComparison, "Comparison", 1);
+		Group thresholdsGroup = createGroup(comparisonGroup, "Thresholds", 6);
+//		Composite compositeFailureThreshold = createComposite(comparisonGroup, 2, 2);
+		createLabel(thresholdsGroup, "Failure:", false);
+		this.comparisonThresholdFailure = createTextField(thresholdsGroup);
+		this.comparisonThresholdFailure.setToolTipText("The threshold in percentage to report a failure");
+		createLabel(thresholdsGroup, "Error:", false);
+		this.comparisonThresholdError = createTextField(thresholdsGroup);
+		this.comparisonThresholdError.setToolTipText("The threshold in percentage to report an error");
+		createLabel(thresholdsGroup, "Improvement:", false);
+		this.comparisonThresholdImprovement = createTextField(thresholdsGroup);
+		this.comparisonThresholdImprovement.setToolTipText("The threshold in percentage to report an improvement");
+
 		// Milestones
 		Composite compositeMilestones = createComposite(parent, 3, 1);
 		createLabel(compositeMilestones, "Milestones", false);
 		this.milestonesCombo = createCombo(compositeMilestones);
 		this.milestonesCombo.setToolTipText("Enter the date of the milestone as yyyymmddHHMM");
 
-		// Last build
-		StringBuffer tooltip = new StringBuffer("Select the last build to display performance results\n");
-		tooltip.append("If set then performance results won't be displayed for any build after this date...");
-		String tooltipText = tooltip.toString();
-		Composite compositeLastBuild = createComposite(parent, 3, 1);
-	//	this.lastBuildCheckBox = createCheckBox(compositeLastBuild, "Until last build");
-		createLabel(compositeLastBuild, "Last build: ", false);
-		this.lastBuildCombo = createCombo(compositeLastBuild);
-		this.lastBuildCombo.setEditable(false);
-		this.lastBuildCombo.setToolTipText(tooltipText);
-		this.lastBuildCombo.add("");
-		initBuildsList();
-
 		// Default dimension layout
-		tooltip = new StringBuffer("Select the default dimension which will be used for performance results\n");
+		StringBuffer tooltip = new StringBuffer("Select the default dimension which will be used for performance results\n");
 		tooltip.append("When changed, the new selected dimension is automatically added to the dimensions list below...");
-		tooltipText = tooltip.toString();
+		String tooltipText = tooltip.toString();
 		Composite compositeDefaultDimension = createComposite(parent, 3, 1);
 		createLabel(compositeDefaultDimension, "Default dimension: ", false);
 		this.defaultDimensionCombo = createCombo(compositeDefaultDimension);
@@ -432,9 +436,6 @@ protected IPreferenceStore doGetPreferenceStore() {
 	return UiPlugin.getDefault().getPreferenceStore();
 }
 
-/**
- * @return
- */
 String getDialogTitle() {
 	String title = DB_Results.getDbTitle();
 	if (title == null) {
@@ -489,18 +490,6 @@ void initDimensionsLists() {
 	}
 }
 
-/*
- * Init he contents of the dimensions list controls.
- */
-private void initBuildsList() {
-	String[] builds = DB_Results.getBuilds();
-	Arrays.sort(builds, Util.BUILD_DATE_COMPARATOR);
-	int length = builds.length;
-	for (int i=length-1; i>=0; i--) {
-		this.lastBuildCombo.add(builds[i]);
-	}
-}
-
 /**
  * Initializes states of the controls using default values in the preference
  * store.
@@ -526,6 +515,11 @@ private void initializeDefaults() {
 	int writeStatus = store.getDefaultInt(PRE_WRITE_STATUS);
 	initStatusValues(writeStatus);
 
+	// Init comparison thresholds
+	this.comparisonThresholdFailure.setText(String.valueOf(store.getDefaultInt(PRE_COMPARISON_THRESHOLD_FAILURE)));
+	this.comparisonThresholdError.setText(String.valueOf(store.getDefaultInt(PRE_COMPARISON_THRESHOLD_ERROR)));
+	this.comparisonThresholdImprovement.setText(String.valueOf(store.getDefaultInt(PRE_COMPARISON_THRESHOLD_IMPROVEMENT)));
+
 	// Init eclipse version
 	this.mVersionRadioButton.setSelection(false);
 	this.dVersionRadionButton.setSelection(false);
@@ -546,16 +540,6 @@ private void initializeDefaults() {
 		this.milestonesCombo.add(milestone);
 		milestone = store.getDefaultString(prefix + ++index);
 	}
-
-	// Init last build
-	String lastBuild = store.getDefaultString(PRE_LAST_BUILD);
-//	if (lastBuild.length() == 0) {
-//		this.lastBuildCheckBox.setSelection(false);
-//		this.lastBuildCombo.setEnabled(false);
-//	} else {
-//		this.lastBuildCombo.setEnabled(true);
-//	}
-	this.lastBuildCombo.setText(lastBuild);
 
 	// Init default default dimension
 	String defaultDimension = store.getDefaultString(PRE_DEFAULT_DIMENSION);
@@ -596,6 +580,11 @@ private void initializeValues() {
 	int writeStatus = store.getInt(PRE_WRITE_STATUS);
 	initStatusValues(writeStatus);
 
+	// Init comparison thresholds
+	this.comparisonThresholdFailure.setText(String.valueOf(store.getInt(PRE_COMPARISON_THRESHOLD_FAILURE)));
+	this.comparisonThresholdError.setText(String.valueOf(store.getInt(PRE_COMPARISON_THRESHOLD_ERROR)));
+	this.comparisonThresholdImprovement.setText(String.valueOf(store.getInt(PRE_COMPARISON_THRESHOLD_IMPROVEMENT)));
+
 	// Init eclipse version
 	int version = store.getInt(PRE_ECLIPSE_VERSION);
 	if (version == ECLIPSE_MAINTENANCE_VERSION) {
@@ -613,16 +602,6 @@ private void initializeValues() {
 		this.milestonesCombo.add(milestone);
 		milestone = store.getString(prefix + ++index);
 	}
-
-	// Init last build
-	String lastBuild = store.getString(PRE_LAST_BUILD);
-//	if (lastBuild.length() == 0) {
-//		this.lastBuildCheckBox.setSelection(false);
-//		this.lastBuildCombo.setEnabled(false);
-//	} else {
-//		this.lastBuildCombo.setEnabled(true);
-//	}
-	this.lastBuildCombo.setText(lastBuild);
 
 	// Init composite lists
 	initDimensionsLists();
@@ -661,9 +640,6 @@ private void initializeValues() {
 	*/
 }
 
-/**
- * @param store
- */
 private void initStatusValues(int writeStatus) {
 	this.statusValuesCheckBox.setSelection((writeStatus & STATUS_VALUES) != 0);
 	this.statusErrorNoneRadioButton.setSelection(false);
@@ -749,18 +725,6 @@ public void modifyText(ModifyEvent event) {
 					int length = items.length;
 					for (int j=0; j<length; j++) {
 						if (items[j].equals(milestoneDate)) {
-							// already existing milestone, leave silently
-							if (MessageDialog.openQuestion(getShell(), getDialogTitle(), "Do you want to select milestone "+milestoneDate+" as the last build?")) {
-								String builds[] = this.lastBuildCombo.getItems();
-								int bLength = builds.length;
-								String milestone = milestoneDate.substring(milestoneDate.indexOf('-')+1);
-								for (int b=0; b<bLength; b++) {
-									if (builds[b].length() > 0 && Util.getBuildDate(builds[b]).equals(milestone)) {
-										this.lastBuildCombo.select(b);
-										break;
-									}
-								}
-							}
 							return;
 						}
 					}
@@ -817,8 +781,9 @@ public void modifyText(ModifyEvent event) {
 		String lastMilestone = length == 0 ? null : milestones[length-1];
 
 		// Verify that the added milestone is valid
-		final String databaseLocation = this.databaseLocationCombo.getText();
-		char version = databaseLocation.charAt(databaseLocation.length()-1);
+		char version = (char) ('0' + (this.mVersionRadioButton.getSelection()
+			? ECLIPSE_MAINTENANCE_VERSION
+			: ECLIPSE_DEVELOPMENT_VERSION) - 30);
 
 		// Verify that the milestone follow the last one
 		String milestoneName;
@@ -875,8 +840,8 @@ public void modifyText(ModifyEvent event) {
 	if (event.getSource() == this.statusBuildsToConfirm) {
 		try {
 			int number = Integer.parseInt(this.statusBuildsToConfirm.getText());
-			if (number < 1 ) {
-				this.statusBuildsToConfirm.setText("1");
+			if (number < 0) {
+				this.statusBuildsToConfirm.setText("0");
 			} else {
 				int buildsNumber = DB_Results.getBuildsNumber();
 				if (number > buildsNumber) {
@@ -1004,6 +969,11 @@ private void storeValues() {
 	writeStatus += Integer.parseInt(this.statusBuildsToConfirm.getText());
 	store.setValue(PRE_WRITE_STATUS, writeStatus);
 
+	// Init comparison thresholds
+	store.setValue(PRE_COMPARISON_THRESHOLD_FAILURE, Integer.parseInt(this.comparisonThresholdFailure.getText()));
+	store.setValue(PRE_COMPARISON_THRESHOLD_ERROR, Integer.parseInt(this.comparisonThresholdError.getText()));
+	store.setValue(PRE_COMPARISON_THRESHOLD_IMPROVEMENT, Integer.parseInt(this.comparisonThresholdImprovement.getText()));
+
 	// Set milestones
 	String prefix = PRE_MILESTONE_BUILDS + "." + version;
 	count  = this.milestonesCombo.getItemCount();
@@ -1018,10 +988,6 @@ private void storeValues() {
 		store.putValue(prefix + count++, "");
 		milestone = store.getString(prefix + count);
 	}
-
-	// Set last build
-	String lastBuild = this.lastBuildCombo.getText();
-	store.putValue(PRE_LAST_BUILD, lastBuild);
 
 	// Set default dimension
 	String defaultDimension = this.defaultDimensionCombo.getText();

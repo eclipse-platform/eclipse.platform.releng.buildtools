@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,9 +20,9 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -115,16 +115,6 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	        return true;
         }
 	};
-	static String LAST_BUILD;
-	final static ViewerFilter FILTER_LAST_BUILDS = new ViewerFilter() {
-		public boolean select(Viewer v, Object parentElement, Object element) {
-			if (LAST_BUILD != null && element instanceof BuildResultsElement) {
-				BuildResultsElement buildElement = (BuildResultsElement) element;
-				return buildElement.isBefore(LAST_BUILD);
-			}
-	        return true;
-        }
-	};
 	Set viewFilters = new HashSet();
 
 	// SWT resources
@@ -133,8 +123,9 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	TreeViewer viewer;
 	IPropertySheetPage propertyPage;
 
-	// Data info
+	// Directories
 	File dataDir;
+	File resultsDir = null;
 
 	// Views
 	IMemento viewState;
@@ -147,7 +138,6 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	Action filterBaselineBuilds;
 	Action filterNightlyBuilds;
 	Action filterOldBuilds;
-	Action filterLastBuilds;
 //	Action dbConnection;
 
 	// Eclipse preferences
@@ -198,13 +188,9 @@ public PerformancesView() {
 
 	// Init milestones
 	Util.initMilestones(this.preferences);
-
-	// Init last build
-	String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-	LAST_BUILD = lastBuild.length() == 0 ? null : lastBuild;
 }
 
-File changeDataDir() {
+File changeDataDir(String lastBuild) {
 	String localDataDir = this.preferences.get(IPerformancesConstants.PRE_LOCAL_DATA_DIR, "");
 	String filter = (this.dataDir == null) ? localDataDir : this.dataDir.getPath();
 	File dir = this.dataDir;
@@ -219,20 +205,13 @@ File changeDataDir() {
 		}
 		if (refresh) {
 			// Confirm the read when there's a last build set
-			if (LAST_BUILD != null) {
-				if (!MessageDialog.openConfirm(PerformancesView.this.shell, getTitleToolTip(), "Only builds before "+LAST_BUILD+" will be taken into account!\nDo you want to continue?")) {
+			if (lastBuild != null) {
+				if (!MessageDialog.openConfirm(PerformancesView.this.shell, getTitleToolTip(), "Only builds before "+lastBuild+" will be taken into account!\nDo you want to continue?")) {
 					return null;
 				}
 			}
-
-			// Read local files
-			readLocalFiles();
-
-			// Refresh views
-			refreshInput();
-			PerformancesView resultsView = getSiblingView();
-			resultsView.refreshInput();
-			return resultsView.dataDir = this.dataDir;
+			refresh(lastBuild);
+			return getSiblingView().dataDir = this.dataDir;
 		}
 	}
 	return null;
@@ -320,19 +299,6 @@ void fillLocalPullDown(IMenuManager manager) {
  */
 void fillLocalToolBar(IToolBarManager manager) {
 	// no default toolbar action
-}
-
-/*
- * Filter non fingerprints scenarios action run.
- */
-void filterLastBuilds(boolean filter, boolean updatePreference) {
-	if (filter) {
-		this.viewFilters.add(FILTER_LAST_BUILDS);
-	} else {
-		this.viewFilters.remove(FILTER_LAST_BUILDS);
-	}
-	this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_LAST_BUILDS, filter);
-	updateFilters();
 }
 
 /*
@@ -437,7 +403,7 @@ void initResults() {
 			File dir = new File(localDataDir);
 			if (dir.exists() && dir.isDirectory()) {
 				this.dataDir = dir;
-				readLocalFiles();
+				readLocalFiles(null);
 			}
 		}
 	}
@@ -451,7 +417,7 @@ void makeActions() {
 	// Change data dir action
 	this.changeDataDir = new Action("&Read...") {
 		public void run() {
-			changeDataDir();
+			changeDataDir(null);
 		}
 	};
 	this.changeDataDir.setToolTipText("Change the directory of the local data files");
@@ -486,79 +452,26 @@ void makeActions() {
 	};
 	this.filterOldBuilds.setChecked(false);
 	this.filterOldBuilds.setToolTipText("Filter old builds (i.e. before last milestone) but keep all previous milestones)");
-
-	// Filter non-important builds action
-	this.filterLastBuilds = new Action("&Last Builds", IAction.AS_CHECK_BOX) {
-		public void run() {
-			filterLastBuilds(isChecked(), true/*update preference*/);
-		}
-	};
-	final String lastBuild = this.preferences.get(IPerformancesConstants.PRE_LAST_BUILD, null);
-	this.filterLastBuilds.setChecked(false);
-	if (lastBuild == null) {
-		this.filterLastBuilds.setEnabled(false);
-	} else {
-		this.filterLastBuilds.setToolTipText("Filter last builds (i.e. after "+lastBuild+" build)");
-	}
 }
 
 /* (non-Javadoc)
  * @see org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener#preferenceChange(org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent)
  */
 public void preferenceChange(PreferenceChangeEvent event) {
-	String propertyName = event.getKey();
-//	String newValue = (String) event.getNewValue();
-
-	// Eclipse version change
-	if (propertyName.equals(IPerformancesConstants.PRE_ECLIPSE_VERSION)) {
-//		int eclipseVersion = newValue == null ? IPerformancesConstants.DEFAULT_ECLIPSE_VERSION : Integer.parseInt(newValue);
-//		String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
-//		boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
-//		DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
-//		setTitleToolTip();
-	}
-
-	// Database location change
-	if (propertyName.equals(IPerformancesConstants.PRE_DATABASE_LOCATION)) {
-//		boolean connected = this.preferences.getBoolean(IPerformancesConstants.PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
-//		int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
-//		DB_Results.updateDbConstants(connected, eclipseVersion, newValue);
-//		setTitleToolTip();
-	}
-
-	// Database connection
-	if (propertyName.equals(IPerformancesConstants.PRE_DATABASE_CONNECTION)) {
-//		boolean connected = newValue == null ? IPerformancesConstants.DEFAULT_DATABASE_CONNECTION : newValue.equals(Boolean.TRUE);
-//		int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
-//		String databaseLocation = this.preferences.get(IPerformancesConstants.PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
-//		DB_Results.updateDbConstants(connected, eclipseVersion, databaseLocation);
-//		setTitleToolTip();
-	}
-
-	// Last build
-	if (propertyName.equals(IPerformancesConstants.PRE_LAST_BUILD)) {
-//		if (newValue == null || newValue.length() == 0) {
-//			this.filterLastBuilds.setEnabled(false);
-//			LAST_BUILD = null;
-//		} else {
-//			this.filterLastBuilds.setEnabled(true);
-//			this.filterLastBuilds.setToolTipText("Filter last builds (i.e. after "+newValue+" build)");
-//			LAST_BUILD = newValue;
-//		}
-	}
+	// do nothing
 }
 
 /*
  * Read local files
  */
-void readLocalFiles() {
+void readLocalFiles(final String lastBuild) {
 
 	// Create runnable to read local files
 	IRunnableWithProgress runnable = new IRunnableWithProgress() {
 		public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 			try {
 				monitor.beginTask("Read local files", 1000);
-				PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor, LAST_BUILD);
+				PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor, lastBuild);
 				monitor.done();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -575,6 +488,19 @@ void readLocalFiles() {
 	} catch (InterruptedException e) {
 		// skip
 	}
+}
+
+/*
+ * Refresh the views.
+ */
+void refresh(String lastBuild) {
+
+	// Read local files
+	readLocalFiles(lastBuild);
+
+	// Refresh views
+	refreshInput();
+	getSiblingView().refreshInput();
 }
 
 /*
@@ -607,6 +533,10 @@ void restoreState() {
 		if (filterBaselinesValue) {
 			this.viewFilters.add(FILTER_BASELINE_BUILDS);
 		}
+		String dir = this.viewState.getString(IPerformancesConstants.PRE_WRITE_RESULTS_DIR);
+		if (dir != null) {
+			this.resultsDir = new File(dir);
+		}
 	}
 
 	// Filter nightly builds action
@@ -622,13 +552,6 @@ void restoreState() {
 	if (checked) {
 		this.viewFilters.add(FILTER_OLD_BUILDS);
 	}
-
-	// Filter last builds action state
-	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_LAST_BUILDS, IPerformancesConstants.DEFAULT_FILTER_LAST_BUILDS);
-	this.filterLastBuilds.setChecked(checked);
-	if (checked) {
-		this.viewFilters.add(FILTER_LAST_BUILDS);
-	}
 }
 
 public void saveState(IMemento memento) {
@@ -638,6 +561,9 @@ public void saveState(IMemento memento) {
 		this.preferences.flush();
 	} catch (BackingStoreException e) {
 		// ignore
+	}
+	if (this.resultsDir != null) {
+		memento.putString(IPerformancesConstants.PRE_WRITE_RESULTS_DIR, this.resultsDir.getPath());
 	}
 }
 
