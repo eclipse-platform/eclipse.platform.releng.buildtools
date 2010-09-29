@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.releng.generators;
 
+import java.util.*;
 import org.w3c.dom.*;
 
 public class PlatformStatus implements Constants {
@@ -21,6 +22,7 @@ public class PlatformStatus implements Constants {
 	private String ws;
 	private String arch;
 	private String format;
+	private List images;
 	private boolean hasErrors = false;
 
 	PlatformStatus(Element anElement) {
@@ -32,15 +34,29 @@ public class PlatformStatus implements Constants {
 		Node node = attributes.getNamedItem("format");
 		if (node != null)
 			this.format = node.getNodeValue();
+		node = attributes.getNamedItem("images");
+		if (node != null)
+			this.images = listFromString(node.getNodeValue());
 		setOS(attributes.getNamedItem("os"));
 		setWS(attributes.getNamedItem("ws"));
 		setArch(attributes.getNamedItem("arch"));
 	}
 
+	private static List listFromString(String value) {
+		List result = new ArrayList();
+		for (StringTokenizer tokenizer = new StringTokenizer(value, ","); tokenizer.hasMoreTokens(); result.add(tokenizer.nextToken()))
+			;
+		return result;
+	}
+
+	public List getImages() {
+		return this.images;
+	}
+
 	public String getFormat() {
 		return this.format;
 	}
-	
+
 	private void setWS(Node node) {
 		if (node == null)
 			return;
