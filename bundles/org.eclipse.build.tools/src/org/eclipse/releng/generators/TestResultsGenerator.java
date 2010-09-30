@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -128,6 +128,13 @@ public class TestResultsGenerator extends Task {
 		test.setDropDirectoryName("/Users/equinox/zzz");
 		test.setTestResultsTemplateFileName("/Users/equinox/workspaces/head/org.eclipse.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/testResults.php.template");
 		test.setPlatformSpecificTemplateList("");
+		//		test.setPlatformSpecificTemplateList(
+		//				"Windows,C:\\junk\\templateFiles\\platform.php.template,winPlatform.php;" +
+		//				"Linux,C:\\junk\\templateFiles\\platform.php.template,linPlatform.php;" +
+		//				"Solaris,C:\\junk\\templateFiles\\platform.php.template,solPlatform.php;" +
+		//				"AIX,C:\\junk\\templateFiles\\platform.php.template,aixPlatform.php;" +
+		//				"Macintosh,C:\\junk\\templateFiles\\platform.php.template,macPlatform.php;" +
+		//				"Source Build,C:\\junk\\templateFiles\\sourceBuilds.php.template,sourceBuilds.php");
 		test.setDropTemplateFileName("/Users/equinox/workspaces/head/org.eclipse.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/index.php.template");
 		test.setTestResultsHtmlFileName("testResults.php");
 		test.setDropHtmlFileName("index.php");
@@ -320,7 +327,7 @@ public class TestResultsGenerator extends Task {
 		InputStream stream = null;
 		try {
 			File file = new File(fileName);
-			stream = new FileInputStream(file);
+			stream = new BufferedInputStream(new FileInputStream(file));
 			return getInputStreamAsByteArray(stream, (int) file.length());
 		} finally {
 			if (stream != null) {
@@ -582,7 +589,6 @@ public class TestResultsGenerator extends Task {
 
 	// Process drop rows specific to each of the platforms
 	protected String processPlatformDropRows(PlatformStatus[] platforms, String name) {
-
 		String result = "";
 		boolean found = false;
 		for (int i = 0; i < platforms.length; i++) {
@@ -595,22 +601,9 @@ public class TestResultsGenerator extends Task {
 			//If the platform description indicates "All Other Platforms", process
 			// the row locally
 			else if (platforms[i].getName().equals("All Other Platforms") && !found) {
-				String imageName = "";
-
-				if (platforms[i].hasErrors()) {
-					imageName = "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src = \"FAIL.gif\" width=19 height=23></a>";
-				} else {
-					if (testsRan) {
-						imageName = "<img src = \"OK.gif\" width=19 height=23>";
-					} else {
-						if (isBuildTested) {
-							imageName = "<font size=\"-1\" color=\"#FF0000\">pending</font>";
-						} else {
-							imageName = "<img src = \"OK.gif\" width=19 height=23>";
-						}
-					}
-				}
-
+				if ("equinox".equalsIgnoreCase(platforms[i].getFormat()))
+					return processEquinoxDropRow(platforms[i]);
+				String imageName = getStatusColumn(platforms[i], false);
 				result = result + "<tr>";
 				result = result + "<td><div align=left>" + imageName + "</div></td>\n";
 				result = result + "<td>All " + name + "</td>";
@@ -619,41 +612,44 @@ public class TestResultsGenerator extends Task {
 				result = result + "</tr>\n";
 			}
 		}
-
 		return result;
 	}
 
 	protected String processDropRows(PlatformStatus[] platforms) {
-
 		String result = "";
-		for (int i = 0; i < platforms.length; i++) {
+		for (int i = 0; i < platforms.length; i++)
 			result = result + processDropRow(platforms[i]);
-		}
-
 		return result;
 	}
 
-	protected String processEquinoxDropRow(PlatformStatus aPlatform) {
-		String statusColumn = "";
-		if (aPlatform.hasErrors()) {
-			statusColumn = "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src = \"FAIL.gif\" height=15></a>";
+	/*
+	 * Return the HTML mark-up to use in the "status" column.
+	 */
+	private String getStatusColumn(PlatformStatus platform, boolean setStatus) {
+		final String OK = "<img src=\"OK.gif\" height=15 alt=\"OK\">";
+		if (platform.hasErrors()) {
 			// Failure in tests
-			testResultsStatus = "failed";
-		} else {
-			if (testsRan) {
-				statusColumn = "<img src = \"OK.gif\" height=15>";
-			} else {
-				if (isBuildTested) {
-					statusColumn = "<font size=\"-1\" color=\"#FF0000\">pending</font>";
-					// Tests are pending
-					testResultsStatus = "pending";
-				} else {
-					statusColumn = "<img src = \"OK.gif\" height=15>";
-				}
-			}
+			if (setStatus)
+				testResultsStatus = "failed";
+			return "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src=\"FAIL.gif\" height=15 alt=\"FAIL\"></a>";
 		}
+		if (testsRan)
+			return OK;
+		if (isBuildTested) {
+			// Tests are pending
+			if (setStatus)
+				testResultsStatus = "pending";
+			return "<font size=\"-1\" color=\"#FF0000\">pending</font>";
+		}
+		return OK;
+	}
+
+	/*
+	 * Generate and return the HTML mark-up for a single row for an Equinox JAR on the downloads page.
+	 */
+	protected String processEquinoxDropRow(PlatformStatus aPlatform) {
 		String result = "<tr>";
-		result = result + "<td>" + statusColumn + "</td>\n";
+		result = result + "<td align=\"CENTER\">" + getStatusColumn(aPlatform, true) + "</td>\n";
 		result = result + "<td>";
 		String filename = aPlatform.getFileName();
 		// if there are images, put them in the same table column as the name of the file
@@ -673,46 +669,23 @@ public class TestResultsGenerator extends Task {
 		if ("equinox".equalsIgnoreCase(aPlatform.getFormat()))
 			return processEquinoxDropRow(aPlatform);
 
-		String imageName = "";
-
-		if (aPlatform.hasErrors()) {
-			imageName = "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src = \"FAIL.gif\" width=19 height=23></a>";
-			// Failure in tests
-			testResultsStatus = "failed";
-		} else {
-			if (testsRan) {
-				imageName = "<img src = \"OK.gif\" width=19 height=23>";
-			} else {
-				if (isBuildTested) {
-					imageName = "<font size=\"-1\" color=\"#FF0000\">pending</font>";
-					// Tests are pending
-					testResultsStatus = "pending";
-				} else {
-					imageName = "<img src = \"OK.gif\" width=19 height=23>";
-				}
-			}
-		}
-
 		String result = "<tr>";
-
-		result = result + "<td><div align=left>" + imageName + "</div></td>\n";
+		result = result + "<td><div align=left>" + getStatusColumn(aPlatform, true) + "</div></td>\n";
 		result = result + "<td>" + aPlatform.getName() + "</td>";
 		result = result + "<td>" + aPlatform.getFileName() + "</td>\n";
 		result = result + "</tr>\n";
-
 		return result;
 	}
 
 	public void writeTestResultsFile() {
-
 		String outputFileName = dropDirectoryName + File.separator + testResultsHtmlFileName;
 		writeFile(outputFileName, testResultsTemplateString);
 	}
 
 	private void writeFile(String outputFileName, String contents) {
-		FileOutputStream outputStream = null;
+		OutputStream outputStream = null;
 		try {
-			outputStream = new FileOutputStream(outputFileName);
+			outputStream = new BufferedOutputStream(new FileOutputStream(outputFileName));
 			outputStream.write(contents.getBytes());
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found exception writing: " + outputFileName);
