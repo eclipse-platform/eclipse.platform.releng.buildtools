@@ -597,12 +597,15 @@ public class TestResultsGenerator extends Task {
 			if (platforms[i].getName().startsWith(name.substring(0, 3)) || platforms[i].getName().equals("All")) {
 				result = result + processDropRow(platforms[i]);
 				found = true;
+				continue;
 			}
 			//If the platform description indicates "All Other Platforms", process
 			// the row locally
-			else if (platforms[i].getName().equals("All Other Platforms") && !found) {
-				if ("equinox".equalsIgnoreCase(platforms[i].getFormat()))
-					return processEquinoxDropRow(platforms[i]);
+			if (platforms[i].getName().equals("All Other Platforms") && !found) {
+				if ("equinox".equalsIgnoreCase(platforms[i].getFormat())) {
+					result = processEquinoxDropRow(platforms[i]);
+					continue;
+				}
 				String imageName = getStatusColumn(platforms[i], false);
 				result = result + "<tr>";
 				result = result + "<td><div align=left>" + imageName + "</div></td>\n";
