@@ -629,12 +629,12 @@ public class TestResultsGenerator extends Task {
 	 * Return the HTML mark-up to use in the "status" column.
 	 */
 	private String getStatusColumn(PlatformStatus platform, boolean setStatus) {
-		final String OK = "<img src=\"OK.gif\" height=15 alt=\"OK\">";
+		final String OK = "<img src=\"OK.gif\" alt=\"OK\">";
 		if (platform.hasErrors()) {
 			// Failure in tests
 			if (setStatus)
 				testResultsStatus = "failed";
-			return "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src=\"FAIL.gif\" height=15 alt=\"FAIL\"></a>";
+			return "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src=\"FAIL.gif\" alt=\"FAIL\"></a>";
 		}
 		if (testsRan)
 			return OK;
@@ -642,7 +642,7 @@ public class TestResultsGenerator extends Task {
 			// Tests are pending
 			if (setStatus)
 				testResultsStatus = "pending";
-			return "<font size=\"-1\" color=\"#FF0000\">pending</font>";
+			return "<img src=\"pending.gif\" alt=\"pending\"/>";
 		}
 		return OK;
 	}
