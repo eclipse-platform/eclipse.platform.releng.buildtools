@@ -629,12 +629,12 @@ public class TestResultsGenerator extends Task {
 	 * Return the HTML mark-up to use in the "status" column.
 	 */
 	private String getStatusColumn(PlatformStatus platform, boolean setStatus) {
-		final String OK = "<img src=\"OK.gif\" alt=\"OK\">";
+		final String OK = "<img src=\"OK.gif\" alt=\"OK\"/>";
 		if (platform.hasErrors()) {
 			// Failure in tests
 			if (setStatus)
 				testResultsStatus = "failed";
-			return "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src=\"FAIL.gif\" alt=\"FAIL\"></a>";
+			return "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src=\"FAIL.gif\" alt=\"FAIL\"/></a>";
 		}
 		if (testsRan)
 			return OK;
@@ -652,7 +652,7 @@ public class TestResultsGenerator extends Task {
 	 */
 	protected String processEquinoxDropRow(PlatformStatus aPlatform) {
 		String result = "<tr>";
-		result = result + "<td align=\"CENTER\">" + getStatusColumn(aPlatform, true) + "</td>\n";
+		result = result + "<td align=\"center\">" + getStatusColumn(aPlatform, true) + "</td>\n";
 		result = result + "<td>";
 		String filename = aPlatform.getFileName();
 		// if there are images, put them in the same table column as the name of the file
