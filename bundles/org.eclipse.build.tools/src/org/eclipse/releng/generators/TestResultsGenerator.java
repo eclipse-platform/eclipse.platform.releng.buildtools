@@ -606,7 +606,7 @@ public class TestResultsGenerator extends Task {
 					result = processEquinoxDropRow(platforms[i]);
 					continue;
 				}
-				String imageName = getStatusColumn(platforms[i], false);
+				String imageName = getStatusColumn(platforms[i], "", false);
 				result = result + "<tr>";
 				result = result + "<td><div align=left>" + imageName + "</div></td>\n";
 				result = result + "<td>All " + name + "</td>";
@@ -628,13 +628,13 @@ public class TestResultsGenerator extends Task {
 	/*
 	 * Return the HTML mark-up to use in the "status" column.
 	 */
-	private String getStatusColumn(PlatformStatus platform, boolean setStatus) {
-		final String OK = "<img src=\"OK.gif\" alt=\"OK\"/>";
+	private String getStatusColumn(PlatformStatus platform, String prefix, boolean setStatus) {
+		final String OK = "<img src=\"" + prefix + "OK.gif\" alt=\"OK\"/>";
 		if (platform.hasErrors()) {
 			// Failure in tests
 			if (setStatus)
 				testResultsStatus = "failed";
-			return "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src=\"FAIL.gif\" alt=\"FAIL\"/></a>";
+			return "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src=\"" + prefix + "FAIL.gif\" alt=\"FAIL\"/></a>";
 		}
 		if (testsRan)
 			return OK;
@@ -642,7 +642,7 @@ public class TestResultsGenerator extends Task {
 			// Tests are pending
 			if (setStatus)
 				testResultsStatus = "pending";
-			return "<img src=\"pending.gif\" alt=\"pending\"/>";
+			return "<img src=\"" + prefix + "pending.gif\" alt=\"pending\"/>";
 		}
 		return OK;
 	}
@@ -652,18 +652,18 @@ public class TestResultsGenerator extends Task {
 	 */
 	protected String processEquinoxDropRow(PlatformStatus aPlatform) {
 		String result = "<tr>";
-		result = result + "<td align=\"center\">" + getStatusColumn(aPlatform, true) + "</td>\n";
+		result = result + "<td align=\"center\">" + getStatusColumn(aPlatform, "/equinox/images/" , true) + "</td>\n";
 		result = result + "<td>";
 		String filename = aPlatform.getFileName();
 		// if there are images, put them in the same table column as the name of the file
 		List images = aPlatform.getImages();
 		if (images != null && !images.isEmpty()) {
 			for (Iterator iter = images.iterator(); iter.hasNext();)
-				result = result + "&nbsp;&nbsp;<img src=\"" + iter.next() + "\"/>";
+				result = result + "<img src=\"" + iter.next() + "\"/>&nbsp;";
 		}
-		result = result + "&nbsp;&nbsp;<b><a href=\"download.php?dropFile=" + filename + "\">" + filename + "</a></b></td>\n";
-		result = result + "<?php generateDropSize(\"" + filename + "\");?>";
-		result = result + "<b><?php generateChecksumLinks(\"" + filename + "\"); ?></b>\n";
+		result = result + "<a href=\"download.php?dropFile=" + filename + "\">" + filename + "</a></td>\n";
+		result = result + "{$generateDropSize(\"" + filename + "\")}\n";
+		result = result + "{$generateChecksumLinks(\"" + filename + "\", $buildlabel)}\n";
 		result = result + "</tr>\n";
 		return result;
 	}
@@ -673,7 +673,7 @@ public class TestResultsGenerator extends Task {
 			return processEquinoxDropRow(aPlatform);
 
 		String result = "<tr>";
-		result = result + "<td><div align=left>" + getStatusColumn(aPlatform, true) + "</div></td>\n";
+		result = result + "<td><div align=left>" + getStatusColumn(aPlatform, "", true) + "</div></td>\n";
 		result = result + "<td>" + aPlatform.getName() + "</td>";
 		result = result + "<td>" + aPlatform.getFileName() + "</td>\n";
 		result = result + "</tr>\n";
