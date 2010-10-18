@@ -148,7 +148,7 @@ Targets for setting up and running tests locally
 		<property name="testResults" value="${dropLocation}/${buildLabel}/testresults" />
 
 		<!--set up testing directory-->
-		<unzip src="${dropLocation}/${buildLabel}/${testFramework}" dest="${testDir}" />
+		<unzip src="${testFramework}" dest="${testDir}" />
 
 		<!--copy in the runtime to test-->
 		<copy todir="${executionDir}" file="${dropLocation}/${buildLabel}/${runtime}" />
