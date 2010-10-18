@@ -145,14 +145,11 @@ Targets for setting up and running tests locally
 	<target name="runtests-hudson">
 		<delete dir="${testDir}" quiet="true" />
 		<mkdir dir="${testDir}" />
-		<property name="testResults" value="${dropLocation}/${buildLabel}/testresults" />
+		<property name="testResults" value="${testDir}/testresults" />
 
 		<!--set up testing directory-->
 		<unzip src="${testFramework}" dest="${testDir}" />
-
-		<!--copy in the runtime to test-->
-		<copy todir="${executionDir}" file="${dropLocation}/${buildLabel}/${runtime}" />
-
+	
 		<!--run the tests-->
 		<exec dir="${executionDir}" executable="${testExecutable}">
 			<arg line="${args}" />
