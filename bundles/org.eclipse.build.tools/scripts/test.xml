@@ -150,7 +150,7 @@ Targets for setting up and running tests locally
 		<!--set up testing directory-->
 		<unzip src="${testFramework}" dest="${testDir}" />
 	
-		<!--run the tests-->
+		<!--run the tests-->		
 		<exec dir="${executionDir}" executable="${testExecutable}">
 			<arg line="${args}" />
 		</exec>
