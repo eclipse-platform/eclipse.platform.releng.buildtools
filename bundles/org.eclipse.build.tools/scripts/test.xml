@@ -155,14 +155,14 @@ Targets for setting up and running tests locally
 			<arg line="${args}" />
 		</exec>
 
-		<mkdir dir="${testResults}" />
+	<mkdir dir="${testResults}" />
 		<mkdir dir="${testResults}/consolelogs" />
 
-		<copy todir="${testResults}">
+	<!--	<copy todir="${testResults}">
 			<fileset dir="${executionDir}/results" />
-		</copy>
+		</copy> -->
 
-		<copy todir="${testResults}/consolelogs" file="${executionDir}/${consolelog}" />
+		<copy todir="${testResults}/consolelogs" file="${executionDir}/${consolelog}" /> 
 	</target>
 
 
