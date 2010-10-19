@@ -150,7 +150,7 @@ Targets for setting up and running tests locally
 		<!--set up testing directory-->
 		<unzip src="${testFramework}" dest="${testDir}" />
 	
-		<echo message="executionDir ${executionDir} testExecutable ${testExecutable} args ${args}"/>
+		<echo message="executionDir ${executionDir} testExecutable ${testExecutable} testScript ${testScript} args ${args}"/>
 		
 		<!--callback to custom script for post setup-->
 		<!-- <ant antfile="${customTest}" target="customSetup" dir="${basedir}" /> -->
