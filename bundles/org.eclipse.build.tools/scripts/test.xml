@@ -152,12 +152,15 @@ Targets for setting up and running tests locally
 	
 		<echo message="executionDir ${executionDir} testExecutable ${testExecutable} args ${args}"/>
 		
+		<!--callback to custom script for post setup-->
+		<!-- <ant antfile="${customTest}" target="customSetup" dir="${basedir}" /> -->
+		
 		<!--run the tests-->		
 		<exec dir="${executionDir}" executable="${testExecutable}">
-			<arg line="${args}" />
-		</exec>
-
-	<mkdir dir="${testResults}" />
+			<arg line="${testScript} ${args}" />
+		</exec>	
+	
+		<mkdir dir="${testResults}" />
 		<mkdir dir="${testResults}/consolelogs" />
 
 	<!--	<copy todir="${testResults}">
