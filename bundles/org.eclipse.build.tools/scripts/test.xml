@@ -158,7 +158,7 @@ Targets for setting up and running tests locally
 		<!--run the tests-->		
 		<exec dir="${executionDir}" executable="${testExecutable}">
 			<arg line="${testScript} ${args}" />
-		</exec>	
+		</exec>
 	
 		<mkdir dir="${testResults}" />
 		<mkdir dir="${testResults}/consolelogs" />
