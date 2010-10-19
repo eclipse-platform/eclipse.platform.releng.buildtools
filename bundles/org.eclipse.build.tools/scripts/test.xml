@@ -160,8 +160,6 @@ Targets for setting up and running tests locally
 			<arg line="/c ${testScript} ${args}" />		
 		</exec>
 		<!-- <arg line="${testScript} ${args}" /> -->
-	
-		<arg line="${testScript} ${args}" />
 		
 	<!--	<mkdir dir="${testResults}" />
 		<mkdir dir="${testResults}/consolelogs" /> -->
