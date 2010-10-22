@@ -148,8 +148,7 @@ Targets for setting up and running tests locally
 		<property name="testResults" value="${testDir}/testresults" />
 
 		<!--set up testing directory-->
-		<unzip src="${testFramework}" dest="${testDir}"/>
-		<get src="http://download.eclipse.org/eclipse/downloads/drops/${buildId}/equinoxp2tests.properties" dest="${testDir}/equinoxp2tests.properties" />
+		<unzip src="${testFramework}" dest="${testDir}" overwrite="false"/>		
 		
 		<echo message="executionDir ${executionDir} testExecutable ${testExecutable} testScript ${testScript} args ${args}"/>
 		
