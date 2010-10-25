@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,13 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.test.performance.Dimension;
+
+import org.eclipse.core.runtime.Assert;
 
 /**
  * Specific and private implementation of {@link org.eclipse.test.internal.performance.db.DB} class
@@ -1050,7 +1051,7 @@ private Map internalQueryBuildScenarios(String scenarioPattern, String buildName
 		int previousId = -1;
 		List scenarios = null;
 		List scenariosNames = new ArrayList();
-		for (int i = 0; result.next(); i++) {
+		while (result.next()) {
 			int id = result.getInt(1);
 			String name = result.getString(2);
 			scenariosNames.add(name);
@@ -1110,7 +1111,7 @@ private void internalQueryScenarioValues(ScenarioResults scenarioResults, String
 				if (build_id >= 0) { // build id may be negative (i.e. not stored in the array) if new run starts while we're getting results
 					scenarioResults.setValue(build_id, dim_id, config_id, step, value);
 				}
-				count++;
+				count= count + 1;
 			}
 		}
 		if (LOG) LOG_WRITER.ends("		-> " + count + " values read");  //$NON-NLS-1$ //$NON-NLS-2$
