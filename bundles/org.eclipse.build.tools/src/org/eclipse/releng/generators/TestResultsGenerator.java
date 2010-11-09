@@ -119,7 +119,7 @@ public class TestResultsGenerator extends Task {
 
 	public static void main(String[] args) {
 		TestResultsGenerator test = new TestResultsGenerator();
-		test.setDropTokenList("%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%");
+		test.setDropTokenList("%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
 		test.setPlatformIdentifierToken("%platform%");
 		test.getDropTokensFromList(test.dropTokenList);
 		test.setIsBuildTested(true);
