@@ -159,12 +159,7 @@ Targets for setting up and running tests locally
 				<os family="windows" />
 			</and>
 		</condition>
-
-		<condition property="executionArguments" value="${testScript} ${args}">
-			<and>
-				<os family="unix" />
-			</and>
-		</condition>
+		<property name="executionArguments" value="${testScript} ${args}"/>
 
 		<!--run the tests-->
 		<exec dir="${executionDir}" executable="${testExecutable}">
