@@ -148,7 +148,11 @@ Targets for setting up and running tests locally
 		<property name="testResults" value="${testDir}/testresults" />
 
 		<!--set up testing directory-->
-		<unzip src="${testFramework}" dest="${testDir}" overwrite="false" />
+		<unzip src="${testFramework}" dest="${testDir}" overwrite="false">
+			<patternset>
+				<exclude name="**/equinoxp2tests.properties" />
+			</patternset>
+		</unzip>
 
 		<echo message="executionDir ${executionDir} testExecutable ${testExecutable} testScript ${testScript} args ${args}" />
 
@@ -159,7 +163,7 @@ Targets for setting up and running tests locally
 				<os family="windows" />
 			</and>
 		</condition>
-		<property name="executionArguments" value="${testScript} ${args}"/>
+		<property name="executionArguments" value="${testScript} ${args}" />
 
 		<!--run the tests-->
 		<exec dir="${executionDir}" executable="${testExecutable}">
