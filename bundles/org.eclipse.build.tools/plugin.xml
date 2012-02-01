@@ -12,10 +12,7 @@
          point="org.eclipse.ant.core.extraClasspathEntries">
       <extraClasspathEntry
             library="buildTools.jar">
-      </extraClasspathEntry>
-      <extraClasspathEntry
-            library="feedTools.jar">
-      </extraClasspathEntry>
+      </extraClasspathEntry>   
    </extension>
 	<!-- Tasks -->
    <extension point="org.eclipse.ant.core.antTasks">
@@ -58,38 +55,7 @@
             library="buildTools.jar"
             name="generateExcludeList"
             class="org.eclipse.releng.GenerateExcludeListTask">
-      </antTask>
+      </antTask>   
       
-      
-    <!--   <antTask
-            library="feedTools.jar"
-            name="CreateFeed"
-            class="org.eclipse.releng.generators.rss.RSSFeedCreateFeedTask">
-      </antTask> 
-      <antTask
-            library="feedTools.jar"
-            name="AddEntry"
-            class="org.eclipse.releng.generators.rss.RSSFeedAddEntryTask">
-      </antTask> 
-       <antTask
-            library="feedTools.jar"
-            name="GetProperty"
-            class="org.eclipse.releng.generators.rss.RSSFeedGetPropertyTask">
-      </antTask>
-       <antTask
-            library="feedTools.jar"
-            name="UpdateEntry"
-            class="org.eclipse.releng.generators.rss.RSSFeedUpdateEntryTask">
-      </antTask>
-       <antTask
-            library="feedTools.jar"
-            name="PublishFeed"
-            class="org.eclipse.releng.services.rss.RSSFeedPublisherTask">
-      </antTask>
-       <antTask
-            library="feedTools.jar"
-            name="WatchFeed"
-            class="org.eclipse.releng.services.rss.RSSFeedWatcherTask">
-      </antTask> -->
     </extension>
 </plugin>

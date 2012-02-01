@@ -10,11 +10,34 @@
  *******************************************************************************/
 package org.eclipse.releng.generators;
 
-import java.io.*;
-import java.util.*;
-import javax.xml.parsers.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.Vector;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.tools.ant.Task;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -115,7 +138,7 @@ public class TestResultsGenerator extends Task {
 	// testResults.php.template for changes
 	private String[] testsConfig = { "linux.gtk.x86_6.0.xml", //
 			"macosx.cocoa.x86_5.0.xml", //
-			"win32.win32.x86_6.0.xml" };
+			"win32.win32.x86_7.0.xml" };
 
 	public static void main(String[] args) {
 		TestResultsGenerator test = new TestResultsGenerator();
