@@ -145,11 +145,11 @@ public class TestResultsGenerator extends Task {
 		test.setDropTokenList("%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
 		test.setPlatformIdentifierToken("%platform%");
 		test.getDropTokensFromList(test.dropTokenList);
-		test.setIsBuildTested(true);
-		test.setXmlDirectoryName("/Users/equinox/zzz/xml");
-		test.setHtmlDirectoryName("/Users/equinox/zzz/testresults");
-		test.setDropDirectoryName("/Users/equinox/zzz");
-		test.setTestResultsTemplateFileName("/Users/equinox/workspaces/head/org.eclipse.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/testResults.php.template");
+		test.setIsBuildTested(false);
+		test.setXmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults/xml");
+		test.setHtmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults");
+		test.setDropDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900");
+		test.setTestResultsTemplateFileName("/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/testResults.php.template");
 		test.setPlatformSpecificTemplateList("");
 		//		test.setPlatformSpecificTemplateList(
 		//				"Windows,C:\\junk\\templateFiles\\platform.php.template,winPlatform.php;" +
@@ -158,14 +158,14 @@ public class TestResultsGenerator extends Task {
 		//				"AIX,C:\\junk\\templateFiles\\platform.php.template,aixPlatform.php;" +
 		//				"Macintosh,C:\\junk\\templateFiles\\platform.php.template,macPlatform.php;" +
 		//				"Source Build,C:\\junk\\templateFiles\\sourceBuilds.php.template,sourceBuilds.php");
-		test.setDropTemplateFileName("/Users/equinox/workspaces/head/org.eclipse.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/index.php.template");
+		test.setDropTemplateFileName("/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/index.php.template");
 		test.setTestResultsHtmlFileName("testResults.php");
 		test.setDropHtmlFileName("index.php");
 
 		test.setHrefTestResultsTargetPath("testresults");
-		test.setCompileLogsDirectoryName("/Users/equinox/zzz/compilelogs/plugins");
+		test.setCompileLogsDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/compilelogs/plugins");
 		test.setHrefCompileLogsTargetPath("compilelogs");
-		test.setTestManifestFileName("/Users/equinox/workspaces/head/org.eclipse.releng.eclipsebuilder/equinox/publishingFiles/testManifest.xml");
+		test.setTestManifestFileName("/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/testManifest.xml");
 		test.execute();
 	}
 
