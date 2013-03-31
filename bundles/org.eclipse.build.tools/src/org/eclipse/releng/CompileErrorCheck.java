@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -80,7 +79,7 @@ public class CompileErrorCheck extends Task {
 	public void execute() throws BuildException {
 		if (parser == null) return;
 		findLogs(new File(install));
-		sendNotice();
+		//sendNotice();
 	}
 
 	// test
@@ -186,39 +185,39 @@ public class CompileErrorCheck extends Task {
 		}
 	}
 	
-	private void sendNotice() {
-		//send email notification that there are compile errors in the build
-		//send the logs as attachments
-		Enumeration enumeration = logsWithErrors.elements();
-
-		if (logsWithErrors.size() > 0) {
-			try{
-
-				Mailer mailer = new Mailer();
-				String [] logFiles = new String [logsWithErrors.size()];
-
-				int i=0;
-
-				while (enumeration.hasMoreElements()) {
-					logFiles[i++]=((File) enumeration.nextElement()).getAbsolutePath();
-				}
-
-				mailer.sendMultiPartMessage("Compile errors in build", "Compile errors in build.  See attached compile logs.", logFiles);
-			} catch (NoClassDefFoundError e){
-				while (enumeration.hasMoreElements()) {
-					String path=((File) enumeration.nextElement()).getAbsolutePath();
-					String nameWithPlugin=path.substring(path.indexOf("plugins"),path.length());
-					System.out.println("Compile errors detected in "+nameWithPlugin);
-				}
-
-				System.out.println("Unable to send email notice of compile errors.");
-				System.out.println("The j2ee.jar may not be on the Ant classpath.");
-
-			}
-
-		}
-
-	}
+//	private void sendNotice() {
+//		//send email notification that there are compile errors in the build
+//		//send the logs as attachments
+//		Enumeration enumeration = logsWithErrors.elements();
+//
+//		if (logsWithErrors.size() > 0) {
+//			try{
+//
+//				Mailer mailer = new Mailer();
+//				String [] logFiles = new String [logsWithErrors.size()];
+//
+//				int i=0;
+//
+//				while (enumeration.hasMoreElements()) {
+//					logFiles[i++]=((File) enumeration.nextElement()).getAbsolutePath();
+//				}
+//
+//				mailer.sendMultiPartMessage("Compile errors in build", "Compile errors in build.  See attached compile logs.", logFiles);
+//			} catch (NoClassDefFoundError e){
+//				while (enumeration.hasMoreElements()) {
+//					String path=((File) enumeration.nextElement()).getAbsolutePath();
+//					String nameWithPlugin=path.substring(path.indexOf("plugins"),path.length());
+//					System.out.println("Compile errors detected in "+nameWithPlugin);
+//				}
+//
+//				System.out.println("Unable to send email notice of compile errors.");
+//				System.out.println("The j2ee.jar may not be on the Ant classpath.");
+//
+//			}
+//
+//		}
+//
+//	}
 
 	/**
 	 * Gets the install.

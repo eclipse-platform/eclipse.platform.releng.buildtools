@@ -53,10 +53,6 @@ public class FileCounter extends Task {
 		System.out.println("Filter String: " + this.getFilterString());
 		
 		File aDirectory = new File(this.getSourceDirectory());
-		if (aDirectory == null) {
-			throw new BuildException("Directory " + this.getSourceDirectory() + " not found.");
-		}
-		
 		String[] names = aDirectory.list();
 		if (names == null) {
 			throw new BuildException("Directory " + this.getSourceDirectory() + " not found.");

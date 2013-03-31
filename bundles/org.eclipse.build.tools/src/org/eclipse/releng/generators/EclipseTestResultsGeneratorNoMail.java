@@ -5,7 +5,6 @@
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 package org.eclipse.releng.generators;
-import java.io.File;
 
 
 

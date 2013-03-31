@@ -245,15 +245,11 @@ public class TestVersionTracker extends Task{
 				NamedNodeMap map = node.getAttributes();
 				Node namedItem = map.getNamedItem("plugin");
 				String name = namedItem.getNodeValue();
-				if (namedItem == null) {
-					continue;
-				} else {
-					if (elements.containsKey(name)) {
-						if (!prerequisitePlugins.contains(name)) {
-							boolean prereqAdded = prerequisitePlugins.add(name);
-							if (prereqAdded) {
-								getPrerequisitePlugins(name);
-							}
+				if (elements.containsKey(name)) {
+					if (!prerequisitePlugins.contains(name)) {
+						boolean prereqAdded = prerequisitePlugins.add(name);
+						if (prereqAdded) {
+							getPrerequisitePlugins(name);
 						}
 					}
 				}
@@ -310,13 +306,9 @@ public class TestVersionTracker extends Task{
 				NamedNodeMap map = node.getAttributes();
 				Node namedItem = map.getNamedItem("name");
 				String name = namedItem.getNodeValue();
-				if (namedItem == null) {
-					continue;
-				} else {
-					if (name.equals("performance")){
-						hasPerformanceTarget=true;
-						return;
-					}
+				if (name.equals("performance")){
+					hasPerformanceTarget=true;
+					return;
 				}
 			}
 		}

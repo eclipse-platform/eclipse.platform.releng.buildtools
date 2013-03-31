@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name
+Bundle-SymbolicName: org.eclipse.build.tools; singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Localization: plugin
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Require-Bundle: org.apache.ant,
+ org.eclipse.osgi
+Bundle-ClassPath: buildTools.jar

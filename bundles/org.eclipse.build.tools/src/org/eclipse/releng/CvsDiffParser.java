@@ -52,7 +52,7 @@ public class CvsDiffParser extends Task {
 
 	public void execute() throws BuildException {
 		parseMapDiffFile();
-		sendNotice();
+		//sendNotice();
 	}
 
 	/**
@@ -109,25 +109,25 @@ public class CvsDiffParser extends Task {
 		}
 	}
 
-	private void sendNotice(){
-		
-		if (updatedMaps==null || updatedMaps.size()==0){
-			throw new BuildException("Build cancelled - map files unchanged.");
-		} 
-		
-		Mailer mailer = new Mailer();
-		
-		String subject="updated map file listing";
-		String message ="these map files have been updated for the build:\n\n";
-		
-		for (int i=0; i<updatedMaps.size();i++){
-			message=message.concat(updatedMaps.elementAt(i).toString()+"\n");
-		}
-		
-		try {
-			mailer.sendMessage(subject,message);
-		} catch (NoClassDefFoundError e){
-			System.out.println(message);
-		}		
-	}
+//	private void sendNotice(){
+//		
+//		if (updatedMaps==null || updatedMaps.size()==0){
+//			throw new BuildException("Build cancelled - map files unchanged.");
+//		} 
+//		
+//		Mailer mailer = new Mailer();
+//		
+//		String subject="updated map file listing";
+//		String message ="these map files have been updated for the build:\n\n";
+//		
+//		for (int i=0; i<updatedMaps.size();i++){
+//			message=message.concat(updatedMaps.elementAt(i).toString()+"\n");
+//		}
+//		
+//		try {
+//			mailer.sendMessage(subject,message);
+//		} catch (NoClassDefFoundError e){
+//			System.out.println(message);
+//		}		
+//	}
 }

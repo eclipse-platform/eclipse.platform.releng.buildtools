@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><jardesc>
+    <jar path="org.eclipse.build.tools/buildTools.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/org.eclipse.build.tools/buildTools.jar.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="false" manifestLocation="/org.eclipse.build.tools/buildTools.jar.MANIFEST.MF" manifestVersion="1.0" reuseManifest="true" saveManifest="true" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
+        <file path="/org.eclipse.build.tools/.classpath"/>
+        <folder path="/org.eclipse.build.tools/META-INF"/>
+        <file path="/org.eclipse.build.tools/build.properties"/>
+        <file path="/org.eclipse.build.tools/.project"/>
+        <file path="/org.eclipse.build.tools/about.html"/>
+        <file path="/org.eclipse.build.tools/plugin.xml"/>
+        <file path="/org.eclipse.build.tools/.gitignore"/>
+        <folder path="/org.eclipse.build.tools/scripts"/>
+        <javaElement handleIdentifier="=org.eclipse.build.tools/src"/>
+        <file path="/org.eclipse.build.tools/plugin.properties"/>
+    </selectedElements>
+</jardesc>
