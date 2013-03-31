@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Convert Application
+Bundle-SymbolicName: org.eclipse.releng.build.tools.convert.application;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.eclipse.releng.build.tools.convert.application.Activator
+Bundle-Vendor: Eclipse Platform Releng
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.releng.build.tools.convert;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-ActivationPolicy: lazy
