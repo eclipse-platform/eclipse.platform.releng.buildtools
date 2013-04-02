@@ -47,7 +47,6 @@
 
     </properties>
     <modules>
-        <module>support</module>
         <module>features</module>
         <module>bundles</module>
         <module>repository</module>
