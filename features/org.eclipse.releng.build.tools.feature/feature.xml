@@ -15,14 +15,6 @@
       %copyright
    </copyright>
 
-   <license url="%licenseURL">
-      %license
-   </license>
-
-   <requires>
-      <import feature="org.eclipse.platform"/>
-   </requires>
-
    <plugin
          id="org.eclipse.build.tools"
          download-size="0"
