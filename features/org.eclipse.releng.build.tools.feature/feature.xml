@@ -15,10 +15,6 @@
       %copyright
    </copyright>
 
-   <includes
-         id="org.eclipse.platform"
-         version="0.0.0"/>
-
    <plugin
          id="org.eclipse.build.tools"
          download-size="0"
