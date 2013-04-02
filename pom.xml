@@ -25,13 +25,74 @@
         <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
         <buildType>I</buildType>
         <buildId>${buildType}${buildTimestamp}</buildId>
+
+        <maven.test.skip>true</maven.test.skip>
+        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+        <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
+        <buildType>I</buildType>
+        <buildId>${buildType}${buildTimestamp}</buildId>
+        <comparator.repo>http://download.eclipse.org/eclipse/updates/4.3-I-builds</comparator.repo>
+        <egit-repo.url>http://download.eclipse.org/egit/updates</egit-repo.url>
+        <tycho-repo.url>https://oss.sonatype.org/content/repositories/public/</tycho-repo.url>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <cbi-jdt-repo.url>https://repo.eclipse.org/content/repositories/eclipse-staging/</cbi-jdt-repo.url>
+        <cbi-jdt-version>3.9.0.v20130313-2254</cbi-jdt-version>
+        <cbi-snapshots-repo.url>https://repo.eclipse.org/content/repositories/cbi-snapshots/</cbi-snapshots-repo.url>
+        <eclipse-repo.url>https://repo.eclipse.org/content/repositories/releases/</eclipse-repo.url>
+        <eclipse-p2-repo.url>http://download.eclipse.org/eclipse/updates/4.3-I-builds</eclipse-p2-repo.url>
+
+
+        <tycho.scmUrl>scm:git:git://git.eclipse.org/gitroot/platform/eclipse.platform.releng.buildtools</tycho.scmUrl>
+
+
     </properties>
     <modules>
         <module>features</module>
         <module>bundles</module>
         <module>repository</module>
     </modules>
-
+    <pluginRepositories>
+        <pluginRepository>
+            <id>tycho</id>
+            <url>${tycho-repo.url}</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>cbi-jdt</id>
+            <url>${cbi-jdt-repo.url}</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>eclipse</id>
+            <url>${eclipse-repo.url}</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>cbi-snapshots</id>
+            <url>${cbi-snapshots-repo.url}</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
     <repositories>
         <repository>
             <id>eclipse-platform-repository</id>
@@ -47,6 +108,23 @@
                 <version>${tycho.version}</version>
                 <extensions>true</extensions>
             </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-source-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>plugin-source</id>
+                        <goals>
+                            <goal>plugin-source</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -60,7 +138,18 @@
                         </archive>
                     </configuration>
                 </plugin>
-
+                <plugin>
+                    <groupId>org.eclipse.tycho</groupId>
+                    <artifactId>tycho-source-plugin</artifactId>
+                    <version>${tycho.version}</version>
+                    <configuration>
+                        <distinctSourceRoots>true</distinctSourceRoots>
+                        <strictSrcIncludes>false</strictSrcIncludes>
+                        <archive>
+                            <addMavenDescriptor>false</addMavenDescriptor>
+                        </archive>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.eclipse.tycho.extras</groupId>
                     <artifactId>tycho-custom-bundle-plugin</artifactId>
@@ -78,6 +167,64 @@
                                 <url>${comparator.repo}</url>
                             </repository>
                         </baselineRepositories>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.eclipse.tycho</groupId>
+                    <artifactId>tycho-compiler-plugin</artifactId>
+                    <version>${tycho.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.eclipse.jdt</groupId>
+                            <artifactId>org.eclipse.jdt.core</artifactId>
+                            <version>${cbi-jdt-version}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <compilerArgument>-warn:-deprecation,raw,unchecked</compilerArgument>
+                        <compilerArguments>
+                            <verbose />
+                            <inlineJSR />
+                            <enableJavadoc />
+                            <encoding>${project.build.sourceEncoding}</encoding>
+                            <proceedOnError />
+                            <log>${project.build.directory}/@dot.xml</log>
+                        </compilerArguments>
+                        <showWarnings>true</showWarnings>
+                        <excludeResources>
+                            <exclude>**/package.html</exclude>
+                        </excludeResources>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.eclipse.tycho</groupId>
+                    <artifactId>tycho-packaging-plugin</artifactId>
+                    <version>${tycho.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.eclipse.tycho.extras</groupId>
+                            <artifactId>tycho-buildtimestamp-jgit</artifactId>
+                            <version>${tycho-extras.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.eclipse.tycho.extras</groupId>
+                            <artifactId>tycho-sourceref-jgit</artifactId>
+                            <version>${tycho-extras.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <strictBinIncludes>false</strictBinIncludes>
+                        <format>'v'yyyyMMdd-HHmm</format>
+                        <timestampProvider>jgit</timestampProvider>
+                        <jgit.ignore>
+                            pom.xml
+                        </jgit.ignore>
+                        <sourceReferences>
+                            <generate>true</generate>
+                        </sourceReferences>
+                        <archive>
+                            <addMavenDescriptor>false</addMavenDescriptor>
+                        </archive>
                     </configuration>
                 </plugin>
             </plugins>
