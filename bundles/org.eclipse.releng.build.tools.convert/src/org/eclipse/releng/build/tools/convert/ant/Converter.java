@@ -35,7 +35,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class Converter {
+public class ConverterZZZZ {
 	private static final String HTML_EXTENSION = ".html"; //$NON-NLS-1$
 
 	private static final String TXT_EXTENSION = ".txt"; //$NON-NLS-1$
