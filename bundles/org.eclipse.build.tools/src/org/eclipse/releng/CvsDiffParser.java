@@ -32,7 +32,7 @@ import java.io.IOException;
  */
 public class CvsDiffParser extends Task {
 
-	private String mapDiffFileZZZZZ;
+	private String mapDiffFile;
 	private Vector updatedMaps;
 	
 	/**
