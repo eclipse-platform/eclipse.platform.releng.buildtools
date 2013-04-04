@@ -171,7 +171,7 @@
                         </dependency>
                     </dependencies>
                     <configuration>
-                        <failOnError>false</failOnError>
+                        <failOnError>true</failOnError>
                         <compilerArgument>-warn:-deprecation,raw,unchecked</compilerArgument>
                         <compilerArguments>
                             <verbose />
