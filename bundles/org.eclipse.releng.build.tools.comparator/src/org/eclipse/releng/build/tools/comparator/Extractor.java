@@ -1,3 +1,4 @@
+
 package org.eclipse.releng.build.tools.comparator;
 
 import java.io.BufferedReader;
@@ -20,101 +21,103 @@ import java.util.regex.Pattern;
  */
 public class Extractor {
 
-	private final String BUILD_DIRECTORY_PROPERTY = "builddirectory";
-	private final String debugFilename = "mb060_run-maven-build_output.txt";
-	private final String fullOutputFilename = "buildtimeComparatorFull.log";
-	private final String buildlogsDirectory = "buildlogs";
-	private String buildDirectory;
-	private String inputFilename;
-	private String outputFilenameFull;
-	private String regexPattern = "^\\[WARNING\\].*eclipse.platform.releng.aggregator/(.*)/pom.xml: baseline and build artifacts have same version but different contents";
-	private Pattern mainPattern = Pattern.compile(regexPattern);
-    private static final String EOL                = System.getProperty("line.separator", "\n");
+    private final String        BUILD_DIRECTORY_PROPERTY = "builddirectory";
+    private final String        debugFilename            = "mb060_run-maven-build_output.txt";
+    private final String        fullOutputFilename       = "buildtimeComparatorFull.log";
+    private final String        buildlogsDirectory       = "buildlogs";
+    private String              buildDirectory;
+    private String              inputFilename;
+    private String              outputFilenameFull;
+    private final String        regexPattern             = "^\\[WARNING\\].*eclipse.platform.releng.aggregator/(.*)/pom.xml: baseline and build artifacts have same version but different contents";
+    private final Pattern       mainPattern              = Pattern.compile(regexPattern);
+    private static final String EOL                      = System.getProperty("line.separator", "\n");
 
+    public static void main(final String[] args) {
+        final Extractor extractor = new Extractor();
+        if (args.length > 0) {
+            extractor.setBuildDirectory(args[0]);
+        }
+        // test only
+        extractor.setBuildDirectory("/home/davidw/temp/I20130416-1514");
+        try {
+            extractor.readInputfile();
+        }
+        catch (final IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	public Extractor() {
+    public Extractor() {
 
-	}
+    }
 
-	public static void main(String[] args) {
-		Extractor extractor = new Extractor();
-		if (args.length > 0) {
-			extractor.setBuildDirectory(args[0]);
-		}
-		// test only
-		extractor.setBuildDirectory("/home/davidw/temp/I20130416-1514");
-		try {
-			extractor.readInputfile();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    public String getBuildDirectory() {
+        // if not set explicitly, see if its a system property
+        if (buildDirectory == null) {
+            buildDirectory = System.getProperty(BUILD_DIRECTORY_PROPERTY);
+        }
+        return buildDirectory;
+    }
 
-	private String getInputFilename() {
-		if (inputFilename == null) {
-			inputFilename = getBuildDirectory() + "/" + buildlogsDirectory + "/" + debugFilename;
-		}
-		return inputFilename;
-	}
+    private String getInputFilename() {
+        if (inputFilename == null) {
+            inputFilename = getBuildDirectory() + "/" + buildlogsDirectory + "/" + debugFilename;
+        }
+        return inputFilename;
+    }
 
-	private String getOutputFilenameFull() {
-		if (outputFilenameFull == null) {
-			outputFilenameFull = getBuildDirectory() + "/" + buildlogsDirectory + "/" + fullOutputFilename;
-		}
-		return outputFilenameFull;
-	}
+    private String getOutputFilenameFull() {
+        if (outputFilenameFull == null) {
+            outputFilenameFull = getBuildDirectory() + "/" + buildlogsDirectory + "/" + fullOutputFilename;
+        }
+        return outputFilenameFull;
+    }
 
-	public String getBuildDirectory() {
-		// if not set explicitly, see if its a system property
-		if (buildDirectory == null) {
-			buildDirectory = System.getProperty(BUILD_DIRECTORY_PROPERTY);
-		}
-		return buildDirectory;
-	}
+    void readInputfile() throws IOException {
+        final File infile = new File(getInputFilename());
+        final Reader in = new FileReader(infile);
+        BufferedReader input = null;
+        input = new BufferedReader(in);
+        final File outfile = new File(getOutputFilenameFull());
+        final Writer out = new FileWriter(outfile);
+        final BufferedWriter output = new BufferedWriter(out);
+        output.write("Comparator differences from current build" + EOL);
+        output.write("\t" + getBuildDirectory() + EOL);
+        output.write("\t\t" + "compared to reference repo at .../eclipse/updates/4.3-I-builds" + EOL + EOL);
+        try {
+            String inputLine = "";
+            int count = 0;
+            while (inputLine != null) {
+                inputLine = input.readLine();
+                if (inputLine != null) {
+                    final Matcher matcher = mainPattern.matcher(inputLine);
+                    if (matcher.matches()) {
+                        count++;
+                        output.write(count + ".  " + matcher.group(1) + EOL);
+                        // read and write differences, until next blank line
+                        do {
+                            inputLine = input.readLine();
+                            if ((inputLine != null) && (inputLine.length() > 0)) {
+                                output.write(inputLine + EOL);
+                            }
+                        }
+                        while ((inputLine != null) && (inputLine.length() > 0));
+                        output.write(EOL);
+                    }
+                }
+            }
+        }
+        finally {
+            if (input != null) {
+                input.close();
+            }
+            if (output != null) {
+                output.close();
+            }
+        }
+    }
 
-	public void setBuildDirectory(String buildDirectory) {
-		this.buildDirectory = buildDirectory;
-	}
-
-	void readInputfile() throws IOException {
-		File infile = new File(getInputFilename());
-		Reader in = new FileReader(infile);
-		BufferedReader input = null;
-		input = new BufferedReader(in);
-		File outfile = new File(getOutputFilenameFull());
-		Writer out = new FileWriter(outfile);
-		BufferedWriter output = new BufferedWriter(out);
-		output.write("Comparator differences from current build" + EOL);
-		output.write("\t" + getBuildDirectory() + EOL);
-		output.write("\t\t" + "compared to reference repo at .../eclipse/updates/4.3-I-builds" + EOL + EOL);
-		try {
-			String inputLine = "";
-			int count = 0;
-			while (inputLine != null) {
-				inputLine = input.readLine();
-				if (inputLine != null) {
-					Matcher matcher = mainPattern.matcher(inputLine);
-					if (matcher.matches()) {
-						count++;
-						output.write(count  + ".  " + matcher.group(1) + EOL);
-						// read and write differences, until next blank line
-						do {
-							inputLine = input.readLine();
-							if (inputLine != null && inputLine.length() > 0) {
-								output.write(inputLine + EOL);
-							}
-						} while (inputLine != null && inputLine.length() > 0);
-						output.write(EOL);
-					}
-				}
-			}
-		} finally {
-			if (input != null) {
-				input.close();
-			}
-			if (output != null) {
-				output.close();
-			}
-		}
-	}
+    public void setBuildDirectory(final String buildDirectory) {
+        this.buildDirectory = buildDirectory;
+    }
 }

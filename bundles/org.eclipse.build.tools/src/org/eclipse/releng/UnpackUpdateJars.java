@@ -1,13 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
+ * Copyright (c) 2005, 2006 IBM Corporation and others. All rights reserved.
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors: IBM Corporation - initial API and implementation
  *******************************************************************************/
+
 package org.eclipse.releng;
 
 import java.io.BufferedReader;
@@ -33,188 +32,207 @@ import org.xml.sax.SAXException;
 
 public class UnpackUpdateJars extends Task {
 
-	/**
-	 * @param args
-	 */
-	//parent to plugins and features directory which contains update jars
-	private String site;
-	private String output;
-	ArrayList unpackedPlugins=new ArrayList();
-	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		UnpackUpdateJars up=new UnpackUpdateJars();
-		up.site="C:\\updatejars\\eclipse";
-		up.output="C:\\updatejars\\newsite";
-		up.execute();
-	}
+    class StreamHandler extends Thread {
 
-	public UnpackUpdateJars(){
-		super();
-	}
-	
-	//unpack features, then unpack plug-ins which are not set to unpack="false"
-	public void execute(){
-		new File(output).mkdirs();
-		new File(output+"/features").mkdirs();
-		new File(output+"/plugins").mkdirs();
+        InputStream is;
 
-		//extract features
-		File featureDir=new File(site,"features");
-		if (!featureDir.exists()){
-			return;
-		}
-		File[] features = featureDir.listFiles();
-		for (int i = 0; i < features.length; i++) {
-			File feature = features[i];
-			if (feature.getName().endsWith(".jar")) {
-				String fileName = feature.getName();
-				String unpackedFeatureName = fileName.substring(0, fileName.length() - 4);
-				File unPackedFeature=new File(output+"/features/"+ unpackedFeatureName);
-				unzip(feature, unPackedFeature);
-				getUnpackedPluginList(new File(unPackedFeature,"feature.xml"));
-			}
-		}
-		
-		//unpack plug-ins
-		for (int i=0;i<unpackedPlugins.size();i++){
-			File unpackedPluginDirName=new File(output+"/plugins/"+(String)unpackedPlugins.get(i));
-			File jardPlugin=new File(site,"plugins/"+(String)unpackedPlugins.get(i)+".jar");
-			if (jardPlugin.exists())
-				unzip (jardPlugin,unpackedPluginDirName);
-		}
-	}
+        String      type;
 
-	public void unzip(File src, File dest) {
-		Runtime rt = Runtime.getRuntime();
-		String command = "unzip -qo " + src.getPath() + " -d " + dest.getPath();
-		System.out.println("[exec] "+command);
-		Process proc = null;
-		try {
-			proc = rt.exec(command);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// pick up error messages
-		StreamHandler errorHandler = new StreamHandler(proc.getErrorStream(), "ERROR");
+        StreamHandler(final InputStream is, final String type) {
+            this.is = is;
+            this.type = type;
+        }
 
-		// pick up output
-		StreamHandler outputHandler = new StreamHandler(proc.getInputStream(), "OUTPUT");
+        @Override
+        public void run() {
+            try {
+                final InputStreamReader isr = new InputStreamReader(is);
+                final BufferedReader br = new BufferedReader(isr);
+                String line = null;
+                while ((line = br.readLine()) != null) {
+                    System.out.println(type + ">" + line);
+                }
+            }
+            catch (final IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+    }
 
-		// kick them off
-		errorHandler.start();
-		outputHandler.start();
+    public static void main(final String[] args) {
+        // TODO Auto-generated method stub
+        final UnpackUpdateJars up = new UnpackUpdateJars();
+        up.site = "C:\\updatejars\\eclipse";
+        up.output = "C:\\updatejars\\newsite";
+        up.execute();
+    }
 
-		// capture return code
-		int returnCode = 0;
-		try {
-			returnCode = proc.waitFor();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (returnCode!=0)
-			System.out.println("returnCode: " + returnCode);
+    /**
+     * @param args
+     */
+    // parent to plugins and features directory which contains update jars
+    private String site;
 
-	}
+    private String output;
 
-	class StreamHandler extends Thread {
-		InputStream is;
+    ArrayList      unpackedPlugins = new ArrayList();
 
-		String type;
+    public UnpackUpdateJars() {
+        super();
+    }
 
-		StreamHandler(InputStream is, String type) {
-			this.is = is;
-			this.type = type;
-		}
+    // unpack features, then unpack plug-ins which are not set to unpack="false"
+    @Override
+    public void execute() {
+        new File(output).mkdirs();
+        new File(output + "/features").mkdirs();
+        new File(output + "/plugins").mkdirs();
 
-		public void run() {
-			try {
-				InputStreamReader isr = new InputStreamReader(is);
-				BufferedReader br = new BufferedReader(isr);
-				String line = null;
-				while ((line = br.readLine()) != null)
-					System.out.println(type + ">" + line);
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			}
-		}
-	}
+        // extract features
+        final File featureDir = new File(site, "features");
+        if (!featureDir.exists()) {
+            return;
+        }
+        final File[] features = featureDir.listFiles();
+        for (int i = 0; i < features.length; i++) {
+            final File feature = features[i];
+            if (feature.getName().endsWith(".jar")) {
+                final String fileName = feature.getName();
+                final String unpackedFeatureName = fileName.substring(0, fileName.length() - 4);
+                final File unPackedFeature = new File(output + "/features/" + unpackedFeatureName);
+                unzip(feature, unPackedFeature);
+                getUnpackedPluginList(new File(unPackedFeature, "feature.xml"));
+            }
+        }
 
-	public String getSite() {
-		return site;
-	}
+        // unpack plug-ins
+        for (int i = 0; i < unpackedPlugins.size(); i++) {
+            final File unpackedPluginDirName = new File(output + "/plugins/" + (String) unpackedPlugins.get(i));
+            final File jardPlugin = new File(site, "plugins/" + (String) unpackedPlugins.get(i) + ".jar");
+            if (jardPlugin.exists()) {
+                unzip(jardPlugin, unpackedPluginDirName);
+            }
+        }
+    }
 
-	public void setSite(String site) {
-		this.site = site;
-	}
+    public String getOutput() {
+        return output;
+    }
 
-	private void getUnpackedPluginList(File featureXml) {
-		Document aDocument=null;
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader(featureXml));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+    public String getSite() {
+        return site;
+    }
 
-		InputSource inputSource = new InputSource(reader);
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder builder = null;
+    private void getUnpackedPluginList(final File featureXml) {
+        Document aDocument = null;
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(featureXml));
+        }
+        catch (final FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
-		try {
-			builder = factory.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		}
+        final InputSource inputSource = new InputSource(reader);
+        final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = null;
 
-		try {
-			aDocument = builder.parse(inputSource);
-		} catch (SAXException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		// Get feature attributes
-		NodeList nodeList=aDocument.getElementsByTagName("plugin");
-		if (nodeList==null)
-			return;
-		
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node pluginNode = nodeList.item(i);
-			NamedNodeMap aNamedNodeMap = pluginNode.getAttributes();
-			Node idNode = aNamedNodeMap.getNamedItem("id");
-			Node versionNode = aNamedNodeMap.getNamedItem("version");
-			String pluginDirName = idNode.getNodeValue() + "_" + versionNode.getNodeValue();
-			Node unpackNode = aNamedNodeMap.getNamedItem("unpack");
-			if (unpackNode == null) {
-				if (!unpackedPlugins.contains(pluginDirName)) {
-					unpackedPlugins.add(pluginDirName);
-				}
-				continue;
-			}
-			
-			if (unpackNode.getNodeValue().toString().trim().toLowerCase().equals("true")) {
-				if (!unpackedPlugins.contains(pluginDirName)){
-					System.out.println(pluginDirName);
-					unpackedPlugins.add(pluginDirName);
-				}
-				continue;
-			}
-			//copy file to new location
-			File jardPlugin=new File(site,"plugins/"+pluginDirName+".jar");
-			if (jardPlugin.exists())
-				if (!jardPlugin.renameTo(new File(output,"plugins/"+pluginDirName+".jar")))
-					System.out.println("Failed to move "+jardPlugin.getAbsolutePath()+" to "+output+"plugins/"+pluginDirName+".jar");
-		}
-	}
+        try {
+            builder = factory.newDocumentBuilder();
+        }
+        catch (final ParserConfigurationException e) {
+            e.printStackTrace();
+        }
 
-	public String getOutput() {
-		return output;
-	}
+        try {
+            aDocument = builder.parse(inputSource);
+        }
+        catch (final SAXException e) {
+            e.printStackTrace();
+        }
+        catch (final IOException e) {
+            e.printStackTrace();
+        }
+        // Get feature attributes
+        final NodeList nodeList = aDocument.getElementsByTagName("plugin");
+        if (nodeList == null) {
+            return;
+        }
 
-	public void setOutput(String output) {
-		this.output = output;
-	}	
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            final Node pluginNode = nodeList.item(i);
+            final NamedNodeMap aNamedNodeMap = pluginNode.getAttributes();
+            final Node idNode = aNamedNodeMap.getNamedItem("id");
+            final Node versionNode = aNamedNodeMap.getNamedItem("version");
+            final String pluginDirName = idNode.getNodeValue() + "_" + versionNode.getNodeValue();
+            final Node unpackNode = aNamedNodeMap.getNamedItem("unpack");
+            if (unpackNode == null) {
+                if (!unpackedPlugins.contains(pluginDirName)) {
+                    unpackedPlugins.add(pluginDirName);
+                }
+                continue;
+            }
+
+            if (unpackNode.getNodeValue().toString().trim().toLowerCase().equals("true")) {
+                if (!unpackedPlugins.contains(pluginDirName)) {
+                    System.out.println(pluginDirName);
+                    unpackedPlugins.add(pluginDirName);
+                }
+                continue;
+            }
+            // copy file to new location
+            final File jardPlugin = new File(site, "plugins/" + pluginDirName + ".jar");
+            if (jardPlugin.exists()) {
+                if (!jardPlugin.renameTo(new File(output, "plugins/" + pluginDirName + ".jar"))) {
+                    System.out.println("Failed to move " + jardPlugin.getAbsolutePath() + " to " + output + "plugins/"
+                            + pluginDirName + ".jar");
+                }
+            }
+        }
+    }
+
+    public void setOutput(final String output) {
+        this.output = output;
+    }
+
+    public void setSite(final String site) {
+        this.site = site;
+    }
+
+    public void unzip(final File src, final File dest) {
+        final Runtime rt = Runtime.getRuntime();
+        final String command = "unzip -qo " + src.getPath() + " -d " + dest.getPath();
+        System.out.println("[exec] " + command);
+        Process proc = null;
+        try {
+            proc = rt.exec(command);
+        }
+        catch (final IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        // pick up error messages
+        final StreamHandler errorHandler = new StreamHandler(proc.getErrorStream(), "ERROR");
+
+        // pick up output
+        final StreamHandler outputHandler = new StreamHandler(proc.getInputStream(), "OUTPUT");
+
+        // kick them off
+        errorHandler.start();
+        outputHandler.start();
+
+        // capture return code
+        int returnCode = 0;
+        try {
+            returnCode = proc.waitFor();
+        }
+        catch (final InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        if (returnCode != 0) {
+            System.out.println("returnCode: " + returnCode);
+        }
+
+    }
 }
