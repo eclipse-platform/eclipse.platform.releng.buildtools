@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,14 +23,6 @@ import java.util.regex.Pattern;
 public class Extractor {
 
     public final static String  BUILD_DIRECTORY_PROPERTY = "builddirectory";
-    private final String        debugFilename            = "mb060_run-maven-build_output.txt";
-    private final String        fullOutputFilename       = "buildtimeComparatorFull.log";
-    private final String        buildlogsDirectory       = "buildlogs";
-    private String              buildDirectory;
-    private String              inputFilename;
-    private String              outputFilenameFull;
-    private final String        regexPattern             = "^\\[WARNING\\].*eclipse.platform.releng.aggregator/(.*)/pom.xml: baseline and build artifacts have same version but different contents";
-    private final Pattern       mainPattern              = Pattern.compile(regexPattern);
     private static final String EOL                      = System.getProperty("line.separator", "\n");
 
     public static void main(final String[] args) {
@@ -47,8 +40,48 @@ public class Extractor {
         }
     }
 
+    private final String  debugFilename                  = "mb060_run-maven-build_output.txt";
+    private final String  outputFilenameFull             = "buildtimeComparatorFull.log";
+    private final String  outputFilenameSign             = "buildtimeComparatorSignatureOnly.log";
+    private final String  outputFilenameDoc              = "buildtimeComparatorDocBundle.log";
+    private final String  outputFilenameOther            = "buildtimeComparatorUnanticipated.log";
+    private final String  buildlogsDirectory             = "buildlogs";
+    private String        buildDirectory;
+    private String        inputFilename;
+    private String        outputFilenameFullLog;
+    private String        outputFilenameSignLog;
+    private String        outputFilenameDocLog;
+    private String        outputFilenameOtherLog;
+    private final String  mainregexPattern               = "^\\[WARNING\\].*eclipse.platform.releng.aggregator/(.*)/pom.xml: baseline and build artifacts have same version but different contents";
+    private final Pattern mainPattern                    = Pattern.compile(mainregexPattern);
+    private final String  noclassifierregexPattern       = "^.*no-classifier:.*$";
+    private final Pattern noclassifierPattern            = Pattern.compile(noclassifierregexPattern);
+    private final String  classifier_sourcesregexPattern = "^.*classifier-sources:.*$";
+    private final Pattern classifier_sourcesPattern      = Pattern.compile(classifier_sourcesregexPattern);
+    private final String  sign1regexPattern              = "^.*META-INF/ECLIPSE_.RSA.*$";
+    private final Pattern sign1Pattern                   = Pattern.compile(sign1regexPattern);
+    private final String  sign2regexPattern              = "^.*META-INF/ECLIPSE_.SF.*$";
+    private final Pattern sign2Pattern                   = Pattern.compile(sign2regexPattern);
+    private final String  docNameregexPattern            = "^.*eclipse\\.platform\\.common.*\\.doc\\..*$";
+    private final Pattern docNamePattern                 = Pattern.compile(docNameregexPattern);
+    private int           count;
+    private int           countSign;
+    private int           countDoc;
+
+    private int           countOther;
+
     public Extractor() {
 
+    }
+
+    private boolean docItem(final LogEntry newEntry) {
+        boolean result = false;
+        final String name = newEntry.getName();
+        final Matcher matcher = docNamePattern.matcher(name);
+        if (matcher.matches()) {
+            result = true;
+        }
+        return result;
     }
 
     public String getBuildDirectory() {
@@ -66,11 +99,32 @@ public class Extractor {
         return inputFilename;
     }
 
-    private String getOutputFilenameFull() {
-        if (outputFilenameFull == null) {
-            outputFilenameFull = getBuildDirectory() + "/" + buildlogsDirectory + "/" + fullOutputFilename;
+    private String getOutputFilenameDoc() {
+        if (outputFilenameDocLog == null) {
+            outputFilenameDocLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + outputFilenameDoc;
         }
-        return outputFilenameFull;
+        return outputFilenameDocLog;
+    }
+
+    private String getOutputFilenameFull() {
+        if (outputFilenameFullLog == null) {
+            outputFilenameFullLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + outputFilenameFull;
+        }
+        return outputFilenameFullLog;
+    }
+
+    private String getOutputFilenameOther() {
+        if (outputFilenameOtherLog == null) {
+            outputFilenameOtherLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + outputFilenameOther;
+        }
+        return outputFilenameOtherLog;
+    }
+
+    private String getOutputFilenameSign() {
+        if (outputFilenameSignLog == null) {
+            outputFilenameSignLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + outputFilenameSign;
+        }
+        return outputFilenameSignLog;
     }
 
     public void processBuildfile() throws IOException {
@@ -81,43 +135,69 @@ public class Extractor {
         final File outfile = new File(getOutputFilenameFull());
         final Writer out = new FileWriter(outfile);
         final BufferedWriter output = new BufferedWriter(out);
+
+        final File outfileSign = new File(getOutputFilenameSign());
+        final Writer outsign = new FileWriter(outfileSign);
+        final BufferedWriter outputSign = new BufferedWriter(outsign);
+
+        final File outfileDoc = new File(getOutputFilenameDoc());
+        final Writer outdoc = new FileWriter(outfileDoc);
+        final BufferedWriter outputDoc = new BufferedWriter(outdoc);
+
+        final File outfileOther = new File(getOutputFilenameOther());
+        final Writer outother = new FileWriter(outfileOther);
+        final BufferedWriter outputOther = new BufferedWriter(outother);
+
         output.write("Comparator differences from current build" + EOL);
         output.write("\t" + getBuildDirectory() + EOL);
         output.write("\t\t" + "compared to reference repo at .../eclipse/updates/4.3-I-builds" + EOL + EOL);
+        count = 0;
+        countSign = 0;
+        countDoc = 0;
+        countOther = 0;
         try {
             String inputLine = "";
-            int count = 0;
+
             while (inputLine != null) {
                 inputLine = input.readLine();
                 if (inputLine != null) {
                     final Matcher matcher = mainPattern.matcher(inputLine);
                     if (matcher.matches()) {
-                        count++;
-                        output.write(count + ".  " + matcher.group(1) + EOL);
+
+                        final LogEntry newEntry = new LogEntry();
+                        newEntry.setName(matcher.group(1));
                         // read and write differences, until next blank line
                         do {
                             inputLine = input.readLine();
                             if ((inputLine != null) && (inputLine.length() > 0)) {
-                                output.write(inputLine + EOL);
+                                newEntry.addReason(inputLine);
                             }
                         }
                         while ((inputLine != null) && (inputLine.length() > 0));
-                        output.write(EOL);
+                        // //output.write(EOL);
                         // now, do one more, to get the "info" that says
                         // what was copied, or not.
                         do {
                             inputLine = input.readLine();
                             if ((inputLine != null) && (inputLine.length() > 0)) {
                                 // except leave out the first line, which is a
-                                // long
-                                // [INFO] line repeating what we already know.
+                                // long [INFO] line repeating what we already
+                                // know.
                                 if (!inputLine.startsWith("[INFO]")) {
-                                    output.write(inputLine + EOL);
+                                    newEntry.addInfo(inputLine);
                                 }
                             }
                         }
                         while ((inputLine != null) && (inputLine.length() > 0));
-                        output.write(EOL);
+                        // Write full log, for sanity check, if nothing else
+                        writeEntry(count, output, newEntry);
+                        if (docItem(newEntry)) {
+                            writeEntry(countDoc, outputDoc, newEntry);
+                        } else if (pureSignature(newEntry)) {
+                            writeEntry(countSign, outputSign, newEntry);
+                        } else {
+                            writeEntry(countOther, outputOther, newEntry);
+                        }
                     }
                 }
             }
@@ -129,10 +209,57 @@ public class Extractor {
             if (output != null) {
                 output.close();
             }
+            if (outputSign != null) {
+                outputSign.close();
+            }
+            if (outputDoc != null) {
+                outputDoc.close();
+            }
+            if (outputOther != null) {
+                outputOther.close();
+            }
         }
+    }
+
+    private boolean pureSignature(final LogEntry newEntry) {
+        // if all lines match one of these critical patterns,
+        // then assume "signature only" difference. If even
+        // one of them does not match, assume not.
+        boolean result = true;
+        final List<String> reasons = newEntry.getReasons();
+        for (final String reason : reasons) {
+            final Matcher matcher1 = noclassifierPattern.matcher(reason);
+            final Matcher matcher2 = classifier_sourcesPattern.matcher(reason);
+            final Matcher matcher3 = sign1Pattern.matcher(reason);
+            final Matcher matcher4 = sign2Pattern.matcher(reason);
+
+            if (matcher1.matches() || matcher2.matches() || matcher3.matches() || matcher4.matches()) {
+                continue;
+            } else {
+                result = false;
+                break;
+            }
+        }
+
+        return result;
     }
 
     public void setBuildDirectory(final String buildDirectory) {
         this.buildDirectory = buildDirectory;
+    }
+
+    private void writeEntry(int thistypeCount, final Writer output, final LogEntry newEntry) throws IOException {
+
+        thistypeCount++;
+        output.write(count + ".  " + newEntry.getName() + EOL);
+        final List<String> reasons = newEntry.getReasons();
+        for (final String reason : reasons) {
+            output.write(reason + EOL);
+        }
+        final List<String> infolist = newEntry.getInfo();
+        for (final String info : infolist) {
+            output.write(info + EOL);
+        }
+        output.write(EOL);
     }
 }
