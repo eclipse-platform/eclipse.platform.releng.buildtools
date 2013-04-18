@@ -30,8 +30,8 @@ public class Extractor {
         if (args.length > 0) {
             extractor.setBuildDirectory(args[0]);
         }
-        // test only
-        extractor.setBuildDirectory("/home/davidw/temp/I20130417-1750");
+        // set explicitly for local test
+        // extractor.setBuildDirectory("/home/davidw/temp/I20130417-1750zz");
         try {
             extractor.processBuildfile();
         }
@@ -67,7 +67,6 @@ public class Extractor {
     private int           count;
     private int           countSign;
     private int           countDoc;
-
     private int           countOther;
 
     public Extractor() {
@@ -148,9 +147,10 @@ public class Extractor {
         final Writer outother = new FileWriter(outfileOther);
         final BufferedWriter outputOther = new BufferedWriter(outother);
 
-        output.write("Comparator differences from current build" + EOL);
-        output.write("\t" + getBuildDirectory() + EOL);
-        output.write("\t\t" + "compared to reference repo at .../eclipse/updates/4.3-I-builds" + EOL + EOL);
+        writeHeader(output);
+        writeHeader(outputSign);
+        writeHeader(outputDoc);
+        writeHeader(outputOther);
         count = 0;
         countSign = 0;
         countDoc = 0;
@@ -190,13 +190,13 @@ public class Extractor {
                         }
                         while ((inputLine != null) && (inputLine.length() > 0));
                         // Write full log, for sanity check, if nothing else
-                        writeEntry(count, output, newEntry);
+                        writeEntry(++count, output, newEntry);
                         if (docItem(newEntry)) {
-                            writeEntry(countDoc, outputDoc, newEntry);
+                            writeEntry(++countDoc, outputDoc, newEntry);
                         } else if (pureSignature(newEntry)) {
-                            writeEntry(countSign, outputSign, newEntry);
+                            writeEntry(++countSign, outputSign, newEntry);
                         } else {
-                            writeEntry(countOther, outputOther, newEntry);
+                            writeEntry(++countOther, outputOther, newEntry);
                         }
                     }
                 }
@@ -219,6 +219,12 @@ public class Extractor {
                 outputOther.close();
             }
         }
+    }
+
+    private void writeHeader(final BufferedWriter output) throws IOException {
+        output.write("Comparator differences from current build" + EOL);
+        output.write("\t" + getBuildDirectory() + EOL);
+        output.write("\t\t" + "compared to reference repo at .../eclipse/updates/4.3-I-builds" + EOL + EOL);
     }
 
     private boolean pureSignature(final LogEntry newEntry) {
@@ -250,8 +256,7 @@ public class Extractor {
 
     private void writeEntry(int thistypeCount, final Writer output, final LogEntry newEntry) throws IOException {
 
-        thistypeCount++;
-        output.write(count + ".  " + newEntry.getName() + EOL);
+        output.write(thistypeCount + ".  " + newEntry.getName() + EOL);
         final List<String> reasons = newEntry.getReasons();
         for (final String reason : reasons) {
             output.write(reason + EOL);
