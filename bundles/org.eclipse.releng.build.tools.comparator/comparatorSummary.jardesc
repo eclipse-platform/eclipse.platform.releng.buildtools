@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><jardesc>
+    <jar path="org.eclipse.releng.build.tools.comparator/comparatorSummary.jar"/>
+    <options buildIfNeeded="true" compress="false" descriptionLocation="/org.eclipse.releng.build.tools.comparator/comparatorSummary.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="/org.eclipse.releng.build.tools.comparator/comparatorSummary.jar.MANIFEST.MF" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="false" exportJavaFiles="true" exportOutputFolder="true">
+        <file path="/org.eclipse.releng.build.tools.comparator/plugin.xml"/>
+        <folder path="/org.eclipse.releng.build.tools.comparator/META-INF"/>
+        <javaElement handleIdentifier="=org.eclipse.releng.build.tools.comparator/src"/>
+    </selectedElements>
+</jardesc>
