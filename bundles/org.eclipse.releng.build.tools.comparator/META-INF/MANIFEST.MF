@@ -1,7 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Build-time comparator log analysis
-Bundle-SymbolicName: org.eclipse.releng.build.tools.comparator
+Bundle-SymbolicName: org.eclipse.releng.build.tools.comparator;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Eclipse Platform Releng
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Require-Bundle: org.apache.ant,
+ org.eclipse.ant.core;bundle-version="3.2.500"
+Bundle-ClassPath: comparatorSummary.jar

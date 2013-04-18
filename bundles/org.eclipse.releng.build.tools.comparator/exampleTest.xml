@@ -1,0 +1,20 @@
+<project
+    name="Eclipse Test Comparator"
+    default="testSummary"
+    basedir=".">
+
+    <!--
+        Ant properties buildDirectory must be set for this script, typically
+        by caller, but we set here for quick test from workspace..
+    -->
+
+    <property
+        name="buildDirectory"
+        value="/home/davidw/temp/I20130417-1102/" />
+
+    <target name="testSummary">
+
+        <comparatorSummary />
+
+    </target>
+</project>

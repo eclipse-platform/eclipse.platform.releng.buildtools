@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  */
 public class Extractor {
 
-    private final String        BUILD_DIRECTORY_PROPERTY = "builddirectory";
+    public final static String  BUILD_DIRECTORY_PROPERTY = "builddirectory";
     private final String        debugFilename            = "mb060_run-maven-build_output.txt";
     private final String        fullOutputFilename       = "buildtimeComparatorFull.log";
     private final String        buildlogsDirectory       = "buildlogs";
@@ -38,9 +38,9 @@ public class Extractor {
             extractor.setBuildDirectory(args[0]);
         }
         // test only
-        extractor.setBuildDirectory("/home/davidw/temp/I20130416-1514");
+        extractor.setBuildDirectory("/home/davidw/temp/I20130417-1750");
         try {
-            extractor.readInputfile();
+            extractor.processBuildfile();
         }
         catch (final IOException e) {
             e.printStackTrace();
@@ -73,7 +73,7 @@ public class Extractor {
         return outputFilenameFull;
     }
 
-    void readInputfile() throws IOException {
+    public void processBuildfile() throws IOException {
         final File infile = new File(getInputFilename());
         final Reader in = new FileReader(infile);
         BufferedReader input = null;
@@ -99,6 +99,21 @@ public class Extractor {
                             inputLine = input.readLine();
                             if ((inputLine != null) && (inputLine.length() > 0)) {
                                 output.write(inputLine + EOL);
+                            }
+                        }
+                        while ((inputLine != null) && (inputLine.length() > 0));
+                        output.write(EOL);
+                        // now, do one more, to get the "info" that says
+                        // what was copied, or not.
+                        do {
+                            inputLine = input.readLine();
+                            if ((inputLine != null) && (inputLine.length() > 0)) {
+                                // except leave out the first line, which is a
+                                // long
+                                // [INFO] line repeating what we already know.
+                                if (!inputLine.startsWith("[INFO]")) {
+                                    output.write(inputLine + EOL);
+                                }
                             }
                         }
                         while ((inputLine != null) && (inputLine.length() > 0));
