@@ -3,15 +3,17 @@
     <options buildIfNeeded="true" compress="false" descriptionLocation="/org.eclipse.releng.build.tools.comparator/comparatorSummary.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>
-    <manifest generateManifest="false" manifestLocation="/org.eclipse.releng.build.tools.comparator/META-INF/MANIFEST.MF" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+    <manifest generateManifest="true" manifestLocation="/org.eclipse.releng.build.tools.comparator/META-INF/MANIFEST.MF" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
         <sealing sealJar="false">
             <packagesToSeal/>
             <packagesToUnSeal/>
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
-        <file path="/org.eclipse.releng.build.tools.comparator/plugin.xml"/>
-        <folder path="/org.eclipse.releng.build.tools.comparator/META-INF"/>
+        <file path="/org.eclipse.releng.build.tools.comparator/about.html"/>
         <javaElement handleIdentifier="=org.eclipse.releng.build.tools.comparator/src"/>
+        <folder path="/org.eclipse.releng.build.tools.comparator/META-INF"/>
+        <file path="/org.eclipse.releng.build.tools.comparator/plugin.properties"/>
+        <file path="/org.eclipse.releng.build.tools.comparator/plugin.xml"/>
     </selectedElements>
 </jardesc>

@@ -5,8 +5,6 @@
 
     <extension point="org.eclipse.ant.core.extraClasspathEntries">
         <extraClasspathEntry
-              eclipseRuntime="true"
-              headless="true"
               library="comparatorSummary.jar">
         </extraClasspathEntry>
     </extension>
@@ -14,8 +12,6 @@
     <extension point="org.eclipse.ant.core.antTasks">
         <antTask
               class="org.eclipse.releng.build.tools.comparator.ant.ComparatorSummaryReport"
-              eclipseRuntime="true"
-              headless="true"
               library="comparatorSummary.jar"
               name="comparatorSummary">
         </antTask>
