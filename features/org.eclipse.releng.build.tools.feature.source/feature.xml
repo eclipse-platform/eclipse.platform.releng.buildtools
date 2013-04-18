@@ -17,22 +17,21 @@
 
    <plugin
          id="org.eclipse.build.tools.source"
-         download-size="0"
-         install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.releng.build.tools.convert.source"
-         download-size="0"
-         install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.releng.build.tools.convert.application.source"
-         download-size="0"
-         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.releng.build.tools.comparator.source"
          version="0.0.0"
          unpack="false"/>
 
