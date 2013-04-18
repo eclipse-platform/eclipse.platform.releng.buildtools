@@ -14,7 +14,7 @@
 
     <target name="testSummary">
 
-        <comparatorSummary />
+        <comparatorSummary builddirectory="${buildDirectory}"/>
 
     </target>
 </project>
