@@ -40,30 +40,33 @@ public class Extractor {
         }
     }
 
-    private final String  debugFilename                  = "mb060_run-maven-build_output.txt";
-    private final String  outputFilenameFull             = "buildtimeComparatorFull.log";
-    private final String  outputFilenameSign             = "buildtimeComparatorSignatureOnly.log";
-    private final String  outputFilenameDoc              = "buildtimeComparatorDocBundle.log";
-    private final String  outputFilenameOther            = "buildtimeComparatorUnanticipated.log";
-    private final String  buildlogsDirectory             = "buildlogs";
+    private final String  debugFilename                         = "mb060_run-maven-build_output.txt";
+    private final String  outputFilenameFull                    = "buildtimeComparatorFull.log";
+    private final String  outputFilenameSign                    = "buildtimeComparatorSignatureOnly.log";
+    private final String  outputFilenameDoc                     = "buildtimeComparatorDocBundle.log";
+    private final String  outputFilenameOther                   = "buildtimeComparatorUnanticipated.log";
+    private final String  buildlogsDirectory                    = "buildlogs";
     private String        buildDirectory;
     private String        inputFilename;
     private String        outputFilenameFullLog;
     private String        outputFilenameSignLog;
     private String        outputFilenameDocLog;
     private String        outputFilenameOtherLog;
-    private final String  mainregexPattern               = "^\\[WARNING\\].*eclipse.platform.releng.aggregator/(.*)/pom.xml: baseline and build artifacts have same version but different contents";
-    private final Pattern mainPattern                    = Pattern.compile(mainregexPattern);
-    private final String  noclassifierregexPattern       = "^.*no-classifier:.*$";
-    private final Pattern noclassifierPattern            = Pattern.compile(noclassifierregexPattern);
-    private final String  classifier_sourcesregexPattern = "^.*classifier-sources:.*$";
-    private final Pattern classifier_sourcesPattern      = Pattern.compile(classifier_sourcesregexPattern);
-    private final String  sign1regexPattern              = "^.*META-INF/ECLIPSE_.RSA.*$";
-    private final Pattern sign1Pattern                   = Pattern.compile(sign1regexPattern);
-    private final String  sign2regexPattern              = "^.*META-INF/ECLIPSE_.SF.*$";
-    private final Pattern sign2Pattern                   = Pattern.compile(sign2regexPattern);
-    private final String  docNameregexPattern            = "^.*eclipse\\.platform\\.common.*\\.doc\\..*$";
-    private final Pattern docNamePattern                 = Pattern.compile(docNameregexPattern);
+    private final String  mainregexPattern                      = "^\\[WARNING\\].*eclipse.platform.releng.aggregator/(.*)/pom.xml: baseline and build artifacts have same version but different contents";
+    private final Pattern mainPattern                           = Pattern.compile(mainregexPattern);
+    private final String  noclassifierregexPattern              = "^.*no-classifier:.*$";
+    private final Pattern noclassifierPattern                   = Pattern.compile(noclassifierregexPattern);
+    private final String  classifier_sourcesregexPattern        = "^.*classifier-sources:.*$";
+    private final Pattern classifier_sourcesPattern             = Pattern.compile(classifier_sourcesregexPattern);
+    private final String  classifier_sourcesfeatureregexPattern = "^.*classifier-sources-feature:.*$";
+    private final Pattern classifier_sourcesfeaturePattern      = Pattern.compile(classifier_sourcesfeatureregexPattern);
+
+    private final String  sign1regexPattern                     = "^.*META-INF/ECLIPSE_.RSA.*$";
+    private final Pattern sign1Pattern                          = Pattern.compile(sign1regexPattern);
+    private final String  sign2regexPattern                     = "^.*META-INF/ECLIPSE_.SF.*$";
+    private final Pattern sign2Pattern                          = Pattern.compile(sign2regexPattern);
+    private final String  docNameregexPattern                   = "^.*eclipse\\.platform\\.common.*\\.doc\\..*$";
+    private final Pattern docNamePattern                        = Pattern.compile(docNameregexPattern);
     private int           count;
     private int           countSign;
     private int           countDoc;
@@ -236,10 +239,11 @@ public class Extractor {
         for (final String reason : reasons) {
             final Matcher matcher1 = noclassifierPattern.matcher(reason);
             final Matcher matcher2 = classifier_sourcesPattern.matcher(reason);
-            final Matcher matcher3 = sign1Pattern.matcher(reason);
-            final Matcher matcher4 = sign2Pattern.matcher(reason);
+            final Matcher matcher3 = classifier_sourcesfeaturePattern.matcher(reason);
+            final Matcher matcher4 = sign1Pattern.matcher(reason);
+            final Matcher matcher5 = sign2Pattern.matcher(reason);
 
-            if (matcher1.matches() || matcher2.matches() || matcher3.matches() || matcher4.matches()) {
+            if (matcher1.matches() || matcher2.matches() || matcher3.matches() || matcher4.matches() || matcher5.matches()) {
                 continue;
             } else {
                 result = false;
