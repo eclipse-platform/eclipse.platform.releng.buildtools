@@ -46,6 +46,7 @@ public class Extractor {
     private final String  outputFilenameDoc                     = "buildtimeComparatorDocBundle.log";
     private final String  outputFilenameOther                   = "buildtimeComparatorUnanticipated.log";
     private final String  buildlogsDirectory                    = "buildlogs";
+    private final String  comparatorLogsDirectory              = "comparatorlogs";
     private String        buildDirectory;
     private String        inputFilename;
     private String        outputFilenameFullLog;
@@ -96,40 +97,47 @@ public class Extractor {
 
     private String getInputFilename() {
         if (inputFilename == null) {
-            inputFilename = getBuildDirectory() + "/" + buildlogsDirectory + "/" + debugFilename;
+            inputFilename = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"  + debugFilename;
         }
         return inputFilename;
     }
 
     private String getOutputFilenameDoc() {
         if (outputFilenameDocLog == null) {
-            outputFilenameDocLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + outputFilenameDoc;
+            outputFilenameDocLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"  + outputFilenameDoc;
         }
         return outputFilenameDocLog;
     }
 
     private String getOutputFilenameFull() {
         if (outputFilenameFullLog == null) {
-            outputFilenameFullLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + outputFilenameFull;
+            outputFilenameFullLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"  + outputFilenameFull;
         }
         return outputFilenameFullLog;
     }
 
     private String getOutputFilenameOther() {
         if (outputFilenameOtherLog == null) {
-            outputFilenameOtherLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + outputFilenameOther;
+            outputFilenameOtherLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"  + outputFilenameOther;
         }
         return outputFilenameOtherLog;
     }
 
     private String getOutputFilenameSign() {
         if (outputFilenameSignLog == null) {
-            outputFilenameSignLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + outputFilenameSign;
+            outputFilenameSignLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"  + outputFilenameSign;
         }
         return outputFilenameSignLog;
     }
 
     public void processBuildfile() throws IOException {
+        
+        // Make sure directory exists
+        File outputDir = new File(getBuildDirectory() + "/" + buildlogsDirectory, comparatorLogsDirectory);
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+        
         final File infile = new File(getInputFilename());
         final Reader in = new FileReader(infile);
         BufferedReader input = null;
