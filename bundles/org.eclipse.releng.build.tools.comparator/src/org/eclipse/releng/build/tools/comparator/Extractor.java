@@ -97,7 +97,7 @@ public class Extractor {
 
     private String getInputFilename() {
         if (inputFilename == null) {
-            inputFilename = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"  + debugFilename;
+            inputFilename = getBuildDirectory() + "/" + buildlogsDirectory + "/" + debugFilename;
         }
         return inputFilename;
     }
