@@ -41,10 +41,10 @@ public class Extractor {
     }
 
     private final String  debugFilename                         = "mb060_run-maven-build_output.txt";
-    private final String  outputFilenameFull                    = "buildtimeComparatorFull.log";
-    private final String  outputFilenameSign                    = "buildtimeComparatorSignatureOnly.log";
-    private final String  outputFilenameDoc                     = "buildtimeComparatorDocBundle.log";
-    private final String  outputFilenameOther                   = "buildtimeComparatorUnanticipated.log";
+    private final String  outputFilenameFull                    = "buildtimeComparatorFull.log.txt";
+    private final String  outputFilenameSign                    = "buildtimeComparatorSignatureOnly.log.txt";
+    private final String  outputFilenameDoc                     = "buildtimeComparatorDocBundle.log.txt";
+    private final String  outputFilenameOther                   = "buildtimeComparatorUnanticipated.log.txt";
     private final String  buildlogsDirectory                    = "buildlogs";
     private final String  comparatorLogsDirectory              = "comparatorlogs";
     private String        buildDirectory;
