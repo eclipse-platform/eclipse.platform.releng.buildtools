@@ -46,7 +46,8 @@ public class Extractor {
     private final String  outputFilenameDoc                     = "buildtimeComparatorDocBundle.log.txt";
     private final String  outputFilenameOther                   = "buildtimeComparatorUnanticipated.log.txt";
     private final String  buildlogsDirectory                    = "buildlogs";
-    private final String  comparatorLogsDirectory              = "comparatorlogs";
+    private final String  comparatorLogsDirectory               = "comparatorlogs";
+    private String        comparatorRepo                        = "comparatorRepo";
     private String        buildDirectory;
     private String        inputFilename;
     private String        outputFilenameFullLog;
@@ -104,40 +105,44 @@ public class Extractor {
 
     private String getOutputFilenameDoc() {
         if (outputFilenameDocLog == null) {
-            outputFilenameDocLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"  + outputFilenameDoc;
+            outputFilenameDocLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"
+                    + outputFilenameDoc;
         }
         return outputFilenameDocLog;
     }
 
     private String getOutputFilenameFull() {
         if (outputFilenameFullLog == null) {
-            outputFilenameFullLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"  + outputFilenameFull;
+            outputFilenameFullLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"
+                    + outputFilenameFull;
         }
         return outputFilenameFullLog;
     }
 
     private String getOutputFilenameOther() {
         if (outputFilenameOtherLog == null) {
-            outputFilenameOtherLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"  + outputFilenameOther;
+            outputFilenameOtherLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"
+                    + outputFilenameOther;
         }
         return outputFilenameOtherLog;
     }
 
     private String getOutputFilenameSign() {
         if (outputFilenameSignLog == null) {
-            outputFilenameSignLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"  + outputFilenameSign;
+            outputFilenameSignLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"
+                    + outputFilenameSign;
         }
         return outputFilenameSignLog;
     }
 
     public void processBuildfile() throws IOException {
-        
+
         // Make sure directory exists
         File outputDir = new File(getBuildDirectory() + "/" + buildlogsDirectory, comparatorLogsDirectory);
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
-        
+
         final File infile = new File(getInputFilename());
         final Reader in = new FileReader(infile);
         BufferedReader input = null;
@@ -235,7 +240,10 @@ public class Extractor {
     private void writeHeader(final BufferedWriter output) throws IOException {
         output.write("Comparator differences from current build" + EOL);
         output.write("\t" + getBuildDirectory() + EOL);
-        output.write("\t\t" + "compared to reference repo at .../eclipse/updates/4.3-I-builds" + EOL + EOL);
+        if (comparatorRepo != null) {
+            output.write("\t\t" + "compared to reference repo at " + EOL);
+            output.write("\t\t\t" + getComparatorRepo() + EOL + EOL);
+        }
     }
 
     private boolean pureSignature(final LogEntry newEntry) {
@@ -278,5 +286,14 @@ public class Extractor {
             output.write(info + EOL);
         }
         output.write(EOL);
+    }
+
+    public String getComparatorRepo() {
+        return comparatorRepo;
+    }
+
+    
+    public void setComparatorRepo(String comparatorRepo) {
+        this.comparatorRepo = comparatorRepo;
     }
 }
