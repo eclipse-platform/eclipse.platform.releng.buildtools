@@ -15,10 +15,27 @@ public class ComparatorSummaryReport extends Task {
         extractor = new Extractor();
     }
 
+    public void setComparatorRepo(final String comparatorRepo) {
+        extractor.setComparatorRepo(comparatorRepo);
+    }
+    
     public void setBuildDirectory(final String buildDirectory) {
         extractor.setBuildDirectory(buildDirectory);
     }
 
+    public String getComparatorRepo() {
+        // if specified as system property, it overrides settings
+        // in the task itself.
+        String comparatorRepo = System.getProperty(Extractor.COMPARATOR_REPO_PROPERTY);
+        if (comparatorRepo != null) {
+            extractor.setComparatorRepo(comparatorRepo);
+        } else {
+            comparatorRepo = extractor.getComparatorRepo();
+            // comparator repo is allowed to null, though typically sould not be.
+        }
+        return comparatorRepo;
+    }
+    
     public String getBuildDirectory() {
         // if specified as system property, it overrides settings
         // in the task itself.
