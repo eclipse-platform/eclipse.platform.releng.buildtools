@@ -242,8 +242,8 @@ public class Extractor {
         output.write("Comparator differences from current build" + EOL);
         output.write("\t" + getBuildDirectory() + EOL);
         if (comparatorRepo != null) {
-            output.write("\t\t" + "compared to reference repo at " + EOL);
-            output.write("\t\t\t" + getComparatorRepo() + EOL + EOL);
+            output.write("compared to reference repo at " + EOL);
+            output.write("\t" + getComparatorRepo() + EOL + EOL);
         }
     }
 
