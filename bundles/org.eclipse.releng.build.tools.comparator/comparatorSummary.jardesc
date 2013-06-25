@@ -13,7 +13,7 @@
         <file path="/org.eclipse.releng.build.tools.comparator/about.html"/>
         <javaElement handleIdentifier="=org.eclipse.releng.build.tools.comparator/src"/>
         <folder path="/org.eclipse.releng.build.tools.comparator/META-INF"/>
-        <file path="/org.eclipse.releng.build.tools.comparator/plugin.properties"/>
         <file path="/org.eclipse.releng.build.tools.comparator/plugin.xml"/>
+        <file path="/org.eclipse.releng.build.tools.comparator/plugin.properties"/>
     </selectedElements>
 </jardesc>
