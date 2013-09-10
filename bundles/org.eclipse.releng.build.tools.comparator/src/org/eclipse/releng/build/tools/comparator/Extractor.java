@@ -32,7 +32,7 @@ public class Extractor {
             extractor.setBuildDirectory(args[0]);
         }
         // set explicitly for local test
-        // extractor.setBuildDirectory("/home/davidw/temp/I20130417-1750zz");
+        extractor.setBuildDirectory("/home/davidw/temp/I20130910-0800");
         try {
             extractor.processBuildfile();
         }
@@ -44,8 +44,10 @@ public class Extractor {
     private final String  debugFilename                         = "mb060_run-maven-build_output.txt";
     private final String  outputFilenameFull                    = "buildtimeComparatorFull.log.txt";
     private final String  outputFilenameSign                    = "buildtimeComparatorSignatureOnly.log.txt";
+    private final String  outputFilenameSignPlusInnerJar        = "buildtimeComparatorSignatureOnlyWithInnerJar.log.txt";
     private final String  outputFilenameDoc                     = "buildtimeComparatorDocBundle.log.txt";
     private final String  outputFilenameOther                   = "buildtimeComparatorUnanticipated.log.txt";
+    private final String  outputFilenamejdtCore                 = "buildtimeComparatorJDTCore.log.txt";
     private final String  buildlogsDirectory                    = "buildlogs";
     private final String  comparatorLogsDirectory               = "comparatorlogs";
     private String        comparatorRepo                        = "comparatorRepo";
@@ -55,6 +57,8 @@ public class Extractor {
     private String        outputFilenameSignLog;
     private String        outputFilenameDocLog;
     private String        outputFilenameOtherLog;
+    private String        outputFilenameSignPlusInnerJarLog;
+    private String        outputFilenamejdtCoreLog;
     private final String  mainregexPattern                      = "^\\[WARNING\\].*eclipse.platform.releng.aggregator/(.*)/pom.xml: baseline and build artifacts have same version but different contents";
     private final Pattern mainPattern                           = Pattern.compile(mainregexPattern);
     private final String  noclassifierregexPattern              = "^.*no-classifier:.*$";
@@ -70,10 +74,15 @@ public class Extractor {
     private final Pattern sign2Pattern                          = Pattern.compile(sign2regexPattern);
     private final String  docNameregexPattern                   = "^.*eclipse\\.platform\\.common.*\\.doc\\..*$";
     private final Pattern docNamePattern                        = Pattern.compile(docNameregexPattern);
+    // jar pattern added for bug 416701
+    private final String  jarregexPattern                       = "^.*\\.jar.*$";
+    private final Pattern jarPattern                            = Pattern.compile(jarregexPattern);
     private int           count;
     private int           countSign;
     private int           countDoc;
     private int           countOther;
+    private int           countSignPlusInnerJar;
+    private int           countJDTCore;
 
     public Extractor() {
 
@@ -136,6 +145,22 @@ public class Extractor {
         return outputFilenameSignLog;
     }
 
+    private String getOutputFilenameSignWithInnerJar() {
+        if (outputFilenameSignPlusInnerJarLog == null) {
+            outputFilenameSignPlusInnerJarLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory
+                    + "/" + outputFilenameSignPlusInnerJar;
+        }
+        return outputFilenameSignPlusInnerJarLog;
+    }
+
+    private String getOutputFilenameJDTCore() {
+        if (outputFilenamejdtCoreLog == null) {
+            outputFilenamejdtCoreLog = getBuildDirectory() + "/" + buildlogsDirectory + "/" + comparatorLogsDirectory + "/"
+                    + outputFilenamejdtCore;
+        }
+        return outputFilenamejdtCoreLog;
+    }
+
     public void processBuildfile() throws IOException {
 
         // Make sure directory exists
@@ -156,6 +181,14 @@ public class Extractor {
         final Writer outsign = new FileWriter(outfileSign);
         final BufferedWriter outputSign = new BufferedWriter(outsign);
 
+        final File outfileSignWithInnerJar = new File(getOutputFilenameSignWithInnerJar());
+        final Writer outsignWithJar = new FileWriter(outfileSignWithInnerJar);
+        final BufferedWriter outputSignWithJar = new BufferedWriter(outsignWithJar);
+
+        final File outfileJDTCore = new File(getOutputFilenameJDTCore());
+        final Writer outJDTCore = new FileWriter(outfileJDTCore);
+        final BufferedWriter outputJDTCore = new BufferedWriter(outJDTCore);
+
         final File outfileDoc = new File(getOutputFilenameDoc());
         final Writer outdoc = new FileWriter(outfileDoc);
         final BufferedWriter outputDoc = new BufferedWriter(outdoc);
@@ -166,12 +199,16 @@ public class Extractor {
 
         writeHeader(output);
         writeHeader(outputSign);
+        writeHeader(outputSignWithJar);
         writeHeader(outputDoc);
         writeHeader(outputOther);
+        writeHeader(outputJDTCore);
         count = 0;
         countSign = 0;
+        countSignPlusInnerJar = 0;
         countDoc = 0;
         countOther = 0;
+        countJDTCore = 0;
         try {
             String inputLine = "";
 
@@ -208,10 +245,14 @@ public class Extractor {
                         while ((inputLine != null) && (inputLine.length() > 0));
                         // Write full log, for sanity check, if nothing else
                         writeEntry(++count, output, newEntry);
-                        if (docItem(newEntry)) {
+                        if (jdtCore(newEntry)) {
+                            writeEntry(++countJDTCore, outputJDTCore, newEntry);
+                        } else if (docItem(newEntry)) {
                             writeEntry(++countDoc, outputDoc, newEntry);
                         } else if (pureSignature(newEntry)) {
                             writeEntry(++countSign, outputSign, newEntry);
+                        } else if (pureSignaturePlusInnerJar(newEntry)) {
+                            writeEntry(++countSignPlusInnerJar, outputSignWithJar, newEntry);
                         } else {
                             writeEntry(++countOther, outputOther, newEntry);
                         }
@@ -235,6 +276,12 @@ public class Extractor {
             if (outputOther != null) {
                 outputOther.close();
             }
+            if (outputSignWithJar != null) {
+                outputSignWithJar.close();
+            }
+            if (outputJDTCore != null) {
+                outputJDTCore.close();
+            }
         }
     }
 
@@ -245,6 +292,15 @@ public class Extractor {
             output.write("compared to reference repo at " + EOL);
             output.write("\t" + getComparatorRepo() + EOL + EOL);
         }
+    }
+
+    private boolean jdtCore(final LogEntry newEntry) {
+        boolean result = false;
+        final String name = newEntry.getName();
+        if (name.equals("eclipse.jdt.core/org.eclipse.jdt.core")) {
+            result = true;
+        }
+        return result;
     }
 
     private boolean pureSignature(final LogEntry newEntry) {
@@ -261,6 +317,33 @@ public class Extractor {
             final Matcher matcher5 = sign2Pattern.matcher(reason);
 
             if (matcher1.matches() || matcher2.matches() || matcher3.matches() || matcher4.matches() || matcher5.matches()) {
+                continue;
+            } else {
+                result = false;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    private boolean pureSignaturePlusInnerJar(final LogEntry newEntry) {
+        // if all lines match one of these critical patterns,
+        // then assume "signature only plus inner jar" difference. If even
+        // one of them does not match, assume not.
+        // TODO: refactor so less copy/paste of pureSignature method.
+        boolean result = true;
+        final List<String> reasons = newEntry.getReasons();
+        for (final String reason : reasons) {
+            final Matcher matcher1 = noclassifierPattern.matcher(reason);
+            final Matcher matcher2 = classifier_sourcesPattern.matcher(reason);
+            final Matcher matcher3 = classifier_sourcesfeaturePattern.matcher(reason);
+            final Matcher matcher4 = sign1Pattern.matcher(reason);
+            final Matcher matcher5 = sign2Pattern.matcher(reason);
+            final Matcher matcher6 = jarPattern.matcher(reason);
+
+            if (matcher1.matches() || matcher2.matches() || matcher3.matches() || matcher4.matches() || matcher5.matches()
+                    || matcher6.matches()) {
                 continue;
             } else {
                 result = false;
@@ -293,7 +376,6 @@ public class Extractor {
         return comparatorRepo;
     }
 
-    
     public void setComparatorRepo(String comparatorRepo) {
         this.comparatorRepo = comparatorRepo;
     }
