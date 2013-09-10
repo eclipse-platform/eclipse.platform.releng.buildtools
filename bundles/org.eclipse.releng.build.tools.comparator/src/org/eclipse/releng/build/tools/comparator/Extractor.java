@@ -30,9 +30,12 @@ public class Extractor {
         final Extractor extractor = new Extractor();
         if (args.length > 0) {
             extractor.setBuildDirectory(args[0]);
+        } else {
+            // can set explicitly for local test
+            // does not have to be a full "download", only
+            // I20130910-0800/buildlogs/mb060_run-maven-build_output.txt
+            extractor.setBuildDirectory("/home/davidw/temp/I20130910-0800");
         }
-        // set explicitly for local test
-        extractor.setBuildDirectory("/home/davidw/temp/I20130910-0800");
         try {
             extractor.processBuildfile();
         }
