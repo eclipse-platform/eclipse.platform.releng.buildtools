@@ -100,7 +100,7 @@
         <repository>
             <id>eclipse-platform-repository</id>
             <layout>p2</layout>
-            <url>http://download.eclipse.org/eclipse/updates/4.3milestones</url>
+            <url>http://download.eclipse.org/eclipse/updates/4.4milestones</url>
         </repository>
     </repositories>
     <build>
