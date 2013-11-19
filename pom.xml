@@ -102,6 +102,11 @@
             <layout>p2</layout>
             <url>http://download.eclipse.org/eclipse/updates/4.4milestones</url>
         </repository>
+         <repository>
+            <id>cbi-common-license</id>
+            <layout>p2</layout>
+            <url>${license-repo.url}</url>
+        </repository>
     </repositories>
     <build>
         <plugins>
