@@ -58,14 +58,14 @@ public class TestResultsGenerator extends Task {
     static final String         compileLogsToken       = "%compilelogs%";
     static final String         accessesLogsToken      = "%accesseslogs%";
 
-    private static String extractXmlRelativeFileName(final String rootCanonicalPath, final File xmlFile) {
+    private String extractXmlRelativeFileName(final String rootCanonicalPath, final File xmlFile) {
         if (rootCanonicalPath != null) {
             String xmlFileCanonicalPath = null;
             try {
                 xmlFileCanonicalPath = xmlFile.getCanonicalPath();
             }
             catch (final IOException e) {
-                // ignore
+                logException(e); 
             }
             if (xmlFileCanonicalPath != null) {
                 // + 1 to remove the '\'
@@ -73,6 +73,14 @@ public class TestResultsGenerator extends Task {
             }
         }
         return "";
+    }
+
+    private void logException(final Throwable e) {
+        log(e.getMessage());
+        StackTraceElement[] stackTrace = e.getStackTrace();
+        for (StackTraceElement stackTraceElement : stackTrace) {
+            log(stackTraceElement.toString());
+        }
     }
 
     public static byte[] getFileByteContent(final String fileName) throws IOException {
@@ -319,17 +327,17 @@ public class TestResultsGenerator extends Task {
 
         }
         catch (final IOException e) {
-            System.out.println("IOException: " + fileName);
-            // e.printStackTrace();
+            log("IOException: " + fileName);
+            logException(e); 
             return 0;
         }
         catch (final SAXException e) {
-            System.out.println("SAXException: " + fileName);
-            // e.printStackTrace();
+            log("SAXException: " + fileName);
+            logException(e); 
             return 0;
         }
         catch (final ParserConfigurationException e) {
-            e.printStackTrace();
+            logException(e); 
         }
         return errorCount;
     }
@@ -370,12 +378,12 @@ public class TestResultsGenerator extends Task {
 
         }
 
-        System.out.println("Begin: Generating test results index page");
-        System.out.println("Parsing XML files");
+        log("Begin: Generating test results index page");
+        log("Parsing XML files");
         parseXml();
-        System.out.println("Parsing compile logs");
+        log("Parsing compile logs");
         parseCompileLogs();
-        System.out.println("End: Generating test results index page");
+        log("End: Generating test results index page");
         writeTestResultsFile();
         // For the platform build-page, write platform files, in addition to the
         // index file
@@ -844,13 +852,13 @@ public class TestResultsGenerator extends Task {
             aDocument = builder.parse(inputSource);
         }
         catch (final SAXException e) {
-            e.printStackTrace();
+            logException(e); 
         }
         catch (final IOException e) {
-            e.printStackTrace();
+            logException(e); 
         }
         catch (final ParserConfigurationException e) {
-            e.printStackTrace();
+            logException(e); 
         }
         finally {
             if (reader != null) {
@@ -899,7 +907,7 @@ public class TestResultsGenerator extends Task {
         }
         if (errorCount != 0) {
             // use wildcard in place of version number on directory names
-            // System.out.println(log + "/n");
+            // log(log + "/n");
             String logName = log.substring(getCompileLogsDirectoryName().length() + 1);
             final StringBuffer buffer = new StringBuffer(logName);
             buffer.replace(logName.indexOf("_") + 1, logName.indexOf(File.separator, logName.indexOf("_") + 1), "*");
@@ -948,7 +956,7 @@ public class TestResultsGenerator extends Task {
                 sourceDirectoryCanonicalPath = sourceDirectoryParent.getCanonicalPath();
             }
             catch (final IOException e) {
-                // ignore
+                logException(e); 
             }
             for (int i = 0; i < xmlFileNames.length; i++) {
                 if (xmlFileNames[i].getPath().endsWith(".xml")) {
@@ -976,7 +984,7 @@ public class TestResultsGenerator extends Task {
 
         } else {
             testsRan = false;
-            System.out.println("Test results not found in " + sourceDirectory.getAbsolutePath());
+            log("Test results not found in " + sourceDirectory.getAbsolutePath());
         }
 
     }
@@ -1107,7 +1115,7 @@ public class TestResultsGenerator extends Task {
             aByteArray = getFileByteContent(fileName);
         }
         catch (final IOException e) {
-            e.printStackTrace();
+            logException(e); 
         }
         if (aByteArray == null) {
             return "";
@@ -1124,7 +1132,7 @@ public class TestResultsGenerator extends Task {
             resultString = resultString + source.substring(replaceIndex + original.length());
             return resultString;
         } else {
-            System.out.println("Could not find token: " + original);
+            log("Could not find token: " + original);
             return source;
         }
 
@@ -1317,10 +1325,10 @@ public class TestResultsGenerator extends Task {
             outputStream.write(contents.getBytes());
         }
         catch (final FileNotFoundException e) {
-            System.out.println("File not found exception writing: " + outputFileName);
+            log("File not found exception writing: " + outputFileName);
         }
         catch (final IOException e) {
-            System.out.println("IOException writing: " + outputFileName);
+            log("IOException writing: " + outputFileName);
         }
         finally {
             if (outputStream != null) {
