@@ -257,7 +257,7 @@ public class Converter {
                     System.out.println(e);
                 }
                 catch (final IOException e) {
-                    // ignore
+                    e.printStackTrace();
                 }
             }
         } else {
@@ -281,10 +281,10 @@ public class Converter {
                     dump(documentNode);
                 }
                 catch (final SAXException e) {
-                    // ignore
+                    e.printStackTrace();
                 }
                 catch (final IOException e) {
-                    // ignore
+                    e.printStackTrace();
                 }
             }
         }

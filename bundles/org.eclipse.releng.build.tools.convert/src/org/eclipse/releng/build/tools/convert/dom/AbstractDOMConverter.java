@@ -273,7 +273,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
             writer.close();
         }
         catch (final IOException e) {
-            // ignore
+            e.printStackTrace();
         }
     }
 
