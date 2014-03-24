@@ -10,14 +10,14 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
-        <file path="/org.eclipse.releng.build.tools.convert/build.properties"/>
-        <file path="/org.eclipse.releng.build.tools.convert/.classpath"/>
-        <folder path="/org.eclipse.releng.build.tools.convert/META-INF"/>
-        <file path="/org.eclipse.releng.build.tools.convert/.project"/>
-        <file path="/org.eclipse.releng.build.tools.convert/plugin.properties"/>
-        <file path="/org.eclipse.releng.build.tools.convert/.gitignore"/>
         <javaElement handleIdentifier="=org.eclipse.releng.build.tools.convert/src"/>
-        <file path="/org.eclipse.releng.build.tools.convert/plugin.xml"/>
         <file path="/org.eclipse.releng.build.tools.convert/about.html"/>
+        <file path="/org.eclipse.releng.build.tools.convert/build.properties"/>
+        <file path="/org.eclipse.releng.build.tools.convert/plugin.xml"/>
+        <file path="/org.eclipse.releng.build.tools.convert/.project"/>
+        <file path="/org.eclipse.releng.build.tools.convert/.classpath"/>
+        <file path="/org.eclipse.releng.build.tools.convert/.gitignore"/>
+        <file path="/org.eclipse.releng.build.tools.convert/plugin.properties"/>
+        <folder path="/org.eclipse.releng.build.tools.convert/META-INF"/>
     </selectedElements>
 </jardesc>
