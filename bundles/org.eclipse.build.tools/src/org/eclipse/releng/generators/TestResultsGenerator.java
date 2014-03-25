@@ -279,8 +279,8 @@ public class TestResultsGenerator extends Task {
     // The four configurations, add new configurations to test results here +
     // update
     // testResults.php.template for changes
-    private final String[]  testsConfig                  = { "linux.gtk.x86_6.0.xml", //
-            "macosx.cocoa.x86_5.0.xml", //
+    private final String[]  testsConfig                  = { "linux.gtk.x86_64_8.0.xml", //
+            "macosx.cocoa.x86_64_7.0.xml", //
             "win32.win32.x86_7.0.xml"                   };
 
     private int             missingCount                 = 0;
