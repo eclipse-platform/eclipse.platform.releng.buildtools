@@ -276,12 +276,21 @@ public class TestResultsGenerator extends Task {
 
     private int             counter                      = 0;
 
-    // The four configurations, add new configurations to test results here +
-    // update
-    // testResults.php.template for changes
-    private final String[]  testsConfig                  = { "linux.gtk.x86_64_8.0.xml", //
-            "macosx.cocoa.x86_64_7.0.xml", //
-            "win32.win32.x86_7.0.xml"                   };
+    // Configuration of test machines.  
+    // Add or change new configurations here 
+    // and update titles in testResults.php.template.
+    // These are the suffixes used for JUnit's XML output files. 
+    // On each invocation, all files in results directory are 
+    // scanned, to see if they end with suffixes, and if so, 
+    // are processed for summary row. The column order is determined by 
+    // the order listed here. 
+    // This suffix is determined, at test time, when the files junit files are 
+    // generated, by the setting of a variable named "platform" in test.xml 
+    // and associated property files. 
+    private final String[]  testsConfig  = { 
+            "linux.gtk.x86_64_8.0.xml", 
+            "macosx.cocoa.x86_64_7.0.xml", 
+            "win32.win32.x86_7.0.xml" };
 
     private int             missingCount                 = 0;
 
