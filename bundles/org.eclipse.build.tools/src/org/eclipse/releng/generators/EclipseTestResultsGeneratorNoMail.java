@@ -16,41 +16,26 @@ package org.eclipse.releng.generators;
 public class EclipseTestResultsGeneratorNoMail extends TestResultsGenerator {
 
     public static void main(final String[] args) {
-        final String publishingContent = "C:\\Documents and Settings\\IBMEmployee\\workspace\\org.eclipse.releng.eclipsebuilder\\eclipse\\publishingFiles";
+        final String publishingContent = "/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles";
 
         final EclipseTestResultsGeneratorNoMail test = new EclipseTestResultsGeneratorNoMail();
-        test.buildType = "N";
+        test.buildType = "I";
         test.setIsBuildTested(true);
-        test.setDropTokenList("%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%icubase%,%runtime%,%platformsdk%,%jdt%,%jdtsdk%,%jdtc%,%jarprocessor%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%teamextras%,%swt%,%relengtools%");
+        test.setDropTokenList("%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
         test.getDropTokensFromList(test.getDropTokenList());
-        test.setXmlDirectoryName("C:\\junk\\testresults\\xml");
-        test.setHtmlDirectoryName("C:\\junk\\testresults\\html");
-        test.setDropDirectoryName("C:\\junk");
-        test.setTestResultsTemplateFileName(publishingContent + "\\templateFiles\\testResults.php.template");
-        test.setDropTemplateFileName(publishingContent + "\\templateFiles\\index.php.template");
+        test.setXmlDirectoryName("/data/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105/testresults/xml");
+        test.setHtmlDirectoryName("/data/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105/testresults/html");
+        test.setDropDirectoryName("/data/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105");
+        test.setTestResultsTemplateFileName(publishingContent + "/templateFiles/testResults.php.template");
+        test.setDropTemplateFileName(publishingContent + "/templateFiles/index.php.template");
         test.setTestResultsHtmlFileName("testResults.php");
         test.setDropHtmlFileName("index.php");
         // test.setDropHtmlFileName("index.html");
         test.setPlatformIdentifierToken("%platform%");
-
-        test.setPlatformSpecificTemplateList("Windows," + publishingContent
-                + "/templateFiles/platform.php.template,winPlatform.php;Linux," + publishingContent
-                + "/templateFiles/platform.php.template,linPlatform.php;Solaris," + publishingContent
-                + "/templateFiles/platform.php.template,solPlatform.php;AIX," + publishingContent
-                + "/templateFiles/platform.php.template,aixPlatform.php;Macintosh," + publishingContent
-                + "/templateFiles/platform.php.template,macPlatform.php;Source Build," + publishingContent
-                + "/templateFiles/sourceBuilds.php.template,sourceBuilds.php");
-        /*
-         * <property name="platformIdentifierToken" value="%platform%" />
-         * <property name="platformSpecificTemplateList" value=
-         * "Windows,${publishingContent}/templateFiles/platform.php.template,winPlatform.php;Linux,${publishingContent}/templateFiles/platform.php.template,linPlatform.php;Solaris,${publishingContent}/templateFiles/platform.php.template,solPlatform.php;AIX,${publishingContent}/templateFiles/platform.php.template,aixPlatform.php;Macintosh,${publishingContent}/templateFiles/platform.php.template,macPlatform.php;Source Build,${publishingContent}/templateFiles/sourceBuilds.php.template,sourceBuilds.php"
-         * />
-         */
-
-        test.setHrefTestResultsTargetPath("testresults");
-        test.setCompileLogsDirectoryName("C:\\junk\\compilelogs");
+        test.setHrefTestResultsTargetPath("/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105/testresults");
+        test.setCompileLogsDirectoryName("/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105/compilelogs");
         test.setHrefCompileLogsTargetPath("compilelogs");
-        test.setTestManifestFileName("C:\\junk\\testManifest.xml");
+        test.setTestManifestFileName("/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
         test.execute();
     }
 
@@ -80,28 +65,9 @@ public class EclipseTestResultsGeneratorNoMail extends TestResultsGenerator {
 
     @Override
     protected String processDropRow(final PlatformStatus aPlatform) {
-        String imageName = "";
-
-        if (aPlatform.hasErrors()) {
-            imageName = "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src = \"FAIL.gif\" width=19 height=23></a>";
-            testResultsStatus = "failed";
-
-        } else {
-            if (testsRan()) {
-                imageName = "<img src = \"OK.gif\" width=19 height=23>";
-            } else {
-                if (isBuildTested()) {
-                    imageName = "<font size=\"-1\" color=\"#FF0000\">pending</font>";
-                    testResultsStatus = "pending";
-                } else {
-                    imageName = "<img src = \"OK.gif\" width=19 height=23>";
-                }
-            }
-        }
 
         String result = "<tr>";
 
-        result = result + "<td><div align=left>" + imageName + "</div></td>\n";
         result = result + "<td>" + aPlatform.getName() + "</td>";
 
         // generate http, md5 and sha1 links by calling php functions in the

@@ -28,7 +28,7 @@ public class VersionNumberStripper extends Task {
 
     // the directory containing the directories and files from which to remove
     // version information
-    private String directory;
+    private String directory="/home/davidw/temp/4.4/R-4.4-201406061215/features";
 
     public VersionNumberStripper() {
         super();

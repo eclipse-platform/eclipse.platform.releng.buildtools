@@ -109,7 +109,7 @@ public class TestResultsGenerator extends Task {
      * the stream.
      * 
      * @throws IOException
-     *             if a problem occured reading the stream.
+     *             if a problem occurred reading the stream.
      */
     public static byte[] getInputStreamAsByteArray(final InputStream stream, final int length) throws IOException {
         byte[] contents;
@@ -168,19 +168,7 @@ public class TestResultsGenerator extends Task {
         test.setHtmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults");
         test.setDropDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900");
         test.setTestResultsTemplateFileName("/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/testResults.php.template");
-        test.setPlatformSpecificTemplateList("");
-        // test.setPlatformSpecificTemplateList(
-        // "Windows,C:\\junk\\templateFiles\\platform.php.template,winPlatform.php;"
-        // +
-        // "Linux,C:\\junk\\templateFiles\\platform.php.template,linPlatform.php;"
-        // +
-        // "Solaris,C:\\junk\\templateFiles\\platform.php.template,solPlatform.php;"
-        // +
-        // "AIX,C:\\junk\\templateFiles\\platform.php.template,aixPlatform.php;"
-        // +
-        // "Macintosh,C:\\junk\\templateFiles\\platform.php.template,macPlatform.php;"
-        // +
-        // "Source Build,C:\\junk\\templateFiles\\sourceBuilds.php.template,sourceBuilds.php");
+
         test.setDropTemplateFileName("/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/index.php.template");
         test.setTestResultsHtmlFileName("testResults.php");
         test.setDropHtmlFileName("index.php");
@@ -244,11 +232,6 @@ public class TestResultsGenerator extends Task {
 
     // Location and name of the template index.php file.
     public String           testResultsTemplateFileName;
-
-    // Platform specific template and output list (colon separated) in the
-    // following format:
-    // <descriptor, ie. OS name>,path to template file, path to output file
-    public String           platformSpecificTemplateList = "";
 
     // Location and name of the template drop index.php file.
     public String           dropTemplateFileName;
@@ -367,26 +350,6 @@ public class TestResultsGenerator extends Task {
         testResultsTemplateString = readFile(testResultsTemplateFileName);
         dropTemplateString = readFile(dropTemplateFileName);
 
-        // Specific to the platform build-page
-        if (platformSpecificTemplateList != "") {
-            String description, platformTemplateFile, platformDropFile;
-            // Retrieve the different platforms and their info
-            getDifferentPlatformsFromList(platformSpecificTemplateList);
-            // Parses the platform info and retrieves the platform name,
-            // template file, and drop file
-            for (int i = 0; i < differentPlatforms.size(); i++) {
-                getPlatformSpecsFromList(differentPlatforms.get(i).toString());
-                description = platformSpecs.get(0).toString();
-                platformTemplateFile = platformSpecs.get(1).toString();
-                platformDropFile = platformSpecs.get(2).toString();
-                platformDescription.add(description);
-                platformTemplateString.add(readFile(platformTemplateFile));
-                platformDropFileName.add(platformDropFile);
-
-            }
-
-        }
-
         log("Begin: Generating test results index page");
         log("Parsing XML files");
         parseXml();
@@ -394,13 +357,7 @@ public class TestResultsGenerator extends Task {
         parseCompileLogs();
         log("End: Generating test results index page");
         writeTestResultsFile();
-        // For the platform build-page, write platform files, in addition to the
-        // index file
-        if (platformSpecificTemplateList != "") {
-            writeDropFiles();
-        } else {
-            writeDropIndexFile();
-        }
+        writeDropIndexFile();
     }
 
     private int extractNumber(final String aString, final String endToken) {
@@ -767,10 +724,6 @@ public class TestResultsGenerator extends Task {
         return platformIdentifierToken;
     }
 
-    public String getPlatformSpecificTemplateList() {
-        return platformSpecificTemplateList;
-    }
-
     protected void getPlatformSpecsFromList(final String list) {
         final StringTokenizer tokenizer = new StringTokenizer(list, ",");
         platformSpecs = new Vector();
@@ -979,8 +932,9 @@ public class TestResultsGenerator extends Task {
                         anErrorTracker.registerError(fullName.substring(getXmlDirectoryName().length() + 1));
                     }
 
-                    final String tmp = ((platformSpecificTemplateList.equals("")) ? formatRow(xmlFileNames[i].getPath(),
-                            errorCount, true) : formatRowReleng(xmlFileNames[i].getPath(), errorCount, true));
+//                    final String tmp = ((platformSpecificTemplateList.equals("")) ? formatRow(xmlFileNames[i].getPath(),
+//                            errorCount, true) : formatRowReleng(xmlFileNames[i].getPath(), errorCount, true));
+                    String tmp = formatRow(xmlFileNames[i].getPath(), errorCount, true);
                     replaceString = replaceString + tmp;
 
                 }
@@ -1228,10 +1182,6 @@ public class TestResultsGenerator extends Task {
         this.platformIdentifierToken = platformIdentifierToken;
     }
 
-    public void setPlatformSpecificTemplateList(final String platformSpecificTemplateList) {
-        this.platformSpecificTemplateList = platformSpecificTemplateList;
-    }
-
     /**
      * Sets the testManifestFileName.
      * 
@@ -1287,8 +1237,9 @@ public class TestResultsGenerator extends Task {
             }
 
             anErrorTracker.registerError(testLogName);
-            final String tmp = ((platformSpecificTemplateList.equals("")) ? formatRow(testLogName, -1, false) : formatRowReleng(
-                    testLogName, -1, false));
+//            final String tmp = ((platformSpecificTemplateList.equals("")) ? formatRow(testLogName, -1, false) : formatRowReleng(
+//                    testLogName, -1, false));
+            String tmp = formatRow(testLogName, -1, false);
             if (missingCount == 0) {
                 replaceString = replaceString
                         + "</table></br>"

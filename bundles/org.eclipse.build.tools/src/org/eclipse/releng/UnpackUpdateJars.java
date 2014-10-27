@@ -62,8 +62,8 @@ public class UnpackUpdateJars extends Task {
     public static void main(final String[] args) {
         // TODO Auto-generated method stub
         final UnpackUpdateJars up = new UnpackUpdateJars();
-        up.site = "C:\\updatejars\\eclipse";
-        up.output = "C:\\updatejars\\newsite";
+        up.site = "/home/davidw/builds/workspaces/davidwrepos2/compare/4.4";
+        up.output = "/home/davidw/builds/workspaces/davidwrepos2/compare/4.4";
         up.execute();
     }
 
