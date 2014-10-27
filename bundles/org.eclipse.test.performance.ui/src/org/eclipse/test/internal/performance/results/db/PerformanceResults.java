@@ -600,7 +600,9 @@ void readLocalFile(File dir) {
 		println("	!!! "+dataFile+" should be deleted as it contained invalid data !!!"); //$NON-NLS-1$ //$NON-NLS-2$
 	} finally {
 		try {
+		    if (stream != null) {
 	        stream.close();
+		    }
         } catch (IOException e) {
 	        // nothing else to do!
         }
@@ -849,6 +851,9 @@ public String[] updateBuilds(String[] builds, boolean force, File dataDir, IProg
 
 	// Read
 	for (int i=0; i<length;  i++) {
+	    if (builds == null) {
+	        throw new RuntimeException("'builds' was unexpected null. Check input data?");
+	    }
 		read(false, builds[i], null, force, dataDir, taskName, subMonitor.newChild(1000));
 	}
 

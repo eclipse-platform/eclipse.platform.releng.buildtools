@@ -135,6 +135,9 @@ public List getConfigNumbers(String configName, boolean fingerprints, List diffe
 						// no result for this scenario in this build
 						line.add(NO_BUILD_RESULTS);
 					} else {
+					    if (configResults == null) {
+					        throw new RuntimeException("configResults was unexpectedly null. Check input data?");
+					    }
 						line.add(configResults.getNumbers(buildResults, configResults.getBaselineBuildResults(buildName)));
 					}
 				}
@@ -308,7 +311,9 @@ String readLocalFile(File dir, List scenarios) throws FileNotFoundException {
 		println("	!!! "+dataFile+" should be deleted as it contained invalid data !!!"); //$NON-NLS-1$ //$NON-NLS-2$
 	} finally {
 		try {
+		    if (stream != null) {
 	        stream.close();
+		    }
         } catch (IOException e) {
 	        // nothing else to do!
         }

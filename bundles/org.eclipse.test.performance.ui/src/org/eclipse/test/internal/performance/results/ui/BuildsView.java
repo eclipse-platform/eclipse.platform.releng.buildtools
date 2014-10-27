@@ -657,6 +657,9 @@ public void selectionChanged(SelectionChangedEvent event) {
 			return;
 		}
 		for (int i=0; i<length; i++) {
+		    if (elements == null) {
+		        throw new RuntimeException("elements was unexpected null. Programming error?");
+		    }
 			this.buildsResults[i] = (BuildResultsElement) elements[i];
 		}
 		this.writeBuildsFailures.setEnabled(true);
@@ -814,6 +817,9 @@ protected void writeFailures(File writeDir, String buildName) {
 	try {
 		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(exclusionFile)));
 		try {
+		    if (excluded == null) {
+		        throw new RuntimeException("excluded was unexpected null. Program error?");
+		    }
 			stream.write(excluded.toString().getBytes());
 		}
 		finally {

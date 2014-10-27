@@ -17,14 +17,14 @@
       <page
             class="org.eclipse.test.internal.performance.results.ui.PerformanceResultsPreferencePage"
             id="org.eclipse.test.performance.ui.prpp"
-            name="Performances">
+            name="%page.name">
       </page>
    </extension>
 
    <extension
          point="org.eclipse.ui.views">
       <category
-            name="Performances"
+            name="%category.name"
             id="Performances">
       </category>
       <view
@@ -32,21 +32,21 @@
             class="org.eclipse.test.internal.performance.results.ui.ComponentsView"
             icon="icons/components.gif"
             id="org.eclipse.test.internal.performance.results.ui.ComponentsView"
-            name="Components">
+            name="%view.name">
       </view>
       <view
             category="Performances"
             class="org.eclipse.test.internal.performance.results.ui.BuildsView"
             icon="icons/builds.gif"
             id="org.eclipse.test.internal.performance.results.ui.BuildsView"
-            name="Builds">
+            name="%view.name.0">
       </view>
       <view
             category="Performances"
             class="org.eclipse.test.internal.performance.results.ui.ComponentResultsView"
             icon="icons/results.gif"
             id="org.eclipse.test.internal.performance.results.ui.ComponentsResultsView"
-            name="Component Results"
+            name="%view.name.1"
             restorable="true">
       </view>
       <view
@@ -54,7 +54,7 @@
             class="org.eclipse.test.internal.performance.results.ui.BuildsComparisonView"
             icon="icons/compare_view.gif"
             id="org.eclipse.test.internal.performance.results.ui.BuildsComparisonView"
-            name="Builds comparison"
+            name="%view.name.2"
             restorable="true">
       </view>
    </extension>
@@ -70,9 +70,9 @@
             class="org.eclipse.test.internal.performance.results.ui.PerformanceResultsPerspective"
             icon="icons/perfs.gif"
             id="org.eclipse.test.performance.ui.perspectives.PerformanceResultsPerspective"
-            name="Performances Results">
+            name="%perspective.name">
          <description>
-            Perspective to survey the performances of the Eclipse components
+            %perspective.description
          </description>
       </perspective>
    </extension>

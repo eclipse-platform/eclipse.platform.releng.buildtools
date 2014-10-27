@@ -288,6 +288,9 @@ public class TimeLineGraph extends LineGraph{
 			else if (closestFollowingItem!=null && closestPrecedingItem==null)
 				thisItem.setX(closestFollowingItem.x);
 			else{
+			    if (closestFollowingItem == null || closestPrecedingItem == null) {
+			      throw new RuntimeException("closestFollowingItem or closestPrecedingItem was unexpectedly null. Program error?");
+			    }
 				long timeRange=closestFollowingItem.timestamp-closestPrecedingItem.timestamp;
 
 				int xRange=closestFollowingItem.x-closestPrecedingItem.x;

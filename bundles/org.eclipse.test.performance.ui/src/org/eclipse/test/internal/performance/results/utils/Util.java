@@ -196,6 +196,9 @@ public static String componentDisplayName(String componentName) {
 		buffer.append(componentName);
 		buffer.append("'");
 	}
+	if (buffer == null) {
+	    throw new RuntimeException("buffer was unexpectedly null. Program error?");
+	}
 	buffer.append("' results");
 	return buffer.toString();
 }

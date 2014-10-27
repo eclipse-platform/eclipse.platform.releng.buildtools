@@ -31,7 +31,6 @@ import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.test.performance.Dimension;
-
 import org.eclipse.core.runtime.Assert;
 
 /**
@@ -1060,6 +1059,9 @@ private Map internalQueryBuildScenarios(String scenarioPattern, String buildName
 			if (component_id != previousId) {
 				allScenarios.put(COMPONENTS[component_id], scenarios = new ArrayList());
 				previousId = component_id;
+			}
+			if (scenarios == null) {
+			    throw new RuntimeException("scenerios was unexpectedly null. Check input data?");
 			}
 			scenarios.add(new ScenarioResults(id, name, shortName));
 		}

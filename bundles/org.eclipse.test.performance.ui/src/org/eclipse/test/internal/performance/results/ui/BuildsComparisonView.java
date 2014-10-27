@@ -351,7 +351,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 		if (selection[1] instanceof BuildResultsElement) {
 			secondBuildResults = ((BuildResultsElement) selection[1]).getName();
 		}
-		if (!firstBuildResults.equals(this.currentBuild) || !secondBuildResults.equals(this.referenceBuild)) {
+		if ((firstBuildResults != null && !firstBuildResults.equals(this.currentBuild)) || (secondBuildResults != null && !secondBuildResults.equals(this.referenceBuild))) {
 			this.currentBuild = firstBuildResults;
 			this.referenceBuild = secondBuildResults;
 			resetTabFolders(true);

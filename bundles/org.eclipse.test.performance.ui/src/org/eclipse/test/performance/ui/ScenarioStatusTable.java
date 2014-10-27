@@ -150,7 +150,7 @@ private void printConfigStats(ScenarioResults scenarioResults, String config) {
 	String comment = currentBuildResults.getComment();
 	String image = Utils.getImage(confidence, hasFailure, comment != null);
 	this.stream.print("<td><a ");
-	if (!hasFailure|| (confidence & Utils.NAN) != 0 || failure.length() == 0){
+	if (!hasFailure|| (confidence & Utils.NAN) != 0 || (failure != null && failure.length() == 0)){
 		// write deviation with error in table when test pass
 		this.stream.print("href=\"");
 		this.stream.print(configResults.getName());

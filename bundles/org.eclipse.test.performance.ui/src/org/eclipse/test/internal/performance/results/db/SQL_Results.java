@@ -252,9 +252,15 @@ ResultSet queryScenarioSummaries(int scenarioID, String config, String[] builds)
 			buildPattern = "%"; //$NON-NLS-1$
 			break;
 		case 1:
+		    if (builds == null) {
+		        throw new Error("Impossible for builds to be null at this point. Programming/Compiler error?");
+		    }
 			buildPattern = builds[0];
 			break;
 		default:
+	        if (builds == null) {
+	           throw new RuntimeException("builds unexpectedly null at this point. Programming error?");
+	        }
 			StringBuffer buffer = new StringBuffer();
 			loop: for (int idx=0; idx < builds[0].length(); idx++) {
 				char ch = builds[0].charAt(idx);

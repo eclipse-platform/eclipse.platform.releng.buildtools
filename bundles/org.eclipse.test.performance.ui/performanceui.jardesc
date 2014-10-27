@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><jardesc>
+    <jar path="/home/davidw/gitLuna/eclipse.platform.releng.buildtools/bundles/org.eclipse.test.performance.ui/performanceui.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/org.eclipse.test.performance.ui/performanceui.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="false" manifestLocation="/org.eclipse.test.performance.ui/META-INF/MANIFEST.MF" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <folder path="/org.eclipse.test.performance.ui/icons"/>
+        <file path="/org.eclipse.test.performance.ui/plugin.properties"/>
+        <folder path="/org.eclipse.test.performance.ui/html"/>
+        <file path="/org.eclipse.test.performance.ui/readme.html"/>
+        <folder path="/org.eclipse.test.performance.ui/scripts"/>
+        <folder path="/org.eclipse.test.performance.ui/images"/>
+        <folder path="/org.eclipse.test.performance.ui/doc"/>
+        <javaElement handleIdentifier="=org.eclipse.test.performance.ui/src"/>
+        <file path="/org.eclipse.test.performance.ui/plugin.xml"/>
+        <file path="/org.eclipse.test.performance.ui/about.html"/>
+        <folder path="/org.eclipse.test.performance.ui/META-INF"/>
+        <file path="/org.eclipse.test.performance.ui/toc.xml"/>
+        <file path="/org.eclipse.test.performance.ui/contexts.xml"/>
+    </selectedElements>
+</jardesc>
