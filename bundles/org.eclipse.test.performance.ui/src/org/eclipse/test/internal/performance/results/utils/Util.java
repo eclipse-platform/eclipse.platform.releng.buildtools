@@ -85,7 +85,18 @@ static class BuildDateComparator implements Comparator {
 	public int compare(Object o1, Object o2) {
 		String s1 = (String) o1;
 		String s2 = (String) o2;
-		return getBuildDate(s1).compareTo(getBuildDate(s2));
+		String buildDate1 = getBuildDate(s1);
+		String buildDate2 = getBuildDate(s2);
+		// Not the greatest sanity check, found some cases, when "getting started" 
+		// where buildname was "4.1.1" or "${buildid}, which would cause a NPE. 
+		// So, simple attempt to provide a more helpful message.
+		if (buildDate1 == null) {
+		    throw new IllegalArgumentException("Buildname did not have a date, as expected: " + s1);
+		}
+	    if (buildDate2 == null) {
+	            throw new IllegalArgumentException("Buildname did not have a date, as expected: " + s2);
+	    }
+		return buildDate1.compareTo(buildDate2);
 	}
 }
 
