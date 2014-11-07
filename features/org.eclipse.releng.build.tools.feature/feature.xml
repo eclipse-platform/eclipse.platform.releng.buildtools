@@ -34,7 +34,11 @@
          id="org.eclipse.releng.build.tools.comparator"
          version="0.0.0"
          unpack="false"/> 
-         
+       
+   <plugin
+         id="org.eclipse.test.performance"
+         version="0.0.0"
+         unpack="false"/>
    <plugin
          id="org.eclipse.test.performance.ui"
          version="0.0.0"
