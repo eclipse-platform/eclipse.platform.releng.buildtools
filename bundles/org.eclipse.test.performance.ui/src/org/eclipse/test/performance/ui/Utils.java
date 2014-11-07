@@ -33,6 +33,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.db.Variations;
 import org.eclipse.test.internal.performance.results.utils.Util;
+import org.eclipse.ui.internal.ide.handlers.BuildProjectHandler;
 import org.osgi.framework.Bundle;
 
 
@@ -272,13 +273,23 @@ public class Utils {
 		} else if (buildId.indexOf('-') != -1) {
 			// if regular build, expect <buildType><date>-<time> format
 			String[] buildIdParts = buildId.split("-");
+			// two parts are from IDs such as I20140606-1215, so skip first char, and hour and second are in second part.
+			if (buildIdParts.length == 2) {
 			int year = Integer.parseInt(buildIdParts[0].substring(1, 5));
-			int month = Integer.parseInt(buildIdParts[0].substring(5, 7)) - 1;
+			int month = Integer.parseInt(buildIdParts[0].substring(5, 7));
 			int date = Integer.parseInt(buildIdParts[0].substring(7, 9));
 			int hours = Integer.parseInt(buildIdParts[1].substring(0, 2));
 			int min = Integer.parseInt(buildIdParts[1].substring(2, 4));
 			calendar.set(year, month, date, hours, min);
-
+			} else if (buildIdParts.length == 3) {
+			    // three parts, such a from R-4.4-201406061215, so only part[2] is date
+	            int year = Integer.parseInt(buildIdParts[2].substring(0, 4));
+	            int month = Integer.parseInt(buildIdParts[2].substring(4, 6));
+	            int date = Integer.parseInt(buildIdParts[2].substring(6, 8));
+	            int hours = Integer.parseInt(buildIdParts[2].substring(8, 10));
+	            int min = Integer.parseInt(buildIdParts[2].substring(10, 12));
+	            calendar.set(year, month, date, hours, min);			    
+			}
 			return calendar.getTimeInMillis();
 		}
 
