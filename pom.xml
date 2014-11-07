@@ -104,7 +104,7 @@
             <url>http://download.eclipse.org/eclipse/updates/4.5milestones/</url>
         </repository>
         <repository>
-            <id>eclipse-platform-repository</id>
+            <id>eclipse-derby-buildtools-repository</id>
             <layout>p2</layout>
             <url>http://build.eclipse.org/eclipse/buildtools/derbyCore-10.11.1.1/</url>
         </repository>        
