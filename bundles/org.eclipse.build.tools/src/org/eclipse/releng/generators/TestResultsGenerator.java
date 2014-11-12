@@ -921,7 +921,7 @@ public class TestResultsGenerator extends Task {
 
 //                    final String tmp = ((platformSpecificTemplateList.equals("")) ? formatRow(xmlFileNames[i].getPath(),
 //                            errorCount, true) : formatRowReleng(xmlFileNames[i].getPath(), errorCount, true));
-                    String tmp = formatRow(xmlFileNames[i].getPath(), errorCount, true);
+                    String tmp = formatRowReleng(xmlFileNames[i].getPath(), errorCount, true);
                     replaceString = replaceString + tmp;
 
                 }
@@ -1226,7 +1226,7 @@ public class TestResultsGenerator extends Task {
             anErrorTracker.registerError(testLogName);
 //            final String tmp = ((platformSpecificTemplateList.equals("")) ? formatRow(testLogName, -1, false) : formatRowReleng(
 //                    testLogName, -1, false));
-            String tmp = formatRow(testLogName, -1, false);
+            String tmp = formatRowReleng(testLogName, -1, false);
             if (missingCount == 0) {
                 replaceString = replaceString
                         + "</table></br>"
