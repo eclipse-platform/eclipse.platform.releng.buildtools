@@ -161,7 +161,7 @@ public class TestResultsGenerator extends Task {
     public static void main(final String[] args) {
         final TestResultsGenerator test = new TestResultsGenerator();
         test.setDropTokenList("%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
-        test.setPlatformIdentifierToken("%platform%");
+        //test.setPlatformIdentifierToken("%platform%");
         test.getDropTokensFromList(test.dropTokenList);
         test.setIsBuildTested(false);
         test.setXmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults/xml");
@@ -720,19 +720,6 @@ public class TestResultsGenerator extends Task {
         return htmlDirectoryName;
     }
 
-    public String getPlatformIdentifierToken() {
-        return platformIdentifierToken;
-    }
-
-    protected void getPlatformSpecsFromList(final String list) {
-        final StringTokenizer tokenizer = new StringTokenizer(list, ",");
-        platformSpecs = new Vector();
-
-        while (tokenizer.hasMoreTokens()) {
-            platformSpecs.add(tokenizer.nextToken());
-        }
-    }
-
     /*
      * Return the HTML mark-up to use in the "status" column.
      */
@@ -1044,7 +1031,7 @@ public class TestResultsGenerator extends Task {
                 result = result + "<td>All " + name + "</td>";
                 // generate http, md5 and sha1 links by calling php functions in
                 // the template
-                result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"@buildlabel@\",\"" + platforms[i].getFileName()
+                result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"${buildId}\",\"" + platforms[i].getFileName()
                         + "\"); ?></td>\n";
                 result = result + "</tr>\n";
             }
