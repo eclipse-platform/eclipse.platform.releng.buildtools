@@ -161,7 +161,6 @@ public class TestResultsGenerator extends Task {
     public static void main(final String[] args) {
         final TestResultsGenerator test = new TestResultsGenerator();
         test.setDropTokenList("%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
-        //test.setPlatformIdentifierToken("%platform%");
         test.getDropTokensFromList(test.dropTokenList);
         test.setIsBuildTested(false);
         test.setXmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults/xml");

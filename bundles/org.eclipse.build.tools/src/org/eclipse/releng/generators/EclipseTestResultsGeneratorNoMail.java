@@ -31,7 +31,6 @@ public class EclipseTestResultsGeneratorNoMail extends TestResultsGenerator {
         test.setTestResultsHtmlFileName("testResults.php");
         test.setDropHtmlFileName("index.php");
         // test.setDropHtmlFileName("index.html");
-        //test.setPlatformIdentifierToken("%platform%");
         test.setHrefTestResultsTargetPath("/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105/testresults");
         test.setCompileLogsDirectoryName("/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105/compilelogs");
         test.setHrefCompileLogsTargetPath("compilelogs");
