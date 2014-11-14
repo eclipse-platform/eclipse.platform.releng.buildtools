@@ -71,7 +71,7 @@ public class EclipseTestResultsGeneratorNoMail extends TestResultsGenerator {
 
         // generate http, md5 and sha1 links by calling php functions in the
         // template
-        result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"${buildId}\",\"" + aPlatform.getFileName()
+        result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"${BUILD_ID}\",\"" + aPlatform.getFileName()
                 + "\"); ?></td>\n";
         result = result + "</tr>\n";
 

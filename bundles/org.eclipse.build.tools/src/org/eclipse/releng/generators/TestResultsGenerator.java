@@ -723,6 +723,8 @@ public class TestResultsGenerator extends Task {
      * Return the HTML mark-up to use in the "status" column.
      */
     private String getStatusColumn(final PlatformStatus platform, final String prefix, final boolean setStatus) {
+        return "";
+        /**
         final String OK = "<img src=\"" + prefix + "OK.gif\" alt=\"OK\"/>";
         if (platform.hasErrors()) {
             // Failure in tests
@@ -742,6 +744,7 @@ public class TestResultsGenerator extends Task {
             return "<img src=\"" + prefix + "pending.gif\" alt=\"pending\"/>";
         }
         return OK;
+        **/
     }
 
     /**
@@ -964,7 +967,7 @@ public class TestResultsGenerator extends Task {
         }
 
         String result = "<tr>";
-        result = result + "<td><div align=left>" + getStatusColumn(aPlatform, "", true) + "</div></td>\n";
+       // result = result + "<td><div align=left>" + getStatusColumn(aPlatform, "", true) + "</div></td>\n";
         result = result + "<td>" + aPlatform.getName() + "</td>";
         result = result + "<td>" + aPlatform.getFileName() + "</td>\n";
         result = result + "</tr>\n";
@@ -985,8 +988,8 @@ public class TestResultsGenerator extends Task {
      */
     protected String processEquinoxDropRow(final PlatformStatus aPlatform) {
         String result = "<tr>";
-        result = result + "<td align=\"center\">" + getStatusColumn(aPlatform, "/equinox/images/", true) + "</td>\n";
-        result = result + "<td>";
+        //result = result + "<td align=\"center\">" + getStatusColumn(aPlatform, "/equinox/images/", true) + "</td>\n";
+        //result = result + "<td>";
         final String filename = aPlatform.getFileName();
         // if there are images, put them in the same table column as the name of
         // the file
@@ -1024,13 +1027,13 @@ public class TestResultsGenerator extends Task {
                     result = processEquinoxDropRow(platforms[i]);
                     continue;
                 }
-                final String imageName = getStatusColumn(platforms[i], "", false);
+               // final String imageName = getStatusColumn(platforms[i], "", false);
                 result = result + "<tr>";
-                result = result + "<td><div align=left>" + imageName + "</div></td>\n";
+               // result = result + "<td><div align=left>" + imageName + "</div></td>\n";
                 result = result + "<td>All " + name + "</td>";
                 // generate http, md5 and sha1 links by calling php functions in
                 // the template
-                result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"${buildId}\",\"" + platforms[i].getFileName()
+                result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"${BUILD_ID}\",\"" + platforms[i].getFileName()
                         + "\"); ?></td>\n";
                 result = result + "</tr>\n";
             }
