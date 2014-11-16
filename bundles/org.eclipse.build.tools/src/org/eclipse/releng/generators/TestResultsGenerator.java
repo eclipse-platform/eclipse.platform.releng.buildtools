@@ -65,7 +65,7 @@ public class TestResultsGenerator extends Task {
                 xmlFileCanonicalPath = xmlFile.getCanonicalPath();
             }
             catch (final IOException e) {
-                logException(e); 
+                logException(e);
             }
             if (xmlFileCanonicalPath != null) {
                 // + 1 to remove the '\'
@@ -183,14 +183,14 @@ public class TestResultsGenerator extends Task {
 
     public Vector           platformSpecs;
     public Vector           differentPlatforms;
-    public String           testResultsWithProblems      = "\n";
-    public String           testResultsXmlUrls           = "\n";
+    public String           testResultsWithProblems   = "\n";
+    public String           testResultsXmlUrls        = "\n";
 
-    private DocumentBuilder parser                       = null;
+    private DocumentBuilder parser                    = null;
     public ErrorTracker     anErrorTracker;
-    public String           testResultsTemplateString    = "";
+    public String           testResultsTemplateString = "";
 
-    public String           dropTemplateString           = "";
+    public String           dropTemplateString        = "";
     public Vector           platformDescription;
 
     public Vector           platformTemplateString;
@@ -202,10 +202,10 @@ public class TestResultsGenerator extends Task {
     // of the test Results link on the build pages (standard, green, red), once
     // failures
     // are encountered, this is set to failed
-    protected String        testResultsStatus            = "successful";
+    protected String        testResultsStatus         = "successful";
 
     // assume tests ran. If no html files are found, this is set to false
-    private boolean         testsRan                     = true;
+    private boolean         testsRan                  = true;
 
     // Parameters
     // build runs JUnit automated tests
@@ -251,33 +251,34 @@ public class TestResultsGenerator extends Task {
     // Location and name of test manifest file
     public String           testManifestFileName;
 
-    // Initialize the prefix to a default string
-    private String          prefix                       = "default";
-
-    private String          testShortName                = "";
-
-    private int             counter                      = 0;
-
-    // Configuration of test machines.  
-    // Add or change new configurations here 
-    // and update titles in testResults.php.template.
-    // These are the suffixes used for JUnit's XML output files. 
-    // On each invocation, all files in results directory are 
-    // scanned, to see if they end with suffixes, and if so, 
-    // are processed for summary row. The column order is determined by 
-    // the order listed here. 
-    // This suffix is determined, at test time, when the files junit files are 
-    // generated, by the setting of a variable named "platform" in test.xml 
-    // and associated property files. 
+    // temporary way to force "missing" list not to be printed (until complete solution found)
+    private boolean doMissingList = true;
     
-    private String[]  testsConfigDefaults  = { 
-            "linux.gtk.x86_64_8.0.xml", 
-            "macosx.cocoa.x86_64_7.0.xml", 
-            "win32.win32.x86_7.0.xml" };
-    private String[]  testsConfigExpected;
-    private String[]  testsConfig;
+    // Initialize the prefix to a default string
+    private String          prefix                    = "default";
 
-    private int             missingCount                 = 0;
+    private String          testShortName             = "";
+
+    private int             counter                   = 0;
+
+    // Configuration of test machines.
+    // Add or change new configurations here
+    // and update titles in testResults.php.template.
+    // These are the suffixes used for JUnit's XML output files.
+    // On each invocation, all files in results directory are
+    // scanned, to see if they end with suffixes, and if so,
+    // are processed for summary row. The column order is determined by
+    // the order listed here.
+    // This suffix is determined, at test time, when the files junit files are
+    // generated, by the setting of a variable named "platform" in test.xml
+    // and associated property files.
+
+    private String[]        testsConfigDefaults       = { "linux.gtk.x86_64_8.0.xml", "macosx.cocoa.x86_64_7.0.xml",
+            "win32.win32.x86_7.0.xml"                };
+    private String[]        testsConfigExpected;
+    private String[]        testsConfig;
+
+    private int             missingCount              = 0;
 
     private int countCompileErrors(final String aString) {
         return extractNumber(aString, "error");
@@ -322,16 +323,16 @@ public class TestResultsGenerator extends Task {
         }
         catch (final IOException e) {
             log("IOException: " + fileName);
-            logException(e); 
+            logException(e);
             return 0;
         }
         catch (final SAXException e) {
             log("SAXException: " + fileName);
-            logException(e); 
+            logException(e);
             return 0;
         }
         catch (final ParserConfigurationException e) {
-            logException(e); 
+            logException(e);
         }
         return errorCount;
     }
@@ -430,7 +431,7 @@ public class TestResultsGenerator extends Task {
         // If the file name doesn't end with any of the set test configurations,
         // do nothing
         boolean endsWithConfig = false;
-        String [] tconfig=getTestsConfig();
+        String[] tconfig = getTestsConfig();
         int card = tconfig.length;
         for (int i = 0; i < card; i++) {
             if (fileName.endsWith(tconfig[i])) {
@@ -723,13 +724,13 @@ public class TestResultsGenerator extends Task {
             aDocument = builder.parse(inputSource);
         }
         catch (final SAXException e) {
-            logException(e); 
+            logException(e);
         }
         catch (final IOException e) {
-            logException(e); 
+            logException(e);
         }
         catch (final ParserConfigurationException e) {
-            logException(e); 
+            logException(e);
         }
         finally {
             if (reader != null) {
@@ -827,7 +828,7 @@ public class TestResultsGenerator extends Task {
                 sourceDirectoryCanonicalPath = sourceDirectoryParent.getCanonicalPath();
             }
             catch (final IOException e) {
-                logException(e); 
+                logException(e);
             }
             for (int i = 0; i < xmlFileNames.length; i++) {
                 if (xmlFileNames[i].getPath().endsWith(".xml")) {
@@ -841,8 +842,12 @@ public class TestResultsGenerator extends Task {
                         anErrorTracker.registerError(fullName.substring(getXmlDirectoryName().length() + 1));
                     }
 
-//                    final String tmp = ((platformSpecificTemplateList.equals("")) ? formatRow(xmlFileNames[i].getPath(),
-//                            errorCount, true) : formatRowReleng(xmlFileNames[i].getPath(), errorCount, true));
+                    // final String tmp =
+                    // ((platformSpecificTemplateList.equals("")) ?
+                    // formatRow(xmlFileNames[i].getPath(),
+                    // errorCount, true) :
+                    // formatRowReleng(xmlFileNames[i].getPath(), errorCount,
+                    // true));
                     String tmp = formatRowReleng(xmlFileNames[i].getPath(), errorCount, true);
                     replaceString = replaceString + tmp;
 
@@ -887,7 +892,8 @@ public class TestResultsGenerator extends Task {
         }
 
         String result = "<tr>";
-       // result = result + "<td><div align=left>" + getStatusColumn(aPlatform, "", true) + "</div></td>\n";
+        // result = result + "<td><div align=left>" + getStatusColumn(aPlatform,
+        // "", true) + "</div></td>\n";
         result = result + "<td>" + aPlatform.getName() + "</td>";
         result = result + "<td>" + aPlatform.getFileName() + "</td>\n";
         result = result + "</tr>\n";
@@ -908,8 +914,9 @@ public class TestResultsGenerator extends Task {
      */
     protected String processEquinoxDropRow(final PlatformStatus aPlatform) {
         String result = "<tr>";
-        //result = result + "<td align=\"center\">" + getStatusColumn(aPlatform, "/equinox/images/", true) + "</td>\n";
-        //result = result + "<td>";
+        // result = result + "<td align=\"center\">" +
+        // getStatusColumn(aPlatform, "/equinox/images/", true) + "</td>\n";
+        // result = result + "<td>";
         final String filename = aPlatform.getFileName();
         // if there are images, put them in the same table column as the name of
         // the file
@@ -947,9 +954,11 @@ public class TestResultsGenerator extends Task {
                     result = processEquinoxDropRow(platforms[i]);
                     continue;
                 }
-               // final String imageName = getStatusColumn(platforms[i], "", false);
+                // final String imageName = getStatusColumn(platforms[i], "",
+                // false);
                 result = result + "<tr>";
-               // result = result + "<td><div align=left>" + imageName + "</div></td>\n";
+                // result = result + "<td><div align=left>" + imageName +
+                // "</div></td>\n";
                 result = result + "<td>All " + name + "</td>";
                 // generate http, md5 and sha1 links by calling php functions in
                 // the template
@@ -987,7 +996,7 @@ public class TestResultsGenerator extends Task {
             aByteArray = getFileByteContent(fileName);
         }
         catch (final IOException e) {
-            logException(e); 
+            logException(e);
         }
         if (aByteArray == null) {
             return "";
@@ -1135,31 +1144,34 @@ public class TestResultsGenerator extends Task {
     }
 
     private String verifyAllTestsRan(final String directory) {
-        final Enumeration enumeration = (anErrorTracker.getTestLogs()).elements();
-
         String replaceString = "";
-        while (enumeration.hasMoreElements()) {
-            final String testLogName = enumeration.nextElement().toString();
+        if (getDoMissingList()) {
+            final Enumeration enumeration = (anErrorTracker.getTestLogs()).elements();
 
-            if (new File(directory + File.separator + testLogName).exists()) {
-                continue;
-            }
+            while (enumeration.hasMoreElements()) {
+                final String testLogName = enumeration.nextElement().toString();
 
-            anErrorTracker.registerError(testLogName);
-//            final String tmp = ((platformSpecificTemplateList.equals("")) ? formatRow(testLogName, -1, false) : formatRowReleng(
-//                    testLogName, -1, false));
-            String tmp = formatRowReleng(testLogName, -1, false);
-            if (missingCount == 0) {
-                replaceString = replaceString
-                        + "</table></br>"
-                        + "\n"
-                        + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
-                        + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\"> Missing Files </th><th  align=\"center\"> Status </th></tr>";
+                if (new File(directory + File.separator + testLogName).exists()) {
+                    continue;
+                }
+
+                anErrorTracker.registerError(testLogName);
+                // final String tmp = ((platformSpecificTemplateList.equals(""))
+                // ? formatRow(testLogName, -1, false) : formatRowReleng(
+                // testLogName, -1, false));
+                String tmp = formatRowReleng(testLogName, -1, false);
+                if (missingCount == 0) {
+                    replaceString = replaceString
+                            + "</table></br>"
+                            + "\n"
+                            + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
+                            + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\"> Missing Files </th><th  align=\"center\"> Status </th></tr>";
+                }
+                replaceString = replaceString + tmp;
+                testResultsWithProblems = testResultsWithProblems.concat("\n" + testLogName.substring(0, testLogName.length() - 4)
+                        + " (file missing)");
+                missingCount++;
             }
-            replaceString = replaceString + tmp;
-            testResultsWithProblems = testResultsWithProblems.concat("\n" + testLogName.substring(0, testLogName.length() - 4)
-                    + " (file missing)");
-            missingCount++;
         }
         return replaceString;
     }
@@ -1235,7 +1247,6 @@ public class TestResultsGenerator extends Task {
         writeFile(outputFileName, testResultsTemplateString);
     }
 
-    
     public String[] getTestsConfigExpected() {
         if (testsConfigExpected == null) {
             return testsConfigDefaults;
@@ -1243,12 +1254,10 @@ public class TestResultsGenerator extends Task {
         return testsConfigExpected;
     }
 
-    
     public void setTestsConfigExpected(String[] testsConfigExpected) {
         this.testsConfigExpected = testsConfigExpected;
     }
 
-    
     public String[] getTestsConfig() {
         if (testsConfig == null) {
             return getTestsConfigExpected();
@@ -1256,9 +1265,18 @@ public class TestResultsGenerator extends Task {
         return testsConfig;
     }
 
-    
     public void setTestsConfig(String[] testsConfig) {
         this.testsConfig = testsConfig;
+    }
+
+    
+    public boolean getDoMissingList() {
+        return doMissingList;
+    }
+
+    
+    public void setDoMissingList(boolean doMissingList) {
+        this.doMissingList = doMissingList;
     }
 
 }
