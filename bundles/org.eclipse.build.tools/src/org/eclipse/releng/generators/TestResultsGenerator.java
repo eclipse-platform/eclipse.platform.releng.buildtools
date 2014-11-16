@@ -464,7 +464,7 @@ public class TestResultsGenerator extends Task {
                     counter = 0;
                     // Set new prefix
                     prefix = shortName.substring(0, shortName.indexOf(".tests") + 6);
-                    aString = aString + "<tbody><tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
+                    aString = aString + "\n<tbody>\r<tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
                     aString = aString + "<tr><td><p>" + shortName;
 
                     // Loop until the matching string postfix(test config.) is
@@ -489,12 +489,12 @@ public class TestResultsGenerator extends Task {
                     // since this would mean that the team has more than one
                     // component test
                     if (!shortName.endsWith("tests")) {
-                        aString = aString + "<tbody><tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
+                        aString = aString + "\n<tbody>\n<tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
                         aString = aString + "<tr><td><p>" + shortName;
                     }
                     // The team has only one component test
                     else {
-                        aString = aString + "<tbody><tr><td><b>" + shortName;
+                        aString = aString + "\n<tbody><tr><td><b>" + shortName;
                     }
                     testShortName = shortName;
 
