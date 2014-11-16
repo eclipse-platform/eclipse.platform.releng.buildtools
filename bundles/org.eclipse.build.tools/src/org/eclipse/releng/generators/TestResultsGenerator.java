@@ -269,10 +269,13 @@ public class TestResultsGenerator extends Task {
     // This suffix is determined, at test time, when the files junit files are 
     // generated, by the setting of a variable named "platform" in test.xml 
     // and associated property files. 
-    private final String[]  testsConfig  = { 
+    
+    private String[]  testsConfigDefaults  = { 
             "linux.gtk.x86_64_8.0.xml", 
             "macosx.cocoa.x86_64_7.0.xml", 
             "win32.win32.x86_7.0.xml" };
+    private String[]  testsConfigExpected;
+    private String[]  testsConfig;
 
     private int             missingCount                 = 0;
 
@@ -421,71 +424,16 @@ public class TestResultsGenerator extends Task {
                 .append("\">").append(warningCount).append("</a>").append("</td>\n").append("</tr>\n");
     }
 
-    private String formatRow(final String fileName, final int errorCount, final boolean link) {
-
-        // replace .xml with .html
-
-        String aString = "";
-        if (!link) {
-            return "<tr><td>" + fileName + " (missing)" + "</td><td>" + "DNF";
-        }
-
-        if (fileName.endsWith(".xml")) {
-
-            final int begin = fileName.lastIndexOf(File.separatorChar);
-            final int end = fileName.lastIndexOf(".xml");
-
-            final String shortName = fileName.substring(begin + 1, end);
-            String displayName = shortName;
-            if (errorCount != 0) {
-                aString = aString + "<tr><td><b>";
-            } else {
-                aString = aString + "<tr><td>";
-            }
-
-            if (errorCount != 0) {
-                displayName = "<font color=\"#ff0000\">" + displayName + "</font>";
-            }
-            if (errorCount == -1) {
-                aString = aString.concat(displayName);
-            } else {
-                aString = aString + "<a href=" + "\"" + hrefTestResultsTargetPath + "/" + shortName + ".html" + "\">" + displayName
-                        + "</a>";
-            }
-            if (errorCount > 0) {
-                aString = aString + "</td><td><b>";
-            } else {
-                aString = aString + "</td><td>";
-            }
-
-            if (errorCount == -1) {
-                aString = aString + "<font color=\"#ff0000\">DNF";
-            } else if (errorCount > 0) {
-                aString = aString + "<font color=\"#ff0000\">" + String.valueOf(errorCount);
-            } else {
-                aString = aString + String.valueOf(errorCount);
-            }
-
-            if (errorCount != 0) {
-                aString = aString + "</font></b></td></tr>";
-            } else {
-                aString = aString + "</td></tr>";
-            }
-        }
-
-        return aString;
-
-    }
-
     // Specific to the RelEng test results page
     private String formatRowReleng(final String fileName, final int errorCount, final boolean link) {
 
         // If the file name doesn't end with any of the set test configurations,
         // do nothing
         boolean endsWithConfig = false;
-        final int card = testsConfig.length;
+        String [] tconfig=getTestsConfig();
+        int card = tconfig.length;
         for (int i = 0; i < card; i++) {
-            if (fileName.endsWith(testsConfig[i])) {
+            if (fileName.endsWith(tconfig[i])) {
                 endsWithConfig = true;
             }
         }
@@ -520,7 +468,7 @@ public class TestResultsGenerator extends Task {
 
                     // Loop until the matching string postfix(test config.) is
                     // found
-                    while ((counter < card) && !fileName.endsWith(testsConfig[counter])) {
+                    while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
                         aString = aString + "<td align=\"center\">-</td>";
                         counter++;
                     }
@@ -530,7 +478,7 @@ public class TestResultsGenerator extends Task {
 
                     // Loop until the matching string postfix(test config.) is
                     // found
-                    while ((counter < card) && !fileName.endsWith(testsConfig[counter])) {
+                    while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
                         aString = aString + "<td align=\"center\">-</td>";
                         counter++;
                     }
@@ -569,14 +517,14 @@ public class TestResultsGenerator extends Task {
                     aString = aString + "<tr><td><P>" + shortName;
                     // Loop until the matching string postfix(test config.) is
                     // found
-                    while ((counter < card) && !fileName.endsWith(testsConfig[counter])) {
+                    while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
                         aString = aString + "<td align=\"center\">-</td>";
                         counter++;
                     }
                 } else {
                     // Loop until the matching string postfix(test config.) is
                     // found
-                    while ((counter < card) && !fileName.endsWith(testsConfig[counter])) {
+                    while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
                         aString = aString + "<td align=\"center\">-</td>";
                         counter++;
                     }
@@ -587,7 +535,7 @@ public class TestResultsGenerator extends Task {
                         aString = aString + "<tr><td><P>" + shortName;
                         // Loop until the matching string postfix(test config.)
                         // is found
-                        while ((counter < card) && !fileName.endsWith(testsConfig[counter])) {
+                        while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
                             aString = aString + "<td align=\"center\">-</td>";
                             counter++;
                         }
@@ -717,34 +665,6 @@ public class TestResultsGenerator extends Task {
 
     public String getHtmlDirectoryName() {
         return htmlDirectoryName;
-    }
-
-    /*
-     * Return the HTML mark-up to use in the "status" column.
-     */
-    private String getStatusColumn(final PlatformStatus platform, final String prefix, final boolean setStatus) {
-        return "";
-        /**
-        final String OK = "<img src=\"" + prefix + "OK.gif\" alt=\"OK\"/>";
-        if (platform.hasErrors()) {
-            // Failure in tests
-            if (setStatus) {
-                testResultsStatus = "failed";
-            }
-            return "<a href=\"" + getTestResultsHtmlFileName() + "\"><img src=\"" + prefix + "FAIL.gif\" alt=\"FAIL\"/></a>";
-        }
-        if (testsRan) {
-            return OK;
-        }
-        if (isBuildTested) {
-            // Tests are pending
-            if (setStatus) {
-                testResultsStatus = "pending";
-            }
-            return "<img src=\"" + prefix + "pending.gif\" alt=\"pending\"/>";
-        }
-        return OK;
-        **/
     }
 
     /**
@@ -1313,6 +1233,32 @@ public class TestResultsGenerator extends Task {
     public void writeTestResultsFile() {
         final String outputFileName = dropDirectoryName + File.separator + testResultsHtmlFileName;
         writeFile(outputFileName, testResultsTemplateString);
+    }
+
+    
+    public String[] getTestsConfigExpected() {
+        if (testsConfigExpected == null) {
+            return testsConfigDefaults;
+        }
+        return testsConfigExpected;
+    }
+
+    
+    public void setTestsConfigExpected(String[] testsConfigExpected) {
+        this.testsConfigExpected = testsConfigExpected;
+    }
+
+    
+    public String[] getTestsConfig() {
+        if (testsConfig == null) {
+            return getTestsConfigExpected();
+        }
+        return testsConfig;
+    }
+
+    
+    public void setTestsConfig(String[] testsConfig) {
+        this.testsConfig = testsConfig;
     }
 
 }
