@@ -444,7 +444,7 @@ public class TestResultsGenerator extends Task {
 
         String aString = "";
         if (!link) {
-            return "<tr><td>" + fileName + "</td><td align=\"center\">" + "DNF </tr>";
+            return "<tr><td>" + fileName + "</td><td align=\"center\">" + "DNF </td></tr>";
         }
 
         if (fileName.endsWith(".xml")) {
@@ -465,7 +465,7 @@ public class TestResultsGenerator extends Task {
                     // Set new prefix
                     prefix = shortName.substring(0, shortName.indexOf(".tests") + 6);
                     aString = aString + "<tbody><tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
-                    aString = aString + "<tr><td><P>" + shortName;
+                    aString = aString + "<tr><td><p>" + shortName;
 
                     // Loop until the matching string postfix(test config.) is
                     // found
@@ -490,7 +490,7 @@ public class TestResultsGenerator extends Task {
                     // component test
                     if (!shortName.endsWith("tests")) {
                         aString = aString + "<tbody><tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
-                        aString = aString + "<tr><td><P>" + shortName;
+                        aString = aString + "<tr><td><p>" + shortName;
                     }
                     // The team has only one component test
                     else {
@@ -515,7 +515,7 @@ public class TestResultsGenerator extends Task {
                     }
                     counter = 0;
                     // Print the component name
-                    aString = aString + "<tr><td><P>" + shortName;
+                    aString = aString + "<tr><td><p>" + shortName;
                     // Loop until the matching string postfix(test config.) is
                     // found
                     while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
@@ -533,7 +533,7 @@ public class TestResultsGenerator extends Task {
                     if (counter == card) {
                         counter = 0;
                         // Print the new component name
-                        aString = aString + "<tr><td><P>" + shortName;
+                        aString = aString + "<tr><td><p>" + shortName;
                         // Loop until the matching string postfix(test config.)
                         // is found
                         while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
