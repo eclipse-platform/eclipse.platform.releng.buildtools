@@ -251,9 +251,10 @@ public class TestResultsGenerator extends Task {
     // Location and name of test manifest file
     public String           testManifestFileName;
 
-    // temporary way to force "missing" list not to be printed (until complete solution found)
-    private boolean doMissingList = true;
-    
+    // temporary way to force "missing" list not to be printed (until complete
+    // solution found)
+    private boolean         doMissingList             = true;
+
     // Initialize the prefix to a default string
     private String          prefix                    = "default";
 
@@ -1172,6 +1173,16 @@ public class TestResultsGenerator extends Task {
                         + " (file missing)");
                 missingCount++;
             }
+        } else {
+            replaceString = replaceString
+                    + "<tbody>\n"
+                    + "<tr><td colspan=\"*\"><p><span class=\"footnote\">(NOTE)</span>\n"
+                    + "<br />\n"
+                    + "Remember that for performance unit test tables, there are never any \"missing files\" listed, if there are any.\n"
+                    + "This is expected to be a temporary solution, until an exact fix can be implemented. For more details, see \n"
+                    + "<a href=\"https://bugs.eclipse.org/bugs/show_bug.cgi?id=451890\">bug 451890</a>.</p>\n" 
+                    + "</td></tr>\n" 
+                    + "</tbody>\n";
         }
         return replaceString;
     }
@@ -1269,12 +1280,10 @@ public class TestResultsGenerator extends Task {
         this.testsConfig = testsConfig;
     }
 
-    
     public boolean getDoMissingList() {
         return doMissingList;
     }
 
-    
     public void setDoMissingList(boolean doMissingList) {
         this.doMissingList = doMissingList;
     }
