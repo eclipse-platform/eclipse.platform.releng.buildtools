@@ -916,7 +916,7 @@ public class TestResultsGenerator extends Task {
         String result = "<tr>";
         // result = result + "<td align=\"center\">" +
         // getStatusColumn(aPlatform, "/equinox/images/", true) + "</td>\n";
-        // result = result + "<td>";
+        result = result + "<td>";
         final String filename = aPlatform.getFileName();
         // if there are images, put them in the same table column as the name of
         // the file
