@@ -45,7 +45,7 @@ public class Main implements IApplication {
         if (args.length > 0) {
             System.out.println("\n\t= = Raw arguments ('application.args') passed to performance ui application: = =");
             for (int i = 0; i < args.length; i++) {
-                System.out.println("\t\t>" + args[i] + "<\n");
+                System.out.println("\t\t>" + args[i] + "<");
             }
         }
         generation.run(args);
