@@ -1174,9 +1174,10 @@ public class TestResultsGenerator extends Task {
                 missingCount++;
             }
         } else {
+            // Note: we intentionally 
             replaceString = replaceString
                     + "<tbody>\n"
-                    + "<tr><td colspan=\"*\"><p><span class=\"footnote\">NOTE: </span>\n"
+                    + "<tr><td colspan=\"0\"><p><span class=\"footnote\">NOTE: </span>\n"
                     + "Remember that for performance unit test tables, there are never any \"missing files\" listed, if there are any. \n"
                     + "This is expected to be a temporary solution, until an exact fix can be implemented. For more details, see \n"
                     + "<a href=\"https://bugs.eclipse.org/bugs/show_bug.cgi?id=451890\">bug 451890</a>.</p>\n" 
