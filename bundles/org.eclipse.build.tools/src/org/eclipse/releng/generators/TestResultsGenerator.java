@@ -191,18 +191,9 @@ public class TestResultsGenerator extends Task {
     public String           testResultsTemplateString = "";
 
     public String           dropTemplateString        = "";
-    public Vector           platformDescription;
 
-    public Vector           platformTemplateString;
 
     public Vector           platformDropFileName;
-
-    // Status of tests results (pending, successful, failed), used to specify
-    // the color
-    // of the test Results link on the build pages (standard, green, red), once
-    // failures
-    // are encountered, this is set to failed
-    protected String        testResultsStatus         = "successful";
 
     // assume tests ran. If no html files are found, this is set to false
     private boolean         testsRan                  = true;
@@ -346,8 +337,6 @@ public class TestResultsGenerator extends Task {
     public void execute() {
 
         anErrorTracker = new ErrorTracker();
-        platformDescription = new Vector();
-        platformTemplateString = new Vector();
         platformDropFileName = new Vector();
         anErrorTracker.loadFile(testManifestFileName);
         getDropTokensFromList(dropTokenList);
@@ -1187,15 +1176,6 @@ public class TestResultsGenerator extends Task {
         return replaceString;
     }
 
-    protected void writeDropFiles() {
-        writeDropIndexFile();
-        // Write all the platform files
-        for (int i = 0; i < platformDescription.size(); i++) {
-            writePlatformFile(platformDescription.get(i).toString(), platformTemplateString.get(i).toString(), platformDropFileName
-                    .get(i).toString());
-        }
-    }
-
     protected void writeDropIndexFile() {
 
         final String[] types = anErrorTracker.getTypes();
@@ -1204,8 +1184,6 @@ public class TestResultsGenerator extends Task {
             final String replaceString = processDropRows(platforms);
             dropTemplateString = replace(dropTemplateString, dropTokens.get(i).toString(), replaceString);
         }
-        // Replace the token %testsStatus% with the status of the test results
-        dropTemplateString = replace(dropTemplateString, "%testsStatus%", testResultsStatus);
         final String outputFileName = dropDirectoryName + File.separator + dropHtmlFileName;
         writeFile(outputFileName, dropTemplateString);
     }
@@ -1232,25 +1210,6 @@ public class TestResultsGenerator extends Task {
                 }
             }
         }
-    }
-
-    // Writes the platform file (dropFileName) specific to "desiredPlatform"
-    protected void writePlatformFile(final String desiredPlatform, String templateString, final String dropFileName) {
-
-        final String[] types = anErrorTracker.getTypes();
-        for (int i = 0; i < types.length; i++) {
-            final PlatformStatus[] platforms = anErrorTracker.getPlatforms(types[i]);
-            // Call processPlatformDropRows passing the platform's name
-            final String replaceString = processPlatformDropRows(platforms, desiredPlatform);
-            templateString = replace(templateString, dropTokens.get(i).toString(), replaceString);
-        }
-        // Replace the platformIdentifierToken with the platform's name and the
-        // testsStatus
-        // token with the status of the test results
-        templateString = replace(templateString, platformIdentifierToken, desiredPlatform);
-        templateString = replace(templateString, "%testsStatus%", testResultsStatus);
-        final String outputFileName = dropDirectoryName + File.separator + dropFileName;
-        writeFile(outputFileName, templateString);
     }
 
     public void writeTestResultsFile() {
