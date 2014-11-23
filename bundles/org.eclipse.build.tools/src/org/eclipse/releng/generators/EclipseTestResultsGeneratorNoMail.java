@@ -17,22 +17,22 @@ public class EclipseTestResultsGeneratorNoMail extends TestResultsGenerator {
 
     public static void main(final String[] args) {
         final String publishingContent = "/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles";
+        String localTestBuildId = "I20141120-1922";
+        String localTestDropDir="/shared/eclipse/buildsdavidw/4I/siteDir/eclipse/downloads/drops4/" + localTestBuildId;
 
         final EclipseTestResultsGeneratorNoMail test = new EclipseTestResultsGeneratorNoMail();
         test.buildType = "I";
         test.setIsBuildTested(true);
         test.setDropTokenList("%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
         test.getDropTokensFromList(test.getDropTokenList());
-        test.setXmlDirectoryName("/data/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105/testresults/xml");
-        test.setHtmlDirectoryName("/data/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105/testresults/html");
-        test.setDropDirectoryName("/data/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105");
+        test.setXmlDirectoryName(localTestDropDir + "/testresults/xml");
+        test.setDropDirectoryName(localTestDropDir);
         test.setTestResultsTemplateFileName(publishingContent + "/templateFiles/testResults.php.template");
         test.setDropTemplateFileName(publishingContent + "/templateFiles/index.php.template");
         test.setTestResultsHtmlFileName("testResults.php");
         test.setDropHtmlFileName("index.php");
-        // test.setDropHtmlFileName("index.html");
-        test.setHrefTestResultsTargetPath("/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105/testresults");
-        test.setCompileLogsDirectoryName("/shared/eclipse/builds/4I/siteDir/eclipse/downloads/drops4/I20140923-0105/compilelogs");
+        test.setHrefTestResultsTargetPath("testresults");
+        test.setCompileLogsDirectoryName(localTestDropDir + "/compilelogs");
         test.setHrefCompileLogsTargetPath("compilelogs");
         test.setTestManifestFileName("/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
         test.execute();

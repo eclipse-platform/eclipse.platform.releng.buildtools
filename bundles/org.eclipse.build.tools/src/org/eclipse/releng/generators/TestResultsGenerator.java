@@ -235,7 +235,7 @@ public class TestResultsGenerator extends Task {
     // Arbitrary path used in the index.php page to href the
     // generated .html files.
     public String           hrefTestResultsTargetPath;
-    // Aritrary path used in the index.php page to reference the compileLogs
+    // Arbitrary path used in the index.php page to reference the compileLogs
     public String           hrefCompileLogsTargetPath;
     // Location of compile logs base directory
     public String           compileLogsDirectoryName;
@@ -552,8 +552,12 @@ public class TestResultsGenerator extends Task {
                 if (errorCount == -1) {
                     aString = aString.concat(displayName);
                 } else {
-                    aString = aString + "<a href=" + "\"" + hrefTestResultsTargetPath + "/"
-                            + fileName.substring(begin + 1, fileName.length() - 4) + ".html" + "\">" + displayName + "</a>";
+                    // rawfilename is file name with no extension.
+                    String rawfilename=fileName.substring(begin + 1, fileName.length() - 4);
+                    aString = aString + "<a href=" + "\"" + hrefTestResultsTargetPath + "/html/"
+                            + rawfilename + ".html" + "\">" + displayName + "</a>";
+                    aString = aString + "&nbsp;<a style=\"color:#AAAAAA\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\"" + hrefTestResultsTargetPath + "/xml/"
+                            + rawfilename + ".xml" + "\">(XML)</a>";
                 }
 
                 if (errorCount == -1) {
