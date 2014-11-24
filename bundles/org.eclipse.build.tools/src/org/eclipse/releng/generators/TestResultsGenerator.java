@@ -181,8 +181,6 @@ public class TestResultsGenerator extends Task {
 
     public Vector           dropTokens;
 
-    public Vector           platformSpecs;
-    public Vector           differentPlatforms;
     public String           testResultsWithProblems   = "\n";
     public String           testResultsXmlUrls        = "\n";
 
@@ -207,9 +205,6 @@ public class TestResultsGenerator extends Task {
 
     // Comma separated list of drop tokens
     public String           dropTokenList;
-
-    // Token in platform.php.template to be replaced by the desired platform ID
-    public String           platformIdentifierToken;
 
     // Location of the xml files
     public String           xmlDirectoryName;
@@ -587,15 +582,6 @@ public class TestResultsGenerator extends Task {
      */
     public String getCompileLogsDirectoryName() {
         return compileLogsDirectoryName;
-    }
-
-    protected void getDifferentPlatformsFromList(final String list) {
-        final StringTokenizer tokenizer = new StringTokenizer(list, ";");
-        differentPlatforms = new Vector();
-
-        while (tokenizer.hasMoreTokens()) {
-            differentPlatforms.add(tokenizer.nextToken());
-        }
     }
 
     public String getDropDirectoryName() {
@@ -1088,10 +1074,6 @@ public class TestResultsGenerator extends Task {
 
     public void setIsBuildTested(final boolean isBuildTested) {
         this.isBuildTested = isBuildTested;
-    }
-
-    public void setPlatformIdentifierToken(final String platformIdentifierToken) {
-        this.platformIdentifierToken = platformIdentifierToken;
     }
 
     /**

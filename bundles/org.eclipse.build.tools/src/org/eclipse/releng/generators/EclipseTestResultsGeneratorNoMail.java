@@ -64,17 +64,10 @@ public class EclipseTestResultsGeneratorNoMail extends TestResultsGenerator {
 
     @Override
     protected String processDropRow(final PlatformStatus aPlatform) {
-
-        String result = "<tr>";
-
-        result = result + "<td>" + aPlatform.getName() + "</td>";
-
-        // generate http, md5 and sha1 links by calling php functions in the
-        // template
-        result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"${BUILD_ID}\",\"" + aPlatform.getFileName()
-                + "\"); ?></td>\n";
+        String result = "<tr>\n<td>" + aPlatform.getName() + "</td>\n";
+        // generate file link, size and checksums in the php template
+        result = result + "<?php genLinks(\"" + aPlatform.getFileName() + "\"); ?>\n";
         result = result + "</tr>\n";
-
         return result;
     }
 
