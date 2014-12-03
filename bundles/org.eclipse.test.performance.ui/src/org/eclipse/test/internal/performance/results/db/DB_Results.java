@@ -174,8 +174,8 @@ public class DB_Results {
 			DB_CONNECTION = connected;
 			DB_LOCATION = databaseLocation == null ? IPerformancesConstants.NETWORK_DATABASE_LOCATION : databaseLocation;
 			DB_NAME = IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion;
-			DB_VERSION = "v" + eclipseVersion;
-			DB_VERSION_REF = "R-3." + (eclipseVersion % 10 - 1);
+			DB_VERSION = "v44"; // + eclipseVersion;
+			DB_VERSION_REF = "R-4.4"; //" + (eclipseVersion % 10 - 1);
 			if (connected) {
 				return getDefault().fSQL != null;
 			}
@@ -711,8 +711,8 @@ public static void initDbContants() {
 		}
 	}
 	if (DB_VERSION == null) {
-		DB_VERSION = "v" + DB_NAME.substring(DB_NAME.length()-2);
-		DB_VERSION_REF = "R-3."+(Character.digit(DB_NAME.charAt(DB_NAME.length()-1), 10)-1);
+		DB_VERSION = "v44"; // + DB_NAME.substring(DB_NAME.length()-2);
+		DB_VERSION_REF = "R-4.4"; //+(Character.digit(DB_NAME.charAt(DB_NAME.length()-1), 10)-1);
 	}
 }
 

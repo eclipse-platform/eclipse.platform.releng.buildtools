@@ -287,7 +287,7 @@ ResultSet queryScenarioSummaries(int scenarioID, String config, String[] builds)
 			"(DIM_ID = "+InternalDimensions.ELAPSED_PROCESS.getId()+" or DIM_ID = 0)" + //$NON-NLS-1$ //$NON-NLS-2$
 			" order by VARIATION_ID, DIM_ID"); //$NON-NLS-1$
 	}
-	this.queryScenarioSummaries.setString(1, "|build="+buildPattern+"||config="+ config + "||jvm=sun|"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	this.queryScenarioSummaries.setString(1, "|build="+buildPattern+"||config="+ config + "||jvm=8.0|"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	this.queryScenarioSummaries.setInt(2, scenarioID);
 	return this.queryScenarioSummaries.executeQuery();
 }

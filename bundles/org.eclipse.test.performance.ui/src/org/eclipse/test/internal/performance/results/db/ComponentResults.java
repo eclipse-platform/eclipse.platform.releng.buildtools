@@ -290,7 +290,9 @@ String readLocalFile(File dir, List scenarios) throws FileNotFoundException {
 			if (scenarioResults == null) {
 				// this can happen if scenario pattern does not cover all those stored in local data file
 				// hence, creates a fake scenario to read the numbers and skip to the next scenario
-				scenarioResults = new ScenarioResults(-1, null, null);
+				// Note: we put a fake name and decription here since in some logging cases, it requires a name.
+				// TODO: should work though the issues and make a "NullScenarioResult" work everywhere.
+				scenarioResults = new ScenarioResults(-1, "org.eclipse.unexplained", "Place holder scenerio that does not appear to fit in?");
 //				scenarioResults.parent = this;
 //				scenarioResults.readData(stream);
 				// Should no longer occur as we get all scenarios from database now
