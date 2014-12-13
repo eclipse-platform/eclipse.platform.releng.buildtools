@@ -41,12 +41,12 @@ public interface IPerformancesConstants {
     public static final String PRE_FILTER_NIGHTLY_BUILDS = PREFIX + "filter.nightly.builds"; //$NON-NLS-1$
 
 	// Other constants
-	public static final int ECLIPSE_MAINTENANCE_VERSION = 36;
-	public static final int ECLIPSE_DEVELOPMENT_VERSION = 37;
+	public static final int ECLIPSE_MAINTENANCE_VERSION = 44;
+	public static final int ECLIPSE_DEVELOPMENT_VERSION = 45;
 
 	// Default values
 	public static final String DATABASE_NAME_PREFIX = "perfDb";
-	public static final String NETWORK_DATABASE_LOCATION = "net://minsky.ottawa.ibm.com:1528";
+	public static final String NETWORK_DATABASE_LOCATION = "//shared/eclipse/databases/eclipseDB45/perfDb45:1528";
 	public static final int DEFAULT_ECLIPSE_VERSION = ECLIPSE_DEVELOPMENT_VERSION;
 	public static final boolean DEFAULT_FILTER_ADVANCED_SCENARIOS = true;
 	public static final boolean DEFAULT_FILTER_OLD_BUILDS = false;
