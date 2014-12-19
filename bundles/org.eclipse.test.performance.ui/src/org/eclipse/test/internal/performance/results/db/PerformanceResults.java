@@ -670,19 +670,36 @@ private void setAllBuildNames() {
 		if (n < buildsSize) {
 			System.arraycopy(this.allBuildNames, 0, this.allBuildNames = new String[n], 0, n);
 		}
-		int idx = n-1;
-		String lastBuild = this.allBuildNames[idx--];
-		while (idx > 0 && lastBuild.startsWith(DB_Results.getDbBaselinePrefix())) {
-			lastBuild = this.allBuildNames[idx--];
-		}
-		this.needToUpdateLocalFile = this.name == null || Util.getBuildDate(lastBuild).compareTo(Util.getBuildDate(this.name)) > 0;
-		this.name = lastBuild;
-		if (this.baselineName != null) {
-			String lastBuildDate = Util.getBuildDate(lastBuild);
-			if (Util.getBuildDate(this.baselineName).compareTo(lastBuildDate) > 0) {
-				this.baselineName = DB_Results.getLastBaselineBuild(lastBuildDate);
-			}
-		}
+        // there are times when the build we want to analyze is not the
+        // "last build",
+        // such as there may have be subsequent builds, already.
+        // so, we only compute this "default behavior" of finding last build, 
+		// and equating it to "name", only if lastBuildName has not been set yet.
+		// For the case where "-current" is passed as an argument, in GenerateResults, we do 
+		// "setLastBuildName" to "current". See bug 455656.
+		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=455656
+		String lastBuild = null;
+		// Note: we can not call "getLastBuildName()" because it has the side effects we are 
+		// trying to avoid.
+        if (this.lastBuildName == null) {
+            int idx = n - 1;
+            lastBuild = this.allBuildNames[idx--];
+            while (idx > 0 && lastBuild.startsWith(DB_Results.getDbBaselinePrefix())) {
+                lastBuild = this.allBuildNames[idx--];
+            }
+        } else {
+            lastBuild = this.lastBuildName;
+            this.name = lastBuild;
+        }
+        this.needToUpdateLocalFile = this.name == null
+                || Util.getBuildDate(lastBuild).compareTo(Util.getBuildDate(this.name)) > 0;
+        this.name = lastBuild;
+        if (this.baselineName != null) {
+            String lastBuildDate = Util.getBuildDate(lastBuild);
+            if (Util.getBuildDate(this.baselineName).compareTo(lastBuildDate) > 0) {
+                this.baselineName = DB_Results.getLastBaselineBuild(lastBuildDate);
+            }
+        }
 	}
 }
 

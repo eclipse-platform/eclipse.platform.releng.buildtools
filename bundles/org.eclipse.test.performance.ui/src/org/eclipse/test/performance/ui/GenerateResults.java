@@ -1000,11 +1000,17 @@ private void setDefaults(String buildName, String baseline) {
 		}
 	}
 
+	// must set our known "last build" (that we are interested in) before
+	// 'getAllBuildNames' is called, else it may set "name" to some later 
+	// build we are not interested in analyzing yet.
+    this.performanceResults.setLastBuildName(buildName);
+
 	// Verify that build is known
 	String[] builds = this.performanceResults.getAllBuildNames();
 	if (builds == null || builds.length == 0) {
 		System.err.println("Cannot connect to database to generate results build '"+buildName+"'");
-		System.exit(1);
+		// TODO: changed a system.exit to this exception ... but, there might be better choices?
+		throw new IllegalStateException("Cannot connect to database to generate results build '"+buildName+"'");
 	}
 	if (Arrays.binarySearch(builds, buildName, Util.BUILD_DATE_COMPARATOR) < 0) {
 		throw new RuntimeException("No results in database for build '"+buildName+"'");
@@ -1028,12 +1034,17 @@ private void setDefaults(String buildName, String baseline) {
 	// Init current build prefixes if not set
 	if (this.currentBuildPrefixes == null) {
 		this.currentBuildPrefixes = new ArrayList();
-		if (buildName.charAt(0) == 'M') {
+		char buildType = buildName.charAt(0);
+		if (buildType == 'M') {
 			this.currentBuildPrefixes.add("M");
-		} else {
+		} else if (buildType == 'N') {
 			this.currentBuildPrefixes.add("N");
-		}
+		} else if (buildType == 'I') {
 		this.currentBuildPrefixes.add("I");
+		} else {
+		    // TODO: may want to throw error here? 
+		    this.currentBuildPrefixes.add("?");
+		}
 	}
 }
 
