@@ -1218,7 +1218,7 @@ public class TestResultsGenerator extends Task {
 
     public void setTestsConfigExpected(String testsConfigExpected) {
         this.testsConfigExpected = testsConfigExpected;
-        System.out.println("DEBUG: testConfigExpected: " + testsConfigExpected);
+        System.out.println("DEBUG: testsConfigExpected: " + testsConfigExpected);
     }
 
     public String[] getTestsConfig() {
@@ -1238,9 +1238,9 @@ public class TestResultsGenerator extends Task {
             else {
                testsConfig = testsConfigDefaults; 
             }
-            System.out.println("DEBUG: testConfig array ");
+            System.out.println("DEBUG: testsConfig array ");
             for (int i = 0; i < testsConfig.length; i++) {
-                System.out.println("\tDEBUG: testConfig[" + i + "]: " + testsConfig[i]);
+                System.out.println("\tDEBUG: testsConfig[" + i + "]: " + testsConfig[i]);
             }
         }
         return testsConfig;
