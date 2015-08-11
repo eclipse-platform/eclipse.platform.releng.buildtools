@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.releng.build.tools.feature.source"
       label="%featureName"
-      version="1.0.0.qualifier"
+      version="1.0.1.qualifier"
       provider-name="%providerName"
       license-feature="org.eclipse.license"
       license-feature-version="1.0.0.qualifier">
@@ -17,26 +17,37 @@
 
    <plugin
          id="org.eclipse.build.tools.source"
+         download-size="0"
+         install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.releng.build.tools.convert.source"
+         download-size="0"
+         install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.releng.build.tools.convert.application.source"
+         download-size="0"
+         install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.releng.build.tools.comparator.source"
+         download-size="0"
+         install-size="0"
          version="0.0.0"
          unpack="false"/>
-         
+
    <plugin
          id="org.eclipse.test.performance.ui.source"
+         download-size="0"
+         install-size="0"
          version="0.0.0"
          unpack="false"/>
+
 </feature>

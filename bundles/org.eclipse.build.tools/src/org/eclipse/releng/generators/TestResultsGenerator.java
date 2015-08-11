@@ -160,6 +160,13 @@ public class TestResultsGenerator extends Task {
 
     public static void main(final String[] args) {
         final TestResultsGenerator test = new TestResultsGenerator();
+        if (Boolean.TRUE) {
+        test.setTestsConfigExpected("linux.gtk.x86_64_8.0.xml ,macosx.cocoa.x86_64_8.0.xml ,win32.win32.x86_8.0.xml ");
+        for (int i = 0; i < test.getTestsConfig().length; i++) {
+            System.out.println(test.getTestsConfig()[i]);
+        }
+        
+        } else {
         test.setDropTokenList("%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
         test.getDropTokensFromList(test.dropTokenList);
         test.setIsBuildTested(false);
@@ -177,6 +184,7 @@ public class TestResultsGenerator extends Task {
         test.setHrefCompileLogsTargetPath("compilelogs");
         test.setTestManifestFileName("/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/testManifest.xml");
         test.execute();
+        }
     }
 
     public Vector           dropTokens;
@@ -1210,6 +1218,7 @@ public class TestResultsGenerator extends Task {
 
     public void setTestsConfigExpected(String testsConfigExpected) {
         this.testsConfigExpected = testsConfigExpected;
+        System.out.println("DEBUG: testConfigExpected: " + testsConfigExpected);
     }
 
     public String[] getTestsConfig() {
@@ -1228,6 +1237,10 @@ public class TestResultsGenerator extends Task {
             }
             else {
                testsConfig = testsConfigDefaults; 
+            }
+            System.out.println("DEBUG: testConfig array ");
+            for (int i = 0; i < testsConfig.length; i++) {
+                System.out.println("\tDEBUG: testConfig[" + i + "]: " + testsConfig[i]);
             }
         }
         return testsConfig;
