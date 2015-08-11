@@ -262,7 +262,7 @@ public class TestResultsGenerator extends Task {
 
     private String[]        testsConfigDefaults       = { "linux.gtk.x86_64_8.0.xml", "macosx.cocoa.x86_64_7.0.xml",
             "win32.win32.x86_7.0.xml"                };
-    private String[]        testsConfigExpected;
+    private String        testsConfigExpected;
     private String[]        testsConfig;
 
     private int             missingCount              = 0;
@@ -1203,20 +1203,32 @@ public class TestResultsGenerator extends Task {
         writeFile(outputFileName, testResultsTemplateString);
     }
 
-    public String[] getTestsConfigExpected() {
-        if (testsConfigExpected == null) {
-            return testsConfigDefaults;
-        }
+    public String getTestsConfigExpected() {
+      
         return testsConfigExpected;
     }
 
-    public void setTestsConfigExpected(String[] testsConfigExpected) {
+    public void setTestsConfigExpected(String testsConfigExpected) {
         this.testsConfigExpected = testsConfigExpected;
     }
 
     public String[] getTestsConfig() {
         if (testsConfig == null) {
-            return getTestsConfigExpected();
+            String expectedConfigParam = getTestsConfigExpected();
+            if (expectedConfigParam != null) 
+            {
+                StringTokenizer tokenizer = new StringTokenizer(expectedConfigParam, " ,\t");
+                int nTokens = tokenizer.countTokens();
+                String[] tokens = new String[nTokens];
+                int i=0;
+                while (tokenizer.hasMoreTokens()) {
+                    tokens[i++] = tokenizer.nextToken();
+                }
+                testsConfig = tokens;
+            }
+            else {
+               testsConfig = testsConfigDefaults; 
+            }
         }
         return testsConfig;
     }
