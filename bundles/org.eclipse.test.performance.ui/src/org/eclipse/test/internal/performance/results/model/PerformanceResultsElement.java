@@ -347,11 +347,11 @@ public void writeComparison(File resultsFile, String build, String reference) {
 		stream.print("<h2>Performance comparison of ");
 		stream.print(build);
 		stream.print(" relative to ");
-		int index = reference.indexOf('_');
+		int index = reference.indexOf('-');
 		if (index > 0) {
 			stream.print(reference.substring(0, index));
 			stream.print(" (");
-			index = reference.lastIndexOf('_');
+			index = reference.lastIndexOf('-');
 			stream.print(reference.substring(index+1, reference.length()));
 			stream.print(')');
 		} else {

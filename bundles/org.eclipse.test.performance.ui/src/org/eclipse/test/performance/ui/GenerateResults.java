@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.test.internal.performance.results.db.ConfigResults;
+import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.db.PerformanceResults;
 import org.eclipse.test.internal.performance.results.db.ScenarioResults;
 import org.eclipse.test.internal.performance.results.utils.Util;
@@ -214,6 +215,7 @@ private void parse(String[] args) {
 	while (i < argsLength) {
 		String arg = args[i];
 		if (!arg.startsWith("-")) {
+		    System.err.println("ERROR: Unrecognized argument (arg) found, with value of >" + arg + "<");
 			i++;
 			continue;
 		}
@@ -229,6 +231,7 @@ private void parse(String[] args) {
 			}
 			buffer.append("	-baseline = "+baseline+'\n');
 			i++;
+			i++;
 			continue;
 		}
 		if (arg.equals("-baseline.prefix")) {
@@ -238,6 +241,7 @@ private void parse(String[] args) {
 				printUsage();
 			}
 			buffer.append("	").append(arg).append(" = ").append(this.baselinePrefix).append('\n');
+			i++;
 			i++;
 			continue;
 		}
@@ -256,6 +260,7 @@ private void parse(String[] args) {
 			}
 			buffer.append('\n');
 			i++;
+			i++;
 			continue;
 		}
 		if (arg.equals("-highlight") || arg.equals("-highlight.latest")) {
@@ -269,8 +274,12 @@ private void parse(String[] args) {
 			for (int j = 0; j < ids.length; j++) {
 				this.pointsOfInterest.add(ids[j]);
 				buffer.append(ids[j]);
+				if (j < ids.length - 1) {
+				    buffer.append(",");
+				}
 			}
 			buffer.append('\n');
+			i++;
 			i++;
 			continue;
 		}
@@ -282,6 +291,7 @@ private void parse(String[] args) {
 			}
 			buffer.append("	").append(arg).append(" = ").append(currentBuildId).append('\n');
 			i++;
+			i++;
 			continue;
 		}
 		if (arg.equals("-jvm")) {
@@ -291,6 +301,7 @@ private void parse(String[] args) {
 				printUsage();
 			}
 			buffer.append("	").append(arg).append(" = ").append(jvm).append('\n');
+			i++;
 			i++;
 			continue;
 		}
@@ -303,9 +314,11 @@ private void parse(String[] args) {
 			this.outputDir = new File(dir);
 			if (!this.outputDir.exists() && !this.outputDir.mkdirs()) {
 				System.err.println("Cannot create directory "+dir+" to write results in!");
-				System.exit(2);
+				throw new RuntimeException("Can not create directory " + dir);
+				//System.exit(2);
 			}
 			buffer.append("	").append(arg).append(" = ").append(dir).append('\n');
+			i++;
 			continue;
 		}
 		if (arg.equals("-dataDir")) {
@@ -317,9 +330,11 @@ private void parse(String[] args) {
 			this.dataDir = new File(dir);
 			if (!this.dataDir.exists() && !this.dataDir.mkdirs()) {
 				System.err.println("Cannot create directory "+dir+" to save data locally!");
-				System.exit(2);
+				//System.exit(2);
+				throw new RuntimeException("Can not create directory " + dir);
 			}
 			buffer.append("	").append(arg).append(" = ").append(dir).append('\n');
+			i++;
 			continue;
 		}
 		if (arg.equals("-config")) {
@@ -369,6 +384,7 @@ private void parse(String[] args) {
 			}
 			buffer.append('\n');
 			i++;
+			i++;
 			continue;
 		}
 		if (arg.equals("-config.properties")) {
@@ -399,6 +415,7 @@ private void parse(String[] args) {
 			}
 			buffer.append('\n');
 			i++;
+			i++;
 			continue;
 		}
 		if (arg.equals("-scenario.filter") || arg.equals("-scenario.pattern")) {
@@ -408,6 +425,7 @@ private void parse(String[] args) {
 				printUsage();
 			}
 			buffer.append("	").append(arg).append(" = ").append(this.scenarioPattern).append('\n');
+			i++;
 			i++;
 			continue;
 		}
@@ -433,6 +451,7 @@ private void parse(String[] args) {
 			if (printFile==null ||printFile.startsWith("-")) {
 				buffer.append(" (to the console)").append('\n');
 			} else {
+			    i++;
 				try {
 					this.printStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(printFile)));
 				}
@@ -458,9 +477,13 @@ private void parse(String[] args) {
 			}
 			buffer.append("	").append(arg).append(" = ").append(value).append('\n');
 			i++;
+			i++;
 			continue;
 		}
-		i++;
+		// To get to hear mean "matched none". 
+        System.err.println("ERROR: Unrecognized argument (arg) found, with value of >" + arg + "<");
+        i++;
+        continue;
 	}
 	if (this.printStream != null) {
 		this.printStream.print(buffer.toString());
@@ -581,11 +604,11 @@ private void printComponentTitle(/*PerformanceResults performanceResults, */Stri
 	}
 	stream.print(currentName);
 	stream.print(" relative to ");
-	int index = baselineName.indexOf('_');
+	int index = baselineName.indexOf('-');
 	if (index > 0) {
 		stream.print(baselineName.substring(0, index));
 		stream.print(" (");
-		index = baselineName.lastIndexOf('_');
+		index = baselineName.lastIndexOf('-');
 		stream.print(baselineName.substring(index+1, baselineName.length()));
 		stream.print(')');
 	} else {
@@ -1022,12 +1045,11 @@ private void setDefaults(String buildName, String baseline) {
 
 	// Init baseline prefix if not set
 	if (this.baselinePrefix == null) {
-		int index = baseline.lastIndexOf('_');
+		int index = baseline.lastIndexOf('-');
 		if (index > 0) {
 			this.baselinePrefix = baseline.substring(0, index);
 		} else {
-//			this.baselinePrefix = DB_Results.getDbBaselinePrefix();
-			this.baselinePrefix = baseline;
+			this.baselinePrefix = DB_Results.getDbBaselinePrefix();
 		}
 	}
 

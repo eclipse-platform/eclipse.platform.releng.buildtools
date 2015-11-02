@@ -41,11 +41,13 @@ import org.eclipse.core.runtime.Assert;
 public class DB_Results {
 
 
-	private static final String DEFAULT_DB_BASELINE_PREFIX = "R-";
+    // This doesn't seem good (was just R-, instead of using what we pass in)
+	private static final String DEFAULT_DB_BASELINE_PREFIX = "R-4.5";
+	
 	private static final Dim[] NO_DIMENSION = new Dim[0];
 	private static final String[] EMPTY_LIST = new String[0];
-	static final boolean DEBUG = false;
-    static final boolean LOG = false;
+	static final boolean DEBUG = true;
+    static final boolean LOG = true;
 
     // the two supported DB types
     private static final String DERBY= "derby"; //$NON-NLS-1$
@@ -170,12 +172,13 @@ public class DB_Results {
 			((databaseLocation == null && !DB_LOCATION.equals(IPerformancesConstants.NETWORK_DATABASE_LOCATION)) ||
 					!DB_LOCATION.equals(databaseLocation)) ||
 			!DB_NAME.equals(IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion)) {
+		    // TODO: rename shutdown to disconnect?
 			shutdown();
 			DB_CONNECTION = connected;
 			DB_LOCATION = databaseLocation == null ? IPerformancesConstants.NETWORK_DATABASE_LOCATION : databaseLocation;
 			DB_NAME = IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion;
-			DB_VERSION = "v44"; // + eclipseVersion;
-			DB_VERSION_REF = "R-4.4"; //" + (eclipseVersion % 10 - 1);
+			DB_VERSION = "v45"; // + eclipseVersion;
+			DB_VERSION_REF = "R-4.5"; //" + (eclipseVersion % 10 - 1);
 			if (connected) {
 				return getDefault().fSQL != null;
 			}
@@ -658,7 +661,7 @@ public static String getLastBaselineBuild(String date) {
 	for (int i=0; i<BUILDS_LENGTH; i++) {
 		String build = BUILDS[i];
 		if (build.startsWith(DB_VERSION_REF)) {
-			String buildDate = build.substring(build.indexOf('_')+1);
+			String buildDate = build.substring(build.indexOf('-')+1);
 			if (buildDate.compareTo(date) < 0) {
 				if (lastBaselineBuild == null || build.compareTo(lastBaselineBuild) > 0) {
 					lastBaselineBuild = build;
@@ -711,8 +714,8 @@ public static void initDbContants() {
 		}
 	}
 	if (DB_VERSION == null) {
-		DB_VERSION = "v44"; // + DB_NAME.substring(DB_NAME.length()-2);
-		DB_VERSION_REF = "R-4.4"; //+(Character.digit(DB_NAME.charAt(DB_NAME.length()-1), 10)-1);
+		DB_VERSION = "v45"; // + DB_NAME.substring(DB_NAME.length()-2);
+		DB_VERSION_REF = "R-4.5"; //+(Character.digit(DB_NAME.charAt(DB_NAME.length()-1), 10)-1);
 	}
 }
 
@@ -1087,6 +1090,7 @@ private void internalQueryScenarioValues(ScenarioResults scenarioResults, String
 		DEBUG_WRITER.print("	- DB query all data points for config pattern: "+configPattern+" for scenario: " + scenarioResults.getShortName()); //$NON-NLS-1$ //$NON-NLS-2$
 		if (buildName != null) DEBUG_WRITER.print(" for build: "+buildName); //$NON-NLS-1$
 	}
+	if (LOG) LOG_WRITER.starts("     -> configPattern: " + configPattern + "    buildName (if any): " + buildName);
 	internalQueryAllVariations(configPattern); // need to read all variations to have all build names
 	ResultSet result = null;
 	try {
@@ -1207,7 +1211,7 @@ private int storeBuildName(String build) {
 			LAST_BASELINE_BUILD = build;
 		} else {
 			String buildDate = LAST_CURRENT_BUILD.substring(1, 9)+LAST_CURRENT_BUILD.substring(10, LAST_CURRENT_BUILD.length());
-			String baselineDate = LAST_BASELINE_BUILD.substring(LAST_BASELINE_BUILD.indexOf('_')+1);
+			String baselineDate = LAST_BASELINE_BUILD.substring(LAST_BASELINE_BUILD.indexOf('-')+1);
 			if (build.compareTo(LAST_BASELINE_BUILD) > 0 && baselineDate.compareTo(buildDate) < 0) {
 				LAST_BASELINE_BUILD = build;
 			}

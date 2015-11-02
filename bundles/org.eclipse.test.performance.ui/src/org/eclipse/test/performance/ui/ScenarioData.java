@@ -105,7 +105,7 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 	buildLoop: while (builds.hasNext()) {
 		BuildResults buildResults = (BuildResults) builds.next();
 		String buildID = buildResults.getName();
-		int underscoreIndex = buildID.indexOf('_');
+		int underscoreIndex = buildID.indexOf('-');
 		String label = (underscoreIndex != -1 && buildID.equals(current)) ? buildID.substring(0, underscoreIndex) : buildID;
 		if (buildID.startsWith(defaultBaselinePrefix) && (underscoreIndex != -1)) {
 			label = defaultBaselinePrefix+buildID.charAt(defaultBaselinePrefix.length())+buildID.substring(underscoreIndex);

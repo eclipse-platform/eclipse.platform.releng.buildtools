@@ -39,7 +39,7 @@ import org.eclipse.test.internal.performance.results.utils.Util;
  */
 public class ComponentResults extends AbstractResults {
 
-public ComponentResults(AbstractResults parent, String name) {
+    public ComponentResults(AbstractResults parent, String name) {
 	super(parent, name);
 	this.printStream = parent.printStream;
 }
@@ -402,6 +402,9 @@ void updateBuild(String buildName, List scenarios, boolean force, File dataDir, 
  * Write the component results data to the file '<component name>.dat' in the given directory.
  */
 void writeData(String buildName, File dir, boolean temp, boolean dirty) {
+    if (DO_NOT_WRITE_DATA) {
+        return;
+    }
 //	if (!dir.exists() && !dir.mkdirs()) {
 //		System.err.println("can't create directory "+dir); //$NON-NLS-1$
 //	}

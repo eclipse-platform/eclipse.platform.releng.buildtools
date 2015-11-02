@@ -651,6 +651,9 @@ void setValue(int build_id, int dim_id, int step, long value) {
  * Write all configuration builds results data into the given stream.
  */
 void write(DataOutputStream stream) throws IOException {
+    if (DO_NOT_WRITE_DATA) {
+        return;
+    }
 	int size = size();
 	stream.writeInt(this.id);
 	stream.writeInt(size);

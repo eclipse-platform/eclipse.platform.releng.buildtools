@@ -395,6 +395,9 @@ boolean updateBuild(String buildName, boolean force) {
 }
 
 void write(DataOutputStream stream) throws IOException {
+    if (DO_NOT_WRITE_DATA) {
+        return;
+    }
 	int size = size();
 	stream.writeInt(this.id);
 	stream.writeInt(size);

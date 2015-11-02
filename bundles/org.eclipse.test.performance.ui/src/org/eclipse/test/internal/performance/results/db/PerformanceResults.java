@@ -44,7 +44,6 @@ public class PerformanceResults extends AbstractResults {
 	Map allScenarios;
 	String lastBuildName; // Name of the last used build
 	String baselineName; // Name of the baseline build used for comparison
-	String baselinePrefix;
 	private String scenarioPattern = "%"; //$NON-NLS-1$
 	private String[] components;
 	String[] configNames, sortedConfigNames;
@@ -114,6 +113,7 @@ public PerformanceResults(String name, String baseline, String baselinePrefix, P
  * @return The names list of all currently known builds
  */
 public String[] getAllBuildNames() {
+    
 	if (this.allBuildNames == null) {
 		setAllBuildNames();
 	}
@@ -424,8 +424,14 @@ private String[] read(boolean local, String buildName, String[][] configs, boole
 				componentResults.readLocalFile(dataDir, scenarios);
 			}
 			catch (FileNotFoundException ex) {
+			    subMonitor.worked(1);
 				return null;
 			}
+	         catch (StringIndexOutOfBoundsException ex) {
+	             System.err.println("ERROR: Found StringIndexOutOfBoundsException fournd. Possible corruption in DB?");
+	             subMonitor.worked(1);
+	            return null;
+	        }
 			subMonitor.worked(1);
 		} else {
 			if (timeGuess == null) {
@@ -738,14 +744,15 @@ private void setConfigInfo(String[][] configs) {
  */
 public void setBaselineName(String buildName) {
 	this.baselineName = buildName;
-	if (this.baselinePrefix == null || !this.baselineName.startsWith(this.baselinePrefix)) {
+	if (this.baselinePrefix == null) { // || !this.baselineName.startsWith(this.baselinePrefix)) {
 		// Usually hat baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
-		int index = this.baselineName.lastIndexOf('_');
+	    // Currently, 10/2015, R-4.5-yyyyMMddhhmm
+		int index = this.baselineName.lastIndexOf('-');
 		if (index > 0) {
 			this.baselinePrefix = this.baselineName.substring(0, index);
-		} else {
-//				this.baselinePrefix = DB_Results.getDbBaselinePrefix();
-			this.baselinePrefix = this.baselineName;
+		} else { 
+		    // use hard coded value (currently R-4.5)
+		    this.baselinePrefix = DB_Results.getDbBaselinePrefix();
 		}
 	}
 }
@@ -793,9 +800,9 @@ private void setDefaults() {
 
 	// Init baseline prefix if not set
 	if (this.baselineName != null) {
-		if (this.baselinePrefix == null || !this.baselineName.startsWith(this.baselinePrefix)) {
+		if (this.baselinePrefix == null) { // || !this.baselineName.startsWith(this.baselinePrefix)) {
 			// Usually hat baseline name format is *always* x.y_yyyyMMddhhmm_yyyyMMddhhmm
-			int index = this.baselineName.lastIndexOf('_');
+			int index = this.baselineName.lastIndexOf('-');
 			if (index > 0) {
 				this.baselinePrefix = this.baselineName.substring(0, index);
 			} else {
@@ -922,6 +929,9 @@ public String[] updateBuild(String buildName, boolean force, File dataDir, IProg
  * Write general information.
  */
 void writeData(File dir) {
+    if (DO_NOT_WRITE_DATA) {
+        return;
+    }
 	if (!DB_Results.DB_CONNECTION) {
 		// Only write new local file if there's a database connection
 		// otherwise contents may not be complete...

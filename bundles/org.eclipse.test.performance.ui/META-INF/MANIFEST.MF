@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.eclipse.test.performance.ui; singleton:=true
-Bundle-Version: 3.8.0.qualifier
-Bundle-ClassPath: performanceui.jar
+Bundle-Version: 3.9.0.qualifier
+Bundle-ClassPath: .
 Bundle-Activator: org.eclipse.test.performance.ui.UiPlugin
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: %Bundle-Vendor
@@ -17,9 +17,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui;bundle-version="3.5.0";resolution:=optional,
  org.eclipse.ui.ide;bundle-version="3.5.0";resolution:=optional,
  org.eclipse.core.resources;bundle-version="3.5.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.eclipse.test.internal.performance.results.db,
- org.eclipse.test.internal.performance.results.model,
- org.eclipse.test.internal.performance.results.ui,
- org.eclipse.test.internal.performance.results.utils,
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: org.eclipse.test.internal.performance.results.db;x-internal:=true,
+ org.eclipse.test.internal.performance.results.model;x-internal:=true,
+ org.eclipse.test.internal.performance.results.ui;x-internal:=true,
+ org.eclipse.test.internal.performance.results.utils;x-internal:=true,
  org.eclipse.test.performance.ui

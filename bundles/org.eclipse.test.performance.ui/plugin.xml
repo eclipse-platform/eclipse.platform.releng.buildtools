@@ -30,21 +30,21 @@
       <view
             category="Performances"
             class="org.eclipse.test.internal.performance.results.ui.ComponentsView"
-            icon="icons/components.gif"
+            icon="$nl$/icons/components.gif"
             id="org.eclipse.test.internal.performance.results.ui.ComponentsView"
             name="%view.name">
       </view>
       <view
             category="Performances"
             class="org.eclipse.test.internal.performance.results.ui.BuildsView"
-            icon="icons/builds.gif"
+            icon="$nl$/icons/builds.gif"
             id="org.eclipse.test.internal.performance.results.ui.BuildsView"
             name="%view.name.0">
       </view>
       <view
             category="Performances"
             class="org.eclipse.test.internal.performance.results.ui.ComponentResultsView"
-            icon="icons/results.gif"
+            icon="$nl$/icons/results.gif"
             id="org.eclipse.test.internal.performance.results.ui.ComponentsResultsView"
             name="%view.name.1"
             restorable="true">
@@ -52,7 +52,7 @@
       <view
             category="Performances"
             class="org.eclipse.test.internal.performance.results.ui.BuildsComparisonView"
-            icon="icons/compare_view.gif"
+            icon="$nl$/icons/compare_view.gif"
             id="org.eclipse.test.internal.performance.results.ui.BuildsComparisonView"
             name="%view.name.2"
             restorable="true">
@@ -68,7 +68,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="org.eclipse.test.internal.performance.results.ui.PerformanceResultsPerspective"
-            icon="icons/perfs.gif"
+            icon="$nl$/icons/perfs.gif"
             id="org.eclipse.test.performance.ui.perspectives.PerformanceResultsPerspective"
             name="%perspective.name">
          <description>

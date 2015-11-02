@@ -35,12 +35,15 @@ public abstract class AbstractResults implements Comparable {
 	public static final int BASELINE_ERROR_INDEX = 5;
 	public static final int NUMBERS_LENGTH = 6;
 
+	public static final boolean DO_NOT_WRITE_DATA = false;
+	
 	AbstractResults parent;
 	int id = -1;
 	String name;
 	List children;
 	private static boolean NEW_LINE = true;
 	PrintStream printStream = null;
+    protected String baselinePrefix;
 
 AbstractResults(AbstractResults parent, String name) {
 	this.parent = parent;

@@ -9,6 +9,7 @@
 
 package org.eclipse.test.performance.ui;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
@@ -48,8 +49,8 @@ public class Main implements IApplication {
                 System.out.println("\t\t>" + args[i] + "<");
             }
         }
-        generation.run(args);
-        return null;
+        IStatus exitStatus = generation.run(args);
+        return exitStatus;
     }
 
     /*
