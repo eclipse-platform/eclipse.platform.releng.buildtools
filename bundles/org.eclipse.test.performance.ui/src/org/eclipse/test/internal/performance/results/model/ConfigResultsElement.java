@@ -14,7 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import org.eclipse.test.internal.performance.results.db.*;
+import org.eclipse.test.internal.performance.results.db.AbstractResults;
+import org.eclipse.test.internal.performance.results.db.ConfigResults;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;

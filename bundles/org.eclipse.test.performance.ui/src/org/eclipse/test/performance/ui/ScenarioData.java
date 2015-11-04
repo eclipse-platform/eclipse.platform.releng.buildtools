@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.AssertionFailedError;
-
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.SWT;
@@ -39,6 +37,8 @@ import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.db.PerformanceResults;
 import org.eclipse.test.internal.performance.results.db.ScenarioResults;
 import org.eclipse.test.internal.performance.results.utils.Util;
+
+import junit.framework.AssertionFailedError;
 
 /**
  * Class used to print scenario all builds data.

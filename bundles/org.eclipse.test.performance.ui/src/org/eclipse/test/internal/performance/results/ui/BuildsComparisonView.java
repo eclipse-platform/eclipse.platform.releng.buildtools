@@ -11,6 +11,7 @@
 package org.eclipse.test.internal.performance.results.ui;
 
 import java.io.File;
+
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;

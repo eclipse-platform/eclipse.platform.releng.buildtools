@@ -25,13 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.test.performance.Dimension;
-import org.eclipse.core.runtime.Assert;
 
 /**
  * Specific and private implementation of {@link org.eclipse.test.internal.performance.db.DB} class

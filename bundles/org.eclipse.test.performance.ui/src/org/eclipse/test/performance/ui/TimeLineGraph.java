@@ -10,7 +10,12 @@
  *******************************************************************************/
 package org.eclipse.test.performance.ui;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.List;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;

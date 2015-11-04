@@ -15,6 +15,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.eclipse.test.internal.performance.InternalDimensions;
 import org.eclipse.test.internal.performance.results.utils.Util;
 

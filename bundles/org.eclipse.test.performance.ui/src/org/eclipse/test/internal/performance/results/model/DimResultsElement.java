@@ -13,7 +13,8 @@ package org.eclipse.test.internal.performance.results.model;
 import java.util.Vector;
 
 import org.eclipse.test.internal.performance.data.Dim;
-import org.eclipse.test.internal.performance.results.db.*;
+import org.eclipse.test.internal.performance.results.db.AbstractResults;
+import org.eclipse.test.internal.performance.results.db.BuildResults;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;

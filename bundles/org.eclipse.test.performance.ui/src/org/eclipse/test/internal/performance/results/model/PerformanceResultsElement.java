@@ -18,8 +18,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.test.internal.performance.results.db.*;
+import org.eclipse.test.internal.performance.results.db.AbstractResults;
+import org.eclipse.test.internal.performance.results.db.DB_Results;
+import org.eclipse.test.internal.performance.results.db.PerformanceResults;
 import org.eclipse.test.internal.performance.results.ui.BuildsComparisonTable;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;

@@ -16,7 +16,9 @@ import java.util.Vector;
 
 import org.eclipse.test.internal.performance.data.Dim;
 import org.eclipse.test.internal.performance.eval.StatisticsUtil;
-import org.eclipse.test.internal.performance.results.db.*;
+import org.eclipse.test.internal.performance.results.db.AbstractResults;
+import org.eclipse.test.internal.performance.results.db.BuildResults;
+import org.eclipse.test.internal.performance.results.db.ConfigResults;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;

@@ -14,7 +14,8 @@ import java.util.Vector;
 
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.test.internal.performance.results.db.*;
+import org.eclipse.test.internal.performance.results.db.AbstractResults;
+import org.eclipse.test.internal.performance.results.db.ScenarioResults;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
