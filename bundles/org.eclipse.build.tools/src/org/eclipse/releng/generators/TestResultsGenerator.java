@@ -161,29 +161,34 @@ public class TestResultsGenerator extends Task {
     public static void main(final String[] args) {
         final TestResultsGenerator test = new TestResultsGenerator();
         if (Boolean.TRUE) {
-        test.setTestsConfigExpected("linux.gtk.x86_64_8.0.xml ,macosx.cocoa.x86_64_8.0.xml ,win32.win32.x86_8.0.xml ");
-        for (int i = 0; i < test.getTestsConfig().length; i++) {
-            System.out.println(test.getTestsConfig()[i]);
-        }
-        
+            test.setTestsConfigExpected("linux.gtk.x86_64_8.0.xml ,macosx.cocoa.x86_64_8.0.xml ,win32.win32.x86_8.0.xml ");
+            for (int i = 0; i < test.getTestsConfig().length; i++) {
+                System.out.println(test.getTestsConfig()[i]);
+            }
+
         } else {
-        test.setDropTokenList("%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
-        test.getDropTokensFromList(test.dropTokenList);
-        test.setIsBuildTested(false);
-        test.setXmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults/xml");
-        test.setHtmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults");
-        test.setDropDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900");
-        test.setTestResultsTemplateFileName("/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/testResults.php.template");
+            test.setDropTokenList(
+                    "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
+            test.getDropTokensFromList(test.dropTokenList);
+            test.setIsBuildTested(false);
+            test.setXmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults/xml");
+            test.setHtmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults");
+            test.setDropDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900");
+            test.setTestResultsTemplateFileName(
+                    "/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/testResults.php.template");
 
-        test.setDropTemplateFileName("/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/index.php.template");
-        test.setTestResultsHtmlFileName("testResults.php");
-        test.setDropHtmlFileName("index.php");
+            test.setDropTemplateFileName(
+                    "/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/index.php.template");
+            test.setTestResultsHtmlFileName("testResults.php");
+            test.setDropHtmlFileName("index.php");
 
-        test.setHrefTestResultsTargetPath("testresults");
-        test.setCompileLogsDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/compilelogs/plugins");
-        test.setHrefCompileLogsTargetPath("compilelogs");
-        test.setTestManifestFileName("/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/testManifest.xml");
-        test.execute();
+            test.setHrefTestResultsTargetPath("testresults");
+            test.setCompileLogsDirectoryName(
+                    "/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/compilelogs/plugins");
+            test.setHrefCompileLogsTargetPath("compilelogs");
+            test.setTestManifestFileName(
+                    "/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/testManifest.xml");
+            test.execute();
         }
     }
 
@@ -197,7 +202,6 @@ public class TestResultsGenerator extends Task {
     public String           testResultsTemplateString = "";
 
     public String           dropTemplateString        = "";
-
 
     public Vector           platformDropFileName;
 
@@ -269,8 +273,8 @@ public class TestResultsGenerator extends Task {
     // and associated property files.
 
     private String[]        testsConfigDefaults       = { "linux.gtk.x86_64_8.0.xml", "macosx.cocoa.x86_64_7.0.xml",
-            "win32.win32.x86_7.0.xml"                };
-    private String        testsConfigExpected;
+            "win32.win32.x86_7.0.xml" };
+    private String          testsConfigExpected;
     private String[]        testsConfig;
 
     private int             missingCount              = 0;
@@ -390,12 +394,12 @@ public class TestResultsGenerator extends Task {
         final String shortName = fileName.substring(i + hrefCompileLogsTargetPath2.length());
 
         buffer.append("<tr>\n<td>\n").append("<a href=").append("\"").append(hrefCompileLogsTargetPath2).append(shortName)
-                .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td align=\"center\">")
-                .append("<a href=").append("\"").append(hrefCompileLogsTargetPath2).append(shortName).append("#FORBIDDEN_WARNINGS")
-                .append("\">").append(forbiddenAccessesWarningsCount).append("</a>").append("</td>\n")
-                .append("<td align=\"center\">").append("<a href=").append("\"").append(hrefCompileLogsTargetPath2)
-                .append(shortName).append("#DISCOURAGED_WARNINGS").append("\">").append(discouragedAccessesWarningsCount)
-                .append("</a>").append("</td>\n").append("</tr>\n");
+                .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td align=\"center\">").append("<a href=")
+                .append("\"").append(hrefCompileLogsTargetPath2).append(shortName).append("#FORBIDDEN_WARNINGS").append("\">")
+                .append(forbiddenAccessesWarningsCount).append("</a>").append("</td>\n").append("<td align=\"center\">")
+                .append("<a href=").append("\"").append(hrefCompileLogsTargetPath2).append(shortName)
+                .append("#DISCOURAGED_WARNINGS").append("\">").append(discouragedAccessesWarningsCount).append("</a>")
+                .append("</td>\n").append("</tr>\n");
     }
 
     private void formatCompileErrorRow(final String fileName, final int errorCount, final int warningCount,
@@ -411,11 +415,11 @@ public class TestResultsGenerator extends Task {
         final String shortName = fileName.substring(i + hrefCompileLogsTargetPath2.length());
 
         buffer.append("<tr>\n<td>\n").append("<a href=").append("\"").append(hrefCompileLogsTargetPath2).append(shortName)
-                .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td align=\"center\">")
-                .append("<a href=").append("\"").append(hrefCompileLogsTargetPath2).append(shortName).append("#ERRORS")
-                .append("\">").append(errorCount).append("</a>").append("</td>\n").append("<td align=\"center\">")
-                .append("<a href=").append("\"").append(hrefCompileLogsTargetPath2).append(shortName).append("#OTHER_WARNINGS")
-                .append("\">").append(warningCount).append("</a>").append("</td>\n").append("</tr>\n");
+                .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td align=\"center\">").append("<a href=")
+                .append("\"").append(hrefCompileLogsTargetPath2).append(shortName).append("#ERRORS").append("\">")
+                .append(errorCount).append("</a>").append("</td>\n").append("<td align=\"center\">").append("<a href=").append("\"")
+                .append(hrefCompileLogsTargetPath2).append(shortName).append("#OTHER_WARNINGS").append("\">").append(warningCount)
+                .append("</a>").append("</td>\n").append("</tr>\n");
     }
 
     // Specific to the RelEng test results page
@@ -556,11 +560,12 @@ public class TestResultsGenerator extends Task {
                     aString = aString.concat(displayName);
                 } else {
                     // rawfilename is file name with no extension.
-                    String rawfilename=fileName.substring(begin + 1, fileName.length() - 4);
-                    aString = aString + "<a href=" + "\"" + hrefTestResultsTargetPath + "/html/"
-                            + rawfilename + ".html" + "\">" + displayName + "</a>";
-                    aString = aString + "&nbsp;<a style=\"color:#AAAAAA\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\"" + hrefTestResultsTargetPath + "/xml/"
-                            + rawfilename + ".xml" + "\">(XML)</a>";
+                    String rawfilename = fileName.substring(begin + 1, fileName.length() - 4);
+                    aString = aString + "<a href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename + ".html" + "\">"
+                            + displayName + "</a>";
+                    aString = aString
+                            + "&nbsp;<a style=\"color:#AAAAAA\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
+                            + hrefTestResultsTargetPath + "/xml/" + rawfilename + ".xml" + "\">(XML)</a>";
                 }
 
                 if (errorCount == -1) {
@@ -775,7 +780,8 @@ public class TestResultsGenerator extends Task {
 
             anErrorTracker.registerError(logName);
         }
-        final String logName = log.replaceAll(".xml", ".html");
+        // make sure '.xml' is "last thing" in string. (bug 490320)
+        final String logName = log.replaceAll(".xml$", ".html");
         formatCompileErrorRow(logName, errorCount, warningCount, compilerLog);
         formatAccessesErrorRow(logName, forbiddenWarningCount, discouragedWarningCount, accessesLog);
     }
@@ -825,8 +831,8 @@ public class TestResultsGenerator extends Task {
                     if (errorCount != 0) {
                         final String testName = xmlFileNames[i].getName().substring(0, xmlFileNames[i].getName().length() - 4);
                         testResultsWithProblems = testResultsWithProblems.concat("\n" + testName);
-                        testResultsXmlUrls = testResultsXmlUrls.concat("\n"
-                                + extractXmlRelativeFileName(sourceDirectoryCanonicalPath, xmlFileNames[i]));
+                        testResultsXmlUrls = testResultsXmlUrls
+                                .concat("\n" + extractXmlRelativeFileName(sourceDirectoryCanonicalPath, xmlFileNames[i]));
                         anErrorTracker.registerError(fullName.substring(getXmlDirectoryName().length() + 1));
                     }
 
@@ -1145,26 +1151,21 @@ public class TestResultsGenerator extends Task {
                 // testLogName, -1, false));
                 String tmp = formatRowReleng(testLogName, -1, false);
                 if (missingCount == 0) {
-                    replaceString = replaceString
-                            + "</table></br>"
-                            + "\n"
+                    replaceString = replaceString + "</table></br>" + "\n"
                             + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
                             + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\"> Missing Files </th><th  align=\"center\"> Status </th></tr>";
                 }
                 replaceString = replaceString + tmp;
-                testResultsWithProblems = testResultsWithProblems.concat("\n" + testLogName.substring(0, testLogName.length() - 4)
-                        + " (file missing)");
+                testResultsWithProblems = testResultsWithProblems
+                        .concat("\n" + testLogName.substring(0, testLogName.length() - 4) + " (file missing)");
                 missingCount++;
             }
         } else {
-            // Note: we intentionally 
-            replaceString = replaceString
-                    + "<tbody>\n"
-                    + "<tr><td colspan=\"0\"><p><span class=\"footnote\">NOTE: </span>\n"
+            // Note: we intentionally
+            replaceString = replaceString + "<tbody>\n" + "<tr><td colspan=\"0\"><p><span class=\"footnote\">NOTE: </span>\n"
                     + "Remember that for performance unit test tables, there are never any \"missing files\" listed, if there are any. \n"
                     + "This is expected to be a temporary solution, until an exact fix can be implemented. For more details, see \n"
-                    + "<a href=\"https://bugs.eclipse.org/bugs/show_bug.cgi?id=451890\">bug 451890</a>.</p>\n" 
-                    + "</td></tr>\n" 
+                    + "<a href=\"https://bugs.eclipse.org/bugs/show_bug.cgi?id=451890\">bug 451890</a>.</p>\n" + "</td></tr>\n"
                     + "</tbody>\n";
         }
         return replaceString;
@@ -1212,7 +1213,7 @@ public class TestResultsGenerator extends Task {
     }
 
     public String getTestsConfigExpected() {
-      
+
         return testsConfigExpected;
     }
 
@@ -1224,19 +1225,17 @@ public class TestResultsGenerator extends Task {
     public String[] getTestsConfig() {
         if (testsConfig == null) {
             String expectedConfigParam = getTestsConfigExpected();
-            if (expectedConfigParam != null) 
-            {
+            if (expectedConfigParam != null) {
                 StringTokenizer tokenizer = new StringTokenizer(expectedConfigParam, " ,\t");
                 int nTokens = tokenizer.countTokens();
                 String[] tokens = new String[nTokens];
-                int i=0;
+                int i = 0;
                 while (tokenizer.hasMoreTokens()) {
                     tokens[i++] = tokenizer.nextToken();
                 }
                 testsConfig = tokens;
-            }
-            else {
-               testsConfig = testsConfigDefaults; 
+            } else {
+                testsConfig = testsConfigDefaults;
             }
             System.out.println("DEBUG: testsConfig array ");
             for (int i = 0; i < testsConfig.length; i++) {
