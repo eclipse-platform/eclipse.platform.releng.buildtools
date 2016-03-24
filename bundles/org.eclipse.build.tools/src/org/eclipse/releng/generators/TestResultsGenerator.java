@@ -160,7 +160,7 @@ public class TestResultsGenerator extends Task {
 
     public static void main(final String[] args) {
         final TestResultsGenerator test = new TestResultsGenerator();
-        if (Boolean.TRUE) {
+        if (Boolean.FALSE) {
             test.setTestsConfigExpected("linux.gtk.x86_64_8.0.xml ,macosx.cocoa.x86_64_8.0.xml ,win32.win32.x86_8.0.xml ");
             for (int i = 0; i < test.getTestsConfig().length; i++) {
                 System.out.println(test.getTestsConfig()[i]);
@@ -171,23 +171,23 @@ public class TestResultsGenerator extends Task {
                     "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
             test.getDropTokensFromList(test.dropTokenList);
             test.setIsBuildTested(false);
-            test.setXmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults/xml");
-            test.setHtmlDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/testresults");
-            test.setDropDirectoryName("/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900");
+            test.setXmlDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160322-2000/testresults/xml");
+            test.setHtmlDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160322-2000/testresults");
+            test.setDropDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160322-2000");
             test.setTestResultsTemplateFileName(
-                    "/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/testResults.php.template");
+                    "/home/davidw/gitLuna/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.php.template");
 
             test.setDropTemplateFileName(
-                    "/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/index.php.template");
+                    "/home/davidw/gitLuna/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/index.php.template");
             test.setTestResultsHtmlFileName("testResults.php");
             test.setDropHtmlFileName("index.php");
 
             test.setHrefTestResultsTargetPath("testresults");
             test.setCompileLogsDirectoryName(
-                    "/home/shared/eclipse/eclipse4I/siteDir/equinox/drops/I20120514-1900/compilelogs/plugins");
+                    "/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160322-2000/compilelogs/plugins");
             test.setHrefCompileLogsTargetPath("compilelogs");
             test.setTestManifestFileName(
-                    "/home/davidw/git/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/testManifest.xml");
+                    "/home/davidw/gitLuna/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
             test.execute();
         }
     }
