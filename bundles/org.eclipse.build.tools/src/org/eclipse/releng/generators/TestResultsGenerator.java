@@ -167,8 +167,9 @@ public class TestResultsGenerator extends Task {
             }
 
         } else {
+//          "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
             test.setDropTokenList(
-                    "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
+            "%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
             test.getDropTokensFromList(test.dropTokenList);
             test.setIsBuildTested(false);
             test.setXmlDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160322-2000/testresults/xml");
@@ -178,7 +179,7 @@ public class TestResultsGenerator extends Task {
                     "/home/davidw/gitLuna/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.php.template");
 
             test.setDropTemplateFileName(
-                    "/home/davidw/gitLuna/eclipse.platform.releng.eclipsebuilder/equinox/publishingFiles/templateFiles/index.php.template");
+                    "/home/davidw/gitLuna/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.php.template");
             test.setTestResultsHtmlFileName("testResults.php");
             test.setDropHtmlFileName("index.php");
 
