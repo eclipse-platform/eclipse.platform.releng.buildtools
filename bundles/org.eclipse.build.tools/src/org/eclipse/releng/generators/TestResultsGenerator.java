@@ -161,20 +161,22 @@ public class TestResultsGenerator extends Task {
     public static void main(final String[] args) {
         final TestResultsGenerator test = new TestResultsGenerator();
         if (Boolean.FALSE) {
-            test.setTestsConfigExpected("linux.gtk.x86_64_8.0.xml ,macosx.cocoa.x86_64_8.0.xml ,win32.win32.x86_8.0.xml ");
+            test.setTestsConfigExpected("ep46N-unit-lin64_linux.gtk.x86_64_8.0.xml ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0.xml ,ep46N-unit-win32_win32.win32.x86_8.0.xml, ep46N-unit-cen64_linux.gtk.x86_64_8.0.xml");
             for (int i = 0; i < test.getTestsConfig().length; i++) {
                 System.out.println(test.getTestsConfig()[i]);
             }
 
         } else {
+            test.setTestsConfigExpected("ep46N-unit-lin64_linux.gtk.x86_64_8.0.xml ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0.xml ,ep46N-unit-win32_win32.win32.x86_8.0.xml, ep46N-unit-cen64_linux.gtk.x86_64_8.0.xml");
+
 //          "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
             test.setDropTokenList(
             "%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
             test.getDropTokensFromList(test.dropTokenList);
             test.setIsBuildTested(false);
-            test.setXmlDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160322-2000/testresults/xml");
-            test.setHtmlDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160322-2000/testresults");
-            test.setDropDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160322-2000");
+            test.setXmlDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000/testresults/xml");
+            test.setHtmlDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000/testresults");
+            test.setDropDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000");
             test.setTestResultsTemplateFileName(
                     "/home/davidw/gitLuna/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.php.template");
 
@@ -185,7 +187,7 @@ public class TestResultsGenerator extends Task {
 
             test.setHrefTestResultsTargetPath("testresults");
             test.setCompileLogsDirectoryName(
-                    "/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160322-2000/compilelogs/plugins");
+                    "/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000/compilelogs/plugins");
             test.setHrefCompileLogsTargetPath("compilelogs");
             test.setTestManifestFileName(
                     "/home/davidw/gitLuna/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
