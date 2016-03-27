@@ -275,8 +275,8 @@ public class TestResultsGenerator extends Task {
     // generated, by the setting of a variable named "platform" in test.xml
     // and associated property files.
 
-    private String[]        testsConfigDefaults       = { "linux.gtk.x86_64_8.0.xml", "macosx.cocoa.x86_64_7.0.xml",
-            "win32.win32.x86_7.0.xml" };
+    private String[]        testsConfigDefaults       = { "ep4"+getBuildType()+"-unit-lin64_linux.gtk.x86_64_8.0.xml", "ep4"+getBuildType()+"-unit-mac64_macosx.cocoa.x86_64_7.0.xml",
+            "ep4"+getBuildType()+"-unit-win32_win32.win32.x86_7.0.xml","ep4"+getBuildType()+"-unit-cen64_linux.gtk.x86_64_8.0.xml" };
     private String          testsConfigExpected;
     private String[]        testsConfig;
 
