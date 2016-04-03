@@ -1262,4 +1262,9 @@ public class TestResultsGenerator extends Task {
         return doMissingList;
     }
 
+    
+    public void setDoMissingList(boolean doMissingList) {
+        this.doMissingList = doMissingList;
+    }
+
 }
