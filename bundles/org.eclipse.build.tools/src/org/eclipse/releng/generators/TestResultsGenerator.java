@@ -51,21 +51,27 @@ import org.xml.sax.SAXException;
  */
 public class TestResultsGenerator extends Task {
 
-    private static final String HTML_EXTENSION         = ".html";
-    private static final String XML_EXTENSION          = ".xml";
-    private static final String WARNING_SEVERITY       = "WARNING";
-    private static final String ERROR_SEVERITY         = "ERROR";
-    private static final String ForbiddenReferenceID   = "ForbiddenReference";
-    private static final String DiscouragedReferenceID = "DiscouragedReference";
+    private static final String HTML_EXTENSION                 = ".html";
+    private static final String XML_EXTENSION                  = ".xml";
+    private static final String WARNING_SEVERITY               = "WARNING";
+    private static final String ERROR_SEVERITY                 = "ERROR";
+    private static final String ForbiddenReferenceID           = "ForbiddenReference";
+    private static final String DiscouragedReferenceID         = "DiscouragedReference";
 
-    private static final int    DEFAULT_READING_SIZE   = 8192;
+    private static final int    DEFAULT_READING_SIZE           = 8192;
 
-    static final String         elementName            = "testsuite";
-    static final String         testResultsToken       = "%testresults%";
-    static final String         compileLogsToken       = "%compilelogs%";
-    static final String         accessesLogsToken      = "%accesseslogs%";
-    private ArrayList<String>   foundConfigs           = new ArrayList();
-    static final String         EOL                    = System.getProperty("line.separator");
+    private static final String elementName                    = "testsuite";
+    private static final String testResultsToken               = "%testresults%";
+    private static final String compileLogsToken               = "%compilelogs%";
+    private static final String accessesLogsToken              = "%accesseslogs%";
+    private ArrayList<String>   foundConfigs                   = new ArrayList();
+    private ArrayList<String>   expectedConfigs                = null;
+    private static final String EOL                            = System.getProperty("line.separator");
+    private static boolean      DEBUG                          = false;
+    private static String       FOUND_TEST_CONFIGS_FILENAME    = "testConfigsFound.php";
+    private static String       found_config_type              = "found";
+    private static String       EXPECTED_TEST_CONFIGS_FILENAME = "testConfigs.php";
+    private static String       expected_config_type           = "expected";
 
     class ExpectedConfigFiler implements FilenameFilter {
 
@@ -106,7 +112,7 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    public static byte[] getFileByteContent(final String fileName) throws IOException {
+    private static byte[] getFileByteContent(final String fileName) throws IOException {
         InputStream stream = null;
         try {
             final File file = new File(fileName);
@@ -134,7 +140,7 @@ public class TestResultsGenerator extends Task {
      * @throws IOException
      *             if a problem occurred reading the stream.
      */
-    public static byte[] getInputStreamAsByteArray(final InputStream stream, final int length) throws IOException {
+    private static byte[] getInputStreamAsByteArray(final InputStream stream, final int length) throws IOException {
         byte[] contents;
         if (length == -1) {
             contents = new byte[0];
@@ -186,8 +192,12 @@ public class TestResultsGenerator extends Task {
         if (Boolean.FALSE) {
             test.setTestsConfigExpected(
                     "ep46N-unit-lin64_linux.gtk.x86_64_8.0.xml ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0.xml ,ep46N-unit-win32_win32.win32.x86_8.0.xml, ep46N-unit-cen64_linux.gtk.x86_64_8.0.xml");
-            for (int i = 0; i < test.getTestsConfig().length; i++) {
-                System.out.println(test.getTestsConfig()[i]);
+            DEBUG = true;
+            try {
+                test.getTestsConfig();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
             }
 
         } else {
@@ -221,18 +231,16 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    public Vector           dropTokens;
+    private Vector          dropTokens;
 
-    public String           testResultsWithProblems   = "\n";
-    public String           testResultsXmlUrls        = "\n";
+    private String          testResultsWithProblems   = "EOL";
+    private String          testResultsXmlUrls        = "EOL";
 
     private DocumentBuilder parser                    = null;
-    public ErrorTracker     anErrorTracker;
-    public String           testResultsTemplateString = "";
+    private ErrorTracker    anErrorTracker;
+    private String          testResultsTemplateString = "";
 
-    public String           dropTemplateString        = "";
-
-    public Vector           platformDropFileName;
+    private String          dropTemplateString        = "";
 
     // assume tests ran. If no html files are found, this is set to false
     private boolean         testsRan                  = true;
@@ -242,41 +250,41 @@ public class TestResultsGenerator extends Task {
     private boolean         isBuildTested;
 
     // testedBuildType, I, N
-    public String           testedBuildType;
+    private String          testedBuildType;
 
     // Comma separated list of drop tokens
-    public String           dropTokenList;
+    private String          dropTokenList;
 
     // Location of the xml files
-    public String           xmlDirectoryName;
+    private String          xmlDirectoryName;
 
     // Location of the html files
-    public String           htmlDirectoryName;
+    private String          htmlDirectoryName;
 
     // Location of the resulting index.php file.
-    public String           dropDirectoryName;
+    private String          dropDirectoryName;
 
     // Location and name of the template index.php file.
-    public String           testResultsTemplateFileName;
+    private String          testResultsTemplateFileName;
 
     // Location and name of the template drop index.php file.
-    public String           dropTemplateFileName;
+    private String          dropTemplateFileName;
 
     // Name of the generated index php file.
-    public String           testResultsHtmlFileName;
+    private String          testResultsHtmlFileName;
 
     // Name of the generated drop index php file;
-    public String           dropHtmlFileName;
+    private String          dropHtmlFileName;
 
     // Arbitrary path used in the index.php page to href the
     // generated .html files.
-    public String           hrefTestResultsTargetPath;
+    private String          hrefTestResultsTargetPath;
     // Arbitrary path used in the index.php page to reference the compileLogs
-    public String           hrefCompileLogsTargetPath;
+    private String          hrefCompileLogsTargetPath;
     // Location of compile logs base directory
-    public String           compileLogsDirectoryName;
+    private String          compileLogsDirectoryName;
     // Location and name of test manifest file
-    public String           testManifestFileName;
+    private String          testManifestFileName;
 
     // temporary way to force "missing" list not to be printed (until complete
     // solution found)
@@ -291,7 +299,7 @@ public class TestResultsGenerator extends Task {
 
     // Configuration of test machines.
     // Add or change new configurations here
-    // and update titles in testResults.php.template.
+    // and update titles in testResults.template.php.
     // These are the suffixes used for JUnit's XML output files.
     // On each invocation, all files in results directory are
     // scanned, to see if they end with suffixes, and if so,
@@ -301,12 +309,13 @@ public class TestResultsGenerator extends Task {
     // generated, by the setting of a variable named "platform" in test.xml
     // and associated property files.
 
-    private String[]        testsConfigDefaults       = { "ep4" + getTestedBuildType() + "-unit-lin64_linux.gtk.x86_64_8.0.xml",
-            "ep4" + getTestedBuildType() + "-unit-mac64_macosx.cocoa.x86_64_7.0.xml",
-            "ep4" + getTestedBuildType() + "-unit-win32_win32.win32.x86_7.0.xml",
-            "ep4" + getTestedBuildType() + "-unit-cen64_linux.gtk.x86_64_8.0.xml" };
+    // defaults removed since adds to confusion or errors
+    // private String[] testsConfigDefaults = { "ep4" + getTestedBuildType() +
+    // "-unit-lin64_linux.gtk.x86_64_8.0.xml",
+    // "ep4" + getTestedBuildType() + "-unit-mac64_macosx.cocoa.x86_64_8.0.xml",
+    // "ep4" + getTestedBuildType() + "-unit-win32_win32.win32.x86_8.0.xml",
+    // "ep4" + getTestedBuildType() + "-unit-cen64_linux.gtk.x86_64_8.0.xml" };
     private String          testsConfigExpected;
-    private String[]        testsConfig;
 
     private int             missingCount              = 0;
 
@@ -375,7 +384,6 @@ public class TestResultsGenerator extends Task {
     public void execute() {
 
         anErrorTracker = new ErrorTracker();
-        platformDropFileName = new Vector();
         anErrorTracker.loadFile(testManifestFileName);
         getDropTokensFromList(dropTokenList);
         testResultsTemplateString = readFile(testResultsTemplateFileName);
@@ -464,162 +472,145 @@ public class TestResultsGenerator extends Task {
     }
 
     // Specific to the RelEng test results page
-    private String formatRowReleng(final String fileName, final int errorCount, final boolean link) {
-
-        // If the file name doesn't end with any of the set test configurations,
-        // do nothing
-        boolean endsWithConfig = false;
-        String[] tconfig = getTestsConfig();
-        int card = tconfig.length;
-        for (int i = 0; i < card; i++) {
-            if (fileName.endsWith(tconfig[i])) {
-                endsWithConfig = true;
-            }
-        }
-        if (!endsWithConfig) {
-            return "";
-        }
-
+    private String formatRowReleng(final String fileName, final int errorCount, final boolean link, String config) {
+        String testsConstant = ".tests";
+        int testsConstantLength = testsConstant.length();
         String aString = "";
         if (!link) {
             return "<tr><td>" + fileName + "</td><td align=\"center\">" + "DNF </td></tr>";
         }
 
-        if (fileName.endsWith(XML_EXTENSION)) {
+        final int begin = fileName.lastIndexOf(File.separatorChar);
 
-            final int begin = fileName.lastIndexOf(File.separatorChar);
+        // Get org.eclipse. out of the component name
+        int orgEclipseLength = "org.eclipse".length();
+        // this is 11, 13 was hard coded?
+        // indexOf('_') assumes never part of file name?
+        final String shortName = fileName.substring(begin + orgEclipseLength, fileName.indexOf('_'));
+        String displayName = shortName;
 
-            // Get org.eclipse. out of the component name
-            final String shortName = fileName.substring(begin + 13, fileName.indexOf('_'));
-            String displayName = shortName;
+        // If the short name does not start with this prefix
+        if (!shortName.startsWith(prefix)) {
+            // If the prefix is not yet set
+            if (prefix == "default") {
+                // Set the testShortName variable to the current short name
+                testShortName = shortName;
+                counter = 0;
+                // Set new prefix
 
-            // If the short name does not start with this prefix
-            if (!shortName.startsWith(prefix)) {
-                // If the prefix is not yet set
-                if (prefix == "default") {
-                    // Set the testShortName variable to the current short name
-                    testShortName = shortName;
-                    counter = 0;
-                    // Set new prefix
-                    prefix = shortName.substring(0, shortName.indexOf(".tests") + 6);
-                    aString = aString + "\n<tbody>\r<tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
-                    aString = aString + "<tr><td><p>" + shortName;
+                prefix = shortName.substring(0, shortName.indexOf(testsConstant) + testsConstantLength);
+                aString = aString + "\n<tbody>\r<tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
+                aString = aString + "<tr><td><p>" + shortName;
 
-                    // Loop until the matching string postfix(test config.) is
-                    // found
-                    while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
-                        aString = aString + "<td align=\"center\">-</td>";
-                        counter++;
-                    }
-                } else {
-                    // Set new prefix
-                    prefix = shortName.substring(0, shortName.indexOf(".tests") + 6);
+            } else {
+                // Set new prefix
+                prefix = shortName.substring(0, shortName.indexOf(testsConstant) + testsConstantLength);
 
-                    // Loop until the matching string postfix(test config.) is
-                    // found
-                    while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
-                        aString = aString + "<td align=\"center\">-</td>";
-                        counter++;
-                    }
-
-                    // In this case, the new prefix should be set with the short
-                    // name under it,
-                    // since this would mean that the team has more than one
-                    // component test
-                    if (!shortName.endsWith("tests")) {
-                        aString = aString + "\n<tbody>\n<tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
-                        aString = aString + "<tr><td><p>" + shortName;
-                    }
-                    // The team has only one component test
-                    else {
-                        aString = aString + "\n<tbody><tr><td><b>" + shortName;
-                    }
-                    testShortName = shortName;
-
-                    counter = 0;
-                }
-            }
-            // If the file's short name starts with the current prefix
-            if (shortName.startsWith(prefix)) {
-                // If the new file has a different short name than the current
-                // one
-                if (!shortName.equals(testShortName)) {
-                    // Fill the remaining cells with '-'. These files will later
-                    // be listed as
-                    // missing
-                    while (counter < card) {
-                        aString = aString + "<td align=\"center\">-</td>";
-                        counter++;
-                    }
-                    counter = 0;
-                    // Print the component name
-                    aString = aString + "<tr><td><p>" + shortName;
-                    // Loop until the matching string postfix(test config.) is
-                    // found
-                    while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
-                        aString = aString + "<td align=\"center\">-</td>";
-                        counter++;
-                    }
-                } else {
-                    // Loop until the matching string postfix(test config.) is
-                    // found
-                    while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
-                        aString = aString + "<td align=\"center\">-</td>";
-                        counter++;
-                    }
-                    // If the previous component has no more test files left
-                    if (counter == card) {
-                        counter = 0;
-                        // Print the new component name
-                        aString = aString + "<tr><td><p>" + shortName;
-                        // Loop until the matching string postfix(test config.)
-                        // is found
-                        while ((counter < card) && !fileName.endsWith(tconfig[counter])) {
-                            aString = aString + "<td align=\"center\">-</td>";
-                            counter++;
-                        }
-                    }
+                // Loop until the matching string postfix(test config.) is
+                // found
+                while (!fileName.endsWith(config)) {
+                    aString = aString + "<td align=\"center\">-</td>";
+                    counter++;
                 }
 
+                // In this case, the new prefix should be set with the short
+                // name under it,
+                // since this would mean that the team has more than one
+                // component test
+                // CAUTION: origionally said only "tests", not ".tests"
+                if (!shortName.endsWith(testsConstant)) {
+                    aString = aString + "\n<tbody>\n<tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
+                    aString = aString + "<tr><td><p>" + shortName;
+                }
+                // The team has only one component test
+                else {
+                    aString = aString + "\n<tbody><tr><td><b>" + shortName;
+                }
                 testShortName = shortName;
 
-                if (errorCount != 0) {
-                    aString = aString + "<td align=\"center\"><b>";
-                } else {
-                    aString = aString + "<td align=\"center\">";
-                }
-
-                // Print number of errors
-                if (errorCount != 0) {
-                    displayName = "<font color=\"#ff0000\">" + "(" + String.valueOf(errorCount) + ")" + "</font>";
-                } else {
-                    displayName = "(0)";
-                }
-
-                // Reference
-                if (errorCount == -1) {
-                    aString = aString.concat(displayName);
-                } else {
-                    // rawfilename is file name with no extension.
-                    String rawfilename = fileName.substring(begin + 1, fileName.length() - XML_EXTENSION.length());
-                    aString = aString + "<a href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename + HTML_EXTENSION
-                            + "\">" + displayName + "</a>";
-                    aString = aString
-                            + "&nbsp;<a style=\"color:#AAAAAA\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
-                            + hrefTestResultsTargetPath + "/xml/" + rawfilename + XML_EXTENSION + "\">(XML)</a>";
-                }
-
-                if (errorCount == -1) {
-                    aString = aString + "<font color=\"#ff0000\">DNF";
-                }
-
-                if (errorCount != 0) {
-                    aString = aString + "</font></b></td>";
-                } else {
-                    aString = aString + "</td>";
-                }
-                counter++;
+                counter = 0;
             }
+        }
+        // If the file's short name starts with the current prefix
+        if (shortName.startsWith(prefix)) {
+            // If the new file has a different short name than the current
+            // one
+            if (!shortName.equals(testShortName)) {
+                // Fill the remaining cells with '-'. These files will later
+                // be listed as
+                // missing
+                while (counter < getTestsConfigExpected().length()) {
+                    aString = aString + "<td align=\"center\">-</td>";
+                    counter++;
+                }
+                counter = 0;
+                // Print the component name
+                aString = aString + "<tr><td><p>" + shortName;
+                // Loop until the matching string postfix(test config.) is
+                // found
+                while ((counter < getTestsConfigExpected().length()) && !fileName.endsWith(config)) {
+                    aString = aString + "<td align=\"center\">-</td>";
+                    counter++;
+                }
+            } else {
+                // Loop until the matching string postfix(test config.) is
+                // found
+                while ((counter < getTestsConfigExpected().length()) && !fileName.endsWith(config)) {
+                    aString = aString + "<td align=\"center\">-</td>";
+                    counter++;
+                }
+                // If the previous component has no more test files left
+                if (counter == getTestsConfigExpected().length()) {
+                    counter = 0;
+                    // Print the new component name
+                    aString = aString + "<tr><td><p>" + shortName;
+                    // Loop until the matching string postfix(test config.)
+                    // is found
+                    while ((counter <  getTestsConfigExpected().length()) && !fileName.endsWith(config)) {
+                        aString = aString + "<td align=\"center\">-</td>";
+                        counter++;
+                    }
+                }
+            }
+
+            testShortName = shortName;
+
+            if (errorCount != 0) {
+                aString = aString + "<td align=\"center\"><b>";
+            } else {
+                aString = aString + "<td align=\"center\">";
+            }
+
+            // Print number of errors
+            if (errorCount != 0) {
+                displayName = "<font color=\"#ff0000\">" + "(" + String.valueOf(errorCount) + ")" + "</font>";
+            } else {
+                displayName = "(0)";
+            }
+
+            // Reference
+            if (errorCount == -1) {
+                aString = aString.concat(displayName);
+            } else {
+                // rawfilename is file name with no extension.
+                String rawfilename = fileName.substring(begin + 1, fileName.length() - XML_EXTENSION.length());
+                aString = aString + "<a href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename + HTML_EXTENSION + "\">"
+                        + displayName + "</a>";
+                aString = aString
+                        + "&nbsp;<a style=\"color:#AAAAAA\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
+                        + hrefTestResultsTargetPath + "/xml/" + rawfilename + XML_EXTENSION + "\">(XML)</a>";
+            }
+
+            if (errorCount == -1) {
+                aString = aString + "<font color=\"#ff0000\">DNF";
+            }
+
+            if (errorCount != 0) {
+                aString = aString + "</font></b></td>";
+            } else {
+                aString = aString + "</td>";
+            }
+            counter++;
         }
 
         return aString;
@@ -671,7 +662,7 @@ public class TestResultsGenerator extends Task {
         return dropTokens;
     }
 
-    protected void getDropTokensFromList(final String list) {
+    private void getDropTokensFromList(final String list) {
         final StringTokenizer tokenizer = new StringTokenizer(list, ",");
         dropTokens = new Vector();
 
@@ -827,7 +818,7 @@ public class TestResultsGenerator extends Task {
         formatAccessesErrorRow(logName, forbiddenWarningCount, discouragedWarningCount, accessesLog);
     }
 
-    public void parseCompileLogs() {
+    private void parseCompileLogs() {
 
         final StringBuffer compilerString = new StringBuffer();
         final StringBuffer accessesString = new StringBuffer();
@@ -843,7 +834,7 @@ public class TestResultsGenerator extends Task {
         testResultsTemplateString = replace(testResultsTemplateString, accessesLogsToken, String.valueOf(accessesString));
     }
 
-    public void parseXml() throws IOException {
+    private void parseXml() throws IOException {
 
         final File sourceDirectory = new File(xmlDirectoryName);
 
@@ -880,28 +871,18 @@ public class TestResultsGenerator extends Task {
                                 .concat("\n" + extractXmlRelativeFileName(sourceDirectoryCanonicalPath, xmlFileNames[i]));
                         anErrorTracker.registerError(fullName.substring(getXmlDirectoryName().length() + 1));
                     }
-                    String tmp = formatRowReleng(xmlFileNames[i].getPath(), errorCount, true);
+                    String tmp = formatRowReleng(xmlFileNames[i].getPath(), errorCount, true, expectedConfig);
                     replaceString = replaceString + tmp;
                 }
                 // check for missing test logs
-                replaceString = replaceString + verifyAllTestsRan(xmlDirectoryName);
+                replaceString = replaceString + verifyAllTestsRan(xmlDirectoryName, expectedConfig);
 
                 testResultsTemplateString = replace(testResultsTemplateString, testResultsToken, replaceString);
                 testsRan = true;
             }
             if (foundConfigs.size() > 0) {
                 // write each to output directory in file testConfigs.php
-                File mainDir = new File(computeMainOutputDirectory(sourceDirectory));
-                File testConfigsFile = new File(mainDir, "testConfigs.php");
-                Writer testconfigsPHP = new FileWriter(testConfigsFile);
-                testconfigsPHP.write("<?php"+EOL);
-                testconfigsPHP.write("//This file created by 'generateIndex' ant task, while parsing test results"+EOL);
-                testconfigsPHP.write("// It is based on 'found' testConfigs" + EOL);
-                testconfigsPHP.write("$expectedTestConfigs = array();" + EOL);
-                for (String fConfig : foundConfigs) {
-                    testconfigsPHP.write("$expectedTestConfigs[]=\"" + fConfig + "\";" +EOL);
-                }
-                testconfigsPHP.close();
+                writePhpConfigFile(sourceDirectory, found_config_type, foundConfigs, FOUND_TEST_CONFIGS_FILENAME);
             } else {
                 testsRan = false;
                 log("Test results not found in " + sourceDirectory.getAbsolutePath());
@@ -909,7 +890,23 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    protected String computeMainOutputDirectory(final File sourceDirectory) {
+    private void writePhpConfigFile(final File sourceDirectory, String config_type, ArrayList<String> configs, String phpfilename)
+            throws IOException {
+        File mainDir = new File(computeMainOutputDirectory(sourceDirectory));
+        File testConfigsFile = new File(mainDir, phpfilename);
+        Writer testconfigsPHP = new FileWriter(testConfigsFile);
+        testconfigsPHP.write("<?php" + EOL);
+        testconfigsPHP.write("//This file created by 'generateIndex' ant task, while parsing test results" + EOL);
+        testconfigsPHP.write("// It is based on " + config_type + " testConfigs" + EOL);
+        String phpArrayVariableName = "$" + config_type + "TestConfigs";
+        testconfigsPHP.write(phpArrayVariableName + " = array();" + EOL);
+        for (String fConfig : configs) {
+            testconfigsPHP.write(phpArrayVariableName + "[]=\"" + fConfig + "\";" + EOL);
+        }
+        testconfigsPHP.close();
+    }
+
+    private String computeMainOutputDirectory(final File sourceDirectory) {
         File sourceDirectoryParent = sourceDirectory.getParentFile();
         if (sourceDirectoryParent != null) {
             sourceDirectoryParent = sourceDirectoryParent.getParentFile();
@@ -944,7 +941,7 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    protected String processDropRow(final PlatformStatus aPlatform) {
+    private String processDropRow(final PlatformStatus aPlatform) {
         if ("equinox".equalsIgnoreCase(aPlatform.getFormat())) {
             return processEquinoxDropRow(aPlatform);
         }
@@ -958,7 +955,7 @@ public class TestResultsGenerator extends Task {
         return result;
     }
 
-    protected String processDropRows(final PlatformStatus[] platforms) {
+    private String processDropRows(final PlatformStatus[] platforms) {
         String result = "";
         for (int i = 0; i < platforms.length; i++) {
             result = result + processDropRow(platforms[i]);
@@ -970,7 +967,7 @@ public class TestResultsGenerator extends Task {
      * Generate and return the HTML mark-up for a single row for an Equinox JAR
      * on the downloads page.
      */
-    protected String processEquinoxDropRow(final PlatformStatus aPlatform) {
+    private String processEquinoxDropRow(final PlatformStatus aPlatform) {
         String result = "<tr>";
         // result = result + "<td align=\"center\">" +
         // getStatusColumn(aPlatform, "/equinox/images/", true) + "</td>\n";
@@ -988,43 +985,6 @@ public class TestResultsGenerator extends Task {
         result = result + "{$generateDropSize(\"" + filename + "\")}\n";
         result = result + "{$generateChecksumLinks(\"" + filename + "\", $buildlabel)}\n";
         result = result + "</tr>\n";
-        return result;
-    }
-
-    // Process drop rows specific to each of the platforms
-    protected String processPlatformDropRows(final PlatformStatus[] platforms, final String name) {
-        String result = "";
-        boolean found = false;
-        for (int i = 0; i < platforms.length; i++) {
-            // If the platform description indicates the platform's name, or
-            // "All",
-            // call processDropRow
-            if (platforms[i].getName().startsWith(name.substring(0, 3)) || platforms[i].getName().equals("All")) {
-                result = result + processDropRow(platforms[i]);
-                found = true;
-                continue;
-            }
-            // If the platform description indicates "All Other Platforms",
-            // process
-            // the row locally
-            if (platforms[i].getName().equals("All Other Platforms") && !found) {
-                if ("equinox".equalsIgnoreCase(platforms[i].getFormat())) {
-                    result = processEquinoxDropRow(platforms[i]);
-                    continue;
-                }
-                // final String imageName = getStatusColumn(platforms[i], "",
-                // false);
-                result = result + "<tr>";
-                // result = result + "<td><div align=left>" + imageName +
-                // "</div></td>\n";
-                result = result + "<td>All " + name + "</td>";
-                // generate http, md5 and sha1 links by calling php functions in
-                // the template
-                result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"${BUILD_ID}\",\"" + platforms[i].getFileName()
-                        + "\"); ?></td>\n";
-                result = result + "</tr>\n";
-            }
-        }
         return result;
     }
 
@@ -1048,7 +1008,7 @@ public class TestResultsGenerator extends Task {
         formatAccessesErrorRow(log, forbiddenWarningCount, discouragedWarningCount, accessesLog);
     }
 
-    public String readFile(final String fileName) {
+    private String readFile(final String fileName) {
         byte[] aByteArray = null;
         try {
             aByteArray = getFileByteContent(fileName);
@@ -1120,13 +1080,6 @@ public class TestResultsGenerator extends Task {
     }
 
     /**
-     * @param vector
-     */
-    public void setDropTokens(final Vector vector) {
-        dropTokens = vector;
-    }
-
-    /**
      * Sets the hrefCompileLogsTargetPath.
      * 
      * @param hrefCompileLogsTargetPath
@@ -1173,13 +1126,6 @@ public class TestResultsGenerator extends Task {
     }
 
     /**
-     * @param string
-     */
-    public void setTestResultsWithProblems(final String string) {
-        testResultsWithProblems = string;
-    }
-
-    /**
      * @param b
      */
     public void setTestsRan(final boolean b) {
@@ -1197,7 +1143,7 @@ public class TestResultsGenerator extends Task {
         return testsRan;
     }
 
-    private String verifyAllTestsRan(final String directory) {
+    private String verifyAllTestsRan(final String directory, String foundConfig) {
         String replaceString = "";
         if (getDoMissingList()) {
             final Enumeration enumeration = (anErrorTracker.getTestLogs()).elements();
@@ -1213,7 +1159,7 @@ public class TestResultsGenerator extends Task {
                 // final String tmp = ((platformSpecificTemplateList.equals(""))
                 // ? formatRow(testLogName, -1, false) : formatRowReleng(
                 // testLogName, -1, false));
-                String tmp = formatRowReleng(testLogName, -1, false);
+                String tmp = formatRowReleng(testLogName, -1, false, foundConfig);
                 if (missingCount == 0) {
                     replaceString = replaceString + "</table></br>" + "\n"
                             + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
@@ -1235,7 +1181,7 @@ public class TestResultsGenerator extends Task {
         return replaceString;
     }
 
-    protected void writeDropIndexFile() {
+    private void writeDropIndexFile() {
 
         final String[] types = anErrorTracker.getTypes();
         for (int i = 0; i < types.length; i++) {
@@ -1271,7 +1217,7 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    public void writeTestResultsFile() {
+    private void writeTestResultsFile() {
         final String outputFileName = dropDirectoryName + File.separator + testResultsHtmlFileName;
         writeFile(outputFileName, testResultsTemplateString);
     }
@@ -1286,39 +1232,34 @@ public class TestResultsGenerator extends Task {
         System.out.println("DEBUG: testsConfigExpected: " + testsConfigExpected);
     }
 
-    public String[] getTestsConfig() {
-        if (testsConfig == null) {
+    private ArrayList<String> getTestsConfig() throws IOException {
+        if (expectedConfigs == null) {
+            expectedConfigs = new ArrayList<String>();
             String expectedConfigParam = getTestsConfigExpected();
             if (expectedConfigParam != null) {
                 StringTokenizer tokenizer = new StringTokenizer(expectedConfigParam, " ,\t");
-                int nTokens = tokenizer.countTokens();
-                String[] tokens = new String[nTokens];
-                int i = 0;
                 while (tokenizer.hasMoreTokens()) {
-                    tokens[i++] = tokenizer.nextToken();
+                    expectedConfigs.add(tokenizer.nextToken());
                 }
-                testsConfig = tokens;
             } else {
-                testsConfig = testsConfigDefaults;
+                throw new BuildException("test configurations were not found. One or more must be set.");
             }
-            System.out.println("DEBUG: testsConfig array ");
-            for (int i = 0; i < testsConfig.length; i++) {
-                System.out.println("\tDEBUG: testsConfig[" + i + "]: " + testsConfig[i]);
+            if (DEBUG) {
+                log("DEBUG: testsConfig array ");
+                for (String expected : expectedConfigs) {
+                    log("\tDEBUG: expectedTestConfig: " + expected);
+                }
             }
+            // write expected test config file here. This file is later used by
+            // the PHP file.
+            final File sourceDirectory = new File(xmlDirectoryName);
+            writePhpConfigFile(sourceDirectory, expected_config_type, expectedConfigs, EXPECTED_TEST_CONFIGS_FILENAME);
         }
-        return testsConfig;
+        return expectedConfigs;
     }
 
-    public void setTestsConfig(String[] testsConfig) {
-        this.testsConfig = testsConfig;
-    }
-
-    public boolean getDoMissingList() {
+    private boolean getDoMissingList() {
         return doMissingList;
-    }
-
-    public void setDoMissingList(boolean doMissingList) {
-        this.doMissingList = doMissingList;
     }
 
 }
