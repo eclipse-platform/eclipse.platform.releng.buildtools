@@ -249,8 +249,8 @@ public class TestResultsGenerator extends Task {
     // build runs JUnit automated tests
     private boolean         isBuildTested;
 
-    // testedBuildType, I, N
-    private String          testedBuildType;
+    // buildType, I, N
+    private String          buildType;
 
     // Comma separated list of drop tokens
     private String          dropTokenList;
@@ -616,8 +616,8 @@ public class TestResultsGenerator extends Task {
         return aString;
     }
 
-    public String getTestedBuildType() {
-        return testedBuildType;
+    public String getBuildType() {
+        return buildType;
     }
 
     /**
@@ -1037,8 +1037,8 @@ public class TestResultsGenerator extends Task {
 
     }
 
-    public void setTestedBuildType(final String buildType) {
-        this.testedBuildType = buildType;
+    public void setBuildType(final String buildType) {
+        this.buildType = buildType;
     }
 
     /**

@@ -24,7 +24,7 @@ public class EclipseTestResultsGeneratorNoMail extends TestResultsGenerator {
         String localTestDropDir="/shared/eclipse/buildsdavidw/4I/siteDir/eclipse/downloads/drops4/" + localTestBuildId;
 
         final EclipseTestResultsGeneratorNoMail test = new EclipseTestResultsGeneratorNoMail();
-        test.setTestedBuildType("I");
+        test.setBuildType("I");
         test.setIsBuildTested(true);
         test.setDropTokenList("%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
         test.setXmlDirectoryName(localTestDropDir + "/testresults/xml");
