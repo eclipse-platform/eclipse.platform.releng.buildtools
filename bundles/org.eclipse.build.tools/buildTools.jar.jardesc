@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><jardesc>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jardesc>
     <jar path="org.eclipse.build.tools/buildTools.jar"/>
     <options buildIfNeeded="true" compress="true" descriptionLocation="/org.eclipse.build.tools/buildTools.jar.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>

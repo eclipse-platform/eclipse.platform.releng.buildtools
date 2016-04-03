@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2016 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -17,9 +17,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -31,6 +35,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -46,6 +51,8 @@ import org.xml.sax.SAXException;
  */
 public class TestResultsGenerator extends Task {
 
+    private static final String HTML_EXTENSION         = ".html";
+    private static final String XML_EXTENSION          = ".xml";
     private static final String WARNING_SEVERITY       = "WARNING";
     private static final String ERROR_SEVERITY         = "ERROR";
     private static final String ForbiddenReferenceID   = "ForbiddenReference";
@@ -57,6 +64,22 @@ public class TestResultsGenerator extends Task {
     static final String         testResultsToken       = "%testresults%";
     static final String         compileLogsToken       = "%compilelogs%";
     static final String         accessesLogsToken      = "%accesseslogs%";
+    private ArrayList<String>   foundConfigs           = new ArrayList();
+    static final String         EOL                    = System.getProperty("line.separator");
+
+    class ExpectedConfigFiler implements FilenameFilter {
+
+        String config;
+
+        public ExpectedConfigFiler(String expectedConfig) {
+            config = expectedConfig;
+        }
+
+        public boolean accept(File dir, String name) {
+            return (name.endsWith("_" + config + XML_EXTENSION));
+        }
+
+    }
 
     private String extractXmlRelativeFileName(final String rootCanonicalPath, final File xmlFile) {
         if (rootCanonicalPath != null) {
@@ -161,20 +184,23 @@ public class TestResultsGenerator extends Task {
     public static void main(final String[] args) {
         final TestResultsGenerator test = new TestResultsGenerator();
         if (Boolean.FALSE) {
-            test.setTestsConfigExpected("ep46N-unit-lin64_linux.gtk.x86_64_8.0.xml ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0.xml ,ep46N-unit-win32_win32.win32.x86_8.0.xml, ep46N-unit-cen64_linux.gtk.x86_64_8.0.xml");
+            test.setTestsConfigExpected(
+                    "ep46N-unit-lin64_linux.gtk.x86_64_8.0.xml ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0.xml ,ep46N-unit-win32_win32.win32.x86_8.0.xml, ep46N-unit-cen64_linux.gtk.x86_64_8.0.xml");
             for (int i = 0; i < test.getTestsConfig().length; i++) {
                 System.out.println(test.getTestsConfig()[i]);
             }
 
         } else {
-            test.setTestsConfigExpected("ep46N-unit-lin64_linux.gtk.x86_64_8.0.xml ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0.xml ,ep46N-unit-win32_win32.win32.x86_8.0.xml, ep46N-unit-cen64_linux.gtk.x86_64_8.0.xml");
+            test.setTestsConfigExpected(
+                    "ep46N-unit-lin64_linux.gtk.x86_64_8.0.xml ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0.xml ,ep46N-unit-win32_win32.win32.x86_8.0.xml, ep46N-unit-cen64_linux.gtk.x86_64_8.0.xml");
 
-//          "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
+            // "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
             test.setDropTokenList(
-            "%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
+                    "%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
             test.getDropTokensFromList(test.dropTokenList);
             test.setIsBuildTested(false);
-            test.setXmlDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000/testresults/xml");
+            test.setXmlDirectoryName(
+                    "/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000/testresults/xml");
             test.setHtmlDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000/testresults");
             test.setDropDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000");
             test.setTestResultsTemplateFileName(
@@ -215,8 +241,8 @@ public class TestResultsGenerator extends Task {
     // build runs JUnit automated tests
     private boolean         isBuildTested;
 
-    // buildType, I, N
-    public String           buildType;
+    // testedBuildType, I, N
+    public String           testedBuildType;
 
     // Comma separated list of drop tokens
     public String           dropTokenList;
@@ -275,8 +301,10 @@ public class TestResultsGenerator extends Task {
     // generated, by the setting of a variable named "platform" in test.xml
     // and associated property files.
 
-    private String[]        testsConfigDefaults       = { "ep4"+getBuildType()+"-unit-lin64_linux.gtk.x86_64_8.0.xml", "ep4"+getBuildType()+"-unit-mac64_macosx.cocoa.x86_64_7.0.xml",
-            "ep4"+getBuildType()+"-unit-win32_win32.win32.x86_7.0.xml","ep4"+getBuildType()+"-unit-cen64_linux.gtk.x86_64_8.0.xml" };
+    private String[]        testsConfigDefaults       = { "ep4" + getTestedBuildType() + "-unit-lin64_linux.gtk.x86_64_8.0.xml",
+            "ep4" + getTestedBuildType() + "-unit-mac64_macosx.cocoa.x86_64_7.0.xml",
+            "ep4" + getTestedBuildType() + "-unit-win32_win32.win32.x86_7.0.xml",
+            "ep4" + getTestedBuildType() + "-unit-cen64_linux.gtk.x86_64_8.0.xml" };
     private String          testsConfigExpected;
     private String[]        testsConfig;
 
@@ -353,12 +381,22 @@ public class TestResultsGenerator extends Task {
         testResultsTemplateString = readFile(testResultsTemplateFileName);
         dropTemplateString = readFile(dropTemplateFileName);
 
-        log("Begin: Generating test results index page");
-        log("Parsing XML files");
-        parseXml();
+        if (isBuildTested()) {
+            log("Begin: Generating test results index page");
+            log("Parsing XML files");
+            try {
+                parseXml();
+            }
+            catch (IOException e) {
+                throw new BuildException(e);
+            }
+            log("End: Generating test results index page");
+        } else {
+            log("isBuildTested value was not true, so did no processing for test file");
+        }
         log("Parsing compile logs");
         parseCompileLogs();
-        log("End: Generating test results index page");
+        log("End: Generating compile logs summary page");
         writeTestResultsFile();
         writeDropIndexFile();
     }
@@ -447,7 +485,7 @@ public class TestResultsGenerator extends Task {
             return "<tr><td>" + fileName + "</td><td align=\"center\">" + "DNF </td></tr>";
         }
 
-        if (fileName.endsWith(".xml")) {
+        if (fileName.endsWith(XML_EXTENSION)) {
 
             final int begin = fileName.lastIndexOf(File.separatorChar);
 
@@ -563,12 +601,12 @@ public class TestResultsGenerator extends Task {
                     aString = aString.concat(displayName);
                 } else {
                     // rawfilename is file name with no extension.
-                    String rawfilename = fileName.substring(begin + 1, fileName.length() - 4);
-                    aString = aString + "<a href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename + ".html" + "\">"
-                            + displayName + "</a>";
+                    String rawfilename = fileName.substring(begin + 1, fileName.length() - XML_EXTENSION.length());
+                    aString = aString + "<a href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename + HTML_EXTENSION
+                            + "\">" + displayName + "</a>";
                     aString = aString
                             + "&nbsp;<a style=\"color:#AAAAAA\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
-                            + hrefTestResultsTargetPath + "/xml/" + rawfilename + ".xml" + "\">(XML)</a>";
+                            + hrefTestResultsTargetPath + "/xml/" + rawfilename + XML_EXTENSION + "\">(XML)</a>";
                 }
 
                 if (errorCount == -1) {
@@ -587,8 +625,8 @@ public class TestResultsGenerator extends Task {
         return aString;
     }
 
-    public String getBuildType() {
-        return buildType;
+    public String getTestedBuildType() {
+        return testedBuildType;
     }
 
     /**
@@ -783,8 +821,8 @@ public class TestResultsGenerator extends Task {
 
             anErrorTracker.registerError(logName);
         }
-        // make sure '.xml' is "last thing" in string. (bug 490320)
-        final String logName = log.replaceAll(".xml$", ".html");
+        // make sure '.xml' extension is "last thing" in string. (bug 490320)
+        final String logName = log.replaceAll(XML_EXTENSION + "$", HTML_EXTENSION);
         formatCompileErrorRow(logName, errorCount, warningCount, compilerLog);
         formatAccessesErrorRow(logName, forbiddenWarningCount, discouragedWarningCount, accessesLog);
     }
@@ -805,62 +843,85 @@ public class TestResultsGenerator extends Task {
         testResultsTemplateString = replace(testResultsTemplateString, accessesLogsToken, String.valueOf(accessesString));
     }
 
-    public void parseXml() {
+    public void parseXml() throws IOException {
 
         final File sourceDirectory = new File(xmlDirectoryName);
 
         if (sourceDirectory.exists()) {
-
+            // reinitialize each time.
+            // We currently "re do" all of them, but can improve in the future
+            // where the
+            // 'found configs" are remembered, but then have to keep track of
+            // original order
+            // (not "found order").
+            foundConfigs.clear();
             String replaceString = "";
+            for (String expectedConfig : getTestsConfig()) {
 
-            final File[] xmlFileNames = sourceDirectory.listFiles();
-            Arrays.sort(xmlFileNames);
+                FilenameFilter configfilter = new ExpectedConfigFiler(expectedConfig);
+                final File[] xmlFileNames = sourceDirectory.listFiles(configfilter);
 
-            File sourceDirectoryParent = sourceDirectory.getParentFile();
-            if (sourceDirectoryParent != null) {
-                sourceDirectoryParent = sourceDirectoryParent.getParentFile();
-            }
-            String sourceDirectoryCanonicalPath = null;
-            try {
-                sourceDirectoryCanonicalPath = sourceDirectoryParent.getCanonicalPath();
-            }
-            catch (final IOException e) {
-                logException(e);
-            }
-            for (int i = 0; i < xmlFileNames.length; i++) {
-                if (xmlFileNames[i].getPath().endsWith(".xml")) {
+                if (xmlFileNames.length > 0) {
+                    foundConfigs.add(expectedConfig);
+                }
+                // sort by name, for each 'config' found.
+                Arrays.sort(xmlFileNames);
+
+                String sourceDirectoryCanonicalPath = computeMainOutputDirectory(sourceDirectory);
+
+                for (int i = 0; i < xmlFileNames.length; i++) {
                     final String fullName = xmlFileNames[i].getPath();
                     final int errorCount = countErrors(fullName);
                     if (errorCount != 0) {
-                        final String testName = xmlFileNames[i].getName().substring(0, xmlFileNames[i].getName().length() - 4);
+                        final String testName = xmlFileNames[i].getName().substring(0,
+                                xmlFileNames[i].getName().length() - XML_EXTENSION.length());
                         testResultsWithProblems = testResultsWithProblems.concat("\n" + testName);
                         testResultsXmlUrls = testResultsXmlUrls
                                 .concat("\n" + extractXmlRelativeFileName(sourceDirectoryCanonicalPath, xmlFileNames[i]));
                         anErrorTracker.registerError(fullName.substring(getXmlDirectoryName().length() + 1));
                     }
-
-                    // final String tmp =
-                    // ((platformSpecificTemplateList.equals("")) ?
-                    // formatRow(xmlFileNames[i].getPath(),
-                    // errorCount, true) :
-                    // formatRowReleng(xmlFileNames[i].getPath(), errorCount,
-                    // true));
                     String tmp = formatRowReleng(xmlFileNames[i].getPath(), errorCount, true);
                     replaceString = replaceString + tmp;
-
                 }
+                // check for missing test logs
+                replaceString = replaceString + verifyAllTestsRan(xmlDirectoryName);
+
+                testResultsTemplateString = replace(testResultsTemplateString, testResultsToken, replaceString);
+                testsRan = true;
             }
-            // check for missing test logs
-            replaceString = replaceString + verifyAllTestsRan(xmlDirectoryName);
-
-            testResultsTemplateString = replace(testResultsTemplateString, testResultsToken, replaceString);
-            testsRan = true;
-
-        } else {
-            testsRan = false;
-            log("Test results not found in " + sourceDirectory.getAbsolutePath());
+            if (foundConfigs.size() > 0) {
+                // write each to output directory in file testConfigs.php
+                File mainDir = new File(computeMainOutputDirectory(sourceDirectory));
+                File testConfigsFile = new File(mainDir, "testConfigs.php");
+                Writer testconfigsPHP = new FileWriter(testConfigsFile);
+                testconfigsPHP.write("<?php"+EOL);
+                testconfigsPHP.write("//This file created by 'generateIndex' ant task, while parsing test results"+EOL);
+                testconfigsPHP.write("// It is based on 'found' testConfigs" + EOL);
+                testconfigsPHP.write("$expectedTestConfigs = array();" + EOL);
+                for (String fConfig : foundConfigs) {
+                    testconfigsPHP.write("$expectedTestConfigs[]=\"" + fConfig + "\";" +EOL);
+                }
+                testconfigsPHP.close();
+            } else {
+                testsRan = false;
+                log("Test results not found in " + sourceDirectory.getAbsolutePath());
+            }
         }
+    }
 
+    protected String computeMainOutputDirectory(final File sourceDirectory) {
+        File sourceDirectoryParent = sourceDirectory.getParentFile();
+        if (sourceDirectoryParent != null) {
+            sourceDirectoryParent = sourceDirectoryParent.getParentFile();
+        }
+        String sourceDirectoryCanonicalPath = null;
+        try {
+            sourceDirectoryCanonicalPath = sourceDirectoryParent.getCanonicalPath();
+        }
+        catch (final IOException e) {
+            logException(e);
+        }
+        return sourceDirectoryCanonicalPath;
     }
 
     private void processCompileLogsDirectory(final String directoryName, final StringBuffer compilerLog,
@@ -870,7 +931,7 @@ public class TestResultsGenerator extends Task {
             if (sourceDirectory.getName().endsWith(".log")) {
                 readCompileLog(sourceDirectory.getAbsolutePath(), compilerLog, accessesLog);
             }
-            if (sourceDirectory.getName().endsWith(".xml")) {
+            if (sourceDirectory.getName().endsWith(XML_EXTENSION)) {
                 parseCompileLog(sourceDirectory.getAbsolutePath(), compilerLog, accessesLog);
             }
         }
@@ -1016,8 +1077,8 @@ public class TestResultsGenerator extends Task {
 
     }
 
-    public void setBuildType(final String buildType) {
-        this.buildType = buildType;
+    public void setTestedBuildType(final String buildType) {
+        this.testedBuildType = buildType;
     }
 
     /**
@@ -1160,7 +1221,7 @@ public class TestResultsGenerator extends Task {
                 }
                 replaceString = replaceString + tmp;
                 testResultsWithProblems = testResultsWithProblems
-                        .concat("\n" + testLogName.substring(0, testLogName.length() - 4) + " (file missing)");
+                        .concat("\n" + testLogName.substring(0, testLogName.length() - XML_EXTENSION.length()) + " (file missing)");
                 missingCount++;
             }
         } else {
