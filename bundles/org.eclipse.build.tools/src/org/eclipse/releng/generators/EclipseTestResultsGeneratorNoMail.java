@@ -53,6 +53,14 @@ public class EclipseTestResultsGeneratorNoMail extends TestResultsGenerator {
         return sendMail;
     }
 
+    @Override
+    protected String processDropRow(final PlatformStatus aPlatform) {
+        String result = "<tr>\n<td>" + aPlatform.getName() + "</td>\n";
+        // generate file link, size and checksums in the php template
+        result = result + "<?php genLinks(\"" + aPlatform.getFileName() + "\"); ?>\n";
+        result = result + "</tr>\n";
+        return result;
+    }
     // I restored this 'mailResults' method from history. It was removed about 3.8 M3. It was commented out 
     // at that time. Not sure for how long. I am not sure where "Mailer" class was coming from. 
     // Needs more research or re-invention. (Compare with CBI aggregator method.)

@@ -60,10 +60,10 @@ public class TestResultsGenerator extends Task {
 
     private static final int    DEFAULT_READING_SIZE           = 8192;
 
-    private static final String elementName                    = "testsuite";
-    private static final String testResultsToken               = "%testresults%";
-    private static final String compileLogsToken               = "%compilelogs%";
-    private static final String accessesLogsToken              = "%accesseslogs%";
+     static final String elementName                    = "testsuite";
+     static final String testResultsToken               = "%testresults%";
+     static final String compileLogsToken               = "%compilelogs%";
+     static final String accessesLogsToken              = "%accesseslogs%";
     private ArrayList<String>   foundConfigs                   = new ArrayList();
     private ArrayList<String>   expectedConfigs                = null;
     private static final String EOL                            = System.getProperty("line.separator");
@@ -112,7 +112,7 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    private static byte[] getFileByteContent(final String fileName) throws IOException {
+    public static byte[] getFileByteContent(final String fileName) throws IOException {
         InputStream stream = null;
         try {
             final File file = new File(fileName);
@@ -140,7 +140,7 @@ public class TestResultsGenerator extends Task {
      * @throws IOException
      *             if a problem occurred reading the stream.
      */
-    private static byte[] getInputStreamAsByteArray(final InputStream stream, final int length) throws IOException {
+    public static byte[] getInputStreamAsByteArray(final InputStream stream, final int length) throws IOException {
         byte[] contents;
         if (length == -1) {
             contents = new byte[0];
@@ -231,16 +231,16 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    private Vector          dropTokens;
+    public Vector          dropTokens;
 
-    private String          testResultsWithProblems   = "EOL";
-    private String          testResultsXmlUrls        = "EOL";
+    public String          testResultsWithProblems   = "EOL";
+    public String          testResultsXmlUrls        = "EOL";
 
     private DocumentBuilder parser                    = null;
-    private ErrorTracker    anErrorTracker;
-    private String          testResultsTemplateString = "";
+    public ErrorTracker    anErrorTracker;
+    public String          testResultsTemplateString = "";
 
-    private String          dropTemplateString        = "";
+    public String          dropTemplateString        = "";
 
     public Vector           platformDropFileName;
     
@@ -252,41 +252,41 @@ public class TestResultsGenerator extends Task {
     private boolean         isBuildTested;
 
     // buildType, I, N
-    private String          buildType;
+    public String          buildType;
 
     // Comma separated list of drop tokens
-    private String          dropTokenList;
+    public String          dropTokenList;
 
     // Location of the xml files
-    private String          xmlDirectoryName;
+    public String          xmlDirectoryName;
 
     // Location of the html files
-    private String          htmlDirectoryName;
+    public String          htmlDirectoryName;
 
     // Location of the resulting index.php file.
-    private String          dropDirectoryName;
+    public String          dropDirectoryName;
 
     // Location and name of the template index.php file.
-    private String          testResultsTemplateFileName;
+    public String          testResultsTemplateFileName;
 
     // Location and name of the template drop index.php file.
-    private String          dropTemplateFileName;
+    public String          dropTemplateFileName;
 
     // Name of the generated index php file.
-    private String          testResultsHtmlFileName;
+    public String          testResultsHtmlFileName;
 
     // Name of the generated drop index php file;
-    private String          dropHtmlFileName;
+    public String          dropHtmlFileName;
 
     // Arbitrary path used in the index.php page to href the
     // generated .html files.
-    private String          hrefTestResultsTargetPath;
+    public String          hrefTestResultsTargetPath;
     // Arbitrary path used in the index.php page to reference the compileLogs
-    private String          hrefCompileLogsTargetPath;
+    public String          hrefCompileLogsTargetPath;
     // Location of compile logs base directory
-    private String          compileLogsDirectoryName;
+    public String          compileLogsDirectoryName;
     // Location and name of test manifest file
-    private String          testManifestFileName;
+    public String          testManifestFileName;
 
     // temporary way to force "missing" list not to be printed (until complete
     // solution found)
@@ -665,7 +665,7 @@ public class TestResultsGenerator extends Task {
         return dropTokens;
     }
 
-    private void getDropTokensFromList(final String list) {
+    protected void getDropTokensFromList(final String list) {
         final StringTokenizer tokenizer = new StringTokenizer(list, ",");
         dropTokens = new Vector();
 
@@ -821,7 +821,7 @@ public class TestResultsGenerator extends Task {
         formatAccessesErrorRow(logName, forbiddenWarningCount, discouragedWarningCount, accessesLog);
     }
 
-    private void parseCompileLogs() {
+    public void parseCompileLogs() {
 
         final StringBuffer compilerString = new StringBuffer();
         final StringBuffer accessesString = new StringBuffer();
@@ -837,7 +837,7 @@ public class TestResultsGenerator extends Task {
         testResultsTemplateString = replace(testResultsTemplateString, accessesLogsToken, String.valueOf(accessesString));
     }
 
-    private void parseXml() throws IOException {
+    public void parseXml() throws IOException {
 
         final File sourceDirectory = new File(xmlDirectoryName);
 
@@ -944,7 +944,7 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    private String processDropRow(final PlatformStatus aPlatform) {
+    protected String processDropRow(final PlatformStatus aPlatform) {
         if ("equinox".equalsIgnoreCase(aPlatform.getFormat())) {
             return processEquinoxDropRow(aPlatform);
         }
@@ -958,7 +958,7 @@ public class TestResultsGenerator extends Task {
         return result;
     }
 
-    private String processDropRows(final PlatformStatus[] platforms) {
+    protected String processDropRows(final PlatformStatus[] platforms) {
         String result = "";
         for (int i = 0; i < platforms.length; i++) {
             result = result + processDropRow(platforms[i]);
@@ -1048,7 +1048,7 @@ public class TestResultsGenerator extends Task {
         formatAccessesErrorRow(log, forbiddenWarningCount, discouragedWarningCount, accessesLog);
     }
 
-    private String readFile(final String fileName) {
+    public String readFile(final String fileName) {
         byte[] aByteArray = null;
         try {
             aByteArray = getFileByteContent(fileName);
@@ -1235,7 +1235,7 @@ public class TestResultsGenerator extends Task {
         return replaceString;
     }
 
-    private void writeDropIndexFile() {
+    protected void writeDropIndexFile() {
 
         final String[] types = anErrorTracker.getTypes();
         for (int i = 0; i < types.length; i++) {
@@ -1271,7 +1271,7 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    private void writeTestResultsFile() {
+    public void writeTestResultsFile() {
         final String outputFileName = dropDirectoryName + File.separator + testResultsHtmlFileName;
         writeFile(outputFileName, testResultsTemplateString);
     }
