@@ -12,13 +12,9 @@
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
         <file path="/org.eclipse.build.tools/about.html"/>
-        <file path="/org.eclipse.build.tools/.gitignore"/>
-        <file path="/org.eclipse.build.tools/build.properties"/>
-        <file path="/org.eclipse.build.tools/plugin.xml"/>
-        <file path="/org.eclipse.build.tools/.project"/>
         <file path="/org.eclipse.build.tools/plugin.properties"/>
         <javaElement handleIdentifier="=org.eclipse.build.tools/src"/>
-        <file path="/org.eclipse.build.tools/.classpath"/>
+        <file path="/org.eclipse.build.tools/plugin.xml"/>
         <folder path="/org.eclipse.build.tools/META-INF"/>
     </selectedElements>
 </jardesc>

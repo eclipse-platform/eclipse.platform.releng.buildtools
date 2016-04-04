@@ -242,6 +242,8 @@ public class TestResultsGenerator extends Task {
 
     private String          dropTemplateString        = "";
 
+    public Vector           platformDropFileName;
+    
     // assume tests ran. If no html files are found, this is set to false
     private boolean         testsRan                  = true;
 
@@ -384,6 +386,7 @@ public class TestResultsGenerator extends Task {
     public void execute() {
 
         anErrorTracker = new ErrorTracker();
+        platformDropFileName = new Vector();
         anErrorTracker.loadFile(testManifestFileName);
         getDropTokensFromList(dropTokenList);
         testResultsTemplateString = readFile(testResultsTemplateFileName);
@@ -967,7 +970,7 @@ public class TestResultsGenerator extends Task {
      * Generate and return the HTML mark-up for a single row for an Equinox JAR
      * on the downloads page.
      */
-    private String processEquinoxDropRow(final PlatformStatus aPlatform) {
+    protected String processEquinoxDropRow(final PlatformStatus aPlatform) {
         String result = "<tr>";
         // result = result + "<td align=\"center\">" +
         // getStatusColumn(aPlatform, "/equinox/images/", true) + "</td>\n";
@@ -985,6 +988,43 @@ public class TestResultsGenerator extends Task {
         result = result + "{$generateDropSize(\"" + filename + "\")}\n";
         result = result + "{$generateChecksumLinks(\"" + filename + "\", $buildlabel)}\n";
         result = result + "</tr>\n";
+        return result;
+    }
+
+    // Process drop rows specific to each of the platforms
+    protected String processPlatformDropRows(final PlatformStatus[] platforms, final String name) {
+        String result = "";
+        boolean found = false;
+        for (int i = 0; i < platforms.length; i++) {
+            // If the platform description indicates the platform's name, or
+            // "All",
+            // call processDropRow
+            if (platforms[i].getName().startsWith(name.substring(0, 3)) || platforms[i].getName().equals("All")) {
+                result = result + processDropRow(platforms[i]);
+                found = true;
+                continue;
+            }
+            // If the platform description indicates "All Other Platforms",
+            // process
+            // the row locally
+            if (platforms[i].getName().equals("All Other Platforms") && !found) {
+                if ("equinox".equalsIgnoreCase(platforms[i].getFormat())) {
+                    result = processEquinoxDropRow(platforms[i]);
+                    continue;
+                }
+                // final String imageName = getStatusColumn(platforms[i], "",
+                // false);
+                result = result + "<tr>";
+                // result = result + "<td><div align=left>" + imageName +
+                // "</div></td>\n";
+                result = result + "<td>All " + name + "</td>";
+                // generate http, md5 and sha1 links by calling php functions in
+                // the template
+                result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"${BUILD_ID}\",\"" + platforms[i].getFileName()
+                        + "\"); ?></td>\n";
+                result = result + "</tr>\n";
+            }
+        }
         return result;
     }
 
@@ -1080,6 +1120,13 @@ public class TestResultsGenerator extends Task {
     }
 
     /**
+     * @param vector
+     */
+    public void setDropTokens(final Vector vector) {
+        dropTokens = vector;
+    }
+
+    /**
      * Sets the hrefCompileLogsTargetPath.
      * 
      * @param hrefCompileLogsTargetPath
@@ -1123,6 +1170,13 @@ public class TestResultsGenerator extends Task {
 
     public void setTestResultsTemplateFileName(final String aString) {
         testResultsTemplateFileName = aString;
+    }
+
+    /**
+     * @param string
+     */
+    public void setTestResultsWithProblems(final String string) {
+        testResultsWithProblems = string;
     }
 
     /**
@@ -1258,7 +1312,7 @@ public class TestResultsGenerator extends Task {
         return expectedConfigs;
     }
 
-    private boolean getDoMissingList() {
+    public boolean getDoMissingList() {
         return doMissingList;
     }
 
