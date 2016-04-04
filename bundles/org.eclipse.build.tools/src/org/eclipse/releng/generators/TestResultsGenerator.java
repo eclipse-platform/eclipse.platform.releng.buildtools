@@ -60,10 +60,10 @@ public class TestResultsGenerator extends Task {
 
     private static final int    DEFAULT_READING_SIZE           = 8192;
 
-     static final String elementName                    = "testsuite";
-     static final String testResultsToken               = "%testresults%";
-     static final String compileLogsToken               = "%compilelogs%";
-     static final String accessesLogsToken              = "%accesseslogs%";
+    static final String         elementName                    = "testsuite";
+    static final String         testResultsToken               = "%testresults%";
+    static final String         compileLogsToken               = "%compilelogs%";
+    static final String         accessesLogsToken              = "%accesseslogs%";
     private ArrayList<String>   foundConfigs                   = new ArrayList();
     private ArrayList<String>   expectedConfigs                = null;
     private static final String EOL                            = System.getProperty("line.separator");
@@ -75,14 +75,14 @@ public class TestResultsGenerator extends Task {
 
     class ExpectedConfigFiler implements FilenameFilter {
 
-        String config;
+        String configEnding;
 
-        public ExpectedConfigFiler(String expectedConfig) {
-            config = expectedConfig;
+        public ExpectedConfigFiler(String expectedConfigEnding) {
+            configEnding = expectedConfigEnding;
         }
 
         public boolean accept(File dir, String name) {
-            return (name.endsWith("_" + config + XML_EXTENSION));
+            return (name.endsWith(configEnding));
         }
 
     }
@@ -191,7 +191,7 @@ public class TestResultsGenerator extends Task {
         final TestResultsGenerator test = new TestResultsGenerator();
         if (Boolean.FALSE) {
             test.setTestsConfigExpected(
-                    "ep46N-unit-lin64_linux.gtk.x86_64_8.0.xml ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0.xml ,ep46N-unit-win32_win32.win32.x86_8.0.xml, ep46N-unit-cen64_linux.gtk.x86_64_8.0.xml");
+                    "ep46N-unit-cen64_linux.gtk.x86_64_8.0, ep46N-unit-lin64_linux.gtk.x86_64_8.0 ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46N-unit-win32_win32.win32.x86_8.0");
             DEBUG = true;
             try {
                 test.getTestsConfig();
@@ -202,48 +202,49 @@ public class TestResultsGenerator extends Task {
 
         } else {
             test.setTestsConfigExpected(
-                    "ep46N-unit-lin64_linux.gtk.x86_64_8.0.xml ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0.xml ,ep46N-unit-win32_win32.win32.x86_8.0.xml, ep46N-unit-cen64_linux.gtk.x86_64_8.0.xml");
+                    "ep46N-unit-cen64_linux.gtk.x86_64_8.0, ep46N-unit-lin64_linux.gtk.x86_64_8.0 ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46N-unit-win32_win32.win32.x86_8.0");
 
             // "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
             test.setDropTokenList(
                     "%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
             test.getDropTokensFromList(test.dropTokenList);
-            test.setIsBuildTested(false);
+            test.setIsBuildTested(true);
             test.setXmlDirectoryName(
-                    "/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000/testresults/xml");
-            test.setHtmlDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000/testresults");
-            test.setDropDirectoryName("/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-0647/testresults/xml");
+            test.setHtmlDirectoryName(
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-0647/testresults");
+            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-0647");
             test.setTestResultsTemplateFileName(
-                    "/home/davidw/gitLuna/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.php.template");
+                    "/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.template.php");
 
             test.setDropTemplateFileName(
-                    "/home/davidw/gitLuna/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.php.template");
+                    "/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
             test.setTestResultsHtmlFileName("testResults.php");
             test.setDropHtmlFileName("index.php");
 
             test.setHrefTestResultsTargetPath("testresults");
             test.setCompileLogsDirectoryName(
-                    "/home/shared/eclipse/builds/4N/siteDir/eclipse/downloads/drops4/N20160324-2000/compilelogs/plugins");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-0647/compilelogs/plugins");
             test.setHrefCompileLogsTargetPath("compilelogs");
             test.setTestManifestFileName(
-                    "/home/davidw/gitLuna/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
+                    "/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
             test.execute();
         }
     }
 
-    public Vector          dropTokens;
+    public Vector           dropTokens;
 
-    public String          testResultsWithProblems   = "EOL";
-    public String          testResultsXmlUrls        = "EOL";
+    public String           testResultsWithProblems   = "EOL";
+    public String           testResultsXmlUrls        = "EOL";
 
     private DocumentBuilder parser                    = null;
-    public ErrorTracker    anErrorTracker;
-    public String          testResultsTemplateString = "";
+    public ErrorTracker     anErrorTracker;
+    public String           testResultsTemplateString = "";
 
-    public String          dropTemplateString        = "";
+    public String           dropTemplateString        = "";
 
     public Vector           platformDropFileName;
-    
+
     // assume tests ran. If no html files are found, this is set to false
     private boolean         testsRan                  = true;
 
@@ -252,42 +253,43 @@ public class TestResultsGenerator extends Task {
     private boolean         isBuildTested;
 
     // buildType, I, N
-    public String          buildType;
+    public String           buildType;
 
     // Comma separated list of drop tokens
-    public String          dropTokenList;
+    public String           dropTokenList;
 
     // Location of the xml files
-    public String          xmlDirectoryName;
+    public String           xmlDirectoryName;
 
     // Location of the html files
-    public String          htmlDirectoryName;
+    public String           htmlDirectoryName;
 
     // Location of the resulting index.php file.
-    public String          dropDirectoryName;
+    public String           dropDirectoryName;
 
     // Location and name of the template index.php file.
-    public String          testResultsTemplateFileName;
+    public String           testResultsTemplateFileName;
 
     // Location and name of the template drop index.php file.
-    public String          dropTemplateFileName;
+    public String           dropTemplateFileName;
 
     // Name of the generated index php file.
-    public String          testResultsHtmlFileName;
+    public String           testResultsHtmlFileName;
 
     // Name of the generated drop index php file;
-    public String          dropHtmlFileName;
+    public String           dropHtmlFileName;
 
     // Arbitrary path used in the index.php page to href the
     // generated .html files.
-    public String          hrefTestResultsTargetPath;
+    public String           hrefTestResultsTargetPath;
     // Arbitrary path used in the index.php page to reference the compileLogs
-    public String          hrefCompileLogsTargetPath;
+    public String           hrefCompileLogsTargetPath;
     // Location of compile logs base directory
-    public String          compileLogsDirectoryName;
+    public String           compileLogsDirectoryName;
     // Location and name of test manifest file
-    public String          testManifestFileName;
-
+    public String           testManifestFileName;
+    String testsConstant = ".tests";
+    int testsConstantLength = testsConstant.length();
     // temporary way to force "missing" list not to be printed (until complete
     // solution found)
     private boolean         doMissingList             = true;
@@ -394,7 +396,7 @@ public class TestResultsGenerator extends Task {
 
         if (isBuildTested()) {
             log("Begin: Generating test results index page");
-            log("Parsing XML files");
+            log("Parsing XML JUnit results files");
             try {
                 parseXml();
             }
@@ -403,13 +405,16 @@ public class TestResultsGenerator extends Task {
             }
             log("End: Generating test results index page");
         } else {
-            log("isBuildTested value was not true, so did no processing for test file");
+            log("isBuildTested value was not true, so did no processing for test files");
         }
         log("Parsing compile logs");
         parseCompileLogs();
         log("End: Generating compile logs summary page");
         writeTestResultsFile();
+        log("Begin: Generating drop index page");
         writeDropIndexFile();
+        log("End: Generating drop index page");
+        log("Completed processing test and build results");
     }
 
     private int extractNumber(final String aString, final String endToken) {
@@ -476,9 +481,10 @@ public class TestResultsGenerator extends Task {
 
     // Specific to the RelEng test results page
     private String formatRowReleng(final String fileName, final int errorCount, final boolean link, String config) {
-        String testsConstant = ".tests";
-        int testsConstantLength = testsConstant.length();
+
+        String endingConfig = "_" + config + XML_EXTENSION;
         String aString = "";
+        int maxColumns = expectedConfigs.size();
         if (!link) {
             return "<tr><td>" + fileName + "</td><td align=\"center\">" + "DNF </td></tr>";
         }
@@ -486,8 +492,8 @@ public class TestResultsGenerator extends Task {
         final int begin = fileName.lastIndexOf(File.separatorChar);
 
         // Get org.eclipse. out of the component name
-        int orgEclipseLength = "org.eclipse".length();
-        // this is 11, 13 was hard coded?
+        // this is 12, 13 was hard coded?
+        int orgEclipseLength = "org.eclipse.".length() + 1;
         // indexOf('_') assumes never part of file name?
         final String shortName = fileName.substring(begin + orgEclipseLength, fileName.indexOf('_'));
         String displayName = shortName;
@@ -511,7 +517,7 @@ public class TestResultsGenerator extends Task {
 
                 // Loop until the matching string postfix(test config.) is
                 // found
-                while (!fileName.endsWith(config)) {
+                while ((counter < maxColumns) && !fileName.endsWith(endingConfig)) {
                     aString = aString + "<td align=\"center\">-</td>";
                     counter++;
                 }
@@ -520,7 +526,7 @@ public class TestResultsGenerator extends Task {
                 // name under it,
                 // since this would mean that the team has more than one
                 // component test
-                // CAUTION: origionally said only "tests", not ".tests"
+                // CAUTION: originally said only "tests", not ".tests"
                 if (!shortName.endsWith(testsConstant)) {
                     aString = aString + "\n<tbody>\n<tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
                     aString = aString + "<tr><td><p>" + shortName;
@@ -542,7 +548,7 @@ public class TestResultsGenerator extends Task {
                 // Fill the remaining cells with '-'. These files will later
                 // be listed as
                 // missing
-                while (counter < getTestsConfigExpected().length()) {
+                while (counter < maxColumns) {
                     aString = aString + "<td align=\"center\">-</td>";
                     counter++;
                 }
@@ -551,25 +557,25 @@ public class TestResultsGenerator extends Task {
                 aString = aString + "<tr><td><p>" + shortName;
                 // Loop until the matching string postfix(test config.) is
                 // found
-                while ((counter < getTestsConfigExpected().length()) && !fileName.endsWith(config)) {
+                while ((counter < maxColumns) && !fileName.endsWith(endingConfig)) {
                     aString = aString + "<td align=\"center\">-</td>";
                     counter++;
                 }
             } else {
                 // Loop until the matching string postfix(test config.) is
                 // found
-                while ((counter < getTestsConfigExpected().length()) && !fileName.endsWith(config)) {
+                while ((counter < maxColumns) && !fileName.endsWith(endingConfig)) {
                     aString = aString + "<td align=\"center\">-</td>";
                     counter++;
                 }
                 // If the previous component has no more test files left
-                if (counter == getTestsConfigExpected().length()) {
+                if (counter == maxColumns) {
                     counter = 0;
                     // Print the new component name
                     aString = aString + "<tr><td><p>" + shortName;
                     // Loop until the matching string postfix(test config.)
                     // is found
-                    while ((counter <  getTestsConfigExpected().length()) && !fileName.endsWith(config)) {
+                    while ((counter < maxColumns) && !fileName.endsWith(endingConfig)) {
                         aString = aString + "<td align=\"center\">-</td>";
                         counter++;
                     }
@@ -849,18 +855,31 @@ public class TestResultsGenerator extends Task {
             // original order
             // (not "found order").
             foundConfigs.clear();
+            
+            ArrayList<File> allFileNames = new ArrayList();
             String replaceString = "";
             for (String expectedConfig : getTestsConfig()) {
 
-                FilenameFilter configfilter = new ExpectedConfigFiler(expectedConfig);
-                final File[] xmlFileNames = sourceDirectory.listFiles(configfilter);
+                FilenameFilter configfilter = new ExpectedConfigFiler("_" + expectedConfig + XML_EXTENSION);
+                // we end with "full" list of files, sorted by configfilter, and then alphabetical.
+                File[] xmlFileNamesForConfig = sourceDirectory.listFiles(configfilter);
 
-                if (xmlFileNames.length > 0) {
+                if (xmlFileNamesForConfig.length > 0) {
+                    log("For " + expectedConfig + " found " + xmlFileNamesForConfig.length + " XML results files");
                     foundConfigs.add(expectedConfig);
+                    // sort by name, for each 'config' found.
+                    Arrays.sort(xmlFileNamesForConfig);
+                    for (File file : xmlFileNamesForConfig) {
+                        allFileNames.add(file);
+                    }
                 }
-                // sort by name, for each 'config' found.
-                Arrays.sort(xmlFileNames);
 
+            }
+                File[] xmlFileNames = new File[allFileNames.size()];
+                allFileNames.toArray(xmlFileNames);
+                log("Found " + xmlFileNames.length + " XML test results files total.");
+                // files MUST be alphabetical, for now
+                Arrays.sort(xmlFileNames);
                 String sourceDirectoryCanonicalPath = computeMainOutputDirectory(sourceDirectory);
 
                 for (int i = 0; i < xmlFileNames.length; i++) {
@@ -874,23 +893,39 @@ public class TestResultsGenerator extends Task {
                                 .concat("\n" + extractXmlRelativeFileName(sourceDirectoryCanonicalPath, xmlFileNames[i]));
                         anErrorTracker.registerError(fullName.substring(getXmlDirectoryName().length() + 1));
                     }
-                    String tmp = formatRowReleng(xmlFileNames[i].getPath(), errorCount, true, expectedConfig);
+                    // a bit a hack for transition to more "config" oriented processing, even though still 
+                    // processing all found files at once.
+                    String workingWithConfig = null;
+                    for (String localconfig : foundConfigs) {
+                        if (xmlFileNames[i].getName().contains(localconfig)) {
+                            workingWithConfig = localconfig;
+                            break;
+                        }
+                    }
+                    String tmp = formatRowReleng(xmlFileNames[i].getPath(), errorCount, true, workingWithConfig);
                     replaceString = replaceString + tmp;
                 }
-                // check for missing test logs
-                replaceString = replaceString + verifyAllTestsRan(xmlDirectoryName, expectedConfig);
 
+                // check for missing test logs
+                replaceString = replaceString + verifyAllTestsRan(xmlDirectoryName);
+
+
+
+            if (foundConfigs.size() > 0) {
                 testResultsTemplateString = replace(testResultsTemplateString, testResultsToken, replaceString);
                 testsRan = true;
-            }
-            if (foundConfigs.size() > 0) {
                 // write each to output directory in file testConfigs.php
                 writePhpConfigFile(sourceDirectory, found_config_type, foundConfigs, FOUND_TEST_CONFIGS_FILENAME);
             } else {
                 testsRan = false;
                 log("Test results not found in " + sourceDirectory.getAbsolutePath());
             }
+        } else {
+            // error? Or, just too early?
+            log("WARNING: sourceDirectory did not exist at \n\t" + sourceDirectory);
+            log("     either incorrect call to 'generate index' or other configuration error.");
         }
+
     }
 
     private void writePhpConfigFile(final File sourceDirectory, String config_type, ArrayList<String> configs, String phpfilename)
@@ -1197,7 +1232,7 @@ public class TestResultsGenerator extends Task {
         return testsRan;
     }
 
-    private String verifyAllTestsRan(final String directory, String foundConfig) {
+    private String verifyAllTestsRan(final String directory) {
         String replaceString = "";
         if (getDoMissingList()) {
             final Enumeration enumeration = (anErrorTracker.getTestLogs()).elements();
@@ -1213,13 +1248,13 @@ public class TestResultsGenerator extends Task {
                 // final String tmp = ((platformSpecificTemplateList.equals(""))
                 // ? formatRow(testLogName, -1, false) : formatRowReleng(
                 // testLogName, -1, false));
-                String tmp = formatRowReleng(testLogName, -1, false, foundConfig);
+                //String tmp = formatRowReleng(testLogName, -1, false);
                 if (missingCount == 0) {
                     replaceString = replaceString + "</table></br>" + "\n"
                             + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
                             + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\"> Missing Files </th><th  align=\"center\"> Status </th></tr>";
                 }
-                replaceString = replaceString + tmp;
+                //replaceString = replaceString + tmp;
                 testResultsWithProblems = testResultsWithProblems
                         .concat("\n" + testLogName.substring(0, testLogName.length() - XML_EXTENSION.length()) + " (file missing)");
                 missingCount++;
@@ -1316,7 +1351,6 @@ public class TestResultsGenerator extends Task {
         return doMissingList;
     }
 
-    
     public void setDoMissingList(boolean doMissingList) {
         this.doMissingList = doMissingList;
     }

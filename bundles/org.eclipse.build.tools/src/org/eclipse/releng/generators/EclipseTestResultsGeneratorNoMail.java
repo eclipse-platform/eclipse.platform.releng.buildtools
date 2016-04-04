@@ -11,10 +11,8 @@
 package org.eclipse.releng.generators;
 
 /**
- * @author SDimitrov
- * 
- *         To change the template for this generated type comment go to
- *         Window>Preferences>Java>Code Generation>Code and Comments
+ * No longer used, as of 4/4/2016, but left due to hint of commented out 'mail' method. 
+ * (probably won't be much help, though?)
  */
 public class EclipseTestResultsGeneratorNoMail extends TestResultsGenerator {
 
