@@ -2,8 +2,8 @@
 
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>Components view</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>Components view</title>
 </head>
 
 <body>
@@ -48,7 +48,7 @@ The red cross means that there's at least one scenario on one machine for
 the last build with a failure (i.e. a regression over 10%).
 </p><p>
 The warning icon means that some warnings occur for some results.
-The current possible warning are:
+The current possible warning are:</p>
 <ul>
 <li>error over the 3% threshold on test(s)</li>
 <li>unreliable test(s): the deviation through the test(s) history is over 20%</li>
@@ -56,13 +56,13 @@ The current possible warning are:
 <li>no baseline for test(s)</li>
 <li>only one run on test(s)</li>
 </ul>
-</p><p>
-The information icon gives some other interesting information:
+<p>
+The information icon gives some other interesting information:</p>
 <ul>
 <li>the Student T-test fails on test(s)</li>
 <li>the test(s) value or its delta is less than 100ms</li>
 </ul>
-</p><p>
+<p>
 Note that for component and scenario level, the status is the aggregation of
 the children status. That means that as soon as one scenario is in error then
 the component is also flagged in error. And of course the higher severity is
@@ -86,11 +86,11 @@ There are several possible filters in this view:
 </ul>
 <p>
 As baselines results are not really useful for the survey, the filter is activated
-by default in this view. Currently the survey only concerns the fingerprints
+by default in this view. Currently the survey only concerns the fingerprint
 scenario, hence the corresponding filter is also activated by default.
 </p>
 
-<h2><a name="writestatus">Write status</h2>
+<h2><a name="writestatus">Write status</a></h2>
 <p>
 From this view, it is also possible to write the status file for the last
 active build (see <a href="preferences.html#lastbuild">Last build</a>) by
