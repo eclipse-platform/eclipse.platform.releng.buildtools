@@ -982,13 +982,16 @@ public class TestResultsGenerator extends Task {
     protected String processDropRow(final PlatformStatus aPlatform) {
         if ("equinox".equalsIgnoreCase(aPlatform.getFormat())) {
             return processEquinoxDropRow(aPlatform);
+        } else {
+            return processEclipseDropRow(aPlatform);
         }
 
-        String result = "<tr>";
-        // result = result + "<td><div align=left>" + getStatusColumn(aPlatform,
-        // "", true) + "</div></td>\n";
-        result = result + "<td>" + aPlatform.getName() + "</td>";
-        result = result + "<td>" + aPlatform.getFileName() + "</td>\n";
+    }
+
+    private String processEclipseDropRow(PlatformStatus aPlatform) {
+        String result = "<tr>\n<td>" + aPlatform.getName() + "</td>\n";
+        // generate file link, size and checksums in the php template
+        result = result + "<?php genLinks(\"" + aPlatform.getFileName() + "\"); ?>\n";
         result = result + "</tr>\n";
         return result;
     }
