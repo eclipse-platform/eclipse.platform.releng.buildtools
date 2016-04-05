@@ -170,9 +170,18 @@ public class ErrorTracker {
                 //if (testLogName.endsWith(".xml") && type.equals("test")) {
                 // above is how it used to be checked, prior to 4/4/2016, but 
                 // test logs are only log file in testManifest.xml without a "type" attribute
-                if (typeNode == null) {
+                // -- I test for either/or, so that new versions of testManifest.xml 
+                // can more correctly use "test" attribute, if desired.
+                if (typeNode == null || typeNode.getNodeValue() == "test") {
                     int firstUnderscore = testLogName.indexOf('_');
-                    String initialTestName = testLogName.substring(0, firstUnderscore);
+                    String initialTestName = null;
+                    if (firstUnderscore == -1) {
+                        // no underscore found. Assume testManifest xml has been updated
+                        // to mention minimal name.
+                        initialTestName = testLogName;
+                    } else {
+                        initialTestName = testLogName.substring(0, firstUnderscore);
+                    }
                     testLogsSet.add(initialTestName);
                     //System.out.println("Debug: initialTestName: " + initialTestName);
                 }
