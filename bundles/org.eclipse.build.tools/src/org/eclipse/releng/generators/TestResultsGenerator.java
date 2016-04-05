@@ -25,7 +25,6 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -147,10 +146,7 @@ public class TestResultsGenerator extends Task {
             int contentsLength = 0;
             int amountRead = -1;
             do {
-                final int amountRequested = Math.max(stream.available(), DEFAULT_READING_SIZE); // read
-                                                                                                // at
-                                                                                                // least
-                                                                                                // 8K
+                final int amountRequested = Math.max(stream.available(), DEFAULT_READING_SIZE); 
 
                 // resize contents if needed
                 if ((contentsLength + amountRequested) > contents.length) {
@@ -210,10 +206,10 @@ public class TestResultsGenerator extends Task {
             test.getDropTokensFromList(test.dropTokenList);
             test.setIsBuildTested(true);
             test.setXmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-0647/testresults/xml");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-1956/testresults/xml");
             test.setHtmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-0647/testresults");
-            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-0647");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-1956/testresults");
+            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-1956");
             test.setTestResultsTemplateFileName(
                     "/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.template.php");
 
@@ -224,7 +220,7 @@ public class TestResultsGenerator extends Task {
 
             test.setHrefTestResultsTargetPath("testresults");
             test.setCompileLogsDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-0647/compilelogs/plugins");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-1956/compilelogs/plugins");
             test.setHrefCompileLogsTargetPath("compilelogs");
             test.setTestManifestFileName(
                     "/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
@@ -234,8 +230,8 @@ public class TestResultsGenerator extends Task {
 
     public Vector           dropTokens;
 
-    public String           testResultsWithProblems   = "EOL";
-    public String           testResultsXmlUrls        = "EOL";
+    public String           testResultsWithProblems   = EOL;
+    public String           testResultsXmlUrls        = EOL;
 
     private DocumentBuilder parser                    = null;
     public ErrorTracker     anErrorTracker;
@@ -299,8 +295,6 @@ public class TestResultsGenerator extends Task {
 
     private String          testShortName             = "";
 
-    private int             counter                   = 0;
-
     // Configuration of test machines.
     // Add or change new configurations here
     // and update titles in testResults.template.php.
@@ -320,8 +314,6 @@ public class TestResultsGenerator extends Task {
     // "ep4" + getTestedBuildType() + "-unit-win32_win32.win32.x86_8.0.xml",
     // "ep4" + getTestedBuildType() + "-unit-cen64_linux.gtk.x86_64_8.0.xml" };
     private String          testsConfigExpected;
-
-    private int             missingCount              = 0;
 
     private int countCompileErrors(final String aString) {
         return extractNumber(aString, "error");
@@ -398,7 +390,7 @@ public class TestResultsGenerator extends Task {
             log("Begin: Generating test results index page");
             log("Parsing XML JUnit results files");
             try {
-                parseXml();
+                parseJUnitTestsXml();
             }
             catch (IOException e) {
                 throw new BuildException(e);
@@ -480,11 +472,13 @@ public class TestResultsGenerator extends Task {
     }
 
     // Specific to the RelEng test results page
-    private String formatRowReleng(final String fileName, final int errorCount, final boolean link, String config) {
+    private String formatJUnitRow(final String fileName, final int errorCount, final boolean link, String config) {
 
+        int counter = 0;
         String endingConfig = "_" + config + XML_EXTENSION;
         String aString = "";
         int maxColumns = expectedConfigs.size();
+        // TODO: link is always true? 
         if (!link) {
             return "<tr><td>" + fileName + "</td><td align=\"center\">" + "DNF </td></tr>";
         }
@@ -827,7 +821,7 @@ public class TestResultsGenerator extends Task {
         formatAccessesErrorRow(logName, forbiddenWarningCount, discouragedWarningCount, accessesLog);
     }
 
-    public void parseCompileLogs() {
+    private void parseCompileLogs() {
 
         final StringBuffer compilerString = new StringBuffer();
         final StringBuffer accessesString = new StringBuffer();
@@ -843,7 +837,7 @@ public class TestResultsGenerator extends Task {
         testResultsTemplateString = replace(testResultsTemplateString, accessesLogsToken, String.valueOf(accessesString));
     }
 
-    public void parseXml() throws IOException {
+    private void parseJUnitTestsXml() throws IOException {
 
         final File sourceDirectory = new File(xmlDirectoryName);
 
@@ -852,8 +846,7 @@ public class TestResultsGenerator extends Task {
             // We currently "re do" all of them, but can improve in the future
             // where the
             // 'found configs" are remembered, but then have to keep track of
-            // original order
-            // (not "found order").
+            // original order (not "found" order which has to with when tests completed).
             foundConfigs.clear();
             
             ArrayList<File> allFileNames = new ArrayList();
@@ -888,9 +881,9 @@ public class TestResultsGenerator extends Task {
                     if (errorCount != 0) {
                         final String testName = xmlFileNames[i].getName().substring(0,
                                 xmlFileNames[i].getName().length() - XML_EXTENSION.length());
-                        testResultsWithProblems = testResultsWithProblems.concat("\n" + testName);
+                        testResultsWithProblems = testResultsWithProblems.concat(EOL + testName);
                         testResultsXmlUrls = testResultsXmlUrls
-                                .concat("\n" + extractXmlRelativeFileName(sourceDirectoryCanonicalPath, xmlFileNames[i]));
+                                .concat(EOL + extractXmlRelativeFileName(sourceDirectoryCanonicalPath, xmlFileNames[i]));
                         anErrorTracker.registerError(fullName.substring(getXmlDirectoryName().length() + 1));
                     }
                     // a bit a hack for transition to more "config" oriented processing, even though still 
@@ -902,7 +895,7 @@ public class TestResultsGenerator extends Task {
                             break;
                         }
                     }
-                    String tmp = formatRowReleng(xmlFileNames[i].getPath(), errorCount, true, workingWithConfig);
+                    String tmp = formatJUnitRow(xmlFileNames[i].getPath(), errorCount, true, workingWithConfig);
                     replaceString = replaceString + tmp;
                 }
 
@@ -1237,38 +1230,45 @@ public class TestResultsGenerator extends Task {
 
     private String verifyAllTestsRan(final String directory) {
         String replaceString = "";
+        ArrayList<String> missingFiles = new ArrayList();
         if (getDoMissingList()) {
-            final Enumeration enumeration = (anErrorTracker.getTestLogs()).elements();
-
-            while (enumeration.hasMoreElements()) {
-                final String testLogName = enumeration.nextElement().toString();
+            for (String testLogName : anErrorTracker.getTestLogs(foundConfigs)) {
 
                 if (new File(directory + File.separator + testLogName).exists()) {
+                    log("DEBUG: found log existed: " + testLogName);
                     continue;
                 }
-
+                log("DEBUG: found log DID NOT exist: " + testLogName);
                 anErrorTracker.registerError(testLogName);
-                // final String tmp = ((platformSpecificTemplateList.equals(""))
-                // ? formatRow(testLogName, -1, false) : formatRowReleng(
-                // testLogName, -1, false));
-                //String tmp = formatRowReleng(testLogName, -1, false);
-                if (missingCount == 0) {
-                    replaceString = replaceString + "</table></br>" + "\n"
-                            + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
-                            + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\"> Missing Files </th><th  align=\"center\"> Status </th></tr>";
-                }
                 //replaceString = replaceString + tmp;
+                // testResultsWithProblems appears to be for email, or similar? 
                 testResultsWithProblems = testResultsWithProblems
-                        .concat("\n" + testLogName.substring(0, testLogName.length() - XML_EXTENSION.length()) + " (file missing)");
-                missingCount++;
+                        .concat(EOL + testLogName.substring(0, testLogName.length() - XML_EXTENSION.length()) + " (file missing)");
+                missingFiles.add(testLogName);
             }
         } else {
-            // Note: we intentionally
+            // Note: we intentionally do not deal with missing file for perf. tests yet.
+            // (though, probably could, once fixed with "expected configs").
             replaceString = replaceString + "<tbody>\n" + "<tr><td colspan=\"0\"><p><span class=\"footnote\">NOTE: </span>\n"
                     + "Remember that for performance unit test tables, there are never any \"missing files\" listed, if there are any. \n"
                     + "This is expected to be a temporary solution, until an exact fix can be implemented. For more details, see \n"
                     + "<a href=\"https://bugs.eclipse.org/bugs/show_bug.cgi?id=451890\">bug 451890</a>.</p>\n" + "</td></tr>\n"
                     + "</tbody>\n";
+        }
+        // TODO: we need lots more of separating "data" from "formating"
+        if (getDoMissingList() && missingFiles.size() > 0) {
+            String ordinalWord = "File";
+            if (missingFiles.size() > 1) {
+                ordinalWord = "Files";
+            }
+                
+            replaceString = replaceString + "</table></br>" + EOL
+                    + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
+                    + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\">Missing " + ordinalWord + "</th></tr>";
+            for (String testLogName : missingFiles) {
+                replaceString = replaceString + EOL + "<tr><td>" + testLogName + "</td></tr>";
+            }
+            replaceString = replaceString + EOL + "</table>";
         }
         return replaceString;
     }
@@ -1321,7 +1321,7 @@ public class TestResultsGenerator extends Task {
 
     public void setTestsConfigExpected(String testsConfigExpected) {
         this.testsConfigExpected = testsConfigExpected;
-        System.out.println("DEBUG: testsConfigExpected: " + testsConfigExpected);
+        log("DEBUG: testsConfigExpected: " + testsConfigExpected);
     }
 
     private ArrayList<String> getTestsConfig() throws IOException {
@@ -1357,5 +1357,58 @@ public class TestResultsGenerator extends Task {
     public void setDoMissingList(boolean doMissingList) {
         this.doMissingList = doMissingList;
     }
+    
+    // I restored this 'mailResults' method from history. It was removed about 3.8 M3. It was commented out 
+    // at that time. Not sure for how long. I am not sure where "Mailer" class was coming from. 
+    // Needs more research or re-invention. (Compare with CBI aggregator method.)
+    /*
+    private void mailResults() {
+        // send a different message for the following cases:
+        // build is not tested at all
+        // build is tested, tests have not run
+        // build is tested, tests have run with error and or failures
+        // build is tested, tests have run with no errors or failures
+        try {
+           mailer = new Mailer();
+        }
+        catch (NoClassDefFoundError e) {
+            return;
+        }
+        String buildLabel = mailer.getBuildProperties().getBuildLabel();
+        String httpUrl = mailer.getBuildProperties().getHttpUrl() + "/" + buildLabel;
+        // String ftpUrl =
+        // mailer.getBuildProperties().getftpUrl()+"/"+buildLabel;
 
+        String subject = "Build is complete.  ";
+
+        String downloadLinks = "\n\nHTTP Download:\n\n\t" + httpUrl + " \n\n";
+//        
+//         * downloadLinks=downloadLinks.concat("FTP Download:\n\n");
+//         * downloadLinks=downloadLinks.concat(
+//         * "\tuser: anonymous\n\tpassword: (e-mail address or leave blank)\n\tserver:  download.eclipse.org\n\tcd to directory:  "
+//         * +buildLabel); downloadLinks=downloadLinks.concat("\n\n\tor");
+//         * downloadLinks=downloadLinks.concat("\n\n\t"+ftpUrl);
+//         
+
+        // provide http links
+        String message = "The build is complete." + downloadLinks;
+
+        if (testsRan()) {
+            subject = "Automated JUnit testing complete.  ";
+            message = "Automated JUnit testing is complete.  ";
+            subject = subject
+                    .concat((getTestResultsWithProblems().endsWith("\n")) ? "All tests pass." : "Test failures/errors occurred.");
+            message = message.concat((getTestResultsWithProblems().endsWith("\n")) ? "All tests pass."
+                    : "Test failures/errors occurred in the following:  " + getTestResultsWithProblems()) + downloadLinks;
+        } else if (isBuildTested() && (!getBuildType().equals("N"))) {
+            subject = subject.concat("Automated JUnit testing is starting.");
+            message = "The " + subject + downloadLinks;
+        }
+
+        if (subject.endsWith("Test failures/errors occurred."))
+            mailer.sendMessage(subject, message);
+        else if (!getBuildType().equals("N"))
+            mailer.sendMessage(subject, message);
+    }
+    */
 }

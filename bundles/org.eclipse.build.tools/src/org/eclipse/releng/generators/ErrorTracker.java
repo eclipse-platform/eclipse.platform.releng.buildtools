@@ -11,8 +11,13 @@ package org.eclipse.releng.generators;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -47,15 +52,14 @@ public class ErrorTracker {
         }
     }
 
-    // List of test logs expected at end of build
-    private final Vector    testLogs  = new Vector();
+
+    private Set<String> testLogsSet = Collections.checkedSortedSet(new TreeSet(),String.class);
     // Platforms keyed on
     private final Hashtable platforms = new Hashtable();
     private final Hashtable logFiles  = new Hashtable();
     private final Hashtable typesMap  = new Hashtable();
 
     private final Vector    typesList = new Vector();
-
     private String convertPathDelimiters(final String path) {
         return new File(path).getPath();
     }
@@ -74,7 +78,15 @@ public class ErrorTracker {
      * 
      * @return Vector
      */
-    public Vector getTestLogs() {
+    public List<String> getTestLogs(ArrayList<String> foundConfigs) {
+        // List of test logs expected at end of build
+        // We depend on both test logs and configs being sorted
+        ArrayList<String> testLogs  = new ArrayList();
+        for (String initialLogName : testLogsSet) {
+            for (String config : foundConfigs) {
+                testLogs.add(initialLogName + "_" + config + ".xml");
+            }
+        }
         return testLogs;
     }
 
@@ -142,7 +154,7 @@ public class ErrorTracker {
                     aVector.addElement(ps);
                 }
             }
-
+            
             // store a list of the test logs expected after testing
             final NodeList testLogList = document.getElementsByTagName("logFile");
             final int testLogCount = testLogList.getLength();
@@ -151,38 +163,21 @@ public class ErrorTracker {
                 final Node testLog = testLogList.item(i);
                 final String testLogName = testLog.getAttributes().getNamedItem("name").getNodeValue();
                 final Node typeNode = testLog.getAttributes().getNamedItem("type");
-                String type = "test";
-                if (typeNode != null) {
-                    type = typeNode.getNodeValue();
+                //String type = "test";
+                //if (typeNode != null) {
+                //    type = typeNode.getNodeValue();
+                //}
+                //if (testLogName.endsWith(".xml") && type.equals("test")) {
+                // above is how it used to be checked, prior to 4/4/2016, but 
+                // test logs are only log file in testManifest.xml without a "type" attribute
+                if (typeNode == null) {
+                    int firstUnderscore = testLogName.indexOf('_');
+                    String initialTestName = testLogName.substring(0, firstUnderscore);
+                    testLogsSet.add(initialTestName);
+                    //System.out.println("Debug: initialTestName: " + initialTestName);
                 }
-                if (testLogName.endsWith(".xml") && type.equals("test")) {
-                    testLogs.add(testLogName);
-                    // System.out.println(testLogName);
-                }
-
+                
             }
-
-            // // Test this mess.
-            // Object[] results = platforms.values().toArray();
-            // for (int i=0; i < results.length; i++) {
-            // PlatformStatus ap = (PlatformStatus) results[i];
-            // System.out.println("ID: " + ap.getId() + " passed: " +
-            // ap.getPassed());
-            // }
-            //
-            // Enumeration anEnumeration = logFiles.keys();
-            // while (anEnumeration.hasMoreElements()) {
-            // String aKey = (String) anEnumeration.nextElement();
-            // System.out.println("Whack a key: " + aKey);
-            // ((PlatformStatus) logFiles.get(aKey)).setPassed(false);
-            // }
-            //
-            // results = platforms.values().toArray();
-            // for (int i=0; i < results.length; i++) {
-            // PlatformStatus ap = (PlatformStatus) results[i];
-            // System.out.println("ID: " + ap.getId() + " passed: " +
-            // ap.getPassed());
-            // }
 
         }
         catch (final IOException e) {
