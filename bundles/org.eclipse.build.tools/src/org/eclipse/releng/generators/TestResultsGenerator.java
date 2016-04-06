@@ -181,7 +181,7 @@ public class TestResultsGenerator extends Task {
     private static final int    DEFAULT_READING_SIZE           = 8192;
 
     private static final String elementName                    = "testsuite";
-    private static final String testResultsToken               = "%testresults%";
+  //  private static final String testResultsToken               = "%testresults%";
 
     private ArrayList<String>   foundConfigs                   = new ArrayList();
     private ArrayList<String>   expectedConfigs                = null;
@@ -227,8 +227,8 @@ public class TestResultsGenerator extends Task {
     // Location and name of the template drop index.php file.
     private String              dropTemplateFileName;
 
-    // Name of the generated index php file.
-    private String              testResultsHtmlFileName;
+    // Name of the HTML fragment file that the testResults.php file will "include".
+    final private String              testResultsHtmlFileName = "testResultsRows.html"; 
 
     // Name of the generated drop index php file;
     private String              dropHtmlFileName;
@@ -388,12 +388,12 @@ public class TestResultsGenerator extends Task {
             test.setHtmlDirectoryName(
                     "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-2000/testresults");
             test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-2000");
-            test.setTestResultsTemplateFileName(
-                    "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.template.php");
+         //   test.setTestResultsTemplateFileName(
+         //           "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.template.php");
 
             test.setDropTemplateFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
-            test.setTestResultsHtmlFileName("testResults.php");
+         //   test.setTestResultsHtmlFileName("testResults.php");
             test.setDropHtmlFileName("index.php");
 
             test.setHrefTestResultsTargetPath("testresults");
@@ -446,47 +446,53 @@ public class TestResultsGenerator extends Task {
      * as is incomplete).
      */
     private int countErrors(final String fileName) {
-        int errorCount = 0;
-
-        if (new File(fileName).length() == 0) {
+        int errorCount = -99;
+        // File should exists, since we are "driving" this based on file list
+        // ... but, just in case.
+        if (!new File(fileName).exists()) {
             errorCount = -1;
         } else {
 
-            try {
-                final DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-                parser = docBuilderFactory.newDocumentBuilder();
+            if (new File(fileName).length() == 0) {
+                errorCount = -2;
+            } else {
 
-                final Document document = parser.parse(fileName);
-                final NodeList elements = document.getElementsByTagName(elementName);
+                try {
+                    final DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+                    parser = docBuilderFactory.newDocumentBuilder();
 
-                final int elementCount = elements.getLength();
-                if (elementCount == 0) {
-                    errorCount = -2;
-                } else {
-                    for (int i = 0; i < elementCount; i++) {
-                        final Element element = (Element) elements.item(i);
-                        final NamedNodeMap attributes = element.getAttributes();
-                        Node aNode = attributes.getNamedItem("errors");
-                        errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
-                        aNode = attributes.getNamedItem("failures");
-                        errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
+                    final Document document = parser.parse(fileName);
+                    final NodeList elements = document.getElementsByTagName(elementName);
+
+                    final int elementCount = elements.getLength();
+                    if (elementCount == 0) {
+                        errorCount = -3;
+                    } else {
+                        for (int i = 0; i < elementCount; i++) {
+                            final Element element = (Element) elements.item(i);
+                            final NamedNodeMap attributes = element.getAttributes();
+                            Node aNode = attributes.getNamedItem("errors");
+                            errorCount = Integer.parseInt(aNode.getNodeValue());
+                            aNode = attributes.getNamedItem("failures");
+                            errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
+                        }
                     }
-                }
 
-            }
-            catch (final IOException e) {
-                log("IOException: " + fileName);
-                logException(e);
-                errorCount = -3;
-            }
-            catch (final SAXException e) {
-                log("SAXException: " + fileName);
-                logException(e);
-                errorCount = -3;
-            }
-            catch (final ParserConfigurationException e) {
-                logException(e);
-                errorCount = -4;
+                }
+                catch (final IOException e) {
+                    log("IOException: " + fileName);
+                    logException(e);
+                    errorCount = -4;
+                }
+                catch (final SAXException e) {
+                    log("SAXException: " + fileName);
+                    logException(e);
+                    errorCount = -5;
+                }
+                catch (final ParserConfigurationException e) {
+                    logException(e);
+                    errorCount = -6;
+                }
             }
         }
         return errorCount;
@@ -502,11 +508,10 @@ public class TestResultsGenerator extends Task {
         anErrorTracker = new ErrorTracker();
         anErrorTracker.loadFile(testManifestFileName);
         getDropTokensFromList(dropTokenList);
-        testResultsTemplateString = readFile(testResultsTemplateFileName);
+        testResultsTemplateString = ""; //readFile(testResultsTemplateFileName);
         dropTemplateString = readFile(dropTemplateFileName);
-       
-        writeDropIndexFile();
 
+        writeDropIndexFile();
 
         try {
             parseCompileLogs();
@@ -524,7 +529,7 @@ public class TestResultsGenerator extends Task {
             catch (IOException e) {
                 throw new BuildException("Error while parsing JUnit Tests Results Files", e);
             }
-            
+
         } else {
             log("isBuildTested value was not true, so did no processing for test files");
         }
@@ -817,7 +822,7 @@ public class TestResultsGenerator extends Task {
             compileLogResults = "        <div class=\"homeitem3col\">" + EOL
                     + "<h3 id=\"PluginsErrors\">Plugins containing compile errors or warnings</h3>" + EOL
                     + "&nbsp;&nbsp;The table below shows the plugins in which errors or warnings were encountered. Click on the jar file link to view its"
-                    + EOL + "detailed report." + EOL + "<br /><br />" + EOL + "<table width=\"100%\" border=\"1\">" + EOL + "  <tr>"
+                    + EOL + "detailed report." + EOL + "<br /><br />" + EOL + "<table width=\"90%\" border=\"1\">" + EOL + "  <tr>"
                     + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL + "    <th>Errors</th>" + EOL + "    <th>Warnings</th>"
                     + EOL + "  </tr>" + EOL;
 
@@ -825,7 +830,7 @@ public class TestResultsGenerator extends Task {
 
             compileLogResults = compileLogResults + "          </table>" + EOL
                     + "<h3 id=\"AcessErrors\">Plugins containing access errors or warnings</h3>" + EOL
-                    + "<table width=\"100%\" border=\"1\">" + EOL + " <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL
+                    + "<table width=\"90%\" border=\"1\">" + EOL + " <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL
                     + "   <th>Forbidden Access Warnings</th>" + EOL + "   <th>Discouraged Access Warnings</th>" + EOL + " </tr>"
                     + EOL;
 
@@ -916,7 +921,8 @@ public class TestResultsGenerator extends Task {
         replaceString = replaceString + listMissingManifestFiles();
 
         if (foundConfigs.size() > 0) {
-            testResultsTemplateString = replace(testResultsTemplateString, testResultsToken, replaceString);
+           // testResultsTemplateString = replace(testResultsTemplateString, testResultsToken, replaceString);
+            testResultsTemplateString = replaceString;
             setTestsRan(true);
             // write each to output directory in file testConfigs.php
             writePhpConfigFile(sourceDirectory, found_config_type, foundConfigs, FOUND_TEST_CONFIGS_FILENAME);
@@ -1241,7 +1247,8 @@ public class TestResultsGenerator extends Task {
     }
 
     public void setTestResultsHtmlFileName(final String aString) {
-        testResultsHtmlFileName = aString;
+        // no longer used
+       // testResultsHtmlFileName = aString;
     }
 
     public void setTestResultsTemplateFileName(final String aString) {
@@ -1423,8 +1430,7 @@ public class TestResultsGenerator extends Task {
                     ordinalWord = "Files";
                 }
 
-                results = results + EOL
-                        + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
+                results = results + EOL + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
                         + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\">Releng: <a href=\"addToTestManifest.xml\">Missing testManifest.xml "
                         + ordinalWord + "</a></th></tr>";
                 for (String testLogName : missingManifestFiles) {
@@ -1463,7 +1469,7 @@ public class TestResultsGenerator extends Task {
         for (String config : getTestsConfig()) {
             Cell cell = resultsTable.getCell(corename, config);
             if (cell == null && foundConfigs.contains(config)) {
-                cell = resultsTable.new Cell(-1,  null);
+                cell = resultsTable.new Cell(-1, null);
             }
             results = results + "<td align=\"center\">" + printCell(cell) + "</td>";
         }
@@ -1512,8 +1518,8 @@ public class TestResultsGenerator extends Task {
 
     private String addLinks(String displayName, String rawfilename) {
         String result;
-        result = "<a  title=\"Detailed Unit Test Results Table\" href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename + HTML_EXTENSION + "\">" + displayName
-                + "</a>";
+        result = "<a  title=\"Detailed Unit Test Results Table\" href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename
+                + HTML_EXTENSION + "\">" + displayName + "</a>";
         result = result
                 + "&nbsp;<a style=\"color:#AAAAAA\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
                 + hrefTestResultsTargetPath + "/xml/" + rawfilename + XML_EXTENSION + "\">(XML)</a>";
