@@ -227,8 +227,9 @@ public class TestResultsGenerator extends Task {
     // Location and name of the template drop index.php file.
     private String              dropTemplateFileName;
 
-    // Name of the HTML fragment file that the testResults.php file will "include".
-    final private String              testResultsHtmlFileName = "testResultsRows.html"; 
+    // Name of the HTML fragment file that any testResults.php file will "include".
+    // setting to common default.
+    private String              testResultsHtmlFileName = "testResultsRows.html"; 
 
     // Name of the generated drop index php file;
     private String              dropHtmlFileName;
@@ -384,22 +385,22 @@ public class TestResultsGenerator extends Task {
             test.getDropTokensFromList(test.dropTokenList);
             test.setIsBuildTested(true);
             test.setXmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-2000/testresults/xml");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160406-2048/testresults/xml");
             test.setHtmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-2000/testresults");
-            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-2000");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160406-2048/testresults");
+            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160406-2048");
          //   test.setTestResultsTemplateFileName(
          //           "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.template.php");
 
             test.setDropTemplateFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
-         //   test.setTestResultsHtmlFileName("testResults.php");
+            test.setTestResultsHtmlFileName("testResultsRows.html");
             test.setDropHtmlFileName("index.php");
 
             test.setHrefTestResultsTargetPath("testresults");
             test.setCompileLogsDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-2000/compilelogs/plugins");
-            test.setHrefCompileLogsTargetPath("compilelogs");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160406-2048/compilelogs/plugins");
+            test.setHrefCompileLogsTargetPath("compilelogs/plugins/");
             test.setTestManifestFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
             test.execute();
@@ -802,7 +803,7 @@ public class TestResultsGenerator extends Task {
 
     private void parseCompileLogs() throws IOException {
         File sourceDirectory = new File(getCompileLogsDirectoryName());
-        File mainDir = new File(computeMainOutputDirectory(sourceDirectory));
+        File mainDir = new File(getDropDirectoryName());
         File compilerSummaryFile = new File(mainDir, compilerSummaryFilename);
         if (compilerSummaryFile.exists()) {
             log("Compile logs summary page, " + compilerSummaryFilename + ", was found to exist already, so not recomputed.");
@@ -885,7 +886,7 @@ public class TestResultsGenerator extends Task {
             // files total.");
             // files MUST be alphabetical, for now
             Arrays.sort(xmlFileNames);
-            String sourceDirectoryCanonicalPath = computeMainOutputDirectory(sourceDirectory);
+            String sourceDirectoryCanonicalPath = getDropDirectoryName();
 
             for (int i = 0; i < xmlFileNames.length; i++) {
                 File junitResultsFile = xmlFileNames[i];
@@ -908,7 +909,7 @@ public class TestResultsGenerator extends Task {
         } else {
             // error? Or, just too early?
             log("WARNING: sourceDirectory did not exist at \n\t" + sourceDirectory);
-            log("     either incorrect call to 'generate index' or other configuration error.");
+            log("     either incorrect call to 'generate index' or called too early (tests not done yet)?");
         }
 
         // WRITE
@@ -1000,7 +1001,7 @@ public class TestResultsGenerator extends Task {
 
     private void writePhpConfigFile(final File sourceDirectory, String config_type, ArrayList<String> configs, String phpfilename)
             throws IOException {
-        File mainDir = new File(computeMainOutputDirectory(sourceDirectory));
+        File mainDir = new File(getDropDirectoryName());
         File testConfigsFile = new File(mainDir, phpfilename);
         Writer testconfigsPHP = new FileWriter(testConfigsFile);
         testconfigsPHP.write("<?php" + EOL);
@@ -1015,7 +1016,7 @@ public class TestResultsGenerator extends Task {
     }
 
     private void writePhpIncludeCompilerResultsFile(final File sourceDirectory, String compilerSummary) throws IOException {
-        File mainDir = new File(computeMainOutputDirectory(sourceDirectory));
+        File mainDir = new File(getDropDirectoryName());
         File compilerSummaryFile = new File(mainDir, compilerSummaryFilename);
         Writer compilerSummaryPHP = new FileWriter(compilerSummaryFile);
         compilerSummaryPHP.write("<!--" + EOL);
@@ -1025,20 +1026,7 @@ public class TestResultsGenerator extends Task {
         compilerSummaryPHP.close();
     }
 
-    private String computeMainOutputDirectory(final File sourceDirectory) {
-        File sourceDirectoryParent = sourceDirectory.getParentFile();
-        if (sourceDirectoryParent != null) {
-            sourceDirectoryParent = sourceDirectoryParent.getParentFile();
-        }
-        String sourceDirectoryCanonicalPath = null;
-        try {
-            sourceDirectoryCanonicalPath = sourceDirectoryParent.getCanonicalPath();
-        }
-        catch (final IOException e) {
-            logException(e);
-        }
-        return sourceDirectoryCanonicalPath;
-    }
+
 
     private void processCompileLogsDirectory(final String directoryName, final StringBuffer compilerLog,
             final StringBuffer accessesLog) {
@@ -1247,8 +1235,7 @@ public class TestResultsGenerator extends Task {
     }
 
     public void setTestResultsHtmlFileName(final String aString) {
-        // no longer used
-       // testResultsHtmlFileName = aString;
+       testResultsHtmlFileName = aString;
     }
 
     public void setTestResultsTemplateFileName(final String aString) {
