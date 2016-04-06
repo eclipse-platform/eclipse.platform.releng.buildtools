@@ -25,9 +25,14 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -36,6 +41,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.eclipse.releng.generators.TestResultsGenerator.ResultsTable.Cell;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -46,9 +52,124 @@ import org.xml.sax.SAXException;
 
 /**
  * @version 1.0
- * @author Dean Roberts
+ * @author Dean Roberts (circa 2000!) and David Williams (circa 2016)
  */
 public class TestResultsGenerator extends Task {
+
+    public class ResultsTable implements Iterable<String> {
+
+        private Map<String, Row> rows    = new TreeMap();
+        private List<String>     columns = new ArrayList();
+
+        public ResultsTable(ArrayList<String> columns) {
+            super();
+            this.columns = columns;
+        }
+
+        public class Cell {
+
+            private Integer errorCount  = null;
+            private File    resultsFile = null;
+
+            public Cell(int errorCount, File resultsFile) {
+                super();
+                this.errorCount = errorCount;
+                this.resultsFile = resultsFile;
+            }
+
+            public Integer getErrorCount() {
+                return errorCount;
+            }
+
+            public File getResultsFile() {
+                return resultsFile;
+            }
+        }
+
+        private class Row {
+
+            Map<String, Cell> row = new TreeMap();
+
+            public Row(List<String> columns) {
+                super();
+                for (String column : columns) {
+                    row.put(column, null);
+                }
+            }
+
+            public Cell getCell(String column) {
+                Cell cell = row.get(column);
+                return cell;
+            }
+
+            public int getCellCount(String column) {
+                Cell cell = row.get(column);
+                Integer value = cell.getErrorCount();
+                if (value == null) {
+                    return -999;
+                } else {
+                    return value;
+                }
+            }
+
+            public File getCellFile(String column) {
+                Cell cell = row.get(column);
+                File value = cell.getResultsFile();
+                return value;
+            }
+
+            public void putCell(String columnName, Integer cellValue, File file) {
+                row.put(columnName, new Cell(cellValue, file));
+            }
+        }
+
+        private Row getRow(String rowname) {
+            Row row = rows.get(rowname);
+            if (row == null) {
+                row = new Row(columns);
+                rows.put(rowname, row);
+            }
+            return row;
+        }
+
+        public Cell getCell(String rowName, String columnName) {
+            Cell result = getRow(rowName).getCell(columnName);
+            return result;
+        }
+
+        public int getCellErrorCount(String rowName, String columnName) {
+            int result = -1;
+            Cell cell = getRow(rowName).getCell(columnName);
+            result = cell.getErrorCount();
+            return result;
+        }
+
+        public File getCellResultsFile(String rowName, String columnName) {
+            File result = null;
+            Cell cell = getRow(rowName).getCell(columnName);
+            result = cell.getResultsFile();
+            return result;
+        }
+
+        public void putCell(String rowName, String columnName, Integer cellValue, File file) {
+            getRow(rowName).putCell(columnName, cellValue, file);
+        }
+
+        List<String> getColumns() {
+            return columns;
+        }
+
+        public void setColumns(List<String> columns) {
+            if (this.columns != null) {
+                throw new RuntimeException("The columns for the table were already defined");
+            }
+            this.columns = columns;
+        }
+
+        public Iterator<String> iterator() {
+            return rows.keySet().iterator();
+        }
+    }
 
     private static final String HTML_EXTENSION                 = ".html";
     private static final String XML_EXTENSION                  = ".xml";
@@ -59,10 +180,9 @@ public class TestResultsGenerator extends Task {
 
     private static final int    DEFAULT_READING_SIZE           = 8192;
 
-    static final String         elementName                    = "testsuite";
-    static final String         testResultsToken               = "%testresults%";
-    static final String         compileLogsToken               = "%compilelogs%";
-    static final String         accessesLogsToken              = "%accesseslogs%";
+    private static final String elementName                    = "testsuite";
+    private static final String testResultsToken               = "%testresults%";
+
     private ArrayList<String>   foundConfigs                   = new ArrayList();
     private ArrayList<String>   expectedConfigs                = null;
     private static final String EOL                            = System.getProperty("line.separator");
@@ -71,6 +191,64 @@ public class TestResultsGenerator extends Task {
     private static String       found_config_type              = "found";
     private static String       EXPECTED_TEST_CONFIGS_FILENAME = "testConfigs.php";
     private static String       expected_config_type           = "expected";
+    private Vector              dropTokens;
+
+    private String              testResultsWithProblems        = EOL;
+    private String              testResultsXmlUrls             = EOL;
+
+    private DocumentBuilder     parser                         = null;
+    private ErrorTracker        anErrorTracker;
+    private String              testResultsTemplateString      = "";
+
+    private String              dropTemplateString             = "";
+
+    // Parameters
+    // build runs JUnit automated tests
+    private boolean             isBuildTested;
+
+    // buildType, I, N
+    private String              buildType;
+
+    // Comma separated list of drop tokens
+    private String              dropTokenList;
+
+    // Location of the xml files
+    private String              xmlDirectoryName;
+
+    // Location of the html files
+    private String              htmlDirectoryName;
+
+    // Location of the resulting index.php file.
+    private String              dropDirectoryName;
+
+    // Location and name of the template index.php file.
+    private String              testResultsTemplateFileName;
+
+    // Location and name of the template drop index.php file.
+    private String              dropTemplateFileName;
+
+    // Name of the generated index php file.
+    private String              testResultsHtmlFileName;
+
+    // Name of the generated drop index php file;
+    private String              dropHtmlFileName;
+
+    // Arbitrary path used in the index.php page to href the
+    // generated .html files.
+    private String              hrefTestResultsTargetPath;
+    // Arbitrary path used in the index.php page to reference the compileLogs
+    private String              hrefCompileLogsTargetPath;
+    // Location of compile logs base directory
+    private String              compileLogsDirectoryName;
+    // Location and name of test manifest file
+    private String              testManifestFileName;
+    // private static String testsConstant = ".tests";
+    // private static int testsConstantLength = testsConstant.length();
+    // temporary way to force "missing" list not to be printed (until complete
+    // solution found)
+    private boolean             doMissingList                  = true;
+
+    private Set<String>         missingManifestFiles           = Collections.checkedSortedSet(new TreeSet(), String.class);
 
     class ExpectedConfigFiler implements FilenameFilter {
 
@@ -111,7 +289,7 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    public static byte[] getFileByteContent(final String fileName) throws IOException {
+    private static byte[] getFileByteContent(final String fileName) throws IOException {
         InputStream stream = null;
         try {
             final File file = new File(fileName);
@@ -139,14 +317,14 @@ public class TestResultsGenerator extends Task {
      * @throws IOException
      *             if a problem occurred reading the stream.
      */
-    public static byte[] getInputStreamAsByteArray(final InputStream stream, final int length) throws IOException {
+    private static byte[] getInputStreamAsByteArray(final InputStream stream, final int length) throws IOException {
         byte[] contents;
         if (length == -1) {
             contents = new byte[0];
             int contentsLength = 0;
             int amountRead = -1;
             do {
-                final int amountRequested = Math.max(stream.available(), DEFAULT_READING_SIZE); 
+                final int amountRequested = Math.max(stream.available(), DEFAULT_READING_SIZE);
 
                 // resize contents if needed
                 if ((contentsLength + amountRequested) > contents.length) {
@@ -198,7 +376,7 @@ public class TestResultsGenerator extends Task {
 
         } else {
             test.setTestsConfigExpected(
-                    "ep46N-unit-cen64_linux.gtk.x86_64_8.0, ep46N-unit-lin64_linux.gtk.x86_64_8.0 ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46N-unit-win32_win32.win32.x86_8.0");
+                    "ep46N-unit-lin64_linux.gtk.x86_64_8.0 ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46N-unit-win32_win32.win32.x86_8.0, ep46N-unit-cen64_linux.gtk.x86_64_8.0");
 
             // "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
             test.setDropTokenList(
@@ -206,94 +384,27 @@ public class TestResultsGenerator extends Task {
             test.getDropTokensFromList(test.dropTokenList);
             test.setIsBuildTested(true);
             test.setXmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-1956/testresults/xml");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-2000/testresults/xml");
             test.setHtmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-1956/testresults");
-            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-1956");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-2000/testresults");
+            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-2000");
             test.setTestResultsTemplateFileName(
-                    "/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.template.php");
+                    "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.template.php");
 
             test.setDropTemplateFileName(
-                    "/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
+                    "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
             test.setTestResultsHtmlFileName("testResults.php");
             test.setDropHtmlFileName("index.php");
 
             test.setHrefTestResultsTargetPath("testresults");
             test.setCompileLogsDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-1956/compilelogs/plugins");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160404-2000/compilelogs/plugins");
             test.setHrefCompileLogsTargetPath("compilelogs");
             test.setTestManifestFileName(
-                    "/home/davidw/gitdavidw2/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
+                    "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
             test.execute();
         }
     }
-
-    public Vector           dropTokens;
-
-    public String           testResultsWithProblems   = EOL;
-    public String           testResultsXmlUrls        = EOL;
-
-    private DocumentBuilder parser                    = null;
-    public ErrorTracker     anErrorTracker;
-    public String           testResultsTemplateString = "";
-
-    public String           dropTemplateString        = "";
-
-    public Vector           platformDropFileName;
-
-    // assume tests ran. If no html files are found, this is set to false
-    private boolean         testsRan                  = true;
-
-    // Parameters
-    // build runs JUnit automated tests
-    private boolean         isBuildTested;
-
-    // buildType, I, N
-    public String           buildType;
-
-    // Comma separated list of drop tokens
-    public String           dropTokenList;
-
-    // Location of the xml files
-    public String           xmlDirectoryName;
-
-    // Location of the html files
-    public String           htmlDirectoryName;
-
-    // Location of the resulting index.php file.
-    public String           dropDirectoryName;
-
-    // Location and name of the template index.php file.
-    public String           testResultsTemplateFileName;
-
-    // Location and name of the template drop index.php file.
-    public String           dropTemplateFileName;
-
-    // Name of the generated index php file.
-    public String           testResultsHtmlFileName;
-
-    // Name of the generated drop index php file;
-    public String           dropHtmlFileName;
-
-    // Arbitrary path used in the index.php page to href the
-    // generated .html files.
-    public String           hrefTestResultsTargetPath;
-    // Arbitrary path used in the index.php page to reference the compileLogs
-    public String           hrefCompileLogsTargetPath;
-    // Location of compile logs base directory
-    public String           compileLogsDirectoryName;
-    // Location and name of test manifest file
-    public String           testManifestFileName;
-    String testsConstant = ".tests";
-    int testsConstantLength = testsConstant.length();
-    // temporary way to force "missing" list not to be printed (until complete
-    // solution found)
-    private boolean         doMissingList             = true;
-
-    // Initialize the prefix to a default string
-    private String          prefix                    = "default";
-
-    private String          testShortName             = "";
 
     // Configuration of test machines.
     // Add or change new configurations here
@@ -313,7 +424,9 @@ public class TestResultsGenerator extends Task {
     // "ep4" + getTestedBuildType() + "-unit-mac64_macosx.cocoa.x86_64_8.0.xml",
     // "ep4" + getTestedBuildType() + "-unit-win32_win32.win32.x86_8.0.xml",
     // "ep4" + getTestedBuildType() + "-unit-cen64_linux.gtk.x86_64_8.0.xml" };
-    private String          testsConfigExpected;
+    private String  testsConfigExpected;
+    private boolean testRan;
+    private String  compilerSummaryFilename = "compilerSummary.html";
 
     private int countCompileErrors(final String aString) {
         return extractNumber(aString, "error");
@@ -327,47 +440,54 @@ public class TestResultsGenerator extends Task {
         return extractNumber(aString, "Discouraged access:");
     }
 
+    /*
+     * returns number of errors plus number of failures. returns a negative
+     * number if the file is missing or something is wrong with the file (such
+     * as is incomplete).
+     */
     private int countErrors(final String fileName) {
         int errorCount = 0;
 
         if (new File(fileName).length() == 0) {
-            return -1;
-        }
+            errorCount = -1;
+        } else {
 
-        try {
-            final DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-            parser = docBuilderFactory.newDocumentBuilder();
+            try {
+                final DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+                parser = docBuilderFactory.newDocumentBuilder();
 
-            final Document document = parser.parse(fileName);
-            final NodeList elements = document.getElementsByTagName(elementName);
+                final Document document = parser.parse(fileName);
+                final NodeList elements = document.getElementsByTagName(elementName);
 
-            final int elementCount = elements.getLength();
-            if (elementCount == 0) {
-                return -1;
+                final int elementCount = elements.getLength();
+                if (elementCount == 0) {
+                    errorCount = -2;
+                } else {
+                    for (int i = 0; i < elementCount; i++) {
+                        final Element element = (Element) elements.item(i);
+                        final NamedNodeMap attributes = element.getAttributes();
+                        Node aNode = attributes.getNamedItem("errors");
+                        errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
+                        aNode = attributes.getNamedItem("failures");
+                        errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
+                    }
+                }
+
             }
-            for (int i = 0; i < elementCount; i++) {
-                final Element element = (Element) elements.item(i);
-                final NamedNodeMap attributes = element.getAttributes();
-                Node aNode = attributes.getNamedItem("errors");
-                errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
-                aNode = attributes.getNamedItem("failures");
-                errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
-
+            catch (final IOException e) {
+                log("IOException: " + fileName);
+                logException(e);
+                errorCount = -3;
             }
-
-        }
-        catch (final IOException e) {
-            log("IOException: " + fileName);
-            logException(e);
-            return 0;
-        }
-        catch (final SAXException e) {
-            log("SAXException: " + fileName);
-            logException(e);
-            return 0;
-        }
-        catch (final ParserConfigurationException e) {
-            logException(e);
+            catch (final SAXException e) {
+                log("SAXException: " + fileName);
+                logException(e);
+                errorCount = -3;
+            }
+            catch (final ParserConfigurationException e) {
+                logException(e);
+                errorCount = -4;
+            }
         }
         return errorCount;
     }
@@ -380,32 +500,34 @@ public class TestResultsGenerator extends Task {
     public void execute() {
 
         anErrorTracker = new ErrorTracker();
-        platformDropFileName = new Vector();
         anErrorTracker.loadFile(testManifestFileName);
         getDropTokensFromList(dropTokenList);
         testResultsTemplateString = readFile(testResultsTemplateFileName);
         dropTemplateString = readFile(dropTemplateFileName);
+       
+        writeDropIndexFile();
+
+
+        try {
+            parseCompileLogs();
+        }
+        catch (IOException e) {
+            throw new BuildException("Error while parsing Compiler Results File ", e);
+        }
 
         if (isBuildTested()) {
-            log("Begin: Generating test results index page");
-            log("Parsing XML JUnit results files");
+
             try {
                 parseJUnitTestsXml();
+
             }
             catch (IOException e) {
-                throw new BuildException(e);
+                throw new BuildException("Error while parsing JUnit Tests Results Files", e);
             }
-            log("End: Generating test results index page");
+            
         } else {
             log("isBuildTested value was not true, so did no processing for test files");
         }
-        log("Parsing compile logs");
-        parseCompileLogs();
-        log("End: Generating compile logs summary page");
-        writeTestResultsFile();
-        log("Begin: Generating drop index page");
-        writeDropIndexFile();
-        log("End: Generating drop index page");
         log("Completed processing test and build results");
     }
 
@@ -471,154 +593,6 @@ public class TestResultsGenerator extends Task {
                 .append("</a>").append("</td>\n").append("</tr>\n");
     }
 
-    // Specific to the RelEng test results page
-    private String formatJUnitRow(final String fileName, final int errorCount, final boolean link, String config) {
-
-        int counter = 0;
-        String endingConfig = "_" + config + XML_EXTENSION;
-        String aString = "";
-        int maxColumns = expectedConfigs.size();
-        // TODO: link is always true? 
-        if (!link) {
-            return "<tr><td>" + fileName + "</td><td align=\"center\">" + "DNF </td></tr>";
-        }
-
-        final int begin = fileName.lastIndexOf(File.separatorChar);
-
-        // Get org.eclipse. out of the component name
-        // this is 12, 13 was hard coded?
-        int orgEclipseLength = "org.eclipse.".length() + 1;
-        // indexOf('_') assumes never part of file name?
-        final String shortName = fileName.substring(begin + orgEclipseLength, fileName.indexOf('_'));
-        String displayName = shortName;
-
-        // If the short name does not start with this prefix
-        if (!shortName.startsWith(prefix)) {
-            // If the prefix is not yet set
-            if (prefix == "default") {
-                // Set the testShortName variable to the current short name
-                testShortName = shortName;
-                counter = 0;
-                // Set new prefix
-
-                prefix = shortName.substring(0, shortName.indexOf(testsConstant) + testsConstantLength);
-                aString = aString + "\n<tbody>\r<tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
-                aString = aString + "<tr><td><p>" + shortName;
-
-            } else {
-                // Set new prefix
-                prefix = shortName.substring(0, shortName.indexOf(testsConstant) + testsConstantLength);
-
-                // Loop until the matching string postfix(test config.) is
-                // found
-                while ((counter < maxColumns) && !fileName.endsWith(endingConfig)) {
-                    aString = aString + "<td align=\"center\">-</td>";
-                    counter++;
-                }
-
-                // In this case, the new prefix should be set with the short
-                // name under it,
-                // since this would mean that the team has more than one
-                // component test
-                // CAUTION: originally said only "tests", not ".tests"
-                if (!shortName.endsWith(testsConstant)) {
-                    aString = aString + "\n<tbody>\n<tr><td><b>" + prefix + ".*" + "</b><td><td><td><td>";
-                    aString = aString + "<tr><td><p>" + shortName;
-                }
-                // The team has only one component test
-                else {
-                    aString = aString + "\n<tbody><tr><td><b>" + shortName;
-                }
-                testShortName = shortName;
-
-                counter = 0;
-            }
-        }
-        // If the file's short name starts with the current prefix
-        if (shortName.startsWith(prefix)) {
-            // If the new file has a different short name than the current
-            // one
-            if (!shortName.equals(testShortName)) {
-                // Fill the remaining cells with '-'. These files will later
-                // be listed as
-                // missing
-                while (counter < maxColumns) {
-                    aString = aString + "<td align=\"center\">-</td>";
-                    counter++;
-                }
-                counter = 0;
-                // Print the component name
-                aString = aString + "<tr><td><p>" + shortName;
-                // Loop until the matching string postfix(test config.) is
-                // found
-                while ((counter < maxColumns) && !fileName.endsWith(endingConfig)) {
-                    aString = aString + "<td align=\"center\">-</td>";
-                    counter++;
-                }
-            } else {
-                // Loop until the matching string postfix(test config.) is
-                // found
-                while ((counter < maxColumns) && !fileName.endsWith(endingConfig)) {
-                    aString = aString + "<td align=\"center\">-</td>";
-                    counter++;
-                }
-                // If the previous component has no more test files left
-                if (counter == maxColumns) {
-                    counter = 0;
-                    // Print the new component name
-                    aString = aString + "<tr><td><p>" + shortName;
-                    // Loop until the matching string postfix(test config.)
-                    // is found
-                    while ((counter < maxColumns) && !fileName.endsWith(endingConfig)) {
-                        aString = aString + "<td align=\"center\">-</td>";
-                        counter++;
-                    }
-                }
-            }
-
-            testShortName = shortName;
-
-            if (errorCount != 0) {
-                aString = aString + "<td align=\"center\"><b>";
-            } else {
-                aString = aString + "<td align=\"center\">";
-            }
-
-            // Print number of errors
-            if (errorCount != 0) {
-                displayName = "<font color=\"#ff0000\">" + "(" + String.valueOf(errorCount) + ")" + "</font>";
-            } else {
-                displayName = "(0)";
-            }
-
-            // Reference
-            if (errorCount == -1) {
-                aString = aString.concat(displayName);
-            } else {
-                // rawfilename is file name with no extension.
-                String rawfilename = fileName.substring(begin + 1, fileName.length() - XML_EXTENSION.length());
-                aString = aString + "<a href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename + HTML_EXTENSION + "\">"
-                        + displayName + "</a>";
-                aString = aString
-                        + "&nbsp;<a style=\"color:#AAAAAA\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
-                        + hrefTestResultsTargetPath + "/xml/" + rawfilename + XML_EXTENSION + "\">(XML)</a>";
-            }
-
-            if (errorCount == -1) {
-                aString = aString + "<font color=\"#ff0000\">DNF";
-            }
-
-            if (errorCount != 0) {
-                aString = aString + "</font></b></td>";
-            } else {
-                aString = aString + "</td>";
-            }
-            counter++;
-        }
-
-        return aString;
-    }
-
     public String getBuildType() {
         return buildType;
     }
@@ -665,7 +639,7 @@ public class TestResultsGenerator extends Task {
         return dropTokens;
     }
 
-    protected void getDropTokensFromList(final String list) {
+    private void getDropTokensFromList(final String list) {
         final StringTokenizer tokenizer = new StringTokenizer(list, ",");
         dropTokens = new Vector();
 
@@ -821,44 +795,77 @@ public class TestResultsGenerator extends Task {
         formatAccessesErrorRow(logName, forbiddenWarningCount, discouragedWarningCount, accessesLog);
     }
 
-    private void parseCompileLogs() {
+    private void parseCompileLogs() throws IOException {
+        File sourceDirectory = new File(getCompileLogsDirectoryName());
+        File mainDir = new File(computeMainOutputDirectory(sourceDirectory));
+        File compilerSummaryFile = new File(mainDir, compilerSummaryFilename);
+        if (compilerSummaryFile.exists()) {
+            log("Compile logs summary page, " + compilerSummaryFilename + ", was found to exist already, so not recomputed.");
+        } else {
+            log("Parsing compile logs");
+            String compileLogResults = "";
+            final StringBuffer compilerString = new StringBuffer();
+            final StringBuffer accessesString = new StringBuffer();
+            processCompileLogsDirectory(getCompileLogsDirectoryName(), compilerString, accessesString);
+            if (compilerString.length() == 0) {
+                compilerString.append("<tr><td>None</td><td></td><td></td></tr>");
+            }
+            if (accessesString.length() == 0) {
+                accessesString.append("<tr><td>None</td><td></td><td></td></tr>");
+            }
 
-        final StringBuffer compilerString = new StringBuffer();
-        final StringBuffer accessesString = new StringBuffer();
-        processCompileLogsDirectory(compileLogsDirectoryName, compilerString, accessesString);
-        if (compilerString.length() == 0) {
-            compilerString.append("None");
-        }
-        if (accessesString.length() == 0) {
-            accessesString.append("None");
-        }
-        testResultsTemplateString = replace(testResultsTemplateString, compileLogsToken, String.valueOf(compilerString));
+            compileLogResults = "        <div class=\"homeitem3col\">" + EOL
+                    + "<h3 id=\"PluginsErrors\">Plugins containing compile errors or warnings</h3>" + EOL
+                    + "&nbsp;&nbsp;The table below shows the plugins in which errors or warnings were encountered. Click on the jar file link to view its"
+                    + EOL + "detailed report." + EOL + "<br /><br />" + EOL + "<table width=\"100%\" border=\"1\">" + EOL + "  <tr>"
+                    + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL + "    <th>Errors</th>" + EOL + "    <th>Warnings</th>"
+                    + EOL + "  </tr>" + EOL;
 
-        testResultsTemplateString = replace(testResultsTemplateString, accessesLogsToken, String.valueOf(accessesString));
+            compileLogResults = compileLogResults + compilerString.toString();
+
+            compileLogResults = compileLogResults + "          </table>" + EOL
+                    + "<h3 id=\"AcessErrors\">Plugins containing access errors or warnings</h3>" + EOL
+                    + "<table width=\"100%\" border=\"1\">" + EOL + " <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL
+                    + "   <th>Forbidden Access Warnings</th>" + EOL + "   <th>Discouraged Access Warnings</th>" + EOL + " </tr>"
+                    + EOL;
+
+            compileLogResults = compileLogResults + accessesString.toString();
+            compileLogResults = compileLogResults + "</table>" + EOL + "  <br /> " + EOL + "</div>" + EOL;
+            // write the include file. The name of this file must match what is
+            // in testResults.template.php
+            writePhpIncludeCompilerResultsFile(sourceDirectory, compileLogResults);
+            log("End: Generating compile logs summary page");
+        }
     }
 
     private void parseJUnitTestsXml() throws IOException {
-
+        log("Begin: Generating test results index page");
+        log("Parsing XML JUnit results files");
+        String replaceString = "";
         final File sourceDirectory = new File(xmlDirectoryName);
-
+        File[] xmlFileNames = null;
+        ResultsTable resultsTable = new ResultsTable(getTestsConfig());
         if (sourceDirectory.exists()) {
             // reinitialize each time.
-            // We currently "re do" all of them, but can improve in the future
+            // We currently "re do" all of tests, but can improve in the future
             // where the
             // 'found configs" are remembered, but then have to keep track of
-            // original order (not "found" order which has to with when tests completed).
+            // original order (not "found" order which has to with when tests
+            // completed).
             foundConfigs.clear();
-            
+
             ArrayList<File> allFileNames = new ArrayList();
-            String replaceString = "";
+
             for (String expectedConfig : getTestsConfig()) {
 
                 FilenameFilter configfilter = new ExpectedConfigFiler("_" + expectedConfig + XML_EXTENSION);
-                // we end with "full" list of files, sorted by configfilter, and then alphabetical.
+                // we end with "full" list of files, sorted by configfilter, and
+                // then alphabetical.
                 File[] xmlFileNamesForConfig = sourceDirectory.listFiles(configfilter);
 
                 if (xmlFileNamesForConfig.length > 0) {
-                    log("For " + expectedConfig + " found " + xmlFileNamesForConfig.length + " XML results files");
+                    // log("DEBUG: For " + expectedConfig + " found " +
+                    // xmlFileNamesForConfig.length + " XML results files");
                     foundConfigs.add(expectedConfig);
                     // sort by name, for each 'config' found.
                     Arrays.sort(xmlFileNamesForConfig);
@@ -866,59 +873,123 @@ public class TestResultsGenerator extends Task {
                         allFileNames.add(file);
                     }
                 }
-
             }
-                File[] xmlFileNames = new File[allFileNames.size()];
-                allFileNames.toArray(xmlFileNames);
-                log("Found " + xmlFileNames.length + " XML test results files total.");
-                // files MUST be alphabetical, for now
-                Arrays.sort(xmlFileNames);
-                String sourceDirectoryCanonicalPath = computeMainOutputDirectory(sourceDirectory);
+            xmlFileNames = new File[allFileNames.size()];
+            allFileNames.toArray(xmlFileNames);
+            // log("DEBUG: Found " + xmlFileNames.length + " XML test results
+            // files total.");
+            // files MUST be alphabetical, for now
+            Arrays.sort(xmlFileNames);
+            String sourceDirectoryCanonicalPath = computeMainOutputDirectory(sourceDirectory);
 
-                for (int i = 0; i < xmlFileNames.length; i++) {
-                    final String fullName = xmlFileNames[i].getPath();
-                    final int errorCount = countErrors(fullName);
-                    if (errorCount != 0) {
-                        final String testName = xmlFileNames[i].getName().substring(0,
-                                xmlFileNames[i].getName().length() - XML_EXTENSION.length());
-                        testResultsWithProblems = testResultsWithProblems.concat(EOL + testName);
-                        testResultsXmlUrls = testResultsXmlUrls
-                                .concat(EOL + extractXmlRelativeFileName(sourceDirectoryCanonicalPath, xmlFileNames[i]));
-                        anErrorTracker.registerError(fullName.substring(getXmlDirectoryName().length() + 1));
-                    }
-                    // a bit a hack for transition to more "config" oriented processing, even though still 
-                    // processing all found files at once.
-                    String workingWithConfig = null;
-                    for (String localconfig : foundConfigs) {
-                        if (xmlFileNames[i].getName().contains(localconfig)) {
-                            workingWithConfig = localconfig;
-                            break;
-                        }
-                    }
-                    String tmp = formatJUnitRow(xmlFileNames[i].getPath(), errorCount, true, workingWithConfig);
-                    replaceString = replaceString + tmp;
+            for (int i = 0; i < xmlFileNames.length; i++) {
+                File junitResultsFile = xmlFileNames[i];
+                checkIfMissingFromTestManifestFile(junitResultsFile);
+                String fullName = junitResultsFile.getPath();
+                int errorCount = countErrors(fullName);
+                resultsTable.putCell(computeCoreName(junitResultsFile), computeConfig(junitResultsFile), errorCount,
+                        junitResultsFile);
+                if (errorCount != 0) {
+                    trackDataForMail(sourceDirectoryCanonicalPath, junitResultsFile, fullName);
                 }
-
-                // check for missing test logs
-                replaceString = replaceString + verifyAllTestsRan(xmlDirectoryName);
-
-
-
-            if (foundConfigs.size() > 0) {
-                testResultsTemplateString = replace(testResultsTemplateString, testResultsToken, replaceString);
-                testsRan = true;
-                // write each to output directory in file testConfigs.php
-                writePhpConfigFile(sourceDirectory, found_config_type, foundConfigs, FOUND_TEST_CONFIGS_FILENAME);
-            } else {
-                testsRan = false;
-                log("Test results not found in " + sourceDirectory.getAbsolutePath());
             }
+            // above is all "compute data".
+            // now time to "display" it.
+            for (String row : resultsTable) {
+                // File junitResultsFile = xmlFileNames[i];
+                replaceString = replaceString + formatJUnitRow(row, resultsTable);
+            }
+            // System.out.println("Debug: results: " + replaceString);
         } else {
             // error? Or, just too early?
             log("WARNING: sourceDirectory did not exist at \n\t" + sourceDirectory);
             log("     either incorrect call to 'generate index' or other configuration error.");
         }
 
+        // WRITE
+        // String tmp = formatJUnitTable(xmlFileNames, resultsTable);
+        // replaceString = replaceString + tmp;
+
+        // check for missing test logs
+        replaceString = replaceString + verifyAllTestsRan(xmlDirectoryName);
+
+        replaceString = replaceString + listMissingManifestFiles();
+
+        if (foundConfigs.size() > 0) {
+            testResultsTemplateString = replace(testResultsTemplateString, testResultsToken, replaceString);
+            setTestsRan(true);
+            // write each to output directory in file testConfigs.php
+            writePhpConfigFile(sourceDirectory, found_config_type, foundConfigs, FOUND_TEST_CONFIGS_FILENAME);
+        } else {
+            setTestsRan(false);
+            log("Test results not found in " + sourceDirectory.getAbsolutePath());
+        }
+        writeTestResultsFile();
+    }
+
+    private void setTestsRan(boolean b) {
+        testRan = b;
+    }
+
+    /*
+     * As far as I know, this "work" was done to track data send out in an
+     * email.
+     */
+    private void trackDataForMail(String sourceDirectoryCanonicalPath, File junitResultsFile, final String fullName) {
+        final String testName = junitResultsFile.getName().substring(0,
+                junitResultsFile.getName().length() - XML_EXTENSION.length());
+        testResultsWithProblems = testResultsWithProblems.concat(EOL + testName);
+        testResultsXmlUrls = testResultsXmlUrls
+                .concat(EOL + extractXmlRelativeFileName(sourceDirectoryCanonicalPath, junitResultsFile));
+        anErrorTracker.registerError(fullName.substring(getXmlDirectoryName().length() + 1));
+    }
+
+    /*
+     * This is the "reverse" of checking for "missing test results". It is
+     * simple sanity check to see if all "known" test results are listed in in
+     * the testManifest.xml file. We only do this check if we also are checking
+     * for missing logs which depends on an accurate testManifest.xml file.
+     */
+    private void checkIfMissingFromTestManifestFile(File junitResultsFile) {
+        if (doMissingList) {
+            if (!verifyLogInManifest(junitResultsFile.getName())) {
+                String corename = computeCoreName(junitResultsFile);
+                missingManifestFiles.add(corename);
+            }
+        }
+    }
+
+    private String computeCoreName(File junitResultsFile) {
+        String fname = junitResultsFile.getName();
+        // corename is all that needs to be listed in testManifest.xml
+        String corename = null;
+        int firstUnderscorepos = fname.indexOf('_');
+        if (firstUnderscorepos == -1) {
+            // should not occur, but if it does, we will take whole name
+            corename = fname;
+        } else {
+            corename = fname.substring(0, firstUnderscorepos);
+        }
+        return corename;
+    }
+
+    private String computeConfig(File junitResultsFile) {
+        String fname = junitResultsFile.getName();
+        String configName = null;
+        int firstUnderscorepos = fname.indexOf('_');
+        if (firstUnderscorepos == -1) {
+            // should not occur, but if it does, we will set to null
+            // and let calling program decide what to do.
+            configName = null;
+        } else {
+            int lastPos = fname.lastIndexOf(XML_EXTENSION);
+            if (lastPos == -1) {
+                configName = null;
+            } else {
+                configName = fname.substring(firstUnderscorepos + 1, lastPos);
+            }
+        }
+        return configName;
     }
 
     private void writePhpConfigFile(final File sourceDirectory, String config_type, ArrayList<String> configs, String phpfilename)
@@ -935,6 +1006,17 @@ public class TestResultsGenerator extends Task {
             testconfigsPHP.write(phpArrayVariableName + "[]=\"" + fConfig + "\";" + EOL);
         }
         testconfigsPHP.close();
+    }
+
+    private void writePhpIncludeCompilerResultsFile(final File sourceDirectory, String compilerSummary) throws IOException {
+        File mainDir = new File(computeMainOutputDirectory(sourceDirectory));
+        File compilerSummaryFile = new File(mainDir, compilerSummaryFilename);
+        Writer compilerSummaryPHP = new FileWriter(compilerSummaryFile);
+        compilerSummaryPHP.write("<!--" + EOL);
+        compilerSummaryPHP.write("  This file created by 'generateIndex' ant task, while parsing build and tests results" + EOL);
+        compilerSummaryPHP.write("-->" + EOL);
+        compilerSummaryPHP.write(compilerSummary);
+        compilerSummaryPHP.close();
     }
 
     private String computeMainOutputDirectory(final File sourceDirectory) {
@@ -972,7 +1054,7 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    protected String processDropRow(final PlatformStatus aPlatform) {
+    private String processDropRow(final PlatformStatus aPlatform) {
         if ("equinox".equalsIgnoreCase(aPlatform.getFormat())) {
             return processEquinoxDropRow(aPlatform);
         } else {
@@ -989,7 +1071,7 @@ public class TestResultsGenerator extends Task {
         return result;
     }
 
-    protected String processDropRows(final PlatformStatus[] platforms) {
+    private String processDropRows(final PlatformStatus[] platforms) {
         String result = "";
         for (int i = 0; i < platforms.length; i++) {
             result = result + processDropRow(platforms[i]);
@@ -1001,7 +1083,7 @@ public class TestResultsGenerator extends Task {
      * Generate and return the HTML mark-up for a single row for an Equinox JAR
      * on the downloads page.
      */
-    protected String processEquinoxDropRow(final PlatformStatus aPlatform) {
+    private String processEquinoxDropRow(final PlatformStatus aPlatform) {
         String result = "<tr>";
         // result = result + "<td align=\"center\">" +
         // getStatusColumn(aPlatform, "/equinox/images/", true) + "</td>\n";
@@ -1019,43 +1101,6 @@ public class TestResultsGenerator extends Task {
         result = result + "{$generateDropSize(\"" + filename + "\")}\n";
         result = result + "{$generateChecksumLinks(\"" + filename + "\", $buildlabel)}\n";
         result = result + "</tr>\n";
-        return result;
-    }
-
-    // Process drop rows specific to each of the platforms
-    protected String processPlatformDropRows(final PlatformStatus[] platforms, final String name) {
-        String result = "";
-        boolean found = false;
-        for (int i = 0; i < platforms.length; i++) {
-            // If the platform description indicates the platform's name, or
-            // "All",
-            // call processDropRow
-            if (platforms[i].getName().startsWith(name.substring(0, 3)) || platforms[i].getName().equals("All")) {
-                result = result + processDropRow(platforms[i]);
-                found = true;
-                continue;
-            }
-            // If the platform description indicates "All Other Platforms",
-            // process
-            // the row locally
-            if (platforms[i].getName().equals("All Other Platforms") && !found) {
-                if ("equinox".equalsIgnoreCase(platforms[i].getFormat())) {
-                    result = processEquinoxDropRow(platforms[i]);
-                    continue;
-                }
-                // final String imageName = getStatusColumn(platforms[i], "",
-                // false);
-                result = result + "<tr>";
-                // result = result + "<td><div align=left>" + imageName +
-                // "</div></td>\n";
-                result = result + "<td>All " + name + "</td>";
-                // generate http, md5 and sha1 links by calling php functions in
-                // the template
-                result = result + "<td><?php genLinks($_SERVER[\"SERVER_NAME\"],\"${BUILD_ID}\",\"" + platforms[i].getFileName()
-                        + "\"); ?></td>\n";
-                result = result + "</tr>\n";
-            }
-        }
         return result;
     }
 
@@ -1079,7 +1124,7 @@ public class TestResultsGenerator extends Task {
         formatAccessesErrorRow(log, forbiddenWarningCount, discouragedWarningCount, accessesLog);
     }
 
-    public String readFile(final String fileName) {
+    private String readFile(final String fileName) {
         byte[] aByteArray = null;
         try {
             aByteArray = getFileByteContent(fileName);
@@ -1210,22 +1255,8 @@ public class TestResultsGenerator extends Task {
         testResultsWithProblems = string;
     }
 
-    /**
-     * @param b
-     */
-    public void setTestsRan(final boolean b) {
-        testsRan = b;
-    }
-
     public void setXmlDirectoryName(final String aString) {
         xmlDirectoryName = aString;
-    }
-
-    /**
-     * @return
-     */
-    public boolean testsRan() {
-        return testsRan;
     }
 
     private String verifyAllTestsRan(final String directory) {
@@ -1235,19 +1266,20 @@ public class TestResultsGenerator extends Task {
             for (String testLogName : anErrorTracker.getTestLogs(foundConfigs)) {
 
                 if (new File(directory + File.separator + testLogName).exists()) {
-                    log("DEBUG: found log existed: " + testLogName);
+                    // log("DEBUG: found log existed: " + testLogName);
                     continue;
                 }
-                log("DEBUG: found log DID NOT exist: " + testLogName);
+                // log("DEBUG: found log DID NOT exist: " + testLogName);
                 anErrorTracker.registerError(testLogName);
-                //replaceString = replaceString + tmp;
-                // testResultsWithProblems appears to be for email, or similar? 
+                // replaceString = replaceString + tmp;
+                // testResultsWithProblems appears to be for email, or similar?
                 testResultsWithProblems = testResultsWithProblems
                         .concat(EOL + testLogName.substring(0, testLogName.length() - XML_EXTENSION.length()) + " (file missing)");
                 missingFiles.add(testLogName);
             }
         } else {
-            // Note: we intentionally do not deal with missing file for perf. tests yet.
+            // Note: we intentionally do not deal with missing file for perf.
+            // tests yet.
             // (though, probably could, once fixed with "expected configs").
             replaceString = replaceString + "<tbody>\n" + "<tr><td colspan=\"0\"><p><span class=\"footnote\">NOTE: </span>\n"
                     + "Remember that for performance unit test tables, there are never any \"missing files\" listed, if there are any. \n"
@@ -1261,8 +1293,8 @@ public class TestResultsGenerator extends Task {
             if (missingFiles.size() > 1) {
                 ordinalWord = "Files";
             }
-                
-            replaceString = replaceString + "</table></br>" + EOL
+
+            replaceString = replaceString + "</table><br />" + EOL
                     + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
                     + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\">Missing " + ordinalWord + "</th></tr>";
             for (String testLogName : missingFiles) {
@@ -1273,8 +1305,8 @@ public class TestResultsGenerator extends Task {
         return replaceString;
     }
 
-    protected void writeDropIndexFile() {
-
+    private void writeDropIndexFile() {
+        log("Begin: Generating drop index page");
         final String[] types = anErrorTracker.getTypes();
         for (int i = 0; i < types.length; i++) {
             final PlatformStatus[] platforms = anErrorTracker.getPlatforms(types[i]);
@@ -1283,6 +1315,7 @@ public class TestResultsGenerator extends Task {
         }
         final String outputFileName = dropDirectoryName + File.separator + dropHtmlFileName;
         writeFile(outputFileName, dropTemplateString);
+        log("End: Generating drop index page");
     }
 
     private void writeFile(final String outputFileName, final String contents) {
@@ -1309,9 +1342,10 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    public void writeTestResultsFile() {
+    private void writeTestResultsFile() {
         final String outputFileName = dropDirectoryName + File.separator + testResultsHtmlFileName;
         writeFile(outputFileName, testResultsTemplateString);
+        log("End: Generating test results index page");
     }
 
     public String getTestsConfigExpected() {
@@ -1321,7 +1355,7 @@ public class TestResultsGenerator extends Task {
 
     public void setTestsConfigExpected(String testsConfigExpected) {
         this.testsConfigExpected = testsConfigExpected;
-        log("DEBUG: testsConfigExpected: " + testsConfigExpected);
+        // log("DEBUG: testsConfigExpected: " + testsConfigExpected);
     }
 
     private ArrayList<String> getTestsConfig() throws IOException {
@@ -1337,7 +1371,7 @@ public class TestResultsGenerator extends Task {
                 throw new BuildException("test configurations were not found. One or more must be set.");
             }
             if (DEBUG) {
-                log("DEBUG: testsConfig array ");
+                // log("DEBUG: testsConfig array ");
                 for (String expected : expectedConfigs) {
                     log("\tDEBUG: expectedTestConfig: " + expected);
                 }
@@ -1357,38 +1391,161 @@ public class TestResultsGenerator extends Task {
     public void setDoMissingList(boolean doMissingList) {
         this.doMissingList = doMissingList;
     }
-    
-    // I restored this 'mailResults' method from history. It was removed about 3.8 M3. It was commented out 
-    // at that time. Not sure for how long. I am not sure where "Mailer" class was coming from. 
-    // Needs more research or re-invention. (Compare with CBI aggregator method.)
+
     /*
-    private void mailResults() {
+     * This is the reverse of checking that all expected logs were found. If
+     * logs were found that are NOT in the test manifest, we write the list
+     * below missing files, so that they can be added to testManifest.xml. This
+     * allows them to be detected as missing, in future. We only do this check
+     * if "doMissingList" is true.
+     */
+    private boolean verifyLogInManifest(String filename) {
+        boolean result = false;
+        if (getDoMissingList()) {
+            for (String testLogName : anErrorTracker.getTestLogs(foundConfigs)) {
+                if (filename.equals(testLogName)) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    private String listMissingManifestFiles() throws IOException {
+        String results = "";
+        if (getDoMissingList()) {
+            String xmlFragment = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " + EOL + "<topLevel>" + EOL;
+
+            if (getDoMissingList() && missingManifestFiles.size() > 0) {
+                String ordinalWord = "File";
+                if (missingManifestFiles.size() > 1) {
+                    ordinalWord = "Files";
+                }
+
+                results = results + EOL
+                        + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
+                        + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\">Releng: <a href=\"addToTestManifest.xml\">Missing testManifest.xml "
+                        + ordinalWord + "</a></th></tr>";
+                for (String testLogName : missingManifestFiles) {
+                    results = results + EOL + "<tr><td>" + testLogName + "</td></tr>";
+                    xmlFragment = xmlFragment + "<logFile " + EOL + "  name=\"" + testLogName + "\"" + EOL + "  type=\"test\" />"
+                            + EOL;
+                }
+                results = results + EOL + "</table>";
+                xmlFragment = xmlFragment + "</topLevel>";
+                FileWriter xmlOutput = new FileWriter(getDropDirectoryName() + "/addToTestManifest.xml");
+                xmlOutput.write(xmlFragment);
+                xmlOutput.close();
+            }
+        }
+        return results;
+    }
+
+    // Specific to the RelEng test results page
+    private String formatJUnitRow(String corename, ResultsTable resultsTable) throws IOException {
+
+        String results = "";
+        // String fileName = xmlResultsFile.getPath();
+
+        // for (String config : getTestsConfig()) {
+        // Integer cellResult = resultsTable.getCell(corename, config);
+
+        // For brevity, get org.eclipse. out of the component name
+        // "org.eclipse." is 12, 13 was hard coded?
+        int orgEclipseLength = "org.eclipse.".length();
+        // indexOf('_') assumes never part of file name?
+        final String shortName = corename.substring(orgEclipseLength);
+        String displayName = "o.e." + shortName;
+
+        results = results + EOL + "<tr><td>" + displayName + "</td>";
+
+        for (String config : getTestsConfig()) {
+            Cell cell = resultsTable.getCell(corename, config);
+            if (cell == null && foundConfigs.contains(config)) {
+                cell = resultsTable.new Cell(-1,  null);
+            }
+            results = results + "<td align=\"center\">" + printCell(cell) + "</td>";
+        }
+        results = results + "</tr>" + EOL;
+        return results;
+    }
+
+    private String printCell(Cell cell) {
+        String result = null;
+        String displayName = null;
+        if (cell == null) {
+            displayName = "&nbsp;";
+            result = displayName;
+        } else {
+            int cellErrorCount = cell.getErrorCount();
+            File cellResultsFile = cell.getResultsFile();
+            String filename = null;
+            int beginFilename = 0;
+            String rawfilename = null;
+            if (cellResultsFile != null) {
+                filename = cellResultsFile.getName();
+                beginFilename = filename.lastIndexOf(File.separatorChar);
+                rawfilename = filename.substring(beginFilename + 1, filename.length() - XML_EXTENSION.length());
+            }
+
+            if (cellErrorCount == -999) {
+                displayName = "&nbsp;";
+                result = displayName;
+            } else if (cellErrorCount == 0) {
+                displayName = "(0)";
+                result = addLinks(displayName, rawfilename);
+            } else if (cellErrorCount < 0) {
+                displayName = "<font color=\"#ff0000\">(" + Integer.toString(cellErrorCount) + ") DNF </font>";
+                result = displayName;
+            } else if (cellErrorCount > 0) {
+                displayName = "<font color=\"#ff0000\">(" + Integer.toString(cellErrorCount) + ")</font>";
+                result = addLinks(displayName, rawfilename);
+            } else {
+                displayName = "?" + Integer.toString(cellErrorCount) + "?";
+                result = displayName;
+            }
+        }
+        return result;
+
+    }
+
+    private String addLinks(String displayName, String rawfilename) {
+        String result;
+        result = "<a  title=\"Detailed Unit Test Results Table\" href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename + HTML_EXTENSION + "\">" + displayName
+                + "</a>";
+        result = result
+                + "&nbsp;<a style=\"color:#AAAAAA\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
+                + hrefTestResultsTargetPath + "/xml/" + rawfilename + XML_EXTENSION + "\">(XML)</a>";
+        return result;
+    }
+
+    // Totally non-functional method. restored from history for investigation.
+    // I restored this 'mailResults' method from history. It was removed about
+    // 3.8 M3. It was commented out
+    // at that time. Not sure for how long. I am not sure where "Mailer" class
+    // was coming from.
+    // Needs more research or re-invention. (Compare with CBI aggregator
+    // method?)
+
+    void mailResults() {
+        Mailer mailer = null;
         // send a different message for the following cases:
-        // build is not tested at all
-        // build is tested, tests have not run
+        // build is not tested at all // build is tested, tests have not run
         // build is tested, tests have run with error and or failures
         // build is tested, tests have run with no errors or failures
         try {
-           mailer = new Mailer();
+            mailer = new Mailer();
         }
         catch (NoClassDefFoundError e) {
             return;
         }
-        String buildLabel = mailer.getBuildProperties().getBuildLabel();
-        String httpUrl = mailer.getBuildProperties().getHttpUrl() + "/" + buildLabel;
-        // String ftpUrl =
-        // mailer.getBuildProperties().getftpUrl()+"/"+buildLabel;
+        String buildLabel = mailer.getBuildLabel();
+        String httpUrl = mailer.getHttpUrl() + "/" + buildLabel; //
 
         String subject = "Build is complete.  ";
 
-        String downloadLinks = "\n\nHTTP Download:\n\n\t" + httpUrl + " \n\n";
-//        
-//         * downloadLinks=downloadLinks.concat("FTP Download:\n\n");
-//         * downloadLinks=downloadLinks.concat(
-//         * "\tuser: anonymous\n\tpassword: (e-mail address or leave blank)\n\tserver:  download.eclipse.org\n\tcd to directory:  "
-//         * +buildLabel); downloadLinks=downloadLinks.concat("\n\n\tor");
-//         * downloadLinks=downloadLinks.concat("\n\n\t"+ftpUrl);
-//         
+        String downloadLinks = "\n\nHTTP Download:\n\n\t" + httpUrl + " \n\n"; //
 
         // provide http links
         String message = "The build is complete." + downloadLinks;
@@ -1405,10 +1562,40 @@ public class TestResultsGenerator extends Task {
             message = "The " + subject + downloadLinks;
         }
 
-        if (subject.endsWith("Test failures/errors occurred."))
+        if (subject.endsWith("Test failures/errors occurred.")) {
             mailer.sendMessage(subject, message);
-        else if (!getBuildType().equals("N"))
+        } else if (!getBuildType().equals("N")) {
             mailer.sendMessage(subject, message);
+        }
     }
-    */
+
+    private boolean testsRan() {
+        return testRan;
+    }
+
+    /* purely a place holder */
+    class Mailer {
+
+        public Object getBuildProperties() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        public String getBuildLabel() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        public String getHttpUrl() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        public void sendMessage(String subject, String message) {
+            // TODO Auto-generated method stub
+
+        }
+
+    }
+
 }
