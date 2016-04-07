@@ -1448,8 +1448,7 @@ public class TestResultsGenerator extends Task {
         // "org.eclipse." is 12, 13 was hard coded?
         int orgEclipseLength = "org.eclipse.".length();
         // indexOf('_') assumes never part of file name?
-        final String shortName = corename.substring(orgEclipseLength);
-        String displayName = "o.e." + shortName;
+        final String displayName = corename.substring(orgEclipseLength);
 
         results = results + EOL + "<tr><td>" + displayName + "</td>";
 
