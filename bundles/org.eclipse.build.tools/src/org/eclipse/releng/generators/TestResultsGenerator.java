@@ -102,22 +102,6 @@ public class TestResultsGenerator extends Task {
                 return cell;
             }
 
-            public int getCellCount(String column) {
-                Cell cell = row.get(column);
-                Integer value = cell.getErrorCount();
-                if (value == null) {
-                    return -999;
-                } else {
-                    return value;
-                }
-            }
-
-            public File getCellFile(String column) {
-                Cell cell = row.get(column);
-                File value = cell.getResultsFile();
-                return value;
-            }
-
             public void putCell(String columnName, Integer cellValue, File file) {
                 row.put(columnName, new Cell(cellValue, file));
             }
@@ -198,7 +182,7 @@ public class TestResultsGenerator extends Task {
 
     private DocumentBuilder     parser                         = null;
     private ErrorTracker        anErrorTracker;
-    private String              testResultsTemplateString      = "";
+
 
     private String              dropTemplateString             = "";
 
@@ -220,9 +204,6 @@ public class TestResultsGenerator extends Task {
 
     // Location of the resulting index.php file.
     private String              dropDirectoryName;
-
-    // Location and name of the template index.php file.
-    private String              testResultsTemplateFileName;
 
     // Location and name of the template drop index.php file.
     private String              dropTemplateFileName;
@@ -378,7 +359,6 @@ public class TestResultsGenerator extends Task {
         } else {
             test.setTestsConfigExpected(
                     "ep46N-unit-lin64_linux.gtk.x86_64_8.0 ,ep46N-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46N-unit-win32_win32.win32.x86_8.0, ep46N-unit-cen64_linux.gtk.x86_64_8.0");
-
             // "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
             test.setDropTokenList(
                     "%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
@@ -389,8 +369,6 @@ public class TestResultsGenerator extends Task {
             test.setHtmlDirectoryName(
                     "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160406-2048/testresults");
             test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160406-2048");
-         //   test.setTestResultsTemplateFileName(
-         //           "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/testResults.template.php");
 
             test.setDropTemplateFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
@@ -509,7 +487,6 @@ public class TestResultsGenerator extends Task {
         anErrorTracker = new ErrorTracker();
         anErrorTracker.loadFile(testManifestFileName);
         getDropTokensFromList(dropTokenList);
-        testResultsTemplateString = ""; //readFile(testResultsTemplateFileName);
         dropTemplateString = readFile(dropTemplateFileName);
 
         writeDropIndexFile();
@@ -689,10 +666,6 @@ public class TestResultsGenerator extends Task {
         return testResultsHtmlFileName;
     }
 
-    public String getTestResultsTemplateFileName() {
-        return testResultsTemplateFileName;
-    }
-
     /**
      * @return
      */
@@ -847,7 +820,7 @@ public class TestResultsGenerator extends Task {
     private void parseJUnitTestsXml() throws IOException {
         log("Begin: Generating test results index page");
         log("Parsing XML JUnit results files");
-        String replaceString = "";
+        String htmlString = startTableOfUnitResults();
         final File sourceDirectory = new File(xmlDirectoryName);
         File[] xmlFileNames = null;
         ResultsTable resultsTable = new ResultsTable(getTestsConfig());
@@ -903,7 +876,7 @@ public class TestResultsGenerator extends Task {
             // now time to "display" it.
             for (String row : resultsTable) {
                 // File junitResultsFile = xmlFileNames[i];
-                replaceString = replaceString + formatJUnitRow(row, resultsTable);
+                htmlString = htmlString + formatJUnitRow(row, resultsTable);
             }
             // System.out.println("Debug: results: " + replaceString);
         } else {
@@ -912,18 +885,17 @@ public class TestResultsGenerator extends Task {
             log("     either incorrect call to 'generate index' or called too early (tests not done yet)?");
         }
 
-        // WRITE
-        // String tmp = formatJUnitTable(xmlFileNames, resultsTable);
-        // replaceString = replaceString + tmp;
+        // Once we are done with the Unit tests rows, we must add end table tag, 
+        // since the following methods may or may not  add a table of their own.
+        htmlString = htmlString + EOL + "</table>" + EOL;
 
         // check for missing test logs
-        replaceString = replaceString + verifyAllTestsRan(xmlDirectoryName);
+        htmlString = htmlString + verifyAllTestsRan(xmlDirectoryName);
 
-        replaceString = replaceString + listMissingManifestFiles();
-
+        htmlString = htmlString + listMissingManifestFiles();
+        writeTestResultsFile(htmlString);
+        
         if (foundConfigs.size() > 0) {
-           // testResultsTemplateString = replace(testResultsTemplateString, testResultsToken, replaceString);
-            testResultsTemplateString = replaceString;
             setTestsRan(true);
             // write each to output directory in file testConfigs.php
             writePhpConfigFile(sourceDirectory, found_config_type, foundConfigs, FOUND_TEST_CONFIGS_FILENAME);
@@ -931,9 +903,59 @@ public class TestResultsGenerator extends Task {
             setTestsRan(false);
             log("Test results not found in " + sourceDirectory.getAbsolutePath());
         }
-        writeTestResultsFile();
+        log("End: Generating test results index page");
     }
 
+    private String startTableOfUnitResults () throws IOException {
+        String result = "";
+        long width=90;
+        long half= width / 2;
+        int ncolumns= getTestsConfig().size();
+                /*
+                unsure if 'percent' can be "real" number, or if must be integer?
+                if needs to be integer, use ($a - ($a % $b)) / $b;
+                 */
+        long colWidth=half / ncolumns;
+        // table
+        result = result + "<table width='" + width + "%' border='1' bgcolor='#EEEEEE' rules='rows' align='center'>\n" + EOL;
+        // table header
+        result = result + "<tr bgcolor='#9999CC'>\n" + EOL;
+        result = result +  "<th rowspan='2' width='" + half + "%' align='center'> org.eclipse <br /> Test Bundles </th>\n" + EOL;
+        result = result +  "<th colspan='" + (ncolumns + 1) + "' align='center'> Test Configurations (Hudson Job/os.ws.arch/VM) </th>" + EOL;
+        result = result + "</tr>\n";
+        // end table header
+        result = result +  "<tr bgcolor='#9999CC'>\n";
+
+        for (String column: getTestsConfig()) 
+        {
+            result = result +  "<th width='" + colWidth + "%'>"+  computeDisplayConfig(column) + "</th>\n";
+        }
+        result = result +  "</tr>\n";
+        return result;
+    }
+    /* 
+    This function "breaks" the full config string at meaningful 
+    underscores, for improved display in tables and similar.
+    Remember, some config values can have more than two underscores, 
+    such as ep46N-unit-lin64_linux.gtk.x86_64_8.0, which should 
+    be split as 
+             ep46N-unit-lin64
+             lin64_linux.gtk.x86_64
+             8.0
+     */
+    private String computeDisplayConfig(String config) {
+      int lastUnderscore = config.lastIndexOf("_");
+      int firstUnderscore = config.indexOf('_');
+      //echo "<br/>DEBUG: config: config firstUnderscore: firstUnderscore  lastUnderscore: lastUnderscore  lastMinusFirst: platformLength"
+      String jobname = config.substring(0,firstUnderscore);
+      String platformconfig = config.substring(firstUnderscore + 1, lastUnderscore);
+      String vmused = config.substring(lastUnderscore+1);
+      //echo "DEBUG: jobname: ".jobname."<br/>";
+      //echo "DEBUG: platformconfig: ".platformconfig."<br/>";
+      //echo "DEBUG: vmused: ".vmused."<br/>";
+      return jobname +"<br/>" + platformconfig + "<br/>"+ vmused;
+
+    }
     private void setTestsRan(boolean b) {
         testRan = b;
     }
@@ -1238,10 +1260,6 @@ public class TestResultsGenerator extends Task {
        testResultsHtmlFileName = aString;
     }
 
-    public void setTestResultsTemplateFileName(final String aString) {
-        testResultsTemplateFileName = aString;
-    }
-
     /**
      * @param string
      */
@@ -1336,10 +1354,15 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    private void writeTestResultsFile() {
+    /*
+     * This method writes the computed HTML to the file specified by caller in testResultsHtmlFileName. 
+     * There must be an appropriate file on Download site that "includes" the file. 
+     * @param contents
+     */
+    private void writeTestResultsFile(String contents) {
         final String outputFileName = dropDirectoryName + File.separator + testResultsHtmlFileName;
-        writeFile(outputFileName, testResultsTemplateString);
-        log("End: Generating test results index page");
+        writeFile(outputFileName, contents);
+
     }
 
     public String getTestsConfigExpected() {
