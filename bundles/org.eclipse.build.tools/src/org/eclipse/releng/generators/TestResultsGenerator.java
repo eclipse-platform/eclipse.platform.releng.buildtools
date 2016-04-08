@@ -165,7 +165,7 @@ public class TestResultsGenerator extends Task {
     private static final int    DEFAULT_READING_SIZE           = 8192;
 
     private static final String elementName                    = "testsuite";
-  //  private static final String testResultsToken               = "%testresults%";
+    // private static final String testResultsToken = "%testresults%";
 
     private ArrayList<String>   foundConfigs                   = new ArrayList();
     private ArrayList<String>   expectedConfigs                = null;
@@ -182,7 +182,6 @@ public class TestResultsGenerator extends Task {
 
     private DocumentBuilder     parser                         = null;
     private ErrorTracker        anErrorTracker;
-
 
     private String              dropTemplateString             = "";
 
@@ -208,9 +207,10 @@ public class TestResultsGenerator extends Task {
     // Location and name of the template drop index.php file.
     private String              dropTemplateFileName;
 
-    // Name of the HTML fragment file that any testResults.php file will "include".
+    // Name of the HTML fragment file that any testResults.php file will
+    // "include".
     // setting to common default.
-    private String              testResultsHtmlFileName = "testResultsRows.html"; 
+    private String              testResultsHtmlFileName        = "testResultsRows.html";
 
     // Name of the generated drop index php file;
     private String              dropHtmlFileName;
@@ -542,18 +542,42 @@ public class TestResultsGenerator extends Task {
             return;
         }
 
-        final String hrefCompileLogsTargetPath2 = getHrefCompileLogsTargetPath();
-        final int i = fileName.indexOf(hrefCompileLogsTargetPath2);
+        String relativeName=computeRelativeName(fileName);
+        String shortName = computeShortName(relativeName);
 
-        final String shortName = fileName.substring(i + hrefCompileLogsTargetPath2.length());
-
-        buffer.append("<tr>\n<td>\n").append("<a href=").append("\"").append(hrefCompileLogsTargetPath2).append(shortName)
-                .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td align=\"center\">").append("<a href=")
-                .append("\"").append(hrefCompileLogsTargetPath2).append(shortName).append("#FORBIDDEN_WARNINGS").append("\">")
-                .append(forbiddenAccessesWarningsCount).append("</a>").append("</td>\n").append("<td align=\"center\">")
-                .append("<a href=").append("\"").append(hrefCompileLogsTargetPath2).append(shortName)
+        buffer.append("<tr>").append(EOL).append("<td>").append(EOL)
+                 .append("<a href=").append("\"").append(relativeName).append("\">").append(shortName)
+                .append("</a>").append("</td>\n").append("<td style=\"text-align:center\" >").append("<a href=").append("\"")
+                .append(relativeName).append("#FORBIDDEN_WARNINGS").append("\">")
+                .append(forbiddenAccessesWarningsCount).append("</a>").append("</td>").append(EOL)
+                .append("<td style=\"text-align:center\" >")
+                .append("<a href=").append("\"").append(relativeName)
                 .append("#DISCOURAGED_WARNINGS").append("\">").append(discouragedAccessesWarningsCount).append("</a>")
-                .append("</td>\n").append("</tr>\n");
+                .append("</td>").append(EOL)
+                .append("</tr>").append(EOL);
+    }
+
+    private String computeRelativeName(final String fileName) {
+        String relativeName;
+        final int i = fileName.indexOf(getHrefCompileLogsTargetPath());
+        relativeName = fileName.substring(i);
+        return relativeName;
+    }
+
+    private String computeShortName(final String relativeName) {
+        String shortName;
+
+        final int start = getHrefCompileLogsTargetPath().length();
+        final int lastslash = relativeName.lastIndexOf("/");
+        // if there is no "last slash", that's a pretty weird case, but we'll
+        // just
+        // take the whole rest of string in that case.
+        if (lastslash == -1) {
+            shortName = relativeName.substring(start);
+        } else {
+            shortName = relativeName.substring(start, lastslash);
+        }
+        return shortName;
     }
 
     private void formatCompileErrorRow(final String fileName, final int errorCount, final int warningCount,
@@ -563,17 +587,15 @@ public class TestResultsGenerator extends Task {
             return;
         }
 
-        final String hrefCompileLogsTargetPath2 = getHrefCompileLogsTargetPath();
-        final int i = fileName.indexOf(hrefCompileLogsTargetPath2);
-
-        final String shortName = fileName.substring(i + hrefCompileLogsTargetPath2.length());
-
-        buffer.append("<tr>\n<td>\n").append("<a href=").append("\"").append(hrefCompileLogsTargetPath2).append(shortName)
-                .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td align=\"center\">").append("<a href=")
-                .append("\"").append(hrefCompileLogsTargetPath2).append(shortName).append("#ERRORS").append("\">")
-                .append(errorCount).append("</a>").append("</td>\n").append("<td align=\"center\">").append("<a href=").append("\"")
-                .append(hrefCompileLogsTargetPath2).append(shortName).append("#OTHER_WARNINGS").append("\">").append(warningCount)
-                .append("</a>").append("</td>\n").append("</tr>\n");
+        String relativeName=computeRelativeName(fileName);
+        String shortName = computeShortName(relativeName);
+        
+        buffer.append("<tr>\n<td>\n").append("<a href=").append("\"").append(relativeName)
+                .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td style=\"text-align:center\" >")
+                .append("<a href=").append("\"").append(relativeName).append("#ERRORS")
+                .append("\">").append(errorCount).append("</a>").append("</td>\n").append("<td style=\"text-align:center\" >")
+                .append("<a href=").append("\"").append(relativeName).append("#OTHER_WARNINGS")
+                .append("\">").append(warningCount).append("</a>").append("</td>\n").append("</tr>\n");
     }
 
     public String getBuildType() {
@@ -778,7 +800,7 @@ public class TestResultsGenerator extends Task {
         File sourceDirectory = new File(getCompileLogsDirectoryName());
         File mainDir = new File(getDropDirectoryName());
         File compilerSummaryFile = new File(mainDir, compilerSummaryFilename);
-        if (compilerSummaryFile.exists()) {
+        if (compilerSummaryFile.exists() && Boolean.FALSE) {
             log("Compile logs summary page, " + compilerSummaryFilename + ", was found to exist already, so not recomputed.");
         } else {
             log("Parsing compile logs");
@@ -787,26 +809,27 @@ public class TestResultsGenerator extends Task {
             final StringBuffer accessesString = new StringBuffer();
             processCompileLogsDirectory(getCompileLogsDirectoryName(), compilerString, accessesString);
             if (compilerString.length() == 0) {
-                compilerString.append("<tr><td>None</td><td></td><td></td></tr>");
+                compilerString.append("<tr><td>None</td><td style=\"text-align:center\">&nbsp;</td><td style=\"text-align:center\">&nbsp;</td></tr>" + EOL);
             }
             if (accessesString.length() == 0) {
-                accessesString.append("<tr><td>None</td><td></td><td></td></tr>");
+                accessesString.append("<tr><td>None</td><td style=\"text-align:center\">&nbsp;</td><td style=\"text-align:center\">&nbsp;</td></tr>" + EOL);
             }
 
             compileLogResults = "        <div class=\"homeitem3col\">" + EOL
                     + "<h3 id=\"PluginsErrors\">Plugins containing compile errors or warnings</h3>" + EOL
-                    + "&nbsp;&nbsp;The table below shows the plugins in which errors or warnings were encountered. Click on the jar file link to view its"
-                    + EOL + "detailed report." + EOL + "<br /><br />" + EOL + "<table width=\"90%\" border=\"1\">" + EOL + "  <tr>"
-                    + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL + "    <th>Errors</th>" + EOL + "    <th>Warnings</th>"
-                    + EOL + "  </tr>" + EOL;
+                    + "<p>The table below shows the plugins in which errors or warnings were encountered. Click on the jar file link to view its"
+                    + EOL + "detailed report.</p>" + EOL + "<br /><br />" + EOL
+                    + "<table style=\"background-color: #EEEEEE;margin-top: 20px; margin-bottom: 20px; margin-right: 5%; margin-left: 5%; width:90%; border: 1px solid black; \" >"
+                    + EOL + "  <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL + "    <th style=\"width:15em\">Errors</th>" + EOL
+                    + "    <th style=\"width:15em\">Warnings</th>" + EOL + "  </tr>" + EOL;
 
             compileLogResults = compileLogResults + compilerString.toString();
 
             compileLogResults = compileLogResults + "          </table>" + EOL
                     + "<h3 id=\"AcessErrors\">Plugins containing access errors or warnings</h3>" + EOL
-                    + "<table width=\"90%\" border=\"1\">" + EOL + " <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL
-                    + "   <th>Forbidden Access Warnings</th>" + EOL + "   <th>Discouraged Access Warnings</th>" + EOL + " </tr>"
-                    + EOL;
+                    + "<table style=\"background-color: #EEEEEE;margin-top: 20px; margin-bottom: 20px; margin-right: 5%; margin-left: 5%; width:90%; border: 1px solid black; \" >"
+                    + EOL + " <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL + "   <th style=\"width:15em; \">Forbidden Access Warnings</th>"
+                    + EOL + "   <th style=\"width:15em ;\" >Discouraged Access Warnings</th>" + EOL + " </tr>" + EOL;
 
             compileLogResults = compileLogResults + accessesString.toString();
             compileLogResults = compileLogResults + "</table>" + EOL + "  <br /> " + EOL + "</div>" + EOL;
@@ -885,8 +908,8 @@ public class TestResultsGenerator extends Task {
             log("     either incorrect call to 'generate index' or called too early (tests not done yet)?");
         }
 
-        // Once we are done with the Unit tests rows, we must add end table tag, 
-        // since the following methods may or may not  add a table of their own.
+        // Once we are done with the Unit tests rows, we must add end table tag,
+        // since the following methods may or may not add a table of their own.
         htmlString = htmlString + EOL + "</table>" + EOL;
 
         // check for missing test logs
@@ -894,7 +917,7 @@ public class TestResultsGenerator extends Task {
 
         htmlString = htmlString + listMissingManifestFiles();
         writeTestResultsFile(htmlString);
-        
+
         if (foundConfigs.size() > 0) {
             setTestsRan(true);
             // write each to output directory in file testConfigs.php
@@ -906,56 +929,56 @@ public class TestResultsGenerator extends Task {
         log("End: Generating test results index page");
     }
 
-    private String startTableOfUnitResults () throws IOException {
+    private String startTableOfUnitResults() throws IOException {
         String result = "";
-        long width=90;
-        long half= width / 2;
-        int ncolumns= getTestsConfig().size();
-                /*
-                unsure if 'percent' can be "real" number, or if must be integer?
-                if needs to be integer, use ($a - ($a % $b)) / $b;
-                 */
-        long colWidth=half / ncolumns;
+        long width = 90;
+        long half = width / 2;
+        int ncolumns = getTestsConfig().size();
+        /*
+         * unsure if 'percent' can be "real" number, or if must be integer? if
+         * needs to be integer, use ($a - ($a % $b)) / $b;
+         */
+        long colWidth = half / ncolumns;
         // table
-        result = result + "<table width='" + width + "%' border='1' bgcolor='#EEEEEE' rules='rows' align='center'>\n" + EOL;
+        result = result
+                + "<table style=\"background-color: #EEEEEE; margin-top: 20px; margin-bottom: 20px; margin-right: 5%; margin-left: 5%; width:" + width + "%; border: 1px solid black \" >" + EOL;
         // table header
-        result = result + "<tr bgcolor='#9999CC'>\n" + EOL;
-        result = result +  "<th rowspan='2' width='" + half + "%' align='center'> org.eclipse <br /> Test Bundles </th>\n" + EOL;
-        result = result +  "<th colspan='" + (ncolumns + 1) + "' align='center'> Test Configurations (Hudson Job/os.ws.arch/VM) </th>" + EOL;
+        result = result + "<tr style=\"background-color: #9999CC\" >" + EOL;
+        result = result + "<th style=\"width: "+ width + "%; text-align:center\" "+ " rowspan='2' > org.eclipse <br /> Test Bundles </th>\n" + EOL;
+        result = result + "<th style=\"text-align:center; \" colspan='" + ncolumns + "'> Test Configurations (Hudson Job/os.ws.arch/VM) </th>" + EOL;
         result = result + "</tr>\n";
         // end table header
-        result = result +  "<tr bgcolor='#9999CC'>\n";
+        result = result + "<tr style=\"background-color: #9999CC\">" + EOL;
 
-        for (String column: getTestsConfig()) 
-        {
-            result = result +  "<th width='" + colWidth + "%'>"+  computeDisplayConfig(column) + "</th>\n";
+        for (String column : getTestsConfig()) {
+            result = result + "<th style=\"width: "+ colWidth + "%; \" >" + computeDisplayConfig(column) + "</th>\n";
         }
-        result = result +  "</tr>\n";
+        result = result + "</tr>\n";
         return result;
     }
-    /* 
-    This function "breaks" the full config string at meaningful 
-    underscores, for improved display in tables and similar.
-    Remember, some config values can have more than two underscores, 
-    such as ep46N-unit-lin64_linux.gtk.x86_64_8.0, which should 
-    be split as 
-             ep46N-unit-lin64
-             lin64_linux.gtk.x86_64
-             8.0
+
+    /*
+     * This function "breaks" the full config string at meaningful underscores,
+     * for improved display in tables and similar. Remember, some config values
+     * can have more than two underscores, such as
+     * ep46N-unit-lin64_linux.gtk.x86_64_8.0, which should be split as
+     * ep46N-unit-lin64 lin64_linux.gtk.x86_64 8.0
      */
     private String computeDisplayConfig(String config) {
-      int lastUnderscore = config.lastIndexOf("_");
-      int firstUnderscore = config.indexOf('_');
-      //echo "<br/>DEBUG: config: config firstUnderscore: firstUnderscore  lastUnderscore: lastUnderscore  lastMinusFirst: platformLength"
-      String jobname = config.substring(0,firstUnderscore);
-      String platformconfig = config.substring(firstUnderscore + 1, lastUnderscore);
-      String vmused = config.substring(lastUnderscore+1);
-      //echo "DEBUG: jobname: ".jobname."<br/>";
-      //echo "DEBUG: platformconfig: ".platformconfig."<br/>";
-      //echo "DEBUG: vmused: ".vmused."<br/>";
-      return jobname +"<br/>" + platformconfig + "<br/>"+ vmused;
+        int lastUnderscore = config.lastIndexOf("_");
+        int firstUnderscore = config.indexOf('_');
+        // echo "<br/>DEBUG: config: config firstUnderscore: firstUnderscore
+        // lastUnderscore: lastUnderscore lastMinusFirst: platformLength"
+        String jobname = config.substring(0, firstUnderscore);
+        String platformconfig = config.substring(firstUnderscore + 1, lastUnderscore);
+        String vmused = config.substring(lastUnderscore + 1);
+        // echo "DEBUG: jobname: ".jobname."<br/>";
+        // echo "DEBUG: platformconfig: ".platformconfig."<br/>";
+        // echo "DEBUG: vmused: ".vmused."<br/>";
+        return jobname + "<br/>" + platformconfig + "<br/>" + vmused;
 
     }
+
     private void setTestsRan(boolean b) {
         testRan = b;
     }
@@ -1048,8 +1071,6 @@ public class TestResultsGenerator extends Task {
         compilerSummaryPHP.close();
     }
 
-
-
     private void processCompileLogsDirectory(final String directoryName, final StringBuffer compilerLog,
             final StringBuffer accessesLog) {
         final File sourceDirectory = new File(directoryName);
@@ -1101,7 +1122,7 @@ public class TestResultsGenerator extends Task {
      */
     private String processEquinoxDropRow(final PlatformStatus aPlatform) {
         String result = "<tr>";
-        // result = result + "<td align=\"center\">" +
+        // result = result + "<td style=\"text-align:center\" >" +
         // getStatusColumn(aPlatform, "/equinox/images/", true) + "</td>\n";
         result = result + "<td>";
         final String filename = aPlatform.getFileName();
@@ -1257,7 +1278,7 @@ public class TestResultsGenerator extends Task {
     }
 
     public void setTestResultsHtmlFileName(final String aString) {
-       testResultsHtmlFileName = aString;
+        testResultsHtmlFileName = aString;
     }
 
     /**
@@ -1307,8 +1328,9 @@ public class TestResultsGenerator extends Task {
             }
 
             replaceString = replaceString + "</table><br />" + EOL
-                    + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
-                    + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\">Missing " + ordinalWord + "</th></tr>";
+                    + "<table style=\"background-color: #EEEEEE; margin-top: 20px; margin-bottom: 20px; margin-right: 5px; margin-left: 5px; width:90%; border: 1px solid black;\" rules=\"rows\" >"
+                    + "<tr style=\"background-color: #9999CC\"> <th  style=\"text-align:center\">Missing " + ordinalWord
+                    + "</th></tr>";
             for (String testLogName : missingFiles) {
                 replaceString = replaceString + EOL + "<tr><td>" + testLogName + "</td></tr>";
             }
@@ -1355,8 +1377,10 @@ public class TestResultsGenerator extends Task {
     }
 
     /*
-     * This method writes the computed HTML to the file specified by caller in testResultsHtmlFileName. 
-     * There must be an appropriate file on Download site that "includes" the file. 
+     * This method writes the computed HTML to the file specified by caller in
+     * testResultsHtmlFileName. There must be an appropriate file on Download
+     * site that "includes" the file.
+     * 
      * @param contents
      */
     private void writeTestResultsFile(String contents) {
@@ -1440,8 +1464,9 @@ public class TestResultsGenerator extends Task {
                     ordinalWord = "Files";
                 }
 
-                results = results + EOL + "<table width=\"65%\" border=\"1\" bgcolor=\"#EEEEEE\" rules=\"groups\" align=\"center\">"
-                        + "<tr bgcolor=\"#9999CC\"> <th width=\"80%\" align=\"center\">Releng: <a href=\"addToTestManifest.xml\">Missing testManifest.xml "
+                results = results + EOL
+                        + "<table style=\"background-color: #EEEEEE; margin-top: 20px; margin-bottom: 20px; margin-right: 5px; margin-left: 5px; width:90%; border: 1px solid black; \" rules=\"rows\" align=\"center\">"
+                        + "<tr style=\"background-color: #9999CC\"> <th style=\"text-align:center; width:80%\" >Releng: <a href=\"addToTestManifest.xml\">Missing testManifest.xml "
                         + ordinalWord + "</a></th></tr>";
                 for (String testLogName : missingManifestFiles) {
                     results = results + EOL + "<tr><td>" + testLogName + "</td></tr>";
@@ -1480,7 +1505,7 @@ public class TestResultsGenerator extends Task {
             if (cell == null && foundConfigs.contains(config)) {
                 cell = resultsTable.new Cell(-1, null);
             }
-            results = results + "<td align=\"center\">" + printCell(cell) + "</td>";
+            results = results +  printCell(cell);
         }
         results = results + "</tr>" + EOL;
         return results;
@@ -1490,7 +1515,7 @@ public class TestResultsGenerator extends Task {
         String result = null;
         String displayName = null;
         if (cell == null) {
-            displayName = "&nbsp;";
+            displayName = "<td style=\"text-align:center\">&nbsp;</td>";
             result = displayName;
         } else {
             int cellErrorCount = cell.getErrorCount();
@@ -1503,21 +1528,25 @@ public class TestResultsGenerator extends Task {
                 beginFilename = filename.lastIndexOf(File.separatorChar);
                 rawfilename = filename.substring(beginFilename + 1, filename.length() - XML_EXTENSION.length());
             }
-
+            String startCell = null;
             if (cellErrorCount == -999) {
-                displayName = "&nbsp;";
+                displayName = "<td style=\"text-align:center\">&nbsp;</td>";
                 result = displayName;
             } else if (cellErrorCount == 0) {
+                startCell = "<td style=\"text-align:center\">";
                 displayName = "(0)";
-                result = addLinks(displayName, rawfilename);
+                result = addLinks(startCell, displayName, rawfilename);
             } else if (cellErrorCount < 0) {
-                displayName = "<font color=\"#ff0000\">(" + Integer.toString(cellErrorCount) + ") DNF </font>";
-                result = displayName;
+                startCell = "<td style=\"text-align:center; color: #FF0000;\">";
+                displayName = "(" + Integer.toString(cellErrorCount) + ") DNF ";
+                result = startCell + displayName + "</td>";
             } else if (cellErrorCount > 0) {
-                displayName = "<font color=\"#ff0000\">(" + Integer.toString(cellErrorCount) + ")</font>";
-                result = addLinks(displayName, rawfilename);
+                startCell = "<td style=\"text-align:center; color: #FF0000;\">";
+                displayName = "(" + Integer.toString(cellErrorCount) + ")";
+                result = addLinks(startCell, displayName, rawfilename);
             } else {
-                displayName = "?" + Integer.toString(cellErrorCount) + "?";
+                // should never occur
+                displayName = "<td>?" + Integer.toString(cellErrorCount) + "?</td>";
                 result = displayName;
             }
         }
@@ -1525,14 +1554,14 @@ public class TestResultsGenerator extends Task {
 
     }
 
-    private String addLinks(String displayName, String rawfilename) {
-        String result;
-        result = "<a  title=\"Detailed Unit Test Results Table\" href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename
+    private String addLinks(String startCell, String displayName, String rawfilename) {
+        String result = startCell;
+        result = result + "<a style=\"color:inherit\" title=\"Detailed Unit Test Results Table\" href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename
                 + HTML_EXTENSION + "\">" + displayName + "</a>";
         result = result
-                + "&nbsp;<a style=\"color:#AAAAAA\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
-                + hrefTestResultsTargetPath + "/xml/" + rawfilename + XML_EXTENSION + "\">(XML)</a>";
-        return result;
+                + "<a style=\"color:#555555\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
+                + hrefTestResultsTargetPath + "/xml/" + rawfilename + XML_EXTENSION + "\">&nbsp;(XML)</a>";
+        return result + "</td>";
     }
 
     // Totally non-functional method. restored from history for investigation.
