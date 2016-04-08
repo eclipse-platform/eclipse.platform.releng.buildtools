@@ -172,7 +172,7 @@ public class ErrorTracker {
                 // test logs are only log file in testManifest.xml without a "type" attribute
                 // -- I test for either/or, so that new versions of testManifest.xml 
                 // can more correctly use "test" attribute, if desired.
-                if (typeNode == null || typeNode.getNodeValue() == "test") {
+                if (typeNode == null || typeNode.getNodeValue().equals("test")) {
                     int firstUnderscore = testLogName.indexOf('_');
                     String initialTestName = null;
                     if (firstUnderscore == -1) {

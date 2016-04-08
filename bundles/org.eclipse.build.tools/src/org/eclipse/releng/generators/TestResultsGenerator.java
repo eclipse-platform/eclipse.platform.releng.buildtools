@@ -365,10 +365,10 @@ public class TestResultsGenerator extends Task {
             test.getDropTokensFromList(test.dropTokenList);
             test.setIsBuildTested(true);
             test.setXmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160406-2048/testresults/xml");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160407-2154/testresults/xml");
             test.setHtmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160406-2048/testresults");
-            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160406-2048");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160407-2154/testresults");
+            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160407-2154");
 
             test.setDropTemplateFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
@@ -377,7 +377,7 @@ public class TestResultsGenerator extends Task {
 
             test.setHrefTestResultsTargetPath("testresults");
             test.setCompileLogsDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160406-2048/compilelogs/plugins");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160407-2154/compilelogs/plugins");
             test.setHrefCompileLogsTargetPath("compilelogs/plugins/");
             test.setTestManifestFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
@@ -485,9 +485,9 @@ public class TestResultsGenerator extends Task {
     public void execute() {
 
         anErrorTracker = new ErrorTracker();
-        anErrorTracker.loadFile(testManifestFileName);
-        getDropTokensFromList(dropTokenList);
-        dropTemplateString = readFile(dropTemplateFileName);
+        anErrorTracker.loadFile(getTestManifestFileName());
+        getDropTokensFromList(getDropTokenList());
+        dropTemplateString = readFile(getDropTemplateFileName());
 
         writeDropIndexFile();
 
