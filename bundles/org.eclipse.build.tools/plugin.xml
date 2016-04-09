@@ -10,46 +10,13 @@
    </extension>
 	<!-- Tasks -->
    <extension point="org.eclipse.ant.core.antTasks">
-       <antTask
-            library="buildTools.jar"
-            name="sysProp"
-            class="org.eclipse.releng.SystemProperty">
-      </antTask>
-      <antTask
-            library="buildTools.jar"
-            name="generateBaseFetchScript"
-            class="org.eclipse.releng.generators.FetchBaseTask">
-      </antTask>
-       <antTask
-            library="buildTools.jar"
-            name="generateTestProperties"
-            class="org.eclipse.releng.generators.TestVersionTracker">
-      </antTask>
-      <antTask
-            library="buildTools.jar"
-            name="verifyCompile"
-            class="org.eclipse.releng.CompileErrorCheck">
-       </antTask>
-       <antTask
-            library="buildTools.jar"
-            name="findMachine"
-            class="org.eclipse.releng.FindMachineTask">
-      </antTask>
-      <antTask
-            library="buildTools.jar"
-            name="modifiedMaps"
-            class="org.eclipse.releng.CvsDiffParser">
-      </antTask>
+
+
       <antTask
             library="buildTools.jar"
             name="unpackUpdateJars"
             class="org.eclipse.releng.UnpackUpdateJars">
       </antTask>
-      <antTask
-            library="buildTools.jar"
-            name="generateExcludeList"
-            class="org.eclipse.releng.GenerateExcludeListTask">
-      </antTask>   
-      
+
     </extension>
 </plugin>
