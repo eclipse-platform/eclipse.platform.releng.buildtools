@@ -445,6 +445,8 @@ public class TestResultsGenerator extends Task {
                     if (elementCount == 0) {
                         errorCount = -3;
                     } else {
+                        // There can be multiple "testSuites" per file so we need to 
+                        // loop through each to count all errors and failures.
                         errorCount = 0;
                         for (int i = 0; i < elementCount; i++) {
                             final Element element = (Element) elements.item(i);
