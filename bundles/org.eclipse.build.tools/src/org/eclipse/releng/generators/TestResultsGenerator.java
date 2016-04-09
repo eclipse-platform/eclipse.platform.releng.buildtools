@@ -363,10 +363,10 @@ public class TestResultsGenerator extends Task {
             test.getDropTokensFromList(test.dropTokenList);
             test.setIsBuildTested(true);
             test.setXmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160409-0712/testresults/xml");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160408-2000/testresults/xml");
             test.setHtmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160409-0712/testresults");
-            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160409-0712");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160408-2000/testresults");
+            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160408-2000");
 
             test.setDropTemplateFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
@@ -375,7 +375,7 @@ public class TestResultsGenerator extends Task {
 
             test.setHrefTestResultsTargetPath("testresults");
             test.setCompileLogsDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160409-0712/compilelogs/plugins");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160408-2000/compilelogs/plugins");
             test.setHrefCompileLogsTargetPath("compilelogs/plugins/");
             test.setTestManifestFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
@@ -445,11 +445,12 @@ public class TestResultsGenerator extends Task {
                     if (elementCount == 0) {
                         errorCount = -3;
                     } else {
+                        errorCount = 0;
                         for (int i = 0; i < elementCount; i++) {
                             final Element element = (Element) elements.item(i);
                             final NamedNodeMap attributes = element.getAttributes();
                             Node aNode = attributes.getNamedItem("errors");
-                            errorCount = Integer.parseInt(aNode.getNodeValue());
+                            errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
                             aNode = attributes.getNamedItem("failures");
                             errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
                         }
