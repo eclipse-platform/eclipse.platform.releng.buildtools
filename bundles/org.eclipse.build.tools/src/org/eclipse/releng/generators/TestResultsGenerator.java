@@ -165,14 +165,12 @@ public class TestResultsGenerator extends Task {
     private static final int    DEFAULT_READING_SIZE           = 8192;
 
     private static final String elementName                    = "testsuite";
-    // private static final String testResultsToken = "%testresults%";
 
-    private ArrayList<String>   foundConfigs                   = new ArrayList();
     private ArrayList<String>   expectedConfigs                = null;
     private static final String EOL                            = System.getProperty("line.separator");
     private static boolean      DEBUG                          = false;
     private static String       FOUND_TEST_CONFIGS_FILENAME    = "testConfigsFound.php";
-    private static String       found_config_type              = "found";
+
     private static String       EXPECTED_TEST_CONFIGS_FILENAME = "testConfigs.php";
     private static String       expected_config_type           = "expected";
     private Vector              dropTokens;
@@ -365,10 +363,10 @@ public class TestResultsGenerator extends Task {
             test.getDropTokensFromList(test.dropTokenList);
             test.setIsBuildTested(true);
             test.setXmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160407-2154/testresults/xml");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160409-0230/testresults/xml");
             test.setHtmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160407-2154/testresults");
-            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160407-2154");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160409-0230/testresults");
+            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160409-0230");
 
             test.setDropTemplateFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
@@ -377,7 +375,7 @@ public class TestResultsGenerator extends Task {
 
             test.setHrefTestResultsTargetPath("testresults");
             test.setCompileLogsDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160407-2154/compilelogs/plugins");
+                    "/data/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160409-0230/compilelogs/plugins");
             test.setHrefCompileLogsTargetPath("compilelogs/plugins/");
             test.setTestManifestFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
@@ -397,7 +395,7 @@ public class TestResultsGenerator extends Task {
     // generated, by the setting of a variable named "platform" in test.xml
     // and associated property files.
 
-    // defaults removed since adds to confusion or errors
+    // no defaults set since adds to confusion or errors
     // private String[] testsConfigDefaults = { "ep4" + getTestedBuildType() +
     // "-unit-lin64_linux.gtk.x86_64_8.0.xml",
     // "ep4" + getTestedBuildType() + "-unit-mac64_macosx.cocoa.x86_64_8.0.xml",
@@ -542,19 +540,16 @@ public class TestResultsGenerator extends Task {
             return;
         }
 
-        String relativeName=computeRelativeName(fileName);
+        String relativeName = computeRelativeName(fileName);
         String shortName = computeShortName(relativeName);
 
-        buffer.append("<tr>").append(EOL).append("<td>").append(EOL)
-                 .append("<a href=").append("\"").append(relativeName).append("\">").append(shortName)
-                .append("</a>").append("</td>\n").append("<td style=\"text-align:center\" >").append("<a href=").append("\"")
-                .append(relativeName).append("#FORBIDDEN_WARNINGS").append("\">")
+        buffer.append("<tr>").append(EOL).append("<td>").append(EOL).append("<a href=").append("\"").append(relativeName)
+                .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td style=\"text-align:center\" >")
+                .append("<a href=").append("\"").append(relativeName).append("#FORBIDDEN_WARNINGS").append("\">")
                 .append(forbiddenAccessesWarningsCount).append("</a>").append("</td>").append(EOL)
-                .append("<td style=\"text-align:center\" >")
-                .append("<a href=").append("\"").append(relativeName)
+                .append("<td style=\"text-align:center\" >").append("<a href=").append("\"").append(relativeName)
                 .append("#DISCOURAGED_WARNINGS").append("\">").append(discouragedAccessesWarningsCount).append("</a>")
-                .append("</td>").append(EOL)
-                .append("</tr>").append(EOL);
+                .append("</td>").append(EOL).append("</tr>").append(EOL);
     }
 
     private String computeRelativeName(final String fileName) {
@@ -587,15 +582,14 @@ public class TestResultsGenerator extends Task {
             return;
         }
 
-        String relativeName=computeRelativeName(fileName);
+        String relativeName = computeRelativeName(fileName);
         String shortName = computeShortName(relativeName);
-        
-        buffer.append("<tr>\n<td>\n").append("<a href=").append("\"").append(relativeName)
-                .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td style=\"text-align:center\" >")
-                .append("<a href=").append("\"").append(relativeName).append("#ERRORS")
-                .append("\">").append(errorCount).append("</a>").append("</td>\n").append("<td style=\"text-align:center\" >")
-                .append("<a href=").append("\"").append(relativeName).append("#OTHER_WARNINGS")
-                .append("\">").append(warningCount).append("</a>").append("</td>\n").append("</tr>\n");
+
+        buffer.append("<tr>\n<td>\n").append("<a href=").append("\"").append(relativeName).append("\">").append(shortName)
+                .append("</a>").append("</td>\n").append("<td style=\"text-align:center\" >").append("<a href=").append("\"")
+                .append(relativeName).append("#ERRORS").append("\">").append(errorCount).append("</a>").append("</td>\n")
+                .append("<td style=\"text-align:center\" >").append("<a href=").append("\"").append(relativeName)
+                .append("#OTHER_WARNINGS").append("\">").append(warningCount).append("</a>").append("</td>\n").append("</tr>\n");
     }
 
     public String getBuildType() {
@@ -800,7 +794,10 @@ public class TestResultsGenerator extends Task {
         File sourceDirectory = new File(getCompileLogsDirectoryName());
         File mainDir = new File(getDropDirectoryName());
         File compilerSummaryFile = new File(mainDir, compilerSummaryFilename);
-        if (compilerSummaryFile.exists() && Boolean.FALSE) {
+        // we do not recompute compiler summary each time, since it is
+        // fairly time consuming -- and no reason it would not be "complete",
+        // if it exists.
+        if (compilerSummaryFile.exists()) {
             log("Compile logs summary page, " + compilerSummaryFilename + ", was found to exist already, so not recomputed.");
         } else {
             log("Parsing compile logs");
@@ -809,10 +806,14 @@ public class TestResultsGenerator extends Task {
             final StringBuffer accessesString = new StringBuffer();
             processCompileLogsDirectory(getCompileLogsDirectoryName(), compilerString, accessesString);
             if (compilerString.length() == 0) {
-                compilerString.append("<tr><td>None</td><td style=\"text-align:center\">&nbsp;</td><td style=\"text-align:center\">&nbsp;</td></tr>" + EOL);
+                compilerString
+                        .append("<tr><td>None</td><td style=\"text-align:center\">&nbsp;</td><td style=\"text-align:center\">&nbsp;</td></tr>"
+                                + EOL);
             }
             if (accessesString.length() == 0) {
-                accessesString.append("<tr><td>None</td><td style=\"text-align:center\">&nbsp;</td><td style=\"text-align:center\">&nbsp;</td></tr>" + EOL);
+                accessesString
+                        .append("<tr><td>None</td><td style=\"text-align:center\">&nbsp;</td><td style=\"text-align:center\">&nbsp;</td></tr>"
+                                + EOL);
             }
 
             compileLogResults = "        <div class=\"homeitem3col\">" + EOL
@@ -820,16 +821,18 @@ public class TestResultsGenerator extends Task {
                     + "<p>The table below shows the plugins in which errors or warnings were encountered. Click on the jar file link to view its"
                     + EOL + "detailed report.</p>" + EOL + "<br /><br />" + EOL
                     + "<table style=\"background-color: #EEEEEE;margin-top: 20px; margin-bottom: 20px; margin-right: 5%; margin-left: 5%; width:90%; border: 1px solid black; \" >"
-                    + EOL + "  <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL + "    <th style=\"width:15em\">Errors</th>" + EOL
-                    + "    <th style=\"width:15em\">Warnings</th>" + EOL + "  </tr>" + EOL;
+                    + EOL + "  <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL
+                    + "    <th style=\"width:15em\">Errors</th>" + EOL + "    <th style=\"width:15em\">Warnings</th>" + EOL
+                    + "  </tr>" + EOL;
 
             compileLogResults = compileLogResults + compilerString.toString();
 
             compileLogResults = compileLogResults + "          </table>" + EOL
                     + "<h3 id=\"AcessErrors\">Plugins containing access errors or warnings</h3>" + EOL
                     + "<table style=\"background-color: #EEEEEE;margin-top: 20px; margin-bottom: 20px; margin-right: 5%; margin-left: 5%; width:90%; border: 1px solid black; \" >"
-                    + EOL + " <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL + "   <th style=\"width:15em; \">Forbidden Access Warnings</th>"
-                    + EOL + "   <th style=\"width:15em ;\" >Discouraged Access Warnings</th>" + EOL + " </tr>" + EOL;
+                    + EOL + " <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL
+                    + "   <th style=\"width:15em; \">Forbidden Access Warnings</th>" + EOL
+                    + "   <th style=\"width:15em ;\" >Discouraged Access Warnings</th>" + EOL + " </tr>" + EOL;
 
             compileLogResults = compileLogResults + accessesString.toString();
             compileLogResults = compileLogResults + "</table>" + EOL + "  <br /> " + EOL + "</div>" + EOL;
@@ -841,19 +844,16 @@ public class TestResultsGenerator extends Task {
     }
 
     private void parseJUnitTestsXml() throws IOException {
-        log("Begin: Generating test results index page");
-        log("Parsing XML JUnit results files");
-        String htmlString = startTableOfUnitResults();
-        final File sourceDirectory = new File(xmlDirectoryName);
-        File[] xmlFileNames = null;
+        log("Begin: Parsing XML JUnit results files");
+        ArrayList<String> foundConfigs = new ArrayList();
+        final File xmlResultsDirectory = new File(getXmlDirectoryName());
         ResultsTable resultsTable = new ResultsTable(getTestsConfig());
-        if (sourceDirectory.exists()) {
+        if (xmlResultsDirectory.exists()) {
             // reinitialize each time.
             // We currently "re do" all of tests, but can improve in the future
-            // where the
-            // 'found configs" are remembered, but then have to keep track of
-            // original order (not "found" order which has to with when tests
-            // completed).
+            // where the "found configs" are remembered, but then have to keep
+            // track of original order (not "found" order which has to with when
+            // tests completed).
             foundConfigs.clear();
 
             ArrayList<File> allFileNames = new ArrayList();
@@ -863,7 +863,7 @@ public class TestResultsGenerator extends Task {
                 FilenameFilter configfilter = new ExpectedConfigFiler("_" + expectedConfig + XML_EXTENSION);
                 // we end with "full" list of files, sorted by configfilter, and
                 // then alphabetical.
-                File[] xmlFileNamesForConfig = sourceDirectory.listFiles(configfilter);
+                File[] xmlFileNamesForConfig = xmlResultsDirectory.listFiles(configfilter);
 
                 if (xmlFileNamesForConfig.length > 0) {
                     // log("DEBUG: For " + expectedConfig + " found " +
@@ -876,17 +876,14 @@ public class TestResultsGenerator extends Task {
                     }
                 }
             }
-            xmlFileNames = new File[allFileNames.size()];
+            File[] xmlFileNames = new File[allFileNames.size()];
             allFileNames.toArray(xmlFileNames);
-            // log("DEBUG: Found " + xmlFileNames.length + " XML test results
-            // files total.");
-            // files MUST be alphabetical, for now
+            // files MUST be alphabetical, for now?
             Arrays.sort(xmlFileNames);
             String sourceDirectoryCanonicalPath = getDropDirectoryName();
-
             for (int i = 0; i < xmlFileNames.length; i++) {
                 File junitResultsFile = xmlFileNames[i];
-                checkIfMissingFromTestManifestFile(junitResultsFile);
+                checkIfMissingFromTestManifestFile(junitResultsFile, foundConfigs);
                 String fullName = junitResultsFile.getPath();
                 int errorCount = countErrors(fullName);
                 resultsTable.putCell(computeCoreName(junitResultsFile), computeConfig(junitResultsFile), errorCount,
@@ -895,38 +892,65 @@ public class TestResultsGenerator extends Task {
                     trackDataForMail(sourceDirectoryCanonicalPath, junitResultsFile, fullName);
                 }
             }
-            // above is all "compute data".
-            // now time to "display" it.
-            for (String row : resultsTable) {
-                // File junitResultsFile = xmlFileNames[i];
-                htmlString = htmlString + formatJUnitRow(row, resultsTable);
-            }
-            // System.out.println("Debug: results: " + replaceString);
         } else {
             // error? Or, just too early?
-            log("WARNING: sourceDirectory did not exist at \n\t" + sourceDirectory);
+            log("WARNING: sourceDirectory did not exist at \n\t" + xmlResultsDirectory);
             log("     either incorrect call to 'generate index' or called too early (tests not done yet)?");
         }
-
-        // Once we are done with the Unit tests rows, we must add end table tag,
-        // since the following methods may or may not add a table of their own.
-        htmlString = htmlString + EOL + "</table>" + EOL;
-
-        // check for missing test logs
-        htmlString = htmlString + verifyAllTestsRan(xmlDirectoryName);
-
-        htmlString = htmlString + listMissingManifestFiles();
-        writeTestResultsFile(htmlString);
-
+        log("End: Parsing XML JUnit results files");
+        // above is all "compute data". Now it is time to "display" it.
         if (foundConfigs.size() > 0) {
+            log("Begin: Generating test results index page");
             setTestsRan(true);
-            // write each to output directory in file testConfigs.php
-            writePhpConfigFile(sourceDirectory, found_config_type, foundConfigs, FOUND_TEST_CONFIGS_FILENAME);
+            writeHTMLResultsTable(foundConfigs, resultsTable);
+            log("End: Generating test results index page");
         } else {
             setTestsRan(false);
-            log("Test results not found in " + sourceDirectory.getAbsolutePath());
+            log("Test results not found in " + xmlResultsDirectory.getAbsolutePath());
         }
-        log("End: Generating test results index page");
+
+    }
+
+    private void writeHTMLResultsTable(ArrayList<String> foundConfigs, ResultsTable resultsTable) throws IOException {
+        // These first files reflect what we expected, and what we found.
+        String found_config_type = "found";
+        writePhpConfigFile(found_config_type, foundConfigs, FOUND_TEST_CONFIGS_FILENAME);
+        // write the table to main output directory in testResultsRows.html, which
+        // in turn is included by the testResults.php file.
+
+        // first we right a bit of "static" part. That comes before the table.
+
+        String htmlString = "<p>The unit tests are run on the <a href=\"https://hudson.eclipse.org/shared/view/Eclipse%20and%20Equinox/\">shared Hudson instance</a>.</p>"
+                + EOL;
+
+        htmlString = htmlString + "<p>The table shows the unit test results for this build on the platforms" + EOL;
+        htmlString = htmlString + "tested. You may access the test results page specific to each" + EOL;
+        htmlString = htmlString + "component on a specific platform by clicking the cell link." + EOL;
+        htmlString = htmlString + "Normally, the number of errors is indicated in the cell.</p>" + EOL;
+        htmlString = htmlString + "<p>A \"-1\" or \"DNF\" means the test \"Did Not Finish\" for unknown reasons" + EOL;
+        htmlString = htmlString + "and hence no results page is available. In that case," + EOL;
+        htmlString = htmlString + "more information can sometimes be found in" + EOL;
+        htmlString = htmlString + "the <a href=\"logs.php#console\">console logs</a>.</p>" + EOL;
+        htmlString = htmlString + "<?php" + EOL;
+        htmlString = htmlString + "if (file_exists(\"testNotes.html\")) {" + EOL;
+        htmlString = htmlString + "  $my_file = file_get_contents(\"testNotes.html\");" + EOL;
+        htmlString = htmlString + "  echo $my_file;" + EOL;
+        htmlString = htmlString + "}" + EOL;
+        htmlString = htmlString + "?>" + EOL;
+
+
+        htmlString = htmlString + startTableOfUnitResults();
+        for (String row : resultsTable) {
+            htmlString = htmlString + formatJUnitRow(row, resultsTable, foundConfigs);
+        }
+        // Once we are done with the Unit tests rows, we must add end table
+        // tag, since the following methods may or may not add a table of
+        // their own.
+        htmlString = htmlString + EOL + "</table>" + EOL;
+        // check for missing test logs
+        htmlString = htmlString + verifyAllTestsRan(xmlDirectoryName, foundConfigs);
+        htmlString = htmlString + listMissingManifestFiles();
+        writeTestResultsFile(htmlString);
     }
 
     private String startTableOfUnitResults() throws IOException {
@@ -941,17 +965,20 @@ public class TestResultsGenerator extends Task {
         long colWidth = half / ncolumns;
         // table
         result = result
-                + "<table style=\"background-color: #EEEEEE; margin-top: 20px; margin-bottom: 20px; margin-right: 5%; margin-left: 5%; width:" + width + "%; border: 1px solid black \" >" + EOL;
+                + "<table style=\"background-color: #EEEEEE; margin-top: 20px; margin-bottom: 20px; margin-right: 5%; margin-left: 5%; width:"
+                + width + "%; border: 1px solid black \" >" + EOL;
         // table header
         result = result + "<tr style=\"background-color: #9999CC\" >" + EOL;
-        result = result + "<th style=\"width: "+ width + "%; text-align:center\" "+ " rowspan='2' > org.eclipse <br /> Test Bundles </th>\n" + EOL;
-        result = result + "<th style=\"text-align:center; \" colspan='" + ncolumns + "'> Test Configurations (Hudson Job/os.ws.arch/VM) </th>" + EOL;
+        result = result + "<th style=\"width: " + width + "%; text-align:center\" "
+                + " rowspan='2' > org.eclipse <br /> Test Bundles </th>\n" + EOL;
+        result = result + "<th style=\"text-align:center; \" colspan='" + ncolumns
+                + "'> Test Configurations (Hudson Job/os.ws.arch/VM) </th>" + EOL;
         result = result + "</tr>\n";
         // end table header
         result = result + "<tr style=\"background-color: #9999CC\">" + EOL;
 
         for (String column : getTestsConfig()) {
-            result = result + "<th style=\"width: "+ colWidth + "%; \" >" + computeDisplayConfig(column) + "</th>\n";
+            result = result + "<th style=\"width: " + colWidth + "%; \" >" + computeDisplayConfig(column) + "</th>\n";
         }
         result = result + "</tr>\n";
         return result;
@@ -1002,9 +1029,9 @@ public class TestResultsGenerator extends Task {
      * the testManifest.xml file. We only do this check if we also are checking
      * for missing logs which depends on an accurate testManifest.xml file.
      */
-    private void checkIfMissingFromTestManifestFile(File junitResultsFile) {
+    private void checkIfMissingFromTestManifestFile(File junitResultsFile, ArrayList<String> foundConfigs) {
         if (doMissingList) {
-            if (!verifyLogInManifest(junitResultsFile.getName())) {
+            if (!verifyLogInManifest(junitResultsFile.getName(), foundConfigs)) {
                 String corename = computeCoreName(junitResultsFile);
                 missingManifestFiles.add(corename);
             }
@@ -1044,8 +1071,7 @@ public class TestResultsGenerator extends Task {
         return configName;
     }
 
-    private void writePhpConfigFile(final File sourceDirectory, String config_type, ArrayList<String> configs, String phpfilename)
-            throws IOException {
+    private void writePhpConfigFile(String config_type, ArrayList<String> configs, String phpfilename) throws IOException {
         File mainDir = new File(getDropDirectoryName());
         File testConfigsFile = new File(mainDir, phpfilename);
         Writer testconfigsPHP = new FileWriter(testConfigsFile);
@@ -1292,7 +1318,7 @@ public class TestResultsGenerator extends Task {
         xmlDirectoryName = aString;
     }
 
-    private String verifyAllTestsRan(final String directory) {
+    private String verifyAllTestsRan(final String directory, ArrayList<String> foundConfigs) {
         String replaceString = "";
         ArrayList<String> missingFiles = new ArrayList();
         if (getDoMissingList()) {
@@ -1419,8 +1445,7 @@ public class TestResultsGenerator extends Task {
             }
             // write expected test config file here. This file is later used by
             // the PHP file.
-            final File sourceDirectory = new File(xmlDirectoryName);
-            writePhpConfigFile(sourceDirectory, expected_config_type, expectedConfigs, EXPECTED_TEST_CONFIGS_FILENAME);
+            writePhpConfigFile(expected_config_type, expectedConfigs, EXPECTED_TEST_CONFIGS_FILENAME);
         }
         return expectedConfigs;
     }
@@ -1440,7 +1465,7 @@ public class TestResultsGenerator extends Task {
      * allows them to be detected as missing, in future. We only do this check
      * if "doMissingList" is true.
      */
-    private boolean verifyLogInManifest(String filename) {
+    private boolean verifyLogInManifest(String filename, ArrayList<String> foundConfigs) {
         boolean result = false;
         if (getDoMissingList()) {
             for (String testLogName : anErrorTracker.getTestLogs(foundConfigs)) {
@@ -1484,16 +1509,9 @@ public class TestResultsGenerator extends Task {
     }
 
     // Specific to the RelEng test results page
-    private String formatJUnitRow(String corename, ResultsTable resultsTable) throws IOException {
+    private String formatJUnitRow(String corename, ResultsTable resultsTable, ArrayList<String> foundConfigs) throws IOException {
 
         String results = "";
-        // String fileName = xmlResultsFile.getPath();
-
-        // for (String config : getTestsConfig()) {
-        // Integer cellResult = resultsTable.getCell(corename, config);
-
-        // For brevity, get org.eclipse. out of the component name
-        // "org.eclipse." is 12, 13 was hard coded?
         int orgEclipseLength = "org.eclipse.".length();
         // indexOf('_') assumes never part of file name?
         final String displayName = corename.substring(orgEclipseLength);
@@ -1505,7 +1523,7 @@ public class TestResultsGenerator extends Task {
             if (cell == null && foundConfigs.contains(config)) {
                 cell = resultsTable.new Cell(-1, null);
             }
-            results = results +  printCell(cell);
+            results = results + printCell(cell);
         }
         results = results + "</tr>" + EOL;
         return results;
@@ -1556,8 +1574,8 @@ public class TestResultsGenerator extends Task {
 
     private String addLinks(String startCell, String displayName, String rawfilename) {
         String result = startCell;
-        result = result + "<a style=\"color:inherit\" title=\"Detailed Unit Test Results Table\" href=" + "\"" + hrefTestResultsTargetPath + "/html/" + rawfilename
-                + HTML_EXTENSION + "\">" + displayName + "</a>";
+        result = result + "<a style=\"color:inherit\" title=\"Detailed Unit Test Results Table\" href=" + "\""
+                + hrefTestResultsTargetPath + "/html/" + rawfilename + HTML_EXTENSION + "\">" + displayName + "</a>";
         result = result
                 + "<a style=\"color:#555555\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
                 + hrefTestResultsTargetPath + "/xml/" + rawfilename + XML_EXTENSION + "\">&nbsp;(XML)</a>";
