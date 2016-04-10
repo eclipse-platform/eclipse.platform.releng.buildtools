@@ -821,7 +821,7 @@ public class TestResultsGenerator extends Task {
 
             compileLogResults = "<h3 id=\"PluginsErrors\">Plugins containing compile errors or warnings</h3>" + EOL
                     + "<p>The table below shows the plugins in which errors or warnings were encountered. Click on the jar file link to view its"
-                    + EOL + "detailed report.</p>" + EOL + "<br /><br />" + EOL
+                    + EOL + "detailed report.</p>" + EOL 
                     + "<table style=\"background-color: #EEEEEE;margin-top: 20px; margin-bottom: 20px; margin-right: 5%; margin-left: 5%; width:90%; border: 1px solid black; \" >"
                     + EOL + "  <tr>" + EOL + "    <th>Compile Logs (Jar Files)</th>" + EOL
                     + "    <th style=\"width:15em\">Errors</th>" + EOL + "    <th style=\"width:15em\">Warnings</th>" + EOL
