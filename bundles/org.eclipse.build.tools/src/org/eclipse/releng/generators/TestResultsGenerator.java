@@ -819,8 +819,7 @@ public class TestResultsGenerator extends Task {
                                 + EOL);
             }
 
-            compileLogResults = "        <div class=\"homeitem3col\">" + EOL
-                    + "<h3 id=\"PluginsErrors\">Plugins containing compile errors or warnings</h3>" + EOL
+            compileLogResults = "<h3 id=\"PluginsErrors\">Plugins containing compile errors or warnings</h3>" + EOL
                     + "<p>The table below shows the plugins in which errors or warnings were encountered. Click on the jar file link to view its"
                     + EOL + "detailed report.</p>" + EOL + "<br /><br />" + EOL
                     + "<table style=\"background-color: #EEEEEE;margin-top: 20px; margin-bottom: 20px; margin-right: 5%; margin-left: 5%; width:90%; border: 1px solid black; \" >"
@@ -838,7 +837,7 @@ public class TestResultsGenerator extends Task {
                     + "   <th style=\"width:15em ;\" >Discouraged Access Warnings</th>" + EOL + " </tr>" + EOL;
 
             compileLogResults = compileLogResults + accessesString.toString();
-            compileLogResults = compileLogResults + "</table>" + EOL + "  <br /> " + EOL + "</div>" + EOL;
+            compileLogResults = compileLogResults + "</table>" + EOL;
             // write the include file. The name of this file must match what is
             // in testResults.template.php
             writePhpIncludeCompilerResultsFile(sourceDirectory, compileLogResults);
