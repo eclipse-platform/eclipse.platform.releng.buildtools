@@ -208,7 +208,7 @@ public class TestResultsGenerator extends Task {
     // Name of the HTML fragment file that any testResults.php file will
     // "include".
     // setting to common default.
-    private String              testResultsHtmlFileName        = "testResultsRows.html";
+    private String              testResultsHtmlFileName        = "testResultsTables.html";
 
     // Name of the generated drop index php file;
     private String              dropHtmlFileName;
@@ -370,7 +370,7 @@ public class TestResultsGenerator extends Task {
 
             test.setDropTemplateFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
-            test.setTestResultsHtmlFileName("testResultsRows.html");
+            test.setTestResultsHtmlFileName("testResultsTables.html");
             test.setDropHtmlFileName("index.php");
 
             test.setHrefTestResultsTargetPath("testresults");
@@ -944,7 +944,7 @@ public class TestResultsGenerator extends Task {
         // These first files reflect what we expected, and what we found.
         String found_config_type = "found";
         writePhpConfigFile(found_config_type, foundConfigs, FOUND_TEST_CONFIGS_FILENAME);
-        // write the table to main output directory in testResultsRows.html,
+        // write the table to main output directory in testResultsTables.html,
         // which
         // in turn is included by the testResults.php file.
 
