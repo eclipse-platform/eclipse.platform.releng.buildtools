@@ -617,7 +617,7 @@ public class TestResultsGenerator extends Task {
         String relativeName = computeRelativeName(fileName);
         String shortName = computeShortName(relativeName);
 
-        buffer.append("<tr>" + EOL + "<td class'cellname'>" + EOL).append("<a href=").append("\"").append(relativeName)
+        buffer.append("<tr>" + EOL + "<td class='cellname'>" + EOL).append("<a href=").append("\"").append(relativeName)
                 .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td class=\"cell\" >").append("<a href=")
                 .append("\"").append(relativeName).append("#ERRORS").append("\">").append(errorCount).append("</a>")
                 .append("</td>\n").append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName)
