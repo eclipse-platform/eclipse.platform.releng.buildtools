@@ -412,7 +412,7 @@ public class TestResultsGenerator extends Task {
      * 'isTested" is set) since the purpose is usually to include an additional
      * tested platform.
      */
-    private boolean regenerate              = Boolean.TRUE;
+    private boolean regenerate              = Boolean.FALSE;
 
     private int countCompileErrors(final String aString) {
         return extractNumber(aString, "error");
@@ -929,10 +929,10 @@ public class TestResultsGenerator extends Task {
         log("DEBUG: End: Parsing XML JUnit results files");
         // above is all "compute data". Now it is time to "display" it.
         if (foundConfigs.size() > 0) {
-            log("DEBUG: Begin: Generating test results index page");
+            log("DEBUG: Begin: Generating test results index tables in " + getTestResultsHtmlFileName());
             setTestsRan(true);
             writeHTMLResultsTable(foundConfigs, resultsTable);
-            log("DEBUG: End: Generating test results index page");
+            log("DEBUG: End: Generating test results index tables");
         } else {
             setTestsRan(false);
             log(EOL + "WARNING: Test results not found in " + xmlResultsDirectory.getAbsolutePath());
