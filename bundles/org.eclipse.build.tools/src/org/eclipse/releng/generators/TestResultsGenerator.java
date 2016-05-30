@@ -155,33 +155,35 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    private static final String HTML_EXTENSION                 = ".html";
-    private static final String XML_EXTENSION                  = ".xml";
-    private static final String WARNING_SEVERITY               = "WARNING";
-    private static final String ERROR_SEVERITY                 = "ERROR";
-    private static final String ForbiddenReferenceID           = "ForbiddenReference";
-    private static final String DiscouragedReferenceID         = "DiscouragedReference";
+    private static final String HTML_EXTENSION                         = ".html";
+    private static final String XML_EXTENSION                          = ".xml";
+    private static final String WARNING_SEVERITY                       = "WARNING";
+    private static final String ERROR_SEVERITY                         = "ERROR";
+    private static final String ForbiddenReferenceID                   = "ForbiddenReference";
+    private static final String DiscouragedReferenceID                 = "DiscouragedReference";
 
-    private static final int    DEFAULT_READING_SIZE           = 8192;
+    private static final int    DEFAULT_READING_SIZE                   = 8192;
 
-    private static final String elementName                    = "testsuite";
+    private static final String elementName                            = "testsuite";
 
-    private ArrayList<String>   expectedConfigs                = null;
-    private static final String EOL                            = System.getProperty("line.separator");
-    private static boolean      DEBUG                          = false;
-    private static String       FOUND_TEST_CONFIGS_FILENAME    = "testConfigsFound.php";
+    private ArrayList<String>   expectedConfigs                        = null;
+    private static final String EOL                                    = System.getProperty("line.separator");
+    private static boolean      DEBUG                                  = false;
+    private static String       FOUND_TEST_CONFIGS_FILENAME_DEFAULT    = "testConfigsFound.php";
 
-    private static String       EXPECTED_TEST_CONFIGS_FILENAME = "testConfigs.php";
-    private static String       expected_config_type           = "expected";
+    private static String       EXPECTED_TEST_CONFIGS_FILENAME_DEFAULT = "testConfigs.php";
+    private String              expected_config_type                   = "expected";
+    private String              expectedConfigFilename;
+    private String              foundConfigFilename;
     private Vector              dropTokens;
 
-    private String              testResultsWithProblems        = EOL;
-    private String              testResultsXmlUrls             = EOL;
+    private String              testResultsWithProblems                = EOL;
+    private String              testResultsXmlUrls                     = EOL;
 
-    private DocumentBuilder     parser                         = null;
+    private DocumentBuilder     parser                                 = null;
     private ErrorTracker        anErrorTracker;
 
-    private String              dropTemplateString             = "";
+    private String              dropTemplateString                     = "";
 
     // Parameters
     // build runs JUnit automated tests
@@ -208,7 +210,7 @@ public class TestResultsGenerator extends Task {
     // Name of the HTML fragment file that any testResults.php file will
     // "include".
     // setting to common default.
-    private String              testResultsHtmlFileName        = "testResultsTables.html";
+    private String              testResultsHtmlFileName                = "testResultsTables.html";
 
     // Name of the generated drop index php file;
     private String              dropHtmlFileName;
@@ -226,9 +228,9 @@ public class TestResultsGenerator extends Task {
     // private static int testsConstantLength = testsConstant.length();
     // temporary way to force "missing" list not to be printed (until complete
     // solution found)
-    private boolean             doMissingList                  = true;
+    private boolean             doMissingList                          = true;
 
-    private Set<String>         missingManifestFiles           = Collections.checkedSortedSet(new TreeSet(), String.class);
+    private Set<String>         missingManifestFiles                   = Collections.checkedSortedSet(new TreeSet(), String.class);
 
     class ExpectedConfigFiler implements FilenameFilter {
 
@@ -405,10 +407,10 @@ public class TestResultsGenerator extends Task {
     private boolean testRan;
     private String  compilerSummaryFilename = "compilerSummary.html";
     /*
-     * Default for "regenerate" is FALSE, but during development, is handy
-     * to set to TRUE. If TRUE, the "index.php" file and "compilerSummary.html"
-     * files are regenerated. In production that should seldom be required.
-     * The testResultsTables.html file, however, is regenerated each call (when
+     * Default for "regenerate" is FALSE, but during development, is handy to
+     * set to TRUE. If TRUE, the "index.php" file and "compilerSummary.html"
+     * files are regenerated. In production that should seldom be required. The
+     * testResultsTables.html file, however, is regenerated each call (when
      * 'isTested" is set) since the purpose is usually to include an additional
      * tested platform.
      */
@@ -830,10 +832,12 @@ public class TestResultsGenerator extends Task {
         // fairly time consuming -- and no reason it would not be "complete",
         // if it exists.
         if (compilerSummaryFile.exists() && !isRegenerate()) {
-            log(EOL + "INFO: Compile logs summary page, " + compilerSummaryFilename + ", was found to exist already and not regenerated.");
+            log(EOL + "INFO: Compile logs summary page, " + compilerSummaryFilename
+                    + ", was found to exist already and not regenerated.");
         } else {
             if (compilerSummaryFile.exists()) {
-                log(EOL + "INFO: Compile logs summary page, " + compilerSummaryFilename + ", was found to exist already and is being regenerated.");
+                log(EOL + "INFO: Compile logs summary page, " + compilerSummaryFilename
+                        + ", was found to exist already and is being regenerated.");
             }
             log("DEBUG: BEGIN: Parsing compile logs and generating summary table.");
             String compileLogResults = "";
@@ -943,7 +947,7 @@ public class TestResultsGenerator extends Task {
     private void writeHTMLResultsTable(ArrayList<String> foundConfigs, ResultsTable resultsTable) throws IOException {
         // These first files reflect what we expected, and what we found.
         String found_config_type = "found";
-        writePhpConfigFile(found_config_type, foundConfigs, FOUND_TEST_CONFIGS_FILENAME);
+        writePhpConfigFile(found_config_type, foundConfigs, getFoundConfigFilename());
         // write the table to main output directory in testResultsTables.html,
         // which
         // in turn is included by the testResults.php file.
@@ -1052,7 +1056,7 @@ public class TestResultsGenerator extends Task {
      * for missing logs which depends on an accurate testManifest.xml file.
      */
     private void checkIfMissingFromTestManifestFile(File junitResultsFile, ArrayList<String> foundConfigs) {
-        if (doMissingList) {
+        if (getDoMissingList()) {
             if (!verifyLogInManifest(junitResultsFile.getName(), foundConfigs)) {
                 String corename = computeCoreName(junitResultsFile);
                 missingManifestFiles.add(corename);
@@ -1392,7 +1396,8 @@ public class TestResultsGenerator extends Task {
             log(EOL + "INFO: The drop index file, " + getDropHtmlFileName() + ", was found to exist already and not regenerated.");
         } else {
             if (outputIndexFile.exists()) {
-                log(EOL + "INFO: The drop index file, " + getDropHtmlFileName() + ", was found to exist already and is being regenerated.");
+                log(EOL + "INFO: The drop index file, " + getDropHtmlFileName()
+                        + ", was found to exist already and is being regenerated.");
             }
             log("DEBUG: Begin: Generating drop index page");
             final String[] types = anErrorTracker.getTypes();
@@ -1473,8 +1478,9 @@ public class TestResultsGenerator extends Task {
                 }
             }
             // write expected test config file here. This file is later used by
-            // the PHP file.
-            writePhpConfigFile(expected_config_type, expectedConfigs, EXPECTED_TEST_CONFIGS_FILENAME);
+            // the PHP file so the name passed in must match what was put in PHP
+            // file.
+            writePhpConfigFile(expected_config_type, expectedConfigs, getExpectedConfigFilename());
         }
         return expectedConfigs;
     }
@@ -1603,10 +1609,10 @@ public class TestResultsGenerator extends Task {
     private String addLinks(String startCell, String displayName, String rawfilename) {
         String result = startCell;
         result = result + "<a style=\"color:inherit\" title=\"Detailed Unit Test Results Table\" href=" + "\""
-                + hrefTestResultsTargetPath + "/html/" + rawfilename + HTML_EXTENSION + "\">" + displayName + "</a>";
+                + getHrefTestResultsTargetPath() + "/html/" + rawfilename + HTML_EXTENSION + "\">" + displayName + "</a>";
         result = result
                 + "<a style=\"color:#555555\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
-                + hrefTestResultsTargetPath + "/xml/" + rawfilename + XML_EXTENSION + "\">&nbsp;(XML)</a>";
+                + getHrefTestResultsTargetPath() + "/xml/" + rawfilename + XML_EXTENSION + "\">&nbsp;(XML)</a>";
         return result + "</td>";
     }
 
@@ -1670,6 +1676,7 @@ public class TestResultsGenerator extends Task {
     public void setRegenerate(boolean regenerate) {
         this.regenerate = regenerate;
     }
+
     /* purely a place holder */
     class Mailer {
 
@@ -1693,6 +1700,28 @@ public class TestResultsGenerator extends Task {
 
         }
 
+    }
+
+    public String getExpectedConfigFilename() {
+        if (expectedConfigFilename == null) {
+            expectedConfigFilename = EXPECTED_TEST_CONFIGS_FILENAME_DEFAULT;
+        }
+        return expectedConfigFilename;
+    }
+
+    public void setExpectedConfigFilename(String expectedConfigFilename) {
+        this.expectedConfigFilename = expectedConfigFilename;
+    }
+
+    public String getFoundConfigFilename() {
+        if (foundConfigFilename == null) {
+            foundConfigFilename = FOUND_TEST_CONFIGS_FILENAME_DEFAULT;
+        }
+        return foundConfigFilename;
+    }
+
+    public void setFoundConfigFilename(String foundConfigFilename) {
+        this.foundConfigFilename = foundConfigFilename;
     }
 
 }
