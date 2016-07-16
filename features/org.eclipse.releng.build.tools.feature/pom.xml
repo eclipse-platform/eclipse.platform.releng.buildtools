@@ -9,6 +9,6 @@
   </parent>
   <groupId>org.eclipse.platform</groupId>
   <artifactId>org.eclipse.releng.build.tools.feature</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.101-SNAPSHOT</version>
   <packaging>eclipse-feature</packaging>
 </project>

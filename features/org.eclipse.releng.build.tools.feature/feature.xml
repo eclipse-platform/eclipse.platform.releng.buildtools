@@ -2,10 +2,10 @@
 <feature
       id="org.eclipse.releng.build.tools.feature"
       label="%featureName"
-      version="1.0.1.qualifier"
+      version="1.0.101.qualifier"
       provider-name="%providerName"
       license-feature="org.eclipse.license"
-      license-feature-version="1.0.0.qualifier">
+      license-feature-version="1.0.1.v20140414-1359">
 
    <description>
       %description
