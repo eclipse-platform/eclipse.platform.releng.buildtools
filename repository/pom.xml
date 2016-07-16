@@ -18,7 +18,7 @@
     <parent>
         <artifactId>eclipse.platform.releng.buildtools</artifactId>
         <groupId>org.eclipse.platform</groupId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.101-SNAPSHOT</version>
     </parent>
     <groupId>eclipse.platform.repository</groupId>
     <artifactId>repository</artifactId>
