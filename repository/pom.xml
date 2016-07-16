@@ -22,7 +22,7 @@
     </parent>
     <groupId>eclipse.platform.repository</groupId>
     <artifactId>repository</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.101-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
     <build>
         <plugins>
