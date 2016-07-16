@@ -91,7 +91,8 @@
     <repository>
       <id>eclipse-platform-repository</id>
       <layout>p2</layout>
-      <url>http://download.eclipse.org/eclipse/updates/4.6milestones/</url>
+      <!-- Normally should be "latest milestone" for stability, once we have one for 4.7. -->
+      <url>http://download.eclipse.org/eclipse/updates/4.7-I-builds/</url>
     </repository>
     <repository>
       <id>eclipse-derby-buildtools-repository</id>
