@@ -16,7 +16,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.eclipse.platform</groupId>
     <artifactId>eclipse.platform.releng.buildtools</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.101-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
         <tycho.version>0.25.0</tycho.version>
@@ -41,7 +41,7 @@
   
         <cbi-snapshots-repo.url>https://repo.eclipse.org/content/repositories/cbi-snapshots/</cbi-snapshots-repo.url>
         <eclipse-repo.url>https://repo.eclipse.org/content/repositories/cbi/</eclipse-repo.url>
-        <eclipse-p2-repo.url>http://download.eclipse.org/eclipse/updates/4.6-I-builds</eclipse-p2-repo.url>
+        <eclipse-p2-repo.url>http://download.eclipse.org/eclipse/updates/4.7-I-builds</eclipse-p2-repo.url>
 
         <!-- CBI provided common license feature. (bug 394793) -->
         <license-repo.url>http://download.eclipse.org/cbi/updates/license/</license-repo.url>
