@@ -177,7 +177,6 @@
           </dependencies>
           <configuration>
             <compilerArgs>
-              <args>${code.ignoredWarnings}</args>
               <args>-verbose</args>
               <args>-inlineJSR</args>
               <args>-enableJavadoc</args>
