@@ -42,7 +42,7 @@ public class DB_Results {
 
 
     // This doesn't seem good (was just R-, instead of using what we pass in)
-	private static final String DEFAULT_DB_BASELINE_PREFIX = "R-4.5";
+	private static final String DEFAULT_DB_BASELINE_PREFIX = "R-4.6";
 	
 	private static final Dim[] NO_DIMENSION = new Dim[0];
 	private static final String[] EMPTY_LIST = new String[0];
@@ -177,8 +177,8 @@ public class DB_Results {
 			DB_CONNECTION = connected;
 			DB_LOCATION = databaseLocation == null ? IPerformancesConstants.NETWORK_DATABASE_LOCATION : databaseLocation;
 			DB_NAME = IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion;
-			DB_VERSION = "v45"; // + eclipseVersion;
-			DB_VERSION_REF = "R-4.5"; //" + (eclipseVersion % 10 - 1);
+			DB_VERSION = "v46"; // + eclipseVersion;
+			DB_VERSION_REF = "R-4.6"; //" + (eclipseVersion % 10 - 1);
 			if (connected) {
 				return getDefault().fSQL != null;
 			}
@@ -714,8 +714,8 @@ public static void initDbContants() {
 		}
 	}
 	if (DB_VERSION == null) {
-		DB_VERSION = "v45"; // + DB_NAME.substring(DB_NAME.length()-2);
-		DB_VERSION_REF = "R-4.5"; //+(Character.digit(DB_NAME.charAt(DB_NAME.length()-1), 10)-1);
+		DB_VERSION = "v46"; // + DB_NAME.substring(DB_NAME.length()-2);
+		DB_VERSION_REF = "R-4.6"; //+(Character.digit(DB_NAME.charAt(DB_NAME.length()-1), 10)-1);
 	}
 }
 
