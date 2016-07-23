@@ -361,14 +361,14 @@ public class TestResultsGenerator extends Task {
                     "ep46I-unit-lin64_linux.gtk.x86_64_8.0 ,ep46I-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46I-unit-win32_win32.win32.x86_8.0, ep46I-unit-cen64_linux.gtk.x86_64_8.0");
             // "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
             test.setDropTokenList(
-                    "%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%deltapack%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
+                    "%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
             test.getDropTokensFromList(test.dropTokenList);
-            test.setIsBuildTested(true);
+            test.setIsBuildTested(false);
             test.setXmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4I/siteDir/eclipse/downloads/drops4/I20160410-2007/testresults/xml");
+                    "/data/shared/eclipse/buildsmirror/4I/siteDir/eclipse/downloads/drops4/N20160614-2120/testresults/xml");
             test.setHtmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4I/siteDir/eclipse/downloads/drops4/I20160410-2007/testresults");
-            test.setDropDirectoryName("/data/shared/eclipse/buildsmirror/4I/siteDir/eclipse/downloads/drops4/I20160410-2007");
+                    "/data/shared/eclipse/buildsmirror/4I/siteDir/eclipse/downloads/drops4/N20160614-2120/testresults/html");
+            test.setDropDirectoryName("/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160614-2120");
 
             test.setDropTemplateFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
@@ -377,7 +377,7 @@ public class TestResultsGenerator extends Task {
 
             test.setHrefTestResultsTargetPath("testresults");
             test.setCompileLogsDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4I/siteDir/eclipse/downloads/drops4/I20160410-2007/compilelogs/plugins");
+                    "/data/shared/eclipse/buildsmirror/4I/siteDir/eclipse/downloads/drops4/N20160614-2120/compilelogs/plugins");
             test.setHrefCompileLogsTargetPath("compilelogs/plugins/");
             test.setTestManifestFileName(
                     "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
