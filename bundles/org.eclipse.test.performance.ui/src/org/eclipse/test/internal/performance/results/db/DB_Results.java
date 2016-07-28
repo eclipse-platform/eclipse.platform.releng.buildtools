@@ -648,6 +648,7 @@ public static int getDefaultDimensionIndex() {
  * 	<code>null</code> if none was run before it...
  */
 public static String getLastBaselineBuild(String date) {
+    String buildDate = null;
 	if (BUILDS == null) {
 		queryAllVariations("%"); //$NON-NLS-1$
 	}
@@ -661,13 +662,20 @@ public static String getLastBaselineBuild(String date) {
 	for (int i=0; i<BUILDS_LENGTH; i++) {
 		String build = BUILDS[i];
 		if (build.startsWith(DB_VERSION_REF)) {
-			String buildDate = build.substring(build.indexOf('-')+1);
+			buildDate = build.substring(build.lastIndexOf('-')+1);
 			if (buildDate.compareTo(date) < 0) {
 				if (lastBaselineBuild == null || build.compareTo(lastBaselineBuild) > 0) {
 					lastBaselineBuild = build;
 				}
 			}
 		}
+	}
+	if (DEBUG) {
+	  DEBUG_WRITER.println("\n=== DEBUG getting lastBaselineBuild === ");
+	  DEBUG_WRITER.println("DB_VERSION_REF: " + DB_VERSION_REF);
+	  DEBUG_WRITER.println("buildDate: " + buildDate);
+    DEBUG_WRITER.println("date: " + date);
+    DEBUG_WRITER.println("lastBaselineBuild: " + lastBaselineBuild + "\n");
 	}
 	if (lastBaselineBuild == null && BUILDS.length > 0) {
 		return BUILDS[0];
