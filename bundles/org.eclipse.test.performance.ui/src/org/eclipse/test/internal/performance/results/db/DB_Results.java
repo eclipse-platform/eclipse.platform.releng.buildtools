@@ -652,6 +652,11 @@ public static String getLastBaselineBuild(String date) {
 	if (BUILDS == null) {
 		queryAllVariations("%"); //$NON-NLS-1$
 	}
+	if (DEBUG) {
+	  DEBUG_WRITER.println("\n=== DEBUG getLastBaselineBuild before null checks === ");
+    DEBUG_WRITER.println("date: " + date);
+    DEBUG_WRITER.println("LAST_BASELINE_BUILD: " + LAST_BASELINE_BUILD + "\n");
+	}
 	if (date == null) {
 		if (LAST_BASELINE_BUILD == null) {
 			return BUILDS[0];
