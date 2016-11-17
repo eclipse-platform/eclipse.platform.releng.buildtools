@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2006 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2016 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -40,21 +40,21 @@ public class FetchValidator extends Task {
     // Comma separated list of features to parse
     private String       list;
     // Elements to check for post fetch (use name of project in dev.eclipse.org)
-    private Vector       features;
+    private Vector<String>       features;
 
-    private Vector       plugins;
+    private Vector<String>       plugins;
     // keeps track of missing elements
-    private final Vector missingPlugins;
+    private final Vector<String> missingPlugins;
 
-    private final Vector missingFeatures;
+    private final Vector<String> missingFeatures;
 
     // parser
     ElementParser        parser;
 
     public FetchValidator() {
         parser = new ElementParser();
-        missingPlugins = new Vector();
-        missingFeatures = new Vector();
+        missingPlugins = new Vector<>();
+        missingFeatures = new Vector<>();
     }
 
     private boolean allPresent() {
@@ -62,10 +62,10 @@ public class FetchValidator extends Task {
         // collect a list of missing plugins (or fragments), and features
 
         boolean allPresent = true;
-        Enumeration enumeration = plugins.elements();
+        Enumeration<String> enumeration = plugins.elements();
 
         while (enumeration.hasMoreElements()) {
-            final String plugin = (String) enumeration.nextElement();
+            final String plugin = enumeration.nextElement();
             if (new File(install + "/plugins/" + plugin).exists()) {
                 continue;
             } else {
@@ -77,7 +77,7 @@ public class FetchValidator extends Task {
         enumeration = features.elements();
 
         while (enumeration.hasMoreElements()) {
-            final String feature = (String) enumeration.nextElement();
+            final String feature = enumeration.nextElement();
             if (new File(install + "/features/" + feature).exists()) {
                 continue;
             } else {

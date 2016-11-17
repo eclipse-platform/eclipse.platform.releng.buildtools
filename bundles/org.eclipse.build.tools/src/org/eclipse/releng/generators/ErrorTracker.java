@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2006 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2016 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -53,22 +53,22 @@ public class ErrorTracker {
     }
 
 
-    private Set<String> testLogsSet = Collections.checkedSortedSet(new TreeSet(),String.class);
+    private Set<String> testLogsSet = Collections.checkedSortedSet(new TreeSet<>(),String.class);
     // Platforms keyed on
-    private final Hashtable platforms = new Hashtable();
-    private final Hashtable logFiles  = new Hashtable();
-    private final Hashtable typesMap  = new Hashtable();
+    private final Hashtable<String, PlatformStatus> platforms = new Hashtable<>();
+    private final Hashtable<String, Vector<PlatformStatus>> logFiles  = new Hashtable<>();
+    private final Hashtable<String, Vector<String>> typesMap  = new Hashtable<>();
 
-    private final Vector    typesList = new Vector();
+    private final Vector<String> typesList = new Vector<>();
     private String convertPathDelimiters(final String path) {
         return new File(path).getPath();
     }
 
     public PlatformStatus[] getPlatforms(final String type) {
-        final Vector platformIDs = (Vector) typesMap.get(type);
+        final Vector<String> platformIDs = typesMap.get(type);
         final PlatformStatus[] result = new PlatformStatus[platformIDs.size()];
         for (int i = 0; i < platformIDs.size(); i++) {
-            result[i] = (PlatformStatus) platforms.get(platformIDs.elementAt(i));
+            result[i] = platforms.get(platformIDs.elementAt(i));
         }
         return result;
     }
@@ -81,7 +81,7 @@ public class ErrorTracker {
     public List<String> getTestLogs(ArrayList<String> foundConfigs) {
         // List of test logs expected at end of build
         // We depend on both test logs and configs being sorted
-        ArrayList<String> testLogs  = new ArrayList();
+        ArrayList<String> testLogs  = new ArrayList<>();
         for (String initialLogName : testLogsSet) {
             for (String config : foundConfigs) {
                 testLogs.add(initialLogName + "_" + config + ".xml");
@@ -93,13 +93,13 @@ public class ErrorTracker {
     // Answer a string array of the zip type names in the order they appear in
     // the .xml file.
     public String[] getTypes() {
-        return (String[]) typesList.toArray(new String[typesList.size()]);
+        return typesList.toArray(new String[typesList.size()]);
     }
 
     // Answer an array of PlatformStatus objects for a given type.
 
     public boolean hasErrors(final String id) {
-        return ((PlatformStatus) platforms.get(id)).hasErrors();
+        return platforms.get(id).hasErrors();
     }
 
     public void loadFile(final String fileName) {
@@ -124,10 +124,10 @@ public class ErrorTracker {
                 final Node zipType = elements.item(i).getParentNode();
                 final String zipTypeName = zipType.getAttributes().getNamedItem("name").getNodeValue();
 
-                Vector aVector = (Vector) typesMap.get(zipTypeName);
+                Vector<String> aVector = typesMap.get(zipTypeName);
                 if (aVector == null) {
                     typesList.add(zipTypeName);
-                    aVector = new Vector();
+                    aVector = new Vector<>();
                     typesMap.put(zipTypeName, aVector);
                 }
                 aVector.add(aPlatform.getId());
@@ -143,13 +143,13 @@ public class ErrorTracker {
                 logFileName = convertPathDelimiters(logFileName);
                 final String effectedFileID = anEffectedFile.getAttributes().getNamedItem("id").getNodeValue();
                 // System.out.println(logFileName);
-                Vector aVector = (Vector) logFiles.get(logFileName);
+                Vector<PlatformStatus> aVector = logFiles.get(logFileName);
                 if (aVector == null) {
-                    aVector = new Vector();
+                    aVector = new Vector<>();
                     logFiles.put(logFileName, aVector);
 
                 }
-                final PlatformStatus ps = (PlatformStatus) platforms.get(effectedFileID);
+                final PlatformStatus ps = platforms.get(effectedFileID);
                 if (ps != null) {
                     aVector.addElement(ps);
                 }
@@ -204,18 +204,18 @@ public class ErrorTracker {
     public void registerError(final String fileName) {
         // System.out.println("Found an error in: " + fileName);
         if (logFiles.containsKey(fileName)) {
-            final Vector aVector = (Vector) logFiles.get(fileName);
+            final Vector<PlatformStatus> aVector = logFiles.get(fileName);
             for (int i = 0; i < aVector.size(); i++) {
-                ((PlatformStatus) aVector.elementAt(i)).registerError();
+                aVector.elementAt(i).registerError();
             }
         } else {
 
             // If a log file is not specified explicitly it effects
             // all "platforms" except JDT
 
-            final Enumeration values = platforms.elements();
+            final Enumeration<PlatformStatus> values = platforms.elements();
             while (values.hasMoreElements()) {
-                final PlatformStatus aValue = (PlatformStatus) values.nextElement();
+                final PlatformStatus aValue = values.nextElement();
                 if (!aValue.getId().equals("JA") && !aValue.getId().equals("EW") && !aValue.getId().equals("EA")) {
                     aValue.registerError();
                 }

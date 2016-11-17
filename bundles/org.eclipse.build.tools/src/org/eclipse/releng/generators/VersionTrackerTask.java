@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2006 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2016 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -86,11 +86,11 @@ public class VersionTrackerTask extends Task {
 
     private String    buildDirectory;
 
-    private Hashtable elements;
+    private Hashtable<String, String> elements;
 
     private SAXParser parser;
 
-    private Vector    allElements;
+    private Vector<String>    allElements;
 
     // the feature to from which to collect version information
     private String    featurePath;
@@ -102,8 +102,8 @@ public class VersionTrackerTask extends Task {
     }
 
     public VersionTrackerTask(final String install) {
-        elements = new Hashtable();
-        allElements = new Vector();
+        elements = new Hashtable<>();
+        allElements = new Vector<>();
 
         final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
         try {
@@ -192,19 +192,14 @@ public class VersionTrackerTask extends Task {
     }
 
     public void writeProperties(final String propertiesFile, final boolean append) {
-        try {
-
-            final PrintWriter writer = new PrintWriter(new FileWriter(propertiesFile, append));
-
-            final Enumeration keys = elements.keys();
+        try (final PrintWriter writer = new PrintWriter(new FileWriter(propertiesFile, append))){
+            final Enumeration<String> keys = elements.keys();
 
             while (keys.hasMoreElements()) {
-                final Object key = keys.nextElement();
-                writer.println(key.toString() + "=" + elements.get(key).toString());
+                final String key = keys.nextElement();
+                writer.println(key + "=" + elements.get(key).toString());
                 writer.flush();
             }
-            writer.close();
-
         }
         catch (final IOException e) {
             System.out.println("Unable to write to file " + propertiesFile);

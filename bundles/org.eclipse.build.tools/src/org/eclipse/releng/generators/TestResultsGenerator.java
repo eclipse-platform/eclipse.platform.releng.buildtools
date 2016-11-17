@@ -58,8 +58,8 @@ public class TestResultsGenerator extends Task {
 
     public class ResultsTable implements Iterable<String> {
 
-        private Map<String, Row> rows    = new TreeMap();
-        private List<String>     columns = new ArrayList();
+        private Map<String, Row> rows    = new TreeMap<>();
+        private List<String>     columns = new ArrayList<>();
 
         public ResultsTable(ArrayList<String> columns) {
             super();
@@ -88,7 +88,7 @@ public class TestResultsGenerator extends Task {
 
         private class Row {
 
-            Map<String, Cell> row = new TreeMap();
+            Map<String, Cell> row = new TreeMap<>();
 
             public Row(List<String> columns) {
                 super();
@@ -150,6 +150,7 @@ public class TestResultsGenerator extends Task {
             this.columns = columns;
         }
 
+        @Override
         public Iterator<String> iterator() {
             return rows.keySet().iterator();
         }
@@ -175,7 +176,7 @@ public class TestResultsGenerator extends Task {
     private String              expected_config_type                   = "expected";
     private String              expectedConfigFilename;
     private String              foundConfigFilename;
-    private Vector              dropTokens;
+    private Vector<String>              dropTokens;
 
     private String              testResultsWithProblems                = EOL;
     private String              testResultsXmlUrls                     = EOL;
@@ -230,7 +231,7 @@ public class TestResultsGenerator extends Task {
     // solution found)
     private boolean             doMissingList                          = true;
 
-    private Set<String>         missingManifestFiles                   = Collections.checkedSortedSet(new TreeSet(), String.class);
+    private Set<String>         missingManifestFiles                   = Collections.checkedSortedSet(new TreeSet<>(), String.class);
 
     class ExpectedConfigFiler implements FilenameFilter {
 
@@ -240,6 +241,7 @@ public class TestResultsGenerator extends Task {
             configEnding = expectedConfigEnding;
         }
 
+        @Override
         public boolean accept(File dir, String name) {
             return (name.endsWith(configEnding));
         }
@@ -272,21 +274,9 @@ public class TestResultsGenerator extends Task {
     }
 
     private static byte[] getFileByteContent(final String fileName) throws IOException {
-        InputStream stream = null;
-        try {
-            final File file = new File(fileName);
-            stream = new BufferedInputStream(new FileInputStream(file));
+        final File file = new File(fileName);
+        try (InputStream stream = new BufferedInputStream(new FileInputStream(file))) {
             return getInputStreamAsByteArray(stream, (int) file.length());
-        }
-        finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                }
-                catch (final IOException e) {
-                    // ignore
-                }
-            }
         }
     }
 
@@ -668,13 +658,13 @@ public class TestResultsGenerator extends Task {
     /**
      * @return
      */
-    public Vector getDropTokens() {
+    public Vector<String> getDropTokens() {
         return dropTokens;
     }
 
     private void getDropTokensFromList(final String list) {
         final StringTokenizer tokenizer = new StringTokenizer(list, ",");
-        dropTokens = new Vector();
+        dropTokens = new Vector<>();
 
         while (tokenizer.hasMoreTokens()) {
             dropTokens.add(tokenizer.nextToken());
@@ -746,9 +736,7 @@ public class TestResultsGenerator extends Task {
 
         final File file = new File(log);
         Document aDocument = null;
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(file));
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))){
             final InputSource inputSource = new InputSource(reader);
             final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             final DocumentBuilder builder = factory.newDocumentBuilder();
@@ -762,16 +750,6 @@ public class TestResultsGenerator extends Task {
         }
         catch (final ParserConfigurationException e) {
             logException(e);
-        }
-        finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                }
-                catch (final IOException e) {
-                    // ignore
-                }
-            }
         }
 
         if (aDocument == null) {
@@ -878,7 +856,7 @@ public class TestResultsGenerator extends Task {
 
     private void parseJUnitTestsXml() throws IOException {
         log("DEBUG: Begin: Parsing XML JUnit results files");
-        ArrayList<String> foundConfigs = new ArrayList();
+        ArrayList<String> foundConfigs = new ArrayList<>();
         final File xmlResultsDirectory = new File(getXmlDirectoryName());
         ResultsTable resultsTable = new ResultsTable(getTestsConfig());
         if (xmlResultsDirectory.exists()) {
@@ -889,7 +867,7 @@ public class TestResultsGenerator extends Task {
             // tests completed).
             foundConfigs.clear();
 
-            ArrayList<File> allFileNames = new ArrayList();
+            ArrayList<File> allFileNames = new ArrayList<>();
 
             for (String expectedConfig : getTestsConfig()) {
 
@@ -1100,27 +1078,28 @@ public class TestResultsGenerator extends Task {
     private void writePhpConfigFile(String config_type, ArrayList<String> configs, String phpfilename) throws IOException {
         File mainDir = new File(getDropDirectoryName());
         File testConfigsFile = new File(mainDir, phpfilename);
-        Writer testconfigsPHP = new FileWriter(testConfigsFile);
-        testconfigsPHP.write("<?php" + EOL);
-        testconfigsPHP.write("//This file created by 'generateIndex' ant task, while parsing test results" + EOL);
-        testconfigsPHP.write("// It is based on " + config_type + " testConfigs" + EOL);
-        String phpArrayVariableName = "$" + config_type + "TestConfigs";
-        testconfigsPHP.write(phpArrayVariableName + " = array();" + EOL);
-        for (String fConfig : configs) {
-            testconfigsPHP.write(phpArrayVariableName + "[]=\"" + fConfig + "\";" + EOL);
+        try (Writer testconfigsPHP = new FileWriter(testConfigsFile)) {
+            testconfigsPHP.write("<?php" + EOL);
+            testconfigsPHP.write("//This file created by 'generateIndex' ant task, while parsing test results" + EOL);
+            testconfigsPHP.write("// It is based on " + config_type + " testConfigs" + EOL);
+            String phpArrayVariableName = "$" + config_type + "TestConfigs";
+            testconfigsPHP.write(phpArrayVariableName + " = array();" + EOL);
+            for (String fConfig : configs) {
+                testconfigsPHP.write(phpArrayVariableName + "[]=\"" + fConfig + "\";" + EOL);
+            }
         }
-        testconfigsPHP.close();
     }
 
     private void writePhpIncludeCompilerResultsFile(final File sourceDirectory, String compilerSummary) throws IOException {
         File mainDir = new File(getDropDirectoryName());
         File compilerSummaryFile = new File(mainDir, compilerSummaryFilename);
-        Writer compilerSummaryPHP = new FileWriter(compilerSummaryFile);
-        compilerSummaryPHP.write("<!--" + EOL);
-        compilerSummaryPHP.write("  This file created by 'generateIndex' ant task, while parsing build and tests results" + EOL);
-        compilerSummaryPHP.write("-->" + EOL);
-        compilerSummaryPHP.write(compilerSummary);
-        compilerSummaryPHP.close();
+        try (Writer compilerSummaryPHP = new FileWriter(compilerSummaryFile)) {
+            compilerSummaryPHP.write("<!--" + EOL);
+            compilerSummaryPHP
+                    .write("  This file created by 'generateIndex' ant task, while parsing build and tests results" + EOL);
+            compilerSummaryPHP.write("-->" + EOL);
+            compilerSummaryPHP.write(compilerSummary);
+        }
     }
 
     private void processCompileLogsDirectory(final String directoryName, final StringBuffer compilerLog,
@@ -1178,9 +1157,9 @@ public class TestResultsGenerator extends Task {
         final String filename = aPlatform.getFileName();
         // if there are images, put them in the same table column as the name of
         // the file
-        final List images = aPlatform.getImages();
+        final List<String> images = aPlatform.getImages();
         if ((images != null) && !images.isEmpty()) {
-            for (final Iterator iter = images.iterator(); iter.hasNext();) {
+            for (final Iterator<String> iter = images.iterator(); iter.hasNext();) {
                 result = result + "<img src=\"" + iter.next() + "\"/>&nbsp;";
             }
         }
@@ -1285,7 +1264,7 @@ public class TestResultsGenerator extends Task {
     /**
      * @param vector
      */
-    public void setDropTokens(final Vector vector) {
+    public void setDropTokens(final Vector<String> vector) {
         dropTokens = vector;
     }
 
@@ -1344,7 +1323,7 @@ public class TestResultsGenerator extends Task {
 
     private String verifyAllTestsRan(final String directory, ArrayList<String> foundConfigs) {
         String replaceString = "";
-        ArrayList<String> missingFiles = new ArrayList();
+        ArrayList<String> missingFiles = new ArrayList<>();
         if (getDoMissingList()) {
             for (String testLogName : anErrorTracker.getTestLogs(foundConfigs)) {
 
@@ -1412,9 +1391,7 @@ public class TestResultsGenerator extends Task {
     }
 
     private void writeFile(File outputFile, final String contents) {
-        OutputStream outputStream = null;
-        try {
-            outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile))){
             outputStream.write(contents.getBytes());
         }
         catch (final FileNotFoundException e) {
@@ -1422,16 +1399,6 @@ public class TestResultsGenerator extends Task {
         }
         catch (final IOException e) {
             log(EOL + "ERROR: IOException writing: " + outputFile.getPath());
-        }
-        finally {
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                }
-                catch (final IOException e) {
-                    // ignore
-                }
-            }
         }
     }
 
@@ -1461,7 +1428,7 @@ public class TestResultsGenerator extends Task {
 
     private ArrayList<String> getTestsConfig() throws IOException {
         if (expectedConfigs == null) {
-            expectedConfigs = new ArrayList<String>();
+            expectedConfigs = new ArrayList<>();
             String expectedConfigParam = getTestsConfigExpected();
             if (expectedConfigParam != null) {
                 StringTokenizer tokenizer = new StringTokenizer(expectedConfigParam, " ,\t");
@@ -1534,9 +1501,9 @@ public class TestResultsGenerator extends Task {
                 }
                 results = results + EOL + "</table>";
                 xmlFragment = xmlFragment + "</topLevel>";
-                FileWriter xmlOutput = new FileWriter(getDropDirectoryName() + "/addToTestManifest.xml");
+                try (FileWriter xmlOutput = new FileWriter(getDropDirectoryName() + "/addToTestManifest.xml")) {
                 xmlOutput.write(xmlFragment);
-                xmlOutput.close();
+                }
             }
         }
         return results;

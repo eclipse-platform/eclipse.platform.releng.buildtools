@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2005, 2016 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -75,7 +75,7 @@ public class UnpackUpdateJars extends Task {
 
     private String output;
 
-    ArrayList      unpackedPlugins = new ArrayList();
+    ArrayList<String> unpackedPlugins = new ArrayList<>();
 
     public UnpackUpdateJars() {
         super();
@@ -107,8 +107,8 @@ public class UnpackUpdateJars extends Task {
 
         // unpack plug-ins
         for (int i = 0; i < unpackedPlugins.size(); i++) {
-            final File unpackedPluginDirName = new File(output + "/plugins/" + (String) unpackedPlugins.get(i));
-            final File jardPlugin = new File(site, "plugins/" + (String) unpackedPlugins.get(i) + ".jar");
+            final File unpackedPluginDirName = new File(output + "/plugins/" + unpackedPlugins.get(i));
+            final File jardPlugin = new File(site, "plugins/" + unpackedPlugins.get(i) + ".jar");
             if (jardPlugin.exists()) {
                 unzip(jardPlugin, unpackedPluginDirName);
             }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2006 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2016 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -60,9 +60,9 @@ public class ElementParser extends DefaultHandler {
     }
 
     private SAXParser    parser;
-    private final Vector plugins;
+    private final Vector<String> plugins;
 
-    private final Vector features;
+    private final Vector<String> features;
 
     public ElementParser() {
         // Create a Xerces SAX Parser
@@ -80,21 +80,21 @@ public class ElementParser extends DefaultHandler {
 
         // instantiate vectors that will hold lists of plugins and features read
         // from feature.xml
-        plugins = new Vector();
-        features = new Vector();
+        plugins = new Vector<>();
+        features = new Vector<>();
     }
 
-    public void add(final String element, final Vector v) {
+    public void add(final String element, final Vector<String> v) {
         if (!v.contains(element)) {
             v.add(element);
         }
     }
 
-    public Vector getFeatures() {
+    public Vector<String> getFeatures() {
         return features;
     }
 
-    public Vector getPlugins() {
+    public Vector<String> getPlugins() {
         return plugins;
     }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2016 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -19,11 +19,10 @@ import org.w3c.dom.Node;
 
 public class PlatformStatus {
 
-    private static List listFromString(final String value) {
-        final List result = new ArrayList();
+    private static List<String> listFromString(final String value) {
+        final List<String> result = new ArrayList<>();
         for (final StringTokenizer tokenizer = new StringTokenizer(value, ","); tokenizer.hasMoreTokens(); result.add(tokenizer
                 .nextToken())) {
-            ;
         }
         return result;
     }
@@ -32,7 +31,7 @@ public class PlatformStatus {
     private final String name;
     private final String fileName;
     private String       format;
-    private List         images;
+    private List<String>         images;
 
     private boolean      hasErrors = false;
 
@@ -65,7 +64,7 @@ public class PlatformStatus {
         return id;
     }
 
-    public List getImages() {
+    public List<String> getImages() {
         return images;
     }
 
