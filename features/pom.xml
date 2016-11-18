@@ -13,7 +13,6 @@
   <packaging>pom</packaging>
   <modules>
     <module>org.eclipse.releng.build.tools.feature</module>
-    <module>org.eclipse.releng.build.tools.feature.source</module>
   </modules>
   <build>
     <plugins>
