@@ -10,7 +10,6 @@
         <version>1.0.101-SNAPSHOT</version>
 
     </parent>
-    <groupId>org.eclipse.platform</groupId>
     <artifactId>org.eclipse.releng.build.tools.comparator</artifactId>
     <version>1.0.1-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>

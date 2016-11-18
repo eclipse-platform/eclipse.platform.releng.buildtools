@@ -7,9 +7,7 @@
         <groupId>org.eclipse.platform</groupId>
         <version>1.0.101-SNAPSHOT</version>
     </parent>
-  <groupId>org.eclipse.platform</groupId>
   <artifactId>features</artifactId>
-  <version>1.0.101-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>org.eclipse.releng.build.tools.feature</module>

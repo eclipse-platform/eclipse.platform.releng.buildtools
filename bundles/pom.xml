@@ -8,11 +8,8 @@
         <artifactId>eclipse.platform.releng.buildtools</artifactId>
         <groupId>org.eclipse.platform</groupId>
         <version>1.0.101-SNAPSHOT</version>
-       
     </parent>
-    <groupId>org.eclipse.platform</groupId>
     <artifactId>bundles</artifactId>
-    <version>1.0.101-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
         <module>org.eclipse.build.tools</module>
