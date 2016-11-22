@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2007 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2016 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -56,24 +56,12 @@ public class Converter {
 
     public static final int         CURRENT_FORMAT_VERSION = FORMAT_VERSION_2;
 
-    private static final FileFilter XML_FILTER             = new FileFilter() {
+    private static final FileFilter XML_FILTER             = pathname -> {
+         final String path = pathname.getAbsolutePath().toLowerCase();
+         return path.endsWith(XML_EXTENSION) || pathname.isDirectory();
+     };
 
-                                                               /*
-                                                                * (non-Javadoc)
-                                                                * 
-                                                                * @see
-                                                                * java.io.FileFilter
-                                                                * #
-                                                                * accept(java.io
-                                                                * .File)
-                                                                */
-                                                               public boolean accept(final File pathname) {
-                                                                   final String path = pathname.getAbsolutePath().toLowerCase();
-                                                                   return path.endsWith(XML_EXTENSION) || pathname.isDirectory();
-                                                               }
-                                                           };
-
-    private static void collectAllFiles(final File root, final ArrayList collector, final FileFilter fileFilter) {
+    private static void collectAllFiles(final File root, final ArrayList<File> collector, final FileFilter fileFilter) {
         final File[] files = root.listFiles(fileFilter);
         for (int i = 0; i < files.length; i++) {
             final File currentFile = files[i];
@@ -86,7 +74,7 @@ public class Converter {
     }
 
     public static File[] getAllFiles(final File root, final FileFilter fileFilter) {
-        final ArrayList files = new ArrayList();
+        final ArrayList<File> files = new ArrayList<>();
         if (root.isDirectory()) {
             collectAllFiles(root, files, fileFilter);
             final File[] result = new File[files.size()];
@@ -111,10 +99,10 @@ public class Converter {
         converter.parse2();
     }
 
-    private final HashMap options;
+    private final HashMap<String, String> options;
 
     public Converter() {
-        options = new HashMap();
+        options = new HashMap<>();
     }
 
     public void configure(final String[] args) {
@@ -186,7 +174,7 @@ public class Converter {
                     }
             }
         }
-        final String input = (String) options.get(INPUT_SOURCE);
+        final String input = options.get(INPUT_SOURCE);
         if (input == null) {
             throw new IllegalArgumentException("An input file or directorty is required"); //$NON-NLS-1$
         }
@@ -199,14 +187,14 @@ public class Converter {
     }
 
     private void dump(final LogDocumentNode documentNode) {
-        final IDOMConverter converter = ConverterFactory.createDOMConverter(Integer.parseInt((String) options
+        final IDOMConverter converter = ConverterFactory.createDOMConverter(Integer.parseInt(options
                 .get(Converter.CONVERTER_ID)));
         converter.dump(CURRENT_FORMAT_VERSION, options, documentNode);
     }
 
     private String extractNameFrom(final String inputFileName) {
         final int index = inputFileName.lastIndexOf('.');
-        switch (Integer.parseInt((String) options.get(Converter.CONVERTER_ID))) {
+        switch (Integer.parseInt(options.get(Converter.CONVERTER_ID))) {
             case ConverterFactory.TXT:
                 return inputFileName.substring(0, index) + TXT_EXTENSION;
             case ConverterFactory.HTML:
@@ -218,12 +206,12 @@ public class Converter {
 
     public void parse2() throws ParserConfigurationException {
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        final boolean validation = Boolean.valueOf((String) options.get(ENABLE_VALIDATION)).booleanValue();
+        final boolean validation = Boolean.valueOf(options.get(ENABLE_VALIDATION)).booleanValue();
         factory.setValidating(validation);
         factory.setIgnoringElementContentWhitespace(true);
         final DocumentBuilder builder = factory.newDocumentBuilder();
 
-        final String inputSourceOption = (String) options.get(INPUT_SOURCE);
+        final String inputSourceOption = options.get(INPUT_SOURCE);
         if (options.get(RECURSIVE) != null) {
             // collect all xml files and iterate over them
             final File sourceDir = new File(inputSourceOption);

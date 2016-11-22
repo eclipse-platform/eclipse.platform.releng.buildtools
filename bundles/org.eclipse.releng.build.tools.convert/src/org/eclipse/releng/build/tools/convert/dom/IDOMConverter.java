@@ -15,7 +15,7 @@ import java.util.Map;
 
 public interface IDOMConverter {
 
-    void dump(int formatVersion, Map options, LogDocumentNode documentNode);
+    void dump(int formatVersion, Map<String, String> options, LogDocumentNode documentNode);
 
     String getUnderLine(String sourceBefore, String sourceOfError);
 

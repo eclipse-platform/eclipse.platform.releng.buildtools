@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2007 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2006, 2016 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -20,10 +20,10 @@ public class ProblemsNode {
     public int                         numberOfErrors;
     public int                         numberOfWarnings;
 
-    private ArrayList                  errorNodes;
-    private ArrayList                  otherWarningNodes;
-    private ArrayList                  discouragedWarningsNodes;
-    private ArrayList                  forbiddenWarningsNodes;
+    private ArrayList<ProblemNode>     errorNodes;
+    private ArrayList<ProblemNode>                  otherWarningNodes;
+    private ArrayList<ProblemNode>     discouragedWarningsNodes;
+    private ArrayList<ProblemNode>     forbiddenWarningsNodes;
     private ProblemNode[]              errors;
     private ProblemNode[]              otherWarnings;
     private ProblemNode[]              discouragedWarnings;
@@ -31,28 +31,28 @@ public class ProblemsNode {
 
     public void addDiscouragedWarning(final ProblemNode node) {
         if (discouragedWarningsNodes == null) {
-            discouragedWarningsNodes = new ArrayList();
+            discouragedWarningsNodes = new ArrayList<>();
         }
         discouragedWarningsNodes.add(node);
     }
 
     public void addError(final ProblemNode node) {
         if (errorNodes == null) {
-            errorNodes = new ArrayList();
+            errorNodes = new ArrayList<>();
         }
         errorNodes.add(node);
     }
 
     public void addForbiddenWarning(final ProblemNode node) {
         if (forbiddenWarningsNodes == null) {
-            forbiddenWarningsNodes = new ArrayList();
+            forbiddenWarningsNodes = new ArrayList<>();
         }
         forbiddenWarningsNodes.add(node);
     }
 
     public void addOtherWarning(final ProblemNode node) {
         if (otherWarningNodes == null) {
-            otherWarningNodes = new ArrayList();
+            otherWarningNodes = new ArrayList<>();
         }
         otherWarningNodes.add(node);
     }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2007 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2006, 2016 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -23,13 +23,13 @@ import org.eclipse.releng.build.tools.convert.ant.Messages;
 
 public abstract class AbstractDOMConverter implements IDOMConverter {
 
-    public static final HashSet FILTERED_WARNINGS_IDS;
+    public static final HashSet<String> FILTERED_WARNINGS_IDS;
 
     public static final String  FORBIDDEN_REFERENCE   = "ForbiddenReference";  //$NON-NLS-1$
     public static final String  DISCOURAGED_REFERENCE = "DiscouragedReference"; //$NON-NLS-1$
 
     static {
-        FILTERED_WARNINGS_IDS = new HashSet();
+        FILTERED_WARNINGS_IDS = new HashSet<>();
         FILTERED_WARNINGS_IDS.add(FORBIDDEN_REFERENCE);
         FILTERED_WARNINGS_IDS.add(DISCOURAGED_REFERENCE);
     }
@@ -63,28 +63,28 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
         return String.valueOf(buffer);
     }
 
-    public void dump(final int formatVersion, final Map options, final LogDocumentNode documentNode) {
+    @Override
+    public void dump(final int formatVersion, final Map<String, String> options, final LogDocumentNode documentNode) {
         switch (formatVersion) {
             case Converter.FORMAT_VERSION_2:
                 dumpVersion2(options, documentNode);
         }
     }
 
-    private void dumpVersion2(final Map options, final LogDocumentNode documentNode) {
-        final String fileName = (String) options.get(Converter.OUTPUT_FILE_NAME);
+    private void dumpVersion2(final Map<String, String> options, final LogDocumentNode documentNode) {
+        final String fileName = options.get(Converter.OUTPUT_FILE_NAME);
         final ProblemSummaryNode summaryNode = documentNode.getSummaryNode();
         if ((summaryNode == null) || ((summaryNode.numberOfErrors == 0) && (summaryNode.numberOfWarnings == 0))) {
             return;
         }
-        try {
-            final Writer writer = new BufferedWriter(new FileWriter(fileName));
+        try (final Writer writer = new BufferedWriter(new FileWriter(fileName))){
             final String pluginName = extractPluginName(fileName);
             if (pluginName == null) {
                 writer.write(messages.getString("header")); //$NON-NLS-1$
             } else {
                 final String pattern = messages.getString("dom_header"); //$NON-NLS-1$
                 writer.write(MessageFormat.format(pattern,
-                        new Object[] { pluginName, extractXmlFileName((String) options.get(Converter.INPUT_SOURCE)) }));
+                        new Object[] { pluginName, extractXmlFileName(options.get(Converter.INPUT_SOURCE)) }));
             }
             final ProblemSummaryNode problemSummaryNode = summaryNode;
             writeTopAnchor(writer);
@@ -270,9 +270,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
 
             writer.write(messages.getString("footer")); //$NON-NLS-1$
             writer.flush();
-            writer.close();
-        }
-        catch (final IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }
