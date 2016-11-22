@@ -7,8 +7,8 @@ import java.util.List;
 public class LogEntry {
 
     private String       name;
-    private List<String> reasons = new ArrayList<String>();
-    private List<String> info    = new ArrayList<String>();
+    private List<String> reasons = new ArrayList<>();
+    private List<String> info    = new ArrayList<>();
 
     public LogEntry() {
 
