@@ -7,12 +7,14 @@ import org.eclipse.releng.build.tools.convert.ant.Converter;
 
 public class LogConverter implements IApplication {
 
+    @Override
     public Object start(final IApplicationContext context) throws Exception {
         final String[] args = (String[]) context.getArguments().get(IApplicationContext.APPLICATION_ARGS);
         Converter.main(args);
         return IApplication.EXIT_OK;
     }
 
+    @Override
     public void stop() {
         // nothing to do
     }

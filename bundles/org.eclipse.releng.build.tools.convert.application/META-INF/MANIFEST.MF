@@ -7,5 +7,5 @@ Bundle-Activator: org.eclipse.releng.build.tools.convert.application.Activator
 Bundle-Vendor: Eclipse Platform Releng
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.releng.build.tools.convert;bundle-version="1.0.0"
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
