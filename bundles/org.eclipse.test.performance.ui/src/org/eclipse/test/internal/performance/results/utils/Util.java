@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -82,15 +82,14 @@ public final class Util implements IPerformancesConstants {
     // Components constants
     public static final String              ORG_ECLIPSE           = "org.eclipse.";
 
-    static class BuildDateComparator implements Comparator {
+    static class BuildDateComparator implements Comparator<String> {
 
-        public int compare(Object o1, Object o2) {
-            String s1 = (String) o1;
-            String s2 = (String) o2;
+        @Override
+        public int compare(String s1, String s2) {
             String buildDate1 = getBuildDate(s1);
             String buildDate2 = getBuildDate(s2);
-		// Not the greatest sanity check, found some cases, when "getting started" 
-		// where buildname was "4.1.1" or "${buildid}, which would cause a NPE. 
+		// Not the greatest sanity check, found some cases, when "getting started"
+		// where buildname was "4.1.1" or "${buildid}, which would cause a NPE.
             // So, simple attempt to provide a more helpful message.
             if (buildDate1 == null) {
                 throw new IllegalArgumentException("Buildname did not have a date, as expected: " + s1);
@@ -260,20 +259,18 @@ public final class Util implements IPerformancesConstants {
      */
     public static boolean copyFile(File src, File dest) {
 
-        try {
-            InputStream in = new FileInputStream(src);
-            OutputStream out = new FileOutputStream(dest);
+        try (InputStream in = new FileInputStream(src);
+            OutputStream out = new FileOutputStream(dest)){
+
             byte[] buf = new byte[1024];
             int len;
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
-            in.close();
-            out.close();
-	} catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
             return false;
-	} catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
@@ -290,19 +287,18 @@ public final class Util implements IPerformancesConstants {
      */
     public static boolean copyStream(InputStream in, File dest) {
 
-        try {
-            OutputStream out = new FileOutputStream(dest);
+        try (OutputStream out = new FileOutputStream(dest)){
+
             byte[] buf = new byte[1024];
             int len;
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
             in.close();
-            out.close();
-	} catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
             return false;
-	} catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
@@ -341,7 +337,7 @@ public final class Util implements IPerformancesConstants {
                 result = buildName.substring(1, 9) + buildName.substring(10, 14);
             } else {
                 //System.err.println("\n\tERROR: buildName did not have expected format. buildName: " + buildName);
-                // 2015/10/30 (dw) following too complicated (and, unsure if correct, so should be removed or simplified greatly bullet proofed)  
+                // 2015/10/30 (dw) following too complicated (and, unsure if correct, so should be removed or simplified greatly bullet proofed)
                 // Try with date format, to handle old release baselines
                 int length = buildName.length() - 12 /* length of date */;
                 for (int i = 0; i <= length; i++) {
@@ -460,6 +456,7 @@ public final class Util implements IPerformancesConstants {
     /**
      * @deprecated
      */
+    @Deprecated
     public static boolean matchPattern(String name, String pattern) {
         if (pattern.equals("*")) //$NON-NLS-1$
             return true;
@@ -498,6 +495,7 @@ public final class Util implements IPerformancesConstants {
     /**
      * @deprecated
      */
+    @Deprecated
     public static double round(double value) {
         return Math.round(value * 10000) / 10000.0;
     }
@@ -505,6 +503,7 @@ public final class Util implements IPerformancesConstants {
     /**
      * @deprecated
      */
+    @Deprecated
     public static double round(double value, int precision) {
         if (precision < 0) {
             throw new IllegalArgumentException("Should have a precision at least greater than 0!");

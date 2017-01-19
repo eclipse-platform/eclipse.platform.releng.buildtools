@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,14 +37,16 @@ public class UiPlugin extends Plugin {
 	/**
 	 * This method is called upon plug-in activation
 	 */
-	public void start(BundleContext context) throws Exception {
+	@Override
+  public void start(BundleContext context) throws Exception {
 		super.start(context);
 	}
 
 	/**
 	 * This method is called when the plug-in is stopped
 	 */
-	public void stop(BundleContext context) throws Exception {
+	@Override
+  public void stop(BundleContext context) throws Exception {
 		super.stop(context);
 		plugin = null;
 	}
@@ -58,7 +60,7 @@ public class UiPlugin extends Plugin {
 
 	public IPreferenceStore getPreferenceStore() {
 		if (this.preferenceStore == null) {
-			this.preferenceStore = new ScopedPreferenceStore(new InstanceScope(), getBundle().getSymbolicName());
+			this.preferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE, getBundle().getSymbolicName());
 
 		}
 		return this.preferenceStore;

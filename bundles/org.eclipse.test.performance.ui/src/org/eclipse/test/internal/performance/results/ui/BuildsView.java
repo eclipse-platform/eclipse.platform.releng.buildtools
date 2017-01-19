@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -72,7 +72,8 @@ public class BuildsView extends PerformancesView {
 	final class GenerateAction extends Action {
 		IStatus status;
 
-		public void run() {
+		@Override
+    public void run() {
 
 			// Ask for output directory
 			String resultGenerationDir = BuildsView.this.preferences.get(IPerformancesConstants.PRE_RESULTS_GENERATION_DIR, "");
@@ -119,17 +120,15 @@ public class BuildsView extends PerformancesView {
 			final boolean fingerprints = MessageDialog.openQuestion(BuildsView.this.shell, getTitleToolTip(), "Generate only fingerprints?");
 
 			// Generate all selected builds
-			IRunnableWithProgress runnable = new IRunnableWithProgress() {
-				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					try {
-						monitor.beginTask("Generate performance results", BuildsView.this.buildsResults.length*2);
-						generate(baselineName, fingerprints, monitor);
-						monitor.done();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			};
+			IRunnableWithProgress runnable = monitor -> {
+      	try {
+      		monitor.beginTask("Generate performance results", BuildsView.this.buildsResults.length*2);
+      		generate(baselineName, fingerprints, monitor);
+      		monitor.done();
+      	} catch (Exception e) {
+      		e.printStackTrace();
+      	}
+      };
 			ProgressMonitorDialog readProgress = new ProgressMonitorDialog(getSite().getShell());
 			try {
 				readProgress.run(true, true, runnable);
@@ -223,7 +222,8 @@ public class BuildsView extends PerformancesView {
 			this.force = force;
 		}
 
-		public void run() {
+		@Override
+    public void run() {
 
 			// Verify that directories are set
 			if (BuildsView.this.dataDir == null) {
@@ -235,16 +235,13 @@ public class BuildsView extends PerformancesView {
 			}
 
 			// Progress dialog
-			IRunnableWithProgress runnable = new IRunnableWithProgress() {
-
-				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					try {
-						updateBuilds(monitor);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			};
+			IRunnableWithProgress runnable = monitor -> {
+      	try {
+      		updateBuilds(monitor);
+      	} catch (Exception e) {
+      		e.printStackTrace();
+      	}
+      };
 			ProgressMonitorDialog readProgress = new ProgressMonitorDialog(getSite().getShell());
 			try {
 				readProgress.run(true, true, runnable);
@@ -281,7 +278,8 @@ public class BuildsView extends PerformancesView {
 //			return elements != null;
 //		}
 
-		void updateBuilds(IProgressMonitor monitor) {
+		@Override
+    void updateBuilds(IProgressMonitor monitor) {
 			BuildsView.this.updateAllBuilds(monitor, this.force);
 		}
 	}
@@ -291,10 +289,9 @@ public class BuildsView extends PerformancesView {
 	 *
 	 * @see Util#getBuildDate(String)
 	 */
-	class BuildDateComparator implements Comparator {
-		public int compare(Object o1, Object o2) {
-	        String s1 = (String) o1;
-	        String s2 = (String) o2;
+	class BuildDateComparator implements Comparator<String> {
+		@Override
+    public int compare(String s1, String s2) {
 	        return Util.getBuildDate(s1).compareTo(Util.getBuildDate(s2));
 	    }
 	}
@@ -323,7 +320,7 @@ public class BuildsView extends PerformancesView {
  * Default constructor.
  */
 public BuildsView() {
-	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+	this.preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 	this.preferences.addPreferenceChangeListener(this);
 }
 
@@ -348,9 +345,7 @@ String[] buildsToUpdate() {
 	return buildsToUpdate;
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#createPartControl(org.eclipse.swt.widgets.Composite)
- */
+@Override
 public void createPartControl(Composite parent) {
 	super.createPartControl(parent);
 
@@ -359,7 +354,8 @@ public void createPartControl(Composite parent) {
 
 	// Set the content provider: first level is builds list
 	WorkbenchContentProvider contentProvider = new WorkbenchContentProvider() {
-		public Object[] getElements(Object o) {
+		@Override
+    public Object[] getElements(Object o) {
 			return getBuilds();
 		}
 	};
@@ -369,7 +365,8 @@ public void createPartControl(Composite parent) {
 	WorkbenchLabelProvider labelProvider = new WorkbenchLabelProvider() {
 
 		// Set an italic font when no local data have been read
-		public Font getFont(Object element) {
+		@Override
+    public Font getFont(Object element) {
 			Font font = super.getFont(element);
 			if (element instanceof BuildResultsElement) {
 				if (((BuildResultsElement) element).isUnknown()) {
@@ -385,7 +382,8 @@ public void createPartControl(Composite parent) {
 		}
 
 		// Set font in gray when no local data is available (i.e. local data needs to be updated)
-		public Color getForeground(Object element) {
+		@Override
+    public Color getForeground(Object element) {
 			Color color = super.getForeground(element);
 			if (element instanceof BuildResultsElement) {
 				if (!((BuildResultsElement) element).isRead()) {
@@ -402,7 +400,8 @@ public void createPartControl(Composite parent) {
 
 		// Sort children using specific comparison (see the implementation
 		// of the #compareTo(Object) in the ResultsElement hierarchy
-		public int compare(Viewer view, Object e1, Object e2) {
+		@Override
+    public int compare(Viewer view, Object e1, Object e2) {
 			if (e2 instanceof ResultsElement) {
 				return ((ResultsElement) e2).compareTo(e1);
 			}
@@ -412,23 +411,19 @@ public void createPartControl(Composite parent) {
 	this.viewer.setSorter(nameSorter);
 
 	// Add results view as listener to viewer selection changes
-	Display.getDefault().asyncExec(new Runnable() {
-		public void run() {
-			ISelectionChangedListener listener = getComparisonView();
-			if (listener != null) {
-				BuildsView.this.viewer.addSelectionChangedListener(listener);
-			}
-		}
-	});
+	Display.getDefault().asyncExec(() -> {
+  	ISelectionChangedListener listener = getComparisonView();
+  	if (listener != null) {
+  		BuildsView.this.viewer.addSelectionChangedListener(listener);
+  	}
+  });
 
 	// Finalize viewer initialization
 	PlatformUI.getWorkbench().getHelpSystem().setHelp(this.viewer.getControl(), "org.eclipse.test.performance.ui.builds");
 	finalizeViewerCreation();
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.part.WorkbenchPart#dispose()
- */
+@Override
 public void dispose() {
 	if (this.italicFont != null) {
 		this.italicFont.dispose();
@@ -436,10 +431,7 @@ public void dispose() {
 	super.dispose();
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#fillContextMenu(org.eclipse.jface.action.IMenuManager)
- */
+@Override
 void fillContextMenu(IMenuManager manager) {
 	super.fillContextMenu(manager);
 	manager.add(this.generate);
@@ -452,6 +444,7 @@ void fillContextMenu(IMenuManager manager) {
 /*
  * Fill the local data drop-down menu
  */
+@Override
 void fillLocalDataDropDown(IMenuManager manager) {
 	super.fillLocalDataDropDown(manager);
 	manager.add(new Separator());
@@ -483,6 +476,7 @@ BuildsComparisonView getComparisonView() {
 /*
  * Return the components view.
  */
+@Override
 PerformancesView getSiblingView() {
 	if (this.componentsView == null) {
 		this.componentsView = (ComponentsView) getWorkbenchView("org.eclipse.test.internal.performance.results.ui.ComponentsView");
@@ -490,10 +484,7 @@ PerformancesView getSiblingView() {
 	return this.componentsView;
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#makeActions()
- */
+@Override
 void makeActions() {
 
 	super.makeActions();
@@ -519,24 +510,22 @@ void makeActions() {
 
 	// Write status
 	this.writeBuildsFailures = new Action("Write failures") {
-		public void run() {
+		@Override
+    public void run() {
 			String filter = (BuildsView.this.resultsDir == null) ? null : BuildsView.this.resultsDir.getPath();
 			final File writeDir = changeDir(filter, "Select a directory to write the files");
 			if (writeDir != null) {
 
 				// Create runnable
-				IRunnableWithProgress runnable = new IRunnableWithProgress() {
-
-					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-						try {
-							monitor.beginTask("Write failures", BuildsView.this.buildsResults.length*2);
-							writeBuildsFailures(writeDir, monitor);
-							monitor.done();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				};
+				IRunnableWithProgress runnable = monitor -> {
+        	try {
+        		monitor.beginTask("Write failures", BuildsView.this.buildsResults.length*2);
+        		writeBuildsFailures(writeDir, monitor);
+        		monitor.done();
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        	}
+        };
 
 				// Run with progress monitor
 				ProgressMonitorDialog readProgress = new ProgressMonitorDialog(getSite().getShell());
@@ -637,10 +626,7 @@ public void resetView() {
 	this.updateAllBuilds.setEnabled(connected);
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
- */
+@Override
 public void selectionChanged(SelectionChangedEvent event) {
 	super.selectionChanged(event);
 
@@ -814,17 +800,11 @@ protected void writeFailures(File writeDir, String buildName) {
 	}
 
 	// Write exclusion file
-	try {
-		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(exclusionFile)));
-		try {
-		    if (excluded == null) {
-		        throw new RuntimeException("excluded was unexpected null. Program error?");
-		    }
-			stream.write(excluded.toString().getBytes());
-		}
-		finally {
-			stream.close();
-		}
+	try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(exclusionFile)))){
+    if (excluded == null) {
+      throw new RuntimeException("excluded was unexpected null. Program error?");
+    }
+		stream.write(excluded.toString().getBytes());
 	} catch (FileNotFoundException e) {
 		System.err.println("Can't create exclusion file"+exclusionFile); //$NON-NLS-1$
 	} catch (IOException e) {

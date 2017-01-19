@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -80,6 +80,7 @@ void addChild(Comparable child, boolean sort) {
  *
  * @see java.lang.Comparable#compareTo(java.lang.Object)
  */
+@Override
 public int compareTo(Object obj) {
 	if (obj instanceof AbstractResults) {
 		AbstractResults res = (AbstractResults) obj;
@@ -97,6 +98,7 @@ public int compareTo(Object obj) {
  * 	<code>false</code> otherwise
  * @see java.lang.Comparable#compareTo(java.lang.Object)
  */
+@Override
 public boolean equals(Object obj) {
 	if (obj instanceof AbstractResults) {
 		return this.name.equals(((AbstractResults)obj).getName());
@@ -187,6 +189,7 @@ AbstractResults getResults(int searchedId) {
 	return null;
 }
 
+@Override
 public int hashCode() {
 	return this.name.hashCode();
 }
@@ -251,6 +254,7 @@ public int size() {
 	return this.children == null ? 0 : this.children.size();
 }
 
+@Override
 public String toString() {
 	return getPath();
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -93,7 +93,7 @@ public class BuildsComparisonView extends ViewPart implements ISelectionChangedL
  * 	- register the view as a properties listener
  */
 public BuildsComparisonView() {
-	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+	this.preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 	this.preferences.addPreferenceChangeListener(this);
 	// TODO should be done only once!
 	Util.initMilestones(this.preferences);
@@ -108,10 +108,7 @@ void contributeToActionBars() {
 	fillLocalToolBar(bars.getToolBarManager());
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
- */
+@Override
 public void createPartControl(Composite parent) {
 
 	// Create the tab folder
@@ -119,14 +116,12 @@ public void createPartControl(Composite parent) {
 	this.tabFolder = new CTabFolder(parent, SWT.BORDER);
 
 	// Add results view as listener to viewer selection changes
-	Display.getDefault().asyncExec(new Runnable() {
-		public void run() {
-			PerformancesView performancesView = (PerformancesView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.ComponentsView");
-			if (performancesView != null) {
-				performancesView.viewer.addSelectionChangedListener(BuildsComparisonView.this);
-			}
-		}
-	});
+	Display.getDefault().asyncExec(() -> {
+  	PerformancesView performancesView = (PerformancesView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.ComponentsView");
+  	if (performancesView != null) {
+  		performancesView.viewer.addSelectionChangedListener(BuildsComparisonView.this);
+  	}
+  });
 
 	// Set actions
 	PlatformUI.getWorkbench().getHelpSystem().setHelp(this.tabFolder, "org.eclipse.test.performance.ui.results");
@@ -165,10 +160,7 @@ void createTabs() {
 	this.tabFolder.setSelection(0);
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.ui.part.WorkbenchPart#dispose()
- */
+@Override
 public void dispose() {
 	this.tabFolder.dispose();
 	int length = this.tabs==null ? 0 : this.tabs.length;
@@ -225,10 +217,7 @@ BuildsView getBuildsView() {
 	return this.buildsView;
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.ui.part.ViewPart#init(org.eclipse.ui.IViewSite, org.eclipse.ui.IMemento)
- */
+@Override
 public void init(IViewSite site, IMemento memento) throws PartInitException {
 	super.init(site, memento);
 	this.viewState = memento;
@@ -245,7 +234,8 @@ void makeActions() {
 
 	// Filter non-fingerprints action
 	this.filterAdvancedScenarios = new Action("Advanced &Scenarios", IAction.AS_CHECK_BOX) {
-		public void run() {
+		@Override
+    public void run() {
 			BuildsComparisonView.this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, isChecked());
 			resetTabFolders(false/*refresh*/);
         }
@@ -255,7 +245,8 @@ void makeActions() {
 
 	// Write comparison
 	this.writeComparison = new Action("Write comparison") {
-		public void run() {
+		@Override
+    public void run() {
 
 			// Get write directory
 			BuildsView bView = getBuildsView();
@@ -270,9 +261,7 @@ void makeActions() {
 	this.writeComparison.setToolTipText("Write comparison between two builds");
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener#preferenceChange(org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent)
- */
+@Override
 public void preferenceChange(PreferenceChangeEvent event) {
 	String propertyName = event.getKey();
 	Object newValue = event.getNewValue();
@@ -328,18 +317,12 @@ void restoreState() {
 	this.filterAdvancedScenarios.setChecked(checked);
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.ui.part.ViewPart#saveState(org.eclipse.ui.IMemento)
- */
+@Override
 public void saveState(IMemento memento) {
 	super.saveState(memento);
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
- */
+@Override
 public void selectionChanged(SelectionChangedEvent event) {
 	final Object[] selection = ((TreeSelection) event.getSelection()).toArray();
 	String firstBuildResults = null;
@@ -364,10 +347,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 	}
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
- */
+@Override
 public void setFocus() {
 	// do nothing
 }

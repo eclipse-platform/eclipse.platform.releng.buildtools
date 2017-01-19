@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -89,7 +89,8 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	// Viewer filters
 	static final ViewerFilter[] NO_FILTER = new ViewerFilter[0];
 	final static ViewerFilter FILTER_BASELINE_BUILDS = new ViewerFilter() {
-		public boolean select(Viewer v, Object parentElement, Object element) {
+		@Override
+    public boolean select(Viewer v, Object parentElement, Object element) {
 			if (element instanceof BuildResultsElement) {
 				BuildResultsElement buildElement = (BuildResultsElement) element;
 				return !buildElement.getName().startsWith(DB_Results.getDbBaselinePrefix());
@@ -98,7 +99,8 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 		}
 	};
 	public final static ViewerFilter FILTER_NIGHTLY_BUILDS = new ViewerFilter() {
-		public boolean select(Viewer v, Object parentElement, Object element) {
+		@Override
+    public boolean select(Viewer v, Object parentElement, Object element) {
 			if (element instanceof BuildResultsElement) {
 				BuildResultsElement buildElement = (BuildResultsElement) element;
 				return buildElement.getName().charAt(0) != 'N';
@@ -107,7 +109,8 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 		}
 	};
 	final static ViewerFilter FILTER_OLD_BUILDS = new ViewerFilter() {
-		public boolean select(Viewer v, Object parentElement, Object element) {
+		@Override
+    public boolean select(Viewer v, Object parentElement, Object element) {
 			if (element instanceof BuildResultsElement) {
 				BuildResultsElement buildElement = (BuildResultsElement) element;
 				return buildElement.isImportant();
@@ -174,7 +177,7 @@ static IViewPart getWorkbenchView(String viewId) {
 public PerformancesView() {
 
 	// Get preferences
-	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+	this.preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 
 	// Init db constants
 	int eclipseVersion = this.preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
@@ -246,10 +249,7 @@ void contributeToActionBars() {
 	fillLocalToolBar(bars.getToolBarManager());
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
- */
+@Override
 public void createPartControl(Composite parent) {
 	// Cache the shell and display.
 	this.shell = parent.getShell ();
@@ -340,12 +340,10 @@ void finalizeViewerCreation() {
 	this.viewer.addSelectionChangedListener(this);
 }
 
-/* (non-Javadoc)
- * Method declared on IAdaptable
- */
-public Object getAdapter(Class adapter) {
+@Override
+public <T> T getAdapter(Class<T> adapter) {
     if (adapter.equals(IPropertySheetPage.class)) {
-        return getPropertySheet();
+        return (T) getPropertySheet();
     }
     return super.getAdapter(adapter);
 }
@@ -372,7 +370,8 @@ void hookContextMenu() {
 	MenuManager menuMgr = new MenuManager("#PopupMenu");
 	menuMgr.setRemoveAllWhenShown(true);
 	menuMgr.addMenuListener(new IMenuListener() {
-		public void menuAboutToShow(IMenuManager manager) {
+		@Override
+    public void menuAboutToShow(IMenuManager manager) {
 			fillContextMenu(manager);
 		}
 	});
@@ -385,6 +384,7 @@ void hookContextMenu() {
  * (non-Javadoc)
  * @see org.eclipse.ui.part.ViewPart#init(org.eclipse.ui.IViewSite, org.eclipse.ui.IMemento)
  */
+@Override
 public void init(IViewSite site, IMemento memento) throws PartInitException {
 	super.init(site, memento);
 	this.viewState = memento;
@@ -416,7 +416,8 @@ void makeActions() {
 
 	// Change data dir action
 	this.changeDataDir = new Action("&Read...") {
-		public void run() {
+		@Override
+    public void run() {
 			changeDataDir(null);
 		}
 	};
@@ -425,7 +426,8 @@ void makeActions() {
 
 	// Filter baselines action
 	this.filterBaselineBuilds = new Action("&Baselines", IAction.AS_CHECK_BOX) {
-		public void run() {
+		@Override
+    public void run() {
 			if (isChecked()) {
 				PerformancesView.this.viewFilters.add(FILTER_BASELINE_BUILDS);
 			} else {
@@ -438,7 +440,8 @@ void makeActions() {
 
 	// Filter baselines action
 	this.filterNightlyBuilds = new Action("&Nightly", IAction.AS_CHECK_BOX) {
-		public void run() {
+		@Override
+    public void run() {
 			filterNightlyBuilds(isChecked(), true/*update preference*/);
 		}
 	};
@@ -446,7 +449,8 @@ void makeActions() {
 
 	// Filter non-important builds action
 	this.filterOldBuilds = new Action("&Old Builds", IAction.AS_CHECK_BOX) {
-		public void run() {
+		@Override
+    public void run() {
 			filterOldBuilds(isChecked(), true/*update preference*/);
 		}
 	};
@@ -457,6 +461,7 @@ void makeActions() {
 /* (non-Javadoc)
  * @see org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener#preferenceChange(org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent)
  */
+@Override
 public void preferenceChange(PreferenceChangeEvent event) {
 	// do nothing
 }
@@ -468,7 +473,8 @@ void readLocalFiles(final String lastBuild) {
 
 	// Create runnable to read local files
 	IRunnableWithProgress runnable = new IRunnableWithProgress() {
-		public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+		@Override
+    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 			try {
 				monitor.beginTask("Read local files", 1000);
 				PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor, lastBuild);
@@ -554,6 +560,7 @@ void restoreState() {
 	}
 }
 
+@Override
 public void saveState(IMemento memento) {
 	super.saveState(memento);
 	memento.putBoolean(IPerformancesConstants.PRE_FILTER_BASELINE_BUILDS, this.filterBaselineBuilds.isChecked());
@@ -567,10 +574,7 @@ public void saveState(IMemento memento) {
 	}
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
- */
+@Override
 public void selectionChanged(SelectionChangedEvent event) {
 	if (this.propertyPage != null) {
 		this.propertyPage.selectionChanged(this, event.getSelection());
@@ -580,6 +584,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 /**
  * Passing the focus request to the viewer's control.
  */
+@Override
 public void setFocus() {
 	this.viewer.getControl().setFocus();
 }

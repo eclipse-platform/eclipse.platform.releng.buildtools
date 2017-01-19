@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -80,6 +80,7 @@ public DimResultsElement(AbstractResults results, ResultsElement parent, Dim d) 
 	this.dim = d;
 }
 
+@Override
 ResultsElement createChild(AbstractResults testResults) {
 	return null;
 }
@@ -88,13 +89,12 @@ private BuildResults getBuildResults() {
 	return (BuildResults) this.results;
 }
 
+@Override
 public String getLabel(Object o) {
 	return this.dim.getName();
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyDescriptors()
- */
+@Override
 public IPropertyDescriptor[] getPropertyDescriptors() {
 	Vector descriptors = getDescriptors();
 	if (descriptors == null) {
@@ -110,9 +110,7 @@ public IPropertyDescriptor[] getPropertyDescriptors() {
 	return descriptorsArray;
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyValue(java.lang.Object)
- */
+@Override
 public Object getPropertyValue(Object propKey) {
 	BuildResults buildResults = getBuildResults();
     if (propKey.equals(P_ID_DIMENSION)) {

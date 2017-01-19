@@ -59,10 +59,11 @@ public class TimeLineGraphItem {
         return new Point(Math.max(e1.x, e2.x), e1.y+e2.y);
     }
 
-    public static class GraphItemComparator implements Comparator{
-		public int compare(Object o1, Object o2) {
-			long ts1=((TimeLineGraphItem)o1).timestamp;
-			long ts2=((TimeLineGraphItem)o2).timestamp;
+    public static class GraphItemComparator implements Comparator<TimeLineGraphItem>{
+		@Override
+    public int compare(TimeLineGraphItem o1, TimeLineGraphItem o2) {
+			long ts1=o1.timestamp;
+			long ts2=o2.timestamp;
 
 			if (ts1>ts2)
 				return 1;

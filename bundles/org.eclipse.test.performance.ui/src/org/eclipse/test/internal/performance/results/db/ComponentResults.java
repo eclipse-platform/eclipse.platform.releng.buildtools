@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,16 +67,15 @@ String[] getAllSortedBuildNames(final boolean reverse) {
 	Set allBuildNames = getAllBuildNames();
 	String[] sortedNames = new String[allBuildNames.size()];
 	allBuildNames.toArray(sortedNames);
-	Arrays.sort(sortedNames, new Comparator() {
-		public int compare(Object o1, Object o2) {
-			String s1 = (String) (reverse ? o2 : o1);
-			String s2 = (String) (reverse ? o1 : o2);
-			return Util.getBuildDate(s1).compareTo(Util.getBuildDate(s2));
-	    }
-	});
+	Arrays.sort(sortedNames, (o1, o2) -> {
+  	String s1 = reverse ? o2 : o1;
+  	String s2 = reverse ? o1 : o2;
+  	return Util.getBuildDate(s1).compareTo(Util.getBuildDate(s2));
+    });
 	return sortedNames;
 }
 
+@Override
 ComponentResults getComponentResults() {
 	return this;
 }

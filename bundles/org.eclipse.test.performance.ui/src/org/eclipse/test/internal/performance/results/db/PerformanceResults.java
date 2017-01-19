@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -122,7 +122,7 @@ public PerformanceResults(String name, String baseline, String baselinePrefix, P
  * @return The names list of all currently known builds
  */
 public String[] getAllBuildNames() {
-    
+
 	if (this.allBuildNames == null) {
 		setAllBuildNames();
 	}
@@ -299,6 +299,7 @@ public String getLastBuildName(int kind) {
 	return this.name;
 }
 
+@Override
 public String getName() {
 	if (this.name == null) {
 		setAllBuildNames();
@@ -306,10 +307,7 @@ public String getName() {
 	return this.name;
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.AbstractResults#getPerformance()
- */
+@Override
 PerformanceResults getPerformance() {
 	return this;
 }
@@ -688,13 +686,13 @@ private void setAllBuildNames() {
         // there are times when the build we want to analyze is not the
         // "last build",
         // such as there may have be subsequent builds, already.
-        // so, we only compute this "default behavior" of finding last build, 
+        // so, we only compute this "default behavior" of finding last build,
 		// and equating it to "name", only if lastBuildName has not been set yet.
-		// For the case where "-current" is passed as an argument, in GenerateResults, we do 
+		// For the case where "-current" is passed as an argument, in GenerateResults, we do
 		// "setLastBuildName" to "current". See bug 455656.
 		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=455656
 		String lastBuild = null;
-		// Note: we can not call "getLastBuildName()" because it has the side effects we are 
+		// Note: we can not call "getLastBuildName()" because it has the side effects we are
 		// trying to avoid.
         if (this.lastBuildName == null) {
             int idx = n - 1;
@@ -759,7 +757,7 @@ public void setBaselineName(String buildName) {
 		int index = this.baselineName.lastIndexOf('-');
 		if (index > 0) {
 			this.baselinePrefix = this.baselineName.substring(0, index);
-		} else { 
+		} else {
 		    // use hard coded value (currently R-4.5)
 		    this.baselinePrefix = DB_Results.getDbBaselinePrefix();
 		}

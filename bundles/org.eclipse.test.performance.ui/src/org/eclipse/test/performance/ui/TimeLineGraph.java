@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,6 +33,7 @@ public class TimeLineGraph extends LineGraph{
         this.fItemGroups=new Hashtable();
     }
 
+    @Override
     public void paint(Image im) {
 
         Rectangle bounds= im.getBounds();
@@ -169,6 +170,7 @@ public class TimeLineGraph extends LineGraph{
   				timestamp,isSpecial,drawBaseline));
     }
 
+    @Override
     public double getMaxItem() {
     	Enumeration _enum=this.fItemGroups.elements();
         double maxItem= 0;
@@ -185,6 +187,7 @@ public class TimeLineGraph extends LineGraph{
         return maxItem;
     }
 
+    @Override
     public double getMinItem() {
        	Enumeration _enum = this.fItemGroups.elements();
 		double minItem = getMaxItem();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,6 +41,7 @@ SQL_Results(Connection con) throws SQLException {
 	    // TODO Auto-generated constructor stub
     }
 
+@Override
 protected void dispose() throws SQLException {
 	super.dispose();
 	if (this.queryBuildScenarios != null)
@@ -183,11 +184,11 @@ ResultSet queryScenarioTimestampDataPoints(String config, int scenarioID, String
 		this.queryScenarioTimestampDataPoints = this.fConnection.prepareStatement(statement);
 	}
 	this.queryScenarioTimestampDataPoints.setInt(1, scenarioID);
-	// 10/29/2015, dw. Not sure why this timestamp was set 5 hours in future. 
-	// UTC? Location of previous performance machines? 
-	// But, should not be required, AFAIK. 
+	// 10/29/2015, dw. Not sure why this timestamp was set 5 hours in future.
+	// UTC? Location of previous performance machines?
+	// But, should not be required, AFAIK.
 	// Timestamp timestamp = new Timestamp(lastBuildTime+(5*3600L*1000)); // create a time-stamp 5h after the given build time
-	Timestamp timestamp = new Timestamp(lastBuildTime); 
+	Timestamp timestamp = new Timestamp(lastBuildTime);
 	this.queryScenarioTimestampDataPoints.setTimestamp(2, timestamp);
 	ResultSet resultSet =  this.queryScenarioTimestampDataPoints.executeQuery();
 	if (DB_Results.LOG) DB_Results.LOG_WRITER.ends(")"); //$NON-NLS-1$

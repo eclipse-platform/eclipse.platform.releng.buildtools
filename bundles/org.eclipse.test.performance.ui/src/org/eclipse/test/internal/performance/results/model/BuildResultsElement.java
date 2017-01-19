@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -149,6 +149,7 @@ public BuildResultsElement(String name, ResultsElement parent) {
 	initInfo();
 }
 
+@Override
 public int compareTo(Object o) {
 	if (o instanceof BuildResultsElement && getName() != null) {
 		BuildResultsElement element = (BuildResultsElement)o;
@@ -160,6 +161,7 @@ public int compareTo(Object o) {
 	return super.compareTo(o);
 }
 
+@Override
 ResultsElement createChild(AbstractResults testResults) {
 	return null;
 }
@@ -168,6 +170,7 @@ BuildResults getBuildResults() {
 	return (BuildResults) this.results;
 }
 
+@Override
 public Object[] getChildren(Object o) {
 	if (this.results == null) {
 		return new Object[0];
@@ -178,6 +181,7 @@ public Object[] getChildren(Object o) {
 	return this.children;
 }
 
+@Override
 public Object getEditableValue() {
 	if (this.results == null)  {
 		return "Build "+this.name;
@@ -185,9 +189,7 @@ public Object getEditableValue() {
 	return this.results.toString();
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyDescriptors()
- */
+@Override
 public IPropertyDescriptor[] getPropertyDescriptors() {
 	Vector descriptors = getDescriptors();
 	if (descriptors == null) {
@@ -203,9 +205,7 @@ public IPropertyDescriptor[] getPropertyDescriptors() {
 	return descriptorsArray;
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyValue(java.lang.Object)
- */
+@Override
 public Object getPropertyValue(Object propKey) {
 	BuildResults buildResults = getBuildResults();
 	if (buildResults != null) {
@@ -287,6 +287,7 @@ public Object getPropertyValue(Object propKey) {
  * <li>3:	coefficient of variation of these values</li>
  * </ul>
  */
+@Override
 double[] getStatistics() {
 	if (this.statistics  == null) {
 		this.statistics = ((ConfigResults)getBuildResults().getParent()).getStatistics(Util.BASELINE_BUILD_PREFIXES);
@@ -294,6 +295,7 @@ double[] getStatistics() {
 	return this.statistics;
 }
 
+@Override
 void initChildren() {
 	BuildResults buildResults = (BuildResults) this.results;
 	Dim[] dimensions = buildResults.getDimensions();
@@ -312,6 +314,7 @@ void initInfo() {
 	this.important = this.milestone || Util.getNextMilestone(this.name) == null;
 }
 
+@Override
 void initStatus() {
 	if (this.results == null) {
 		if (this.parent.isInitialized()) {
@@ -358,9 +361,7 @@ public boolean isUnknown() {
 	return (getStatus()  & STATE_MASK) == UNKNOWN;
 }
 
-/* (non-Javadoc)
- * @see java.lang.Object#toString()
- */
+@Override
 public String toString() {
 	return getName();
 }

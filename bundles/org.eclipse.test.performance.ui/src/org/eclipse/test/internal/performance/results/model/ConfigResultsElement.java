@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -138,10 +138,12 @@ public ConfigResultsElement(AbstractResults results, ResultsElement parent) {
 	super(results, parent);
 }
 
+@Override
 public int compareTo(Object o) {
 	// TODO Auto-generated method stub
 	return super.compareTo(o);
 }
+@Override
 ResultsElement createChild(AbstractResults testResults) {
 	return new BuildResultsElement(testResults, this);
 }
@@ -174,6 +176,7 @@ BuildResultsElement getCurrentBuild() {
 	return this.currentBuild;
 }
 
+@Override
 public String getLabel(Object o) {
 	String description = getConfigResults().getDescription();
 	int index = description.indexOf(" (");
@@ -183,11 +186,7 @@ public String getLabel(Object o) {
 	return description.substring(0, index);
 }
 
-/*
- * (non-Javadoc)
- *
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyDescriptors()
- */
+@Override
 public IPropertyDescriptor[] getPropertyDescriptors() {
 	Vector descriptors = getDescriptors();
 	if (descriptors == null) {
@@ -203,13 +202,7 @@ public IPropertyDescriptor[] getPropertyDescriptors() {
 	return descriptorsArray;
 }
 
-/*
- * (non-Javadoc)
- *
- * @see
- * org.eclipse.ui.views.properties.IPropertySource#getPropertyValue(java.lang
- * .Object)
- */
+@Override
 public Object getPropertyValue(Object propKey) {
 	ConfigResults configResults = getConfigResults();
 	if (propKey.equals(P_ID_CONFIG_NAME)) {
@@ -259,6 +252,7 @@ public Object getPropertyValue(Object propKey) {
  * <li>3:	coefficient of variation of these values</li>
  * </ul>
  */
+@Override
 public double[] getStatistics() {
 	if (this.statistics  == null) {
 		this.statistics = getConfigResults().getStatistics(Util.BASELINE_BUILD_PREFIXES);
@@ -266,6 +260,7 @@ public double[] getStatistics() {
 	return this.statistics;
 }
 
+@Override
 void initStatus() {
 	ConfigResults configResults = getConfigResults();
 	if (configResults.isValid()) {
@@ -278,6 +273,7 @@ void initStatus() {
 /*
  * Write the element status in the given stream
  */
+@Override
 StringBuffer getFailures(StringBuffer buffer, int kind, StringBuffer excluded) {
 	if ((this.status & BIG_DELTA) != 0) { // there's a failure on this config
 

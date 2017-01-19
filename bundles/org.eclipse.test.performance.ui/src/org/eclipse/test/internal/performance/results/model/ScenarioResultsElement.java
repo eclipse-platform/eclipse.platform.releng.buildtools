@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -64,17 +64,17 @@ ScenarioResultsElement(AbstractResults results, ResultsElement parent) {
     super(results, parent);
 }
 
+@Override
 ResultsElement createChild(AbstractResults testResults) {
 	return new ConfigResultsElement(testResults, this);
 }
 
+@Override
 public String getLabel(Object o) {
 	return ((ScenarioResults) this.results).getShortName();
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyDescriptors()
- */
+@Override
 public IPropertyDescriptor[] getPropertyDescriptors() {
 	Vector descriptors = getDescriptors();
 	if (descriptors == null) {
@@ -90,9 +90,7 @@ public IPropertyDescriptor[] getPropertyDescriptors() {
 	return descriptorsArray;
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyValue(java.lang.Object)
- */
+@Override
 public Object getPropertyValue(Object propKey) {
 	ScenarioResults scenarioResults = (ScenarioResults) this.results;
     if (propKey.equals(P_ID_SCENARIO_LABEL))
@@ -115,6 +113,7 @@ public boolean hasSummary() {
 	return ((ScenarioResults)this.results).hasSummary();
 }
 
+@Override
 void initStatus() {
 	if (onlyFingerprints()) {
 		if (hasSummary()) {
@@ -127,6 +126,7 @@ void initStatus() {
 	}
 }
 
+@Override
 StringBuffer getFailures(StringBuffer buffer, int kind, StringBuffer excluded) {
 	// Write status for scenarios having error
 	if ((getStatus() & ERROR_MASK) != 0) {
@@ -138,7 +138,7 @@ StringBuffer getFailures(StringBuffer buffer, int kind, StringBuffer excluded) {
 		if (childrenBuffer.length() > 0) {
 			buffer.append("	");
 			buffer.append(getLabel(null));
-			IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+			IEclipsePreferences preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 			String comment = preferences.get(getId(), null);
 			if (comment != null) {
 				if ((kind & IPerformancesConstants.STATUS_VALUES) != 0) {

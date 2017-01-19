@@ -480,7 +480,7 @@ private void parse(String[] args) {
 			i++;
 			continue;
 		}
-		// To get to hear mean "matched none". 
+		// To get to hear mean "matched none".
         System.err.println("ERROR: Unrecognized argument (arg) found, with value of >" + arg + "<");
         i++;
         continue;
@@ -554,17 +554,13 @@ private void printComponent(/*PerformanceResults performanceResults, */String co
 	Display display = Display.getDefault();
 	if (this.genFingerPrints || this.genAll) {
 		final FingerPrint fingerprint = new FingerPrint(component, stream, this.outputDir);
-		display.syncExec(
-			new Runnable() {
-				public void run(){
-					try {
-						fingerprint.print(GenerateResults.this.performanceResults);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
-		);
+      display.syncExec(() -> {
+        try {
+          fingerprint.print(GenerateResults.this.performanceResults);
+        } catch (Exception ex) {
+          ex.printStackTrace();
+        }
+      });
 	}
 //	FingerPrint fingerprint = new FingerPrint(component, stream, this.outputDir);
 //	fingerprint.print(performanceResults);
@@ -574,15 +570,13 @@ private void printComponent(/*PerformanceResults performanceResults, */String co
 		// print the component scenario status table beneath the fingerprint
 		final ScenarioStatusTable sst = new ScenarioStatusTable(component, stream);
 		display.syncExec(
-			new Runnable() {
-				public void run(){
-					try {
-						sst.print(GenerateResults.this.performanceResults);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
+			() -> {
+      	try {
+      		sst.print(GenerateResults.this.performanceResults);
+      	} catch (Exception ex) {
+      		ex.printStackTrace();
+      	}
+      }
 		);
 //		ScenarioStatusTable sst = new ScenarioStatusTable(component, stream);
 //		sst.print(performanceResults);
@@ -1024,7 +1018,7 @@ private void setDefaults(String buildName, String baseline) {
 	}
 
 	// must set our known "last build" (that we are interested in) before
-	// 'getAllBuildNames' is called, else it may set "name" to some later 
+	// 'getAllBuildNames' is called, else it may set "name" to some later
 	// build we are not interested in analyzing yet.
     this.performanceResults.setLastBuildName(buildName);
 
@@ -1064,7 +1058,7 @@ private void setDefaults(String buildName, String baseline) {
 		} else if (buildType == 'I') {
 		this.currentBuildPrefixes.add("I");
 		} else {
-		    // TODO: may want to throw error here? 
+		    // TODO: may want to throw error here?
 		    this.currentBuildPrefixes.add("?");
 		}
 	}

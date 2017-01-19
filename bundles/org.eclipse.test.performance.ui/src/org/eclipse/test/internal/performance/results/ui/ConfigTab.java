@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -94,7 +94,7 @@ public ConfigTab(String name, String box) {
     this.configName = name;
     int idx = box.indexOf(" (");
 	this.configBox = idx > 0 ? box.substring(0, idx) : box;
-	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+	this.preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 }
 
 /**
@@ -162,14 +162,17 @@ Composite createTabFolderPage (ComponentResultsElement componentResultsElement, 
 	// when a click is done in the table cell.
 	final ComponentsView componentsView = (ComponentsView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.ComponentsView");
 	MouseListener mouseListener = new MouseListener() {
-		public void mouseUp(MouseEvent e) {
+		@Override
+    public void mouseUp(MouseEvent e) {
 		}
-		public void mouseDown(MouseEvent e) {
+		@Override
+    public void mouseDown(MouseEvent e) {
 			Point cellPosition = currentCellPosition(e.x, e.y);
 			Table tabTable = ConfigTab.this.table;
 			componentsView.select(ConfigTab.this.results, ConfigTab.this.configName, (String) ConfigTab.this.firstLine.get(cellPosition.x), tabTable.getItem(cellPosition.y).getText());
 		}
-		public void mouseDoubleClick(MouseEvent e) {
+		@Override
+    public void mouseDoubleClick(MouseEvent e) {
 		}
 	};
 	this.table.addMouseListener(mouseListener);
@@ -177,7 +180,8 @@ Composite createTabFolderPage (ComponentResultsElement componentResultsElement, 
 	// Listen to mouse track events to display the table cell corresponding tooltip.
 	MouseTrackListener mouseTrackListener = new MouseTrackListener() {
 		ToolTip currentTooltip;
-		public void mouseHover(MouseEvent e) {
+		@Override
+    public void mouseHover(MouseEvent e) {
 			if (this.currentTooltip != null) {
 				this.currentTooltip.setVisible(false);
 				this.currentTooltip = null;
@@ -193,9 +197,11 @@ Composite createTabFolderPage (ComponentResultsElement componentResultsElement, 
 				}
 			}
 		}
-		public void mouseEnter(MouseEvent e) {
+		@Override
+    public void mouseEnter(MouseEvent e) {
 		}
-		public void mouseExit(MouseEvent e) {
+		@Override
+    public void mouseExit(MouseEvent e) {
 		}
 	};
 	this.table.addMouseTrackListener(mouseTrackListener);

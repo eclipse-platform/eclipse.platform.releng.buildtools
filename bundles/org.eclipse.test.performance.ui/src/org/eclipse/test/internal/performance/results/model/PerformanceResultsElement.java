@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,6 +41,7 @@ public PerformanceResultsElement() {
 	super();
 }
 
+@Override
 ResultsElement createChild(AbstractResults testResults) {
 	return new ComponentResultsElement(testResults, this);
 }
@@ -159,6 +160,7 @@ boolean hasRead(BuildResultsElement buildResultsElement) {
 	return true;
 }
 
+@Override
 public boolean isInitialized() {
 	return super.isInitialized() && this.results.size() > 0;
 }

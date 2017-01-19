@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -154,9 +154,7 @@ private Composite createComposite(Composite parent, int numColumns, int hSpan) {
 	return composite;
 }
 
-/**
- * (non-Javadoc) Method declared on PreferencePage
- */
+@Override
 protected Control createContents(Composite parent) {
 
 	this.buildsView = (BuildsView) PerformancesView.getWorkbenchView("org.eclipse.test.internal.performance.results.ui.BuildsView");
@@ -427,6 +425,7 @@ private Text createTextField(Composite parent) {
  * the our plugin. This is important because we want to store our preferences
  * separately from the workbench.
  */
+@Override
 protected IPreferenceStore doGetPreferenceStore() {
 	return UiPlugin.getDefault().getPreferenceStore();
 }
@@ -464,9 +463,7 @@ private String getDirectoryPath(String location) {
 	return null;
 }
 
-/*
- * (non-Javadoc) Method declared on IWorkbenchPreferencePage
- */
+@Override
 public void init(IWorkbench workbench) {
 	// do nothing
 }
@@ -686,9 +683,7 @@ private void initStatusValues(int writeStatus) {
 	this.statusBuildsToConfirm.setText(String.valueOf(writeStatus & STATUS_BUILDS_NUMBER_MASK));
 }
 
-/**
- * (non-Javadoc) Method declared on ModifyListener
- */
+@Override
 public void modifyText(ModifyEvent event) {
 
 	// Add default dimension to results if necessary
@@ -858,23 +853,19 @@ void openMilestoneErrorMessage(String milestone) {
 	MessageDialog.openError(getShell(), getDialogTitle(), milestone+" is an invalid milestone date. Only 'yyyymmddHHMM' format is accepted!");
 }
 
-/*
- * (non-Javadoc) Method declared on PreferencePage
- */
+@Override
 protected void performDefaults() {
 	super.performDefaults();
 	initializeDefaults();
 }
 
-/*
- * (non-Javadoc) Method declared on PreferencePage
- */
+@Override
 public boolean performOk() {
 	final boolean hasBuildsView = this.buildsView != null;
 	if (hasBuildsView) {
 		storeValues();
 		try {
-			IEclipsePreferences preferences = new InstanceScope().getNode(PLUGIN_ID);
+			IEclipsePreferences preferences = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
 			preferences.flush();
 			this.buildsView.resetView();
 		} catch (BackingStoreException e) {
@@ -1019,15 +1010,11 @@ private void storeValues() {
 	*/
 }
 
-/**
- * (non-Javadoc) Method declared on SelectionListener
- */
+@Override
 public void widgetDefaultSelected(SelectionEvent event) {
 }
 
-/**
- * (non-Javadoc) Method declared on SelectionListener
- */
+@Override
 public void widgetSelected(SelectionEvent event) {
 
 	// As for directory when 'Local' button is pushed

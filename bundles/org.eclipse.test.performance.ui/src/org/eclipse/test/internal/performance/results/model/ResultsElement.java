@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -171,6 +171,7 @@ ResultsElement(String name, ResultsElement parent) {
 	this.name = name;
 }
 
+@Override
 public int compareTo(Object o) {
 	if (this.results == null) {
 		if (o instanceof ResultsElement && this.name != null) {
@@ -187,15 +188,13 @@ public int compareTo(Object o) {
 
 abstract ResultsElement createChild(AbstractResults testResults);
 
-/* (non-Javadoc)
- * Method declared on IAdaptable
- */
-public Object getAdapter(Class adapter) {
+@Override
+public <T> T getAdapter(Class<T> adapter) {
     if (adapter == IPropertySource.class) {
-        return this;
+        return (T) this;
     }
     if (adapter == IWorkbenchAdapter.class) {
-        return this;
+        return (T) this;
     }
     return null;
 }
@@ -213,9 +212,7 @@ public ResultsElement[] getChildren() {
     return this.children;
 }
 
-/* (non-Javadoc)
- * Method declared on IWorkbenchAdapter
- */
+@Override
 public Object[] getChildren(Object o) {
 	if (this.results == null) {
 		return new Object[0];
@@ -226,9 +223,7 @@ public Object[] getChildren(Object o) {
     return this.children;
 }
 
-/* (non-Javadoc)
- * Method declared on IPropertySource
- */
+@Override
 public Object getEditableValue() {
     return this;
 }
@@ -244,9 +239,7 @@ private StringBuffer getId(StringBuffer buffer) {
 	return buffer.append(DB_Results.getDbName());
 }
 
-/* (non-Javadoc)
- * Method declared on IWorkbenchAdapter
- */
+@Override
 public ImageDescriptor getImageDescriptor(Object object) {
 	if (object instanceof ResultsElement) {
 		ResultsElement resultsElement = (ResultsElement) object;
@@ -277,9 +270,7 @@ public ImageDescriptor getImageDescriptor(Object object) {
 	return null;
 }
 
-/* (non-Javadoc)
- * Method declared on IWorkbenchAdapter
- */
+@Override
 public String getLabel(Object o) {
     return getName();
 }
@@ -297,13 +288,12 @@ public String getName() {
 /**
  * Returns the parent
  */
+@Override
 public Object getParent(Object o) {
     return this.parent;
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyDescriptors()
- */
+@Override
 public IPropertyDescriptor[] getPropertyDescriptors() {
 	Vector descriptors = getDescriptors();
 	if (descriptors == null) {
@@ -319,9 +309,7 @@ public IPropertyDescriptor[] getPropertyDescriptors() {
 	return descriptorsArray;
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyValue(java.lang.Object)
- */
+@Override
 public Object getPropertyValue(Object propKey) {
 	if (propKey.equals(P_ID_STATUS_INFO)) {
 		if ((getStatus() & INFO_MASK) != 0) {
@@ -339,7 +327,7 @@ public Object getPropertyValue(Object propKey) {
 		}
 	}
 	if (propKey.equals(P_ID_STATUS_COMMENT)) {
-		IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+		IEclipsePreferences preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 		return preferences.get(getId(), "");
 	}
 	return null;
@@ -527,9 +515,7 @@ public boolean isInitialized() {
 	return this.results != null;
 }
 
-/* (non-Javadoc)
- * Method declared on IPropertySource
- */
+@Override
 public boolean isPropertySet(Object property) {
     return false;
 }
@@ -541,9 +527,7 @@ boolean onlyFingerprints() {
 	return ((PerformanceResultsElement)this).fingerprints;
 }
 
-/* (non-Javadoc)
- * Method declared on IPropertySource
- */
+@Override
 public void resetPropertyValue(Object property) {
 }
 
@@ -558,9 +542,10 @@ void resetStatus() {
 	}
 }
 
+@Override
 public void setPropertyValue(Object name, Object value) {
 	if (name.equals(P_ID_STATUS_COMMENT)) {
-		IEclipsePreferences preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+		IEclipsePreferences preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 		preferences.put(getId(), (String) value);
 		try {
 			preferences.flush();
@@ -577,6 +562,7 @@ void setImageDescriptor(ImageDescriptor desc) {
 //    this.imageDescriptor = desc;
 }
 
+@Override
 public String toString() {
 	if (this.results == null) {
 		return getName();

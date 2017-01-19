@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -79,7 +79,8 @@ public class ComponentsView extends PerformancesView {
 
 	// Viewer filters
 	final static ViewerFilter FILTER_ADVANCED_SCENARIOS = new ViewerFilter() {
-		public boolean select(Viewer v, Object parentElement, Object element) {
+		@Override
+    public boolean select(Viewer v, Object parentElement, Object element) {
 			if (element instanceof ScenarioResultsElement) {
 				ScenarioResultsElement scenarioElement = (ScenarioResultsElement) element;
 				return scenarioElement.hasSummary();
@@ -108,13 +109,10 @@ public ComponentsView() {
 	super();
 
 	// Get preferences
-	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+	this.preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#createPartControl(org.eclipse.swt.widgets.Composite)
- */
+@Override
 public void createPartControl(Composite parent) {
 	super.createPartControl(parent);
 
@@ -123,7 +121,8 @@ public void createPartControl(Composite parent) {
 
 	// Set the content provider: first level is components list
 	WorkbenchContentProvider contentProvider = new WorkbenchContentProvider() {
-		public Object[] getElements(Object o) {
+		@Override
+    public Object[] getElements(Object o) {
 			return ComponentsView.this.getElements();
 		}
 	};
@@ -132,7 +131,8 @@ public void createPartControl(Composite parent) {
 	// Set the label provider
 	WorkbenchLabelProvider labelProvider = new WorkbenchLabelProvider() {
 
-		protected String decorateText(String input, Object element) {
+		@Override
+    protected String decorateText(String input, Object element) {
 			String text = super.decorateText(input, element);
 			if (element instanceof BuildResultsElement) {
 				BuildResultsElement buildElement = (BuildResultsElement) element;
@@ -144,7 +144,8 @@ public void createPartControl(Composite parent) {
 		}
 
 		// When all scenarios are displayed, then set fingerprints one in bold.
-		public Font getFont(Object element) {
+		@Override
+    public Font getFont(Object element) {
 			Font font = super.getFont(element);
 			if (element instanceof ScenarioResultsElement) {
 				boolean fingerprints = ComponentsView.this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
@@ -171,7 +172,8 @@ public void createPartControl(Composite parent) {
 
 		// Sort children using specific comparison (see the implementation
 		// of the #compareTo(Object) in the ResultsElement hierarchy
-		public int compare(Viewer view, Object e1, Object e2) {
+		@Override
+    public int compare(Viewer view, Object e1, Object e2) {
 			// Config and Build results are sorted in reverse order
 			if (e1 instanceof BuildResultsElement) {
 				ResultsElement element = (ResultsElement) e2;
@@ -187,24 +189,19 @@ public void createPartControl(Composite parent) {
 	this.viewer.setSorter(nameSorter);
 
 	// Add results view as listener to viewer selection changes
-	Display.getDefault().asyncExec(new Runnable() {
-		public void run() {
-			ISelectionChangedListener listener = getResultsView();
-			if (listener != null) {
-				ComponentsView.this.viewer.addSelectionChangedListener(listener);
-			}
-		}
-	});
+	Display.getDefault().asyncExec(() -> {
+  	ISelectionChangedListener listener = getResultsView();
+  	if (listener != null) {
+  		ComponentsView.this.viewer.addSelectionChangedListener(listener);
+  	}
+  });
 
 	// Finalize viewer initialization
 	PlatformUI.getWorkbench().getHelpSystem().setHelp(this.viewer.getControl(), "org.eclipse.test.performance.ui.components");
 	finalizeViewerCreation();
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.ui.part.WorkbenchPart#dispose()
- */
+@Override
 public void dispose() {
 	if (this.boldFont != null) {
 		this.boldFont.dispose();
@@ -212,10 +209,7 @@ public void dispose() {
 	super.dispose();
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#fillLocalPullDown(org.eclipse.jface.action.IMenuManager)
- */
+@Override
 void fillFiltersDropDown(IMenuManager manager) {
 	super.fillFiltersDropDown(manager);
 	manager.add(this.filterOldBuilds);
@@ -275,6 +269,7 @@ ComponentResultsView getResultsView() {
 /*
  * Return the builds view.
  */
+@Override
 PerformancesView getSiblingView() {
 	if (this.buildsView == null) {
 		this.buildsView = (BuildsView) getWorkbenchView("org.eclipse.test.internal.performance.results.ui.BuildsView");
@@ -282,17 +277,15 @@ PerformancesView getSiblingView() {
 	return this.buildsView;
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#makeActions()
- */
+@Override
 void makeActions() {
 
 	super.makeActions();
 
 	// Filter non-fingerprints action
 	this.filterAdvancedScenarios = new Action("Advanced &Scenarios", IAction.AS_CHECK_BOX) {
-		public void run() {
+		@Override
+    public void run() {
 			filterAdvancedScenarios(isChecked(), true/*update preference*/);
         }
 	};
@@ -304,9 +297,7 @@ void makeActions() {
 	this.filterNightlyBuilds.setChecked(false);
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener#preferenceChange(org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent)
- */
+@Override
 public void preferenceChange(PreferenceChangeEvent event) {
 	String propertyName = event.getKey();
 	Object newValue = event.getNewValue();
@@ -328,6 +319,7 @@ public void preferenceChange(PreferenceChangeEvent event) {
 	super.preferenceChange(event);
 }
 
+@Override
 void restoreState() {
 	super.restoreState();
 
@@ -345,6 +337,7 @@ void restoreState() {
 	}
 }
 
+@Override
 public void saveState(IMemento memento) {
 	super.saveState(memento);
 }
@@ -377,10 +370,7 @@ public void select(ComponentResultsElement componentResults, String configName, 
 	}
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.ui.PerformancesView#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
- */
+@Override
 public void selectionChanged(SelectionChangedEvent event) {
 	super.selectionChanged(event);
 	ResultsElement eventResultsElement = (ResultsElement) ((StructuredSelection)event.getSelection()).getFirstElement();

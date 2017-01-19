@@ -47,10 +47,9 @@ public ScenarioResults(int id, String name, String shortName) {
  */
 void completeResults(String lastBuildName) {
 	String[] builds = DB_Results.getBuilds();
-	class BuildDateComparator implements Comparator {
-		public int compare(Object o1, Object o2) {
-	        String s1 = (String) o1;
-	        String s2 = (String) o2;
+	class BuildDateComparator implements Comparator<String> {
+		@Override
+    public int compare(String s1, String s2) {
 	        return Util.getBuildDate(s1).compareTo(Util.getBuildDate(s2));
 	    }
 	}
@@ -219,6 +218,7 @@ public boolean hasSummary() {
 /* (non-Javadoc)
  * @see org.eclipse.test.internal.performance.results.AbstractResults#hashCode()
  */
+@Override
 public int hashCode() {
 	return this.id;
 }

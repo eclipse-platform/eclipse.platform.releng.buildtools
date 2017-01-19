@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -97,6 +97,7 @@ public class BuildResults extends AbstractResults {
      *
      * @see Comparable#compareTo(Object)
      */
+    @Override
     public int compareTo(Object obj) {
         if (obj instanceof BuildResults) {
             BuildResults res = (BuildResults) obj;
@@ -519,9 +520,7 @@ public class BuildResults extends AbstractResults {
         }
     }
 
-/* (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.AbstractResults#toString()
-     */
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer(this.name);
         buffer.append(": "); //$NON-NLS-1$

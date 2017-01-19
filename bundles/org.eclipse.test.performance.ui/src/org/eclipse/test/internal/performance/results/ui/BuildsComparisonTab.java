@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -91,7 +91,7 @@ public class BuildsComparisonTab {
  */
 public BuildsComparisonTab(String name) {
     this.componentName = name;
-	this.preferences = new InstanceScope().getNode(IPerformancesConstants.PLUGIN_ID);
+	this.preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 }
 
 /**
@@ -152,7 +152,8 @@ Composite createTabFolderPage (BuildsComparisonView view) {
 	// Listen to mouse track events to display the table cell corresponding tooltip.
 	MouseTrackListener mouseTrackListener = new MouseTrackListener() {
 		ToolTip currentTooltip;
-		public void mouseHover(MouseEvent e) {
+		@Override
+    public void mouseHover(MouseEvent e) {
 			if (this.currentTooltip != null) {
 				this.currentTooltip.setVisible(false);
 				this.currentTooltip = null;
@@ -168,9 +169,11 @@ Composite createTabFolderPage (BuildsComparisonView view) {
 				}
 			}
 		}
-		public void mouseEnter(MouseEvent e) {
+		@Override
+    public void mouseEnter(MouseEvent e) {
 		}
-		public void mouseExit(MouseEvent e) {
+		@Override
+    public void mouseExit(MouseEvent e) {
 		}
 	};
 	this.table.addMouseTrackListener(mouseTrackListener);

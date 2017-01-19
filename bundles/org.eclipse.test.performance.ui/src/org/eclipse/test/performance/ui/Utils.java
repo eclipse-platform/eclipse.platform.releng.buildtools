@@ -1,5 +1,6 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others. All rights reserved. This program and the accompanying materials are made
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
@@ -10,7 +11,6 @@ package org.eclipse.test.performance.ui;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -156,14 +156,15 @@ public class Utils {
     return minIndex;
   }
 
-  static class ColorCounter implements Comparable {
+  static class ColorCounter implements Comparable<ColorCounter> {
 
     RGB rgb;
 
     int count;
 
-    public int compareTo(Object o) {
-      return ((ColorCounter) o).count - this.count;
+    @Override
+    public int compareTo(ColorCounter o) {
+      return o.count - this.count;
     }
   }
 
@@ -445,22 +446,14 @@ public class Utils {
     ImageLoader imageLoader = new ImageLoader();
     imageLoader.data = new ImageData[] { data };
 
-    OutputStream out = null;
-    try {
-      out = new BufferedOutputStream(new FileOutputStream(outputFile));
+    try (OutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile))){
+
       imageLoader.save(out, SWT.IMAGE_GIF);
-    } catch (FileNotFoundException e) {
+    } catch (IOException e) {
       e.printStackTrace();
     }
     finally {
       image.dispose();
-      if (out != null) {
-        try {
-          out.close();
-        } catch (IOException e1) {
-          // silently ignored
-        }
-      }
     }
   }
 
