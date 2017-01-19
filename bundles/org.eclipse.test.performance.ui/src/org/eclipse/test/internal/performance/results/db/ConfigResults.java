@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -135,8 +135,8 @@ public BuildResults getBuildResults(String buildName) {
  * @return The list of the builds which names match the given pattern.
  * 	The list is ordered by build results date.
  */
-public List getBuilds(String buildPattern) {
-	List builds = new ArrayList();
+public List<BuildResults> getBuilds(String buildPattern) {
+	List<BuildResults> builds = new ArrayList<>();
 	int size = size();
 	for (int i=0; i<size; i++) {
 		BuildResults buildResults = (BuildResults) this.children.get(i);
@@ -172,15 +172,15 @@ public List getBuildsBefore(String buildName) {
  * @param prefixes List of expected prefixes
  * @return A list of builds which names start with one of the given patterns.
  */
-public List getBuildsMatchingPrefixes(List prefixes) {
-	List builds = new ArrayList();
+public List<AbstractResults> getBuildsMatchingPrefixes(List<String> prefixes) {
+	List<AbstractResults> builds = new ArrayList<>();
 	int size = size();
 	int length = prefixes.size();
 	for (int i=0; i<size; i++) {
 		AbstractResults buildResults = (AbstractResults) this.children.get(i);
 		String buildName = buildResults.getName();
 		for (int j=0; j<length; j++) {
-			if (buildName.startsWith((String)prefixes.get(j))) {
+			if (buildName.startsWith(prefixes.get(j))) {
 				builds.add(buildResults);
 			}
 		}

@@ -50,7 +50,7 @@ import org.eclipse.test.internal.performance.results.utils.Util;
 public class PerformanceResults extends AbstractResults {
 
 	String[] allBuildNames = null;
-	Map allScenarios;
+	Map<String, List<ScenarioResults>> allScenarios;
 	String lastBuildName; // Name of the last used build
 	String baselineName; // Name of the baseline build used for comparison
 	private String scenarioPattern = "%"; //$NON-NLS-1$
@@ -395,7 +395,7 @@ private String[] read(boolean local, String buildName, String[][] configs, boole
 	RemainingTimeGuess timeGuess = null;
 	for (int i=0; i<componentsLength; i++) {
 		String componentName = this.components[i];
-		List scenarios = this.allScenarios == null ? null : (List) this.allScenarios.get(componentName);
+		List<ScenarioResults> scenarios = this.allScenarios == null ? null : this.allScenarios.get(componentName);
 
 		// Manage monitor
 		int percentage = (int) ((((double)(i+1)) / (componentsLength+1)) * 100);
@@ -547,10 +547,9 @@ void readLocalFile(File dir) {
 	if (!dir.exists()) return;
 	File dataFile = new File(dir, "performances.dat");	//$NON-NLS-1$
 	if (!dataFile.exists()) return;
-	DataInputStream stream = null;
-	try {
-		// Read local file info
-		stream = new DataInputStream(new BufferedInputStream(new FileInputStream(dataFile)));
+
+	// Read local file info
+	try (DataInputStream stream = new DataInputStream(new BufferedInputStream(new FileInputStream(dataFile)));){
 
 		// Read build info
 		String str = stream.readUTF();
@@ -602,7 +601,7 @@ void readLocalFile(File dir) {
 		for (int i = 0; i < length; i++) {
 			this.components[i] = stream.readUTF();
 			int size = stream.readInt();
-			List scenarios = new ArrayList(size);
+			List<ScenarioResults> scenarios = new ArrayList<>(size);
 			for (int j=0; j<size; j++) {
 				scenarios.add(new ScenarioResults(stream.readInt(), stream.readUTF(), stream.readUTF()));
 			}
@@ -611,14 +610,6 @@ void readLocalFile(File dir) {
 		println("	=> read from file "+dataFile); //$NON-NLS-1$
 	} catch (IOException ioe) {
 		println("	!!! "+dataFile+" should be deleted as it contained invalid data !!!"); //$NON-NLS-1$ //$NON-NLS-2$
-	} finally {
-		try {
-		    if (stream != null) {
-	        stream.close();
-		    }
-        } catch (IOException e) {
-	        // nothing else to do!
-        }
 	}
 }
 
@@ -642,7 +633,7 @@ private int readScenarios(String buildName, SubMonitor subMonitor) throws Operat
 	componentsSet.toArray(this.components = new String[componentsSize]);
 	for (int i=0; i<componentsSize; i++) {
 		String componentName = this.components[i];
-		List scenarios = (List) this.allScenarios.get(componentName);
+		List scenarios = this.allScenarios.get(componentName);
 		allScenariosSize += scenarios.size();
 	}
 	println(" -> "+allScenariosSize+" found in "+(System.currentTimeMillis()-start)+"ms"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -661,7 +652,7 @@ void reset(File dataDir) {
 }
 
 private void setAllBuildNames() {
-	SortedSet builds = new TreeSet(Util.BUILD_DATE_COMPARATOR);
+	SortedSet<String> builds = new TreeSet<>(Util.BUILD_DATE_COMPARATOR);
 	int size = size();
 	if (size == 0) return;
 	for (int i=0; i<size; i++) {
@@ -673,9 +664,9 @@ private void setAllBuildNames() {
 	this.allBuildNames = new String[buildsSize];
 	if (buildsSize > 0) {
 		int n = 0;
-		Iterator buildNames = builds.iterator();
+		Iterator<String> buildNames = builds.iterator();
 		while (buildNames.hasNext()) {
-			String buildName = (String) buildNames.next();
+			String buildName = buildNames.next();
 			if (this.lastBuildName == null || Util.getBuildDate(buildName).compareTo(Util.getBuildDate(this.lastBuildName)) <= 0) {
 				this.allBuildNames[n++] = buildName;
 			}
@@ -955,8 +946,7 @@ void writeData(File dir) {
 		}
 		dataFile.delete();
 	}
-	try {
-		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(dataFile)));
+	try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(dataFile)))){
 
 		// Write build info
 		stream.writeUTF(this.name == null ? DB_Results.getLastCurrentBuild() : this.name);
@@ -984,19 +974,17 @@ void writeData(File dir) {
 		stream.writeInt(length);
 		for (int i = 0; i < length; i++) {
 			stream.writeUTF(this.components[i]);
-			List scenarios = (List) this.allScenarios.get(this.components[i]);
+			List<ScenarioResults> scenarios = this.allScenarios.get(this.components[i]);
 			int size = scenarios.size();
 			stream.writeInt(size);
 			for (int j=0; j<size; j++) {
-				final ScenarioResults scenarioResults = (ScenarioResults)scenarios.get(j);
+				final ScenarioResults scenarioResults = scenarios.get(j);
 				stream.writeInt(scenarioResults.getId());
 				stream.writeUTF(scenarioResults.getName());
 				stream.writeUTF(scenarioResults.getLabel());
 			}
 		}
 
-		// Close
-		stream.close();
 		println("	=> performance results general data  written in file " + dataFile); //$NON-NLS-1$
 	} catch (FileNotFoundException e) {
 		System.err.println("can't create output file" + dataFile); //$NON-NLS-1$

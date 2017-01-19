@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -96,15 +96,15 @@ public String getBaselineBuildName() {
 	return buffer.toString();
 }
 
-Set getAllBuildNames() {
-	Set buildNames = new HashSet();
+Set<String> getAllBuildNames() {
+	Set<String> buildNames = new HashSet<>();
 	int size = size();
 	for (int i=0; i<size; i++) {
 		ConfigResults configResults = (ConfigResults) this.children.get(i);
-		List builds = configResults.getBuilds(null);
+		List<BuildResults> builds = configResults.getBuilds(null);
 		int length = builds.size();
 		for (int j=0; j<length; j++) {
-			buildNames.add(((BuildResults)builds.get(j)).getName());
+			buildNames.add(builds.get(j).getName());
 		}
 	}
 	return buildNames;

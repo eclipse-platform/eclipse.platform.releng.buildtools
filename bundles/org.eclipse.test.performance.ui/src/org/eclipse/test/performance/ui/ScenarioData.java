@@ -45,7 +45,7 @@ import junit.framework.AssertionFailedError;
  */
 public class ScenarioData {
 	private String baselinePrefix = null;
-	private List pointsOfInterest;
+	private List<String> pointsOfInterest;
 	private List buildIDStreamPatterns;
 	private File rootDir;
 	private static final int GRAPH_WIDTH = 600;
@@ -62,7 +62,7 @@ public class ScenarioData {
  * @param outputDir The directory root where the files are generated
  *
 */
-public ScenarioData(String baselinePrefix, List pointsOfInterest, List buildIDPatterns, File outputDir) {
+public ScenarioData(String baselinePrefix, List<String> pointsOfInterest, List buildIDPatterns, File outputDir) {
 	this.baselinePrefix = baselinePrefix;
 	this.pointsOfInterest = pointsOfInterest;
 	this.buildIDStreamPatterns = buildIDPatterns;
@@ -100,10 +100,10 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 	String current = configResults.getCurrentBuildName();
 
 	final String defaultBaselinePrefix = DB_Results.getDbBaselinePrefix();
-	Iterator builds = configResults.getResults();
+	Iterator<BuildResults> builds = configResults.getResults();
 	List lastSevenNightlyBuilds = configResults.lastNightlyBuildNames(7);
 	buildLoop: while (builds.hasNext()) {
-		BuildResults buildResults = (BuildResults) builds.next();
+		BuildResults buildResults = builds.next();
 		String buildID = buildResults.getName();
 		int underscoreIndex = buildID.indexOf('-');
 		String label = (underscoreIndex != -1 && buildID.equals(current)) ? buildID.substring(0, underscoreIndex) : buildID;
@@ -179,10 +179,10 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
 		if (printStream != null) printStream.print("		+ "+configName);
 		final File outputDir = new File(this.rootDir, configName);
 		outputDir.mkdir();
-		Iterator components = performanceResults.getResults();
+		Iterator<ComponentResults> components = performanceResults.getResults();
 		while (components.hasNext()) {
 			if (printStream != null) printStream.print(".");
-			final ComponentResults componentResults = (ComponentResults) components.next();
+			final ComponentResults componentResults = components.next();
 
 			// Manage monitor
 			int percentage = (int) ((progress++ / total) * 100);
@@ -211,18 +211,18 @@ public void print(PerformanceResults performanceResults, PrintStream printStream
  * Print the summary file of the builds data.
  */
 void printSummary(String configName, String configBox, ComponentResults componentResults, File outputDir, SubMonitor subMonitor) {
-	Iterator scenarios = componentResults.getResults();
+	Iterator<ScenarioResults> scenarios = componentResults.getResults();
 	while (scenarios.hasNext()) {
 		List highlightedPoints = new ArrayList();
-		ScenarioResults scenarioResults = (ScenarioResults) scenarios.next();
+		ScenarioResults scenarioResults = scenarios.next();
 		ConfigResults configResults = scenarioResults.getConfigResults(configName);
 		if (configResults == null || !configResults.isValid()) continue;
 
 		// get latest points of interest matching
 		if (this.pointsOfInterest != null) {
-			Iterator buildPrefixes = this.pointsOfInterest.iterator();
+			Iterator<String> buildPrefixes = this.pointsOfInterest.iterator();
 			while (buildPrefixes.hasNext()) {
-				String buildPrefix = (String) buildPrefixes.next();
+				String buildPrefix = buildPrefixes.next();
 				List builds = configResults.getBuilds(buildPrefix);
 				if (buildPrefix.indexOf('*') <0 && buildPrefix.indexOf('?') < 0) {
 					if (builds.size() > 0) {
@@ -400,9 +400,9 @@ private void printDifferenceLine(PrintStream stream, ConfigResults configResults
  * Print details file of the scenario builds data.
  */
 private void printDetails(String configName, String configBox, ComponentResults componentResults, File outputDir) {
-	Iterator scenarios = componentResults.getResults();
+	Iterator<ScenarioResults> scenarios = componentResults.getResults();
 	while (scenarios.hasNext()) {
-		ScenarioResults scenarioResults = (ScenarioResults) scenarios.next();
+		ScenarioResults scenarioResults = scenarios.next();
 		ConfigResults configResults = scenarioResults.getConfigResults(configName);
 		if (configResults == null || !configResults.isValid()) continue;
 		String scenarioName= scenarioResults.getName();
@@ -447,22 +447,14 @@ private void saveGraph(LineGraph p, File outputFile) {
 	ImageData data = Utils.downSample(image);
 	ImageLoader il = new ImageLoader();
 	il.data = new ImageData[] { data };
-	OutputStream out = null;
-	try {
-		out = new BufferedOutputStream(new FileOutputStream(outputFile));
+	try (OutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile))){
+
 		il.save(out, SWT.IMAGE_GIF);
 
-	} catch (FileNotFoundException e) {
+	} catch (IOException e) {
 		e.printStackTrace();
 	} finally {
 		image.dispose();
-		if (out != null) {
-			try {
-				out.close();
-			} catch (IOException e1) {
-				// silently ignored
-			}
-		}
 	}
 }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -55,11 +55,11 @@ public class BarGraph {
 	}
 
 	private String fTitle;
-	private List fItems;
+	private List<BarItem> fItems;
 
 	BarGraph(String title) {
 		this.fTitle= title;
-		this.fItems= new ArrayList();
+		this.fItems= new ArrayList<>();
 	}
 
 	public void addItem(String name, double[] stats, String url, String slow, boolean significant) {
@@ -79,7 +79,7 @@ public class BarGraph {
 
 		NumberFormat nf= NumberFormat.getInstance();
 
-		BarItem[] bars= (BarItem[]) this.fItems.toArray(new BarItem[this.fItems.size()]);
+		BarItem[] bars= this.fItems.toArray(new BarItem[this.fItems.size()]);
 
 		// draw white background
 		Color bg= display.getSystemColor(SWT.COLOR_WHITE);

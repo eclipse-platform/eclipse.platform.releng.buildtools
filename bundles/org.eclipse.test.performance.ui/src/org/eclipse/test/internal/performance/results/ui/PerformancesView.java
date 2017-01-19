@@ -118,7 +118,7 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	        return true;
         }
 	};
-	Set viewFilters = new HashSet();
+	Set<ViewerFilter> viewFilters = new HashSet<>();
 
 	// SWT resources
 	Shell shell;

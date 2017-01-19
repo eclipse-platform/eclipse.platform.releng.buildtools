@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -80,11 +80,11 @@ private void printDetails() {
 	printColumnHeaders();
 	this.stream.print("</tr>\n");
 
-	List builds = this.configResults.getBuildsMatchingPrefixes(this.buildPrefixes);
+	List<BuildResults> builds = this.configResults.getBuildsMatchingPrefixes(this.buildPrefixes);
 	Collections.reverse(builds);
 	int size = builds.size();
 	for (int i=0; i<size; i++) {
-		BuildResults buildResults = (BuildResults) builds.get(i);
+		BuildResults buildResults = builds.get(i);
 		this.stream.print("<tr><td>");
 		this.stream.print(buildResults.getName());
 		this.stream.print("</td>");

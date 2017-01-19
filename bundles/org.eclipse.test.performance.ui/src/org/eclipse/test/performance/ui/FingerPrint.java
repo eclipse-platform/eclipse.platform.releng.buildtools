@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -113,7 +113,7 @@ public void print(final PerformanceResults performanceResults) {
 		// Create BarGraph
 		// TODO use FingerPrintGraph instead
 		BarGraph barGraph = null;
-		List allResults = new ArrayList();
+		List<ConfigResults> allResults = new ArrayList<>();
 		String defaultDimName = DB_Results.getDefaultDimension().getName();
 		for (int i=0, size=scenarios.size(); i<size; i++) {
 			ScenarioResults scenarioResults = (ScenarioResults) scenarios.get(i);

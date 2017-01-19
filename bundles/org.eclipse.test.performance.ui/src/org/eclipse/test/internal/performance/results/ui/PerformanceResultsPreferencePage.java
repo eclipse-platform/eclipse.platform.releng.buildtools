@@ -473,10 +473,10 @@ public void init(IWorkbench workbench) {
  */
 void initDimensionsLists() {
 	// Dimensions lists
-	java.util.List dimensions = PerformanceTestPlugin.getDimensions();
-	Iterator names = dimensions.iterator();
+	java.util.List<String> dimensions = PerformanceTestPlugin.getDimensions();
+	Iterator<String> names = dimensions.iterator();
 	while (names.hasNext()) {
-		String name = (String) names.next();
+		String name = names.next();
 		this.defaultDimensionCombo.add(name);
 		this.resultsDimensionsList.add(name);
 	}

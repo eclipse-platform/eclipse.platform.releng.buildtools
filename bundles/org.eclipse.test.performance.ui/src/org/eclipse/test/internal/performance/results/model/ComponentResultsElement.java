@@ -154,9 +154,9 @@ public List getScenarios(boolean fingerprint) {
 	}
 	List scenarios = new ArrayList();
 	if (this.results != null) {
-		Iterator iterator = this.results.getResults();
+		Iterator<ScenarioResults> iterator = this.results.getResults();
 		while (iterator.hasNext()) {
-			ScenarioResults scenarioResults = (ScenarioResults) iterator.next();
+			ScenarioResults scenarioResults = iterator.next();
 			if (scenarioResults.hasSummary()) {
 				scenarios.add(scenarioResults);
 			}
@@ -171,8 +171,8 @@ public List getScenarios(boolean fingerprint) {
  * @param fingerprint Tell whether only fingerprint scenarios are expected or not.
  * @return A list of {@link String}.
  */
-public List getScenariosLabels(boolean fingerprint) {
-	List labels = new ArrayList();
+public List<String> getScenariosLabels(boolean fingerprint) {
+	List<String> labels = new ArrayList<>();
 	if (this.results != null) {
 		AbstractResults[] scenarios = this.results.getChildren();
 		int length = scenarios.length;

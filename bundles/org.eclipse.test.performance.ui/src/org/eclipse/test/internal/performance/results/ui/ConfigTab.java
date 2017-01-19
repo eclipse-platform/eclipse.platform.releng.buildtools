@@ -535,7 +535,7 @@ private String[] getLayoutDataFieldNames(boolean fingerprints) {
 	if (this.results == null) {
 		return new String[0];
 	}
-	List labels = this.results.getScenariosLabels(fingerprints);
+	List<String> labels = this.results.getScenariosLabels(fingerprints);
 	labels.add(0, "Build");
 	String[] names = new String[labels.size()];
 	labels.toArray(names);
