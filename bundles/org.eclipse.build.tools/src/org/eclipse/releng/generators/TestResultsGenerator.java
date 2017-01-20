@@ -337,7 +337,7 @@ public class TestResultsGenerator extends Task {
         final TestResultsGenerator test = new TestResultsGenerator();
         if (Boolean.FALSE) {
             test.setTestsConfigExpected(
-                    "ep46I-unit-cen64_linux.gtk.x86_64_8.0, ep46I-unit-lin64_linux.gtk.x86_64_8.0 ,ep46I-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46I-unit-win32_win32.win32.x86_8.0");
+                    "ep46I-unit-cen64-gtk2_linux.gtk.x86_64_8.0, ep46I-unit-cen64-gtk3_linux.gtk.x86_64_8.0 ,ep46I-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46I-unit-win32_win32.win32.x86_8.0");
             DEBUG = true;
             try {
                 test.getTestsConfig();
@@ -348,7 +348,7 @@ public class TestResultsGenerator extends Task {
 
         } else {
             test.setTestsConfigExpected(
-                    "ep46I-unit-lin64_linux.gtk.x86_64_8.0 ,ep46I-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46I-unit-win32_win32.win32.x86_8.0, ep46I-unit-cen64_linux.gtk.x86_64_8.0");
+                    "ep46I-unit-cen64-gtk2_linux.gtk.x86_64_8.0 ,ep46I-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46I-unit-win32_win32.win32.x86_8.0, ep46I-unit-cen64-gtk3_linux.gtk.x86_64_8.0");
             // "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
             test.setDropTokenList(
                     "%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
@@ -389,10 +389,10 @@ public class TestResultsGenerator extends Task {
 
     // no defaults set since adds to confusion or errors
     // private String[] testsConfigDefaults = { "ep4" + getTestedBuildType() +
-    // "-unit-lin64_linux.gtk.x86_64_8.0.xml",
+    // "-unit-cen64-gtk2_linux.gtk.x86_64_8.0.xml",
     // "ep4" + getTestedBuildType() + "-unit-mac64_macosx.cocoa.x86_64_8.0.xml",
     // "ep4" + getTestedBuildType() + "-unit-win32_win32.win32.x86_8.0.xml",
-    // "ep4" + getTestedBuildType() + "-unit-cen64_linux.gtk.x86_64_8.0.xml" };
+    // "ep4" + getTestedBuildType() + "-unit-cen64-gtk3_linux.gtk.x86_64_8.0.xml" };
     private String  testsConfigExpected;
     private boolean testRan;
     private String  compilerSummaryFilename = "compilerSummary.html";
