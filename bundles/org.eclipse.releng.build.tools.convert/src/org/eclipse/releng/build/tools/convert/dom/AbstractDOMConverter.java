@@ -74,7 +74,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
     private void dumpVersion2(final Map<String, String> options, final LogDocumentNode documentNode) {
         final String fileName = options.get(Converter.OUTPUT_FILE_NAME);
         final ProblemSummaryNode summaryNode = documentNode.getSummaryNode();
-        if ((summaryNode == null) || ((summaryNode.numberOfErrors == 0) && (summaryNode.numberOfWarnings == 0))) {
+        if ((summaryNode == null) || (summaryNode.numberOfProblems == 0)) {
             return;
         }
         try (final Writer writer = new BufferedWriter(new FileWriter(fileName))){
