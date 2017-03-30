@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2016 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2006, 2017 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -90,7 +90,8 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
             writeTopAnchor(writer);
             String pattern = messages.getString("problem.summary"); //$NON-NLS-1$
             writer.write(MessageFormat.format(pattern, new Object[] { Integer.toString(problemSummaryNode.numberOfProblems),
-                    Integer.toString(problemSummaryNode.numberOfErrors), Integer.toString(problemSummaryNode.numberOfWarnings) }));
+                    Integer.toString(problemSummaryNode.numberOfErrors), Integer.toString(problemSummaryNode.numberOfWarnings), 
+                    Integer.toString(problemSummaryNode.numberOfInfos)}));
 
             writeAnchorsReferences(writer);
             final ProblemsNode[] problemsNodes = documentNode.getProblems();
@@ -180,6 +181,49 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                     globalErrorNumber++;
                 }
                 writer.write(messages.getString("other_warnings.footer")); //$NON-NLS-1$
+            }
+
+            // dump infos
+            writeInfosAnchor(writer);
+            writeAnchorsReferencesInfos(writer);
+            for (int i = 0, max = problemsNodes.length; i < max; i++) {
+                final ProblemsNode problemsNode = problemsNodes[i];
+                final ProblemNode[] problemNodes = problemsNode.getInfos();
+                final int length = problemNodes.length;
+                if (length == 0) {
+                    continue;
+                }
+
+                pattern = messages.getString("infos.header"); //$NON-NLS-1$
+                final MessageFormat form = new MessageFormat(pattern);
+                final double[] warningsLimits = { 1, 2 };
+                final String[] warningParts = { messages.getString("one_info"),//$NON-NLS-1$
+                        messages.getString("multiple_infos") //$NON-NLS-1$
+                };
+                final ChoiceFormat warningForm = new ChoiceFormat(warningsLimits, warningParts);
+                final String sourceFileName = extractRelativePath(problemsNode.sourceFileName, pluginName);
+                form.setFormatByArgumentIndex(1, warningForm);
+                final Object[] arguments = new Object[] { sourceFileName, new Integer(problemsNode.numberOfInfos), };
+                writer.write(form.format(arguments));
+                for (int j = 0; j < length; j++) {
+                    final ProblemNode problemNode = problemNodes[j];
+                    if ((j & 1) != 0) {
+                        pattern = messages.getString("infos.entry.odd"); //$NON-NLS-1$
+                    } else {
+                        pattern = messages.getString("infos.entry.even"); //$NON-NLS-1$
+                    }
+                    problemNode.setSources();
+                    writer.write(MessageFormat.format(
+                            pattern,
+                            new Object[] { sourceFileName, Integer.toString(globalErrorNumber), Integer.toString(j + 1),
+                                    problemNode.id, Integer.toString(problemNode.line), convertToHTML(problemNode.message),
+                                    convertToHTML(problemNode.sourceCodeBefore), convertToHTML(problemNode.sourceCode),
+                                    convertToHTML(problemNode.sourceCodeAfter),
+                                    getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
+                                    Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd), }));
+                    globalErrorNumber++;
+                }
+                writer.write(messages.getString("infos.footer")); //$NON-NLS-1$
             }
 
             // dump forbidden accesses warnings

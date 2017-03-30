@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2016 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2006, 2017 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -53,6 +53,11 @@ public class DOMHtmlConverter extends AbstractDOMConverter {
     }
 
     @Override
+    public void writeAnchorsReferencesInfos(final Writer writer) throws IOException {
+        writer.write(messages.getString("anchors.references.no_infos"));//$NON-NLS-1$
+    }
+    
+    @Override
     public void writeDiscouragedRulesWarningsAnchor(final Writer writer) throws IOException {
         writer.write(messages.getString("discouraged_warnings.title_anchor"));//$NON-NLS-1$
     }
@@ -70,6 +75,11 @@ public class DOMHtmlConverter extends AbstractDOMConverter {
     @Override
     public void writeOtherWarningsAnchor(final Writer writer) throws IOException {
         writer.write(messages.getString("other_warnings.title_anchor"));//$NON-NLS-1$
+    }
+
+    @Override
+    public void writeInfosAnchor(final Writer writer) throws IOException {
+        writer.write(messages.getString("infos.title_anchor"));//$NON-NLS-1$
     }
 
     @Override

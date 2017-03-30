@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2007 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2006, 2017 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -13,7 +13,7 @@ public class ProblemNode {
 
     protected static final String EMPTY = "";         //$NON-NLS-1$
 
-    public boolean                isError;
+    public SeverityType           severityType;
     public int                    charStart;
     public int                    charEnd;
     public int                    line;
@@ -58,7 +58,17 @@ public class ProblemNode {
     @Override
     public String toString() {
         final StringBuffer buffer = new StringBuffer();
-        buffer.append(isError ? "ERROR " : "WARNING "); //$NON-NLS-1$//$NON-NLS-2$
+        switch (severityType) {
+          case ERROR : 
+            buffer.append("ERROR ");//$NON-NLS-1$
+            break;
+          case WARNING : 
+            buffer.append("WARNING ");//$NON-NLS-1$
+            break;
+          case INFO : 
+            buffer.append("INFO ");//$NON-NLS-1$
+            break;
+        }
         buffer.append("line : ").append(line).append(" message = ").append(message);//$NON-NLS-1$//$NON-NLS-2$
         return buffer.toString();
     }

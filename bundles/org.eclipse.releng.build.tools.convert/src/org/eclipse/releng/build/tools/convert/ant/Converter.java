@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2017 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -23,6 +23,7 @@ import org.eclipse.releng.build.tools.convert.dom.AbstractDOMConverter;
 import org.eclipse.releng.build.tools.convert.dom.IDOMConverter;
 import org.eclipse.releng.build.tools.convert.dom.LogDocumentNode;
 import org.eclipse.releng.build.tools.convert.dom.ProblemNode;
+import org.eclipse.releng.build.tools.convert.dom.SeverityType;
 import org.eclipse.releng.build.tools.convert.dom.ProblemSummaryNode;
 import org.eclipse.releng.build.tools.convert.dom.ProblemsNode;
 import org.w3c.dom.Document;
@@ -289,6 +290,7 @@ public class Converter {
             summaryNode.numberOfProblems = Integer.parseInt(problemSummaryMap.getNamedItem("problems").getNodeValue()); //$NON-NLS-1$
             summaryNode.numberOfErrors = Integer.parseInt(problemSummaryMap.getNamedItem("errors").getNodeValue()); //$NON-NLS-1$
             summaryNode.numberOfWarnings = Integer.parseInt(problemSummaryMap.getNamedItem("warnings").getNodeValue()); //$NON-NLS-1$
+            summaryNode.numberOfInfos = Integer.parseInt(problemSummaryMap.getNamedItem("infos").getNodeValue()); //$NON-NLS-1$
         }
 
         nodeList = document.getElementsByTagName("problems"); //$NON-NLS-1$
@@ -310,6 +312,8 @@ public class Converter {
             node.numberOfErrors = Integer.parseInt(problemsNodeMap.getNamedItem("errors").getNodeValue());//$NON-NLS-1$
             node.numberOfWarnings = Integer.parseInt(problemsNodeMap.getNamedItem("warnings").getNodeValue());//$NON-NLS-1$
             node.numberOfProblems = Integer.parseInt(problemsNodeMap.getNamedItem("problems").getNodeValue());//$NON-NLS-1$
+            node.numberOfInfos = Integer.parseInt(problemsNodeMap.getNamedItem("infos").getNodeValue());//$NON-NLS-1$
+
 
             final NodeList children = problemsNode.getChildNodes();
             final int childrenLength = children.getLength();
@@ -318,20 +322,29 @@ public class Converter {
                 final NamedNodeMap problemNodeMap = problemNode.getAttributes();
                 final String severity = problemNodeMap.getNamedItem("severity").getNodeValue();//$NON-NLS-1$
                 final ProblemNode problem = new ProblemNode();
-                final boolean isError = "ERROR".equals(severity);//$NON-NLS-1$
-                problem.isError = isError;
                 problem.id = problemNodeMap.getNamedItem("id").getNodeValue();//$NON-NLS-1$
-                if (isError) {
+                switch (severity) {
+                  case "ERROR":
+                    problem.severityType = SeverityType.ERROR;
                     node.addError(problem);
-                } else if (AbstractDOMConverter.FILTERED_WARNINGS_IDS.contains(problem.id)) {
-                    if (AbstractDOMConverter.FORBIDDEN_REFERENCE.equals(problem.id)) {
-                        node.addForbiddenWarning(problem);
+                    break;
+                  case "INFO": 
+                    problem.severityType = SeverityType.INFO;
+                    node.addInfo(problem);
+                    break;
+                  case "WARNING":
+                    problem.severityType = SeverityType.WARNING;
+                    if (AbstractDOMConverter.FILTERED_WARNINGS_IDS.contains(problem.id)) {
+                      if (AbstractDOMConverter.FORBIDDEN_REFERENCE.equals(problem.id)) {
+                          node.addForbiddenWarning(problem);
+                      } else {
+                          node.addDiscouragedWarning(problem);
+                      }
                     } else {
-                        node.addDiscouragedWarning(problem);
+                      node.addOtherWarning(problem);
                     }
-                } else {
-                    node.addOtherWarning(problem);
-                }
+                    break;
+                }  
                 problem.charStart = Integer.parseInt(problemNodeMap.getNamedItem("charStart").getNodeValue());//$NON-NLS-1$
                 problem.charEnd = Integer.parseInt(problemNodeMap.getNamedItem("charEnd").getNodeValue());//$NON-NLS-1$
                 problem.line = Integer.parseInt(problemNodeMap.getNamedItem("line").getNodeValue());//$NON-NLS-1$

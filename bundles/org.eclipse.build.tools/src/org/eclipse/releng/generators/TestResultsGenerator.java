@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2017 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -160,6 +160,7 @@ public class TestResultsGenerator extends Task {
     private static final String XML_EXTENSION                          = ".xml";
     private static final String WARNING_SEVERITY                       = "WARNING";
     private static final String ERROR_SEVERITY                         = "ERROR";
+    private static final String INFO_SEVERITY                          = "INFO";
     private static final String ForbiddenReferenceID                   = "ForbiddenReference";
     private static final String DiscouragedReferenceID                 = "DiscouragedReference";
 
@@ -418,6 +419,10 @@ public class TestResultsGenerator extends Task {
         return extractNumber(aString, "Discouraged access:");
     }
 
+    private int countInfos(final String aString) {
+        return extractNumber(aString, "info");
+    }
+
     /*
      * returns number of errors plus number of failures. returns a negative
      * number if the file is missing or something is wrong with the file (such
@@ -541,9 +546,9 @@ public class TestResultsGenerator extends Task {
     }
 
     private void formatAccessesErrorRow(final String fileName, final int forbiddenAccessesWarningsCount,
-            final int discouragedAccessesWarningsCount, final StringBuffer buffer) {
+            final int discouragedAccessesWarningsCount, final int infoCount, final StringBuffer buffer) {
 
-        if ((forbiddenAccessesWarningsCount == 0) && (discouragedAccessesWarningsCount == 0)) {
+        if ((forbiddenAccessesWarningsCount == 0) && (discouragedAccessesWarningsCount == 0) && (infoCount == 0)) {
             return;
         }
 
@@ -555,7 +560,9 @@ public class TestResultsGenerator extends Task {
                 .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#FORBIDDEN_WARNINGS")
                 .append("\">").append(forbiddenAccessesWarningsCount).append("</a>").append("</td>").append(EOL)
                 .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#DISCOURAGED_WARNINGS")
-                .append("\">").append(discouragedAccessesWarningsCount).append("</a>").append("</td>").append(EOL).append("</tr>")
+                .append("\">").append(discouragedAccessesWarningsCount).append("</a>").append("</td>").append(EOL)
+                .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#INFO_WARNINGS")
+                .append("\">").append(infoCount).append("</a>").append("</td>").append(EOL).append("</tr>")
                 .append(EOL);
     }
 
@@ -733,6 +740,7 @@ public class TestResultsGenerator extends Task {
         int warningCount = 0;
         int forbiddenWarningCount = 0;
         int discouragedWarningCount = 0;
+        int infoCount = 0;
 
         final File file = new File(log);
         Document aDocument = null;
@@ -783,6 +791,9 @@ public class TestResultsGenerator extends Task {
                 } else if (ERROR_SEVERITY.equals(severityNodeValue)) {
                     // this is an error
                     errorCount++;
+                } else if (INFO_SEVERITY.equals(severityNodeValue)) {
+                    // this is an info warning
+                    infoCount++;
                 }
             }
         }
@@ -799,7 +810,7 @@ public class TestResultsGenerator extends Task {
         // make sure '.xml' extension is "last thing" in string. (bug 490320)
         final String logName = log.replaceAll(XML_EXTENSION + "$", HTML_EXTENSION);
         formatCompileErrorRow(logName, errorCount, warningCount, compilerLog);
-        formatAccessesErrorRow(logName, forbiddenWarningCount, discouragedWarningCount, accessesLog);
+        formatAccessesErrorRow(logName, forbiddenWarningCount, discouragedWarningCount, infoCount, accessesLog);
     }
 
     private void parseCompileLogs() throws IOException {
@@ -843,7 +854,7 @@ public class TestResultsGenerator extends Task {
             compileLogResults = compileLogResults + "          </table>" + EOL + EOL
                     + "<h3 id=\"AcessErrors\">Plugins containing access errors or warnings</h3>" + EOL + "<table>" + EOL + " <tr>"
                     + EOL + "<th class='cell'>Compile Logs (Jar Files)</th>" + EOL + "   <th class='cell'>Forbidden Access</th>"
-                    + EOL + "   <th class='cell'>Discouraged Access</th>" + EOL + "</tr>" + EOL;
+                    + EOL + "   <th class='cell'>Discouraged Access</th>" + EOL + "   <th class='cell'>Info Warnings</th>" + EOL + "</tr>" + EOL;
 
             compileLogResults = compileLogResults + accessesString.toString();
             compileLogResults = compileLogResults + "</table>" + EOL;
@@ -1178,6 +1189,7 @@ public class TestResultsGenerator extends Task {
         final int warningCount = countCompileWarnings(fileContents);
         final int forbiddenWarningCount = countForbiddenWarnings(fileContents);
         final int discouragedWarningCount = countDiscouragedWarnings(fileContents);
+        final int infoCount = countInfos(fileContents);
         if (errorCount != 0) {
             // use wildcard in place of version number on directory names
             String logName = log.substring(getCompileLogsDirectoryName().length() + 1);
@@ -1188,7 +1200,7 @@ public class TestResultsGenerator extends Task {
             anErrorTracker.registerError(logName);
         }
         formatCompileErrorRow(log, errorCount, warningCount, compilerLog);
-        formatAccessesErrorRow(log, forbiddenWarningCount, discouragedWarningCount, accessesLog);
+        formatAccessesErrorRow(log, forbiddenWarningCount, discouragedWarningCount, infoCount, accessesLog);
     }
 
     private String readFile(final String fileName) {
