@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -93,7 +93,8 @@ public interface IPerformancesConstants {
 		"M6-201003121448",
 	};
 	/** @deprecated */
-	public static final String[] V35_MILESTONES = new String[] {
+	@Deprecated
+  public static final String[] V35_MILESTONES = new String[] {
 		        "M1-200808071402",
 		        "M2-200809180100",
 		        "M3-200810301917",
@@ -108,7 +109,8 @@ public interface IPerformancesConstants {
 		        "R3_5-200906111540"
 	};
 	/** @deprecated */
-	public static final String[] V34_MILESTONES = new String[] {
+	@Deprecated
+  public static final String[] V34_MILESTONES = new String[] {
 		        "M1-200708091105",
 		        "M2-200709210919",
 		        "M3-200711012000",
@@ -123,7 +125,8 @@ public interface IPerformancesConstants {
 		        "R3_4-200806172000"
 	};
 	/** @deprecated */
-	public static final String[] V33_MILESTONES = new String[] {
+	@Deprecated
+  public static final String[] V33_MILESTONES = new String[] {
 		        "M1-200608101230",
 		        "M2-200609220010",
 		        "M3-200611021715",
