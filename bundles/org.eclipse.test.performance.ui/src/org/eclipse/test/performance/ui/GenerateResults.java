@@ -598,17 +598,8 @@ private void printComponentTitle(/*PerformanceResults performanceResults, */Stri
 	}
 	stream.print(currentName);
 	stream.print(" relative to ");
-	int index = baselineName.indexOf('-');
-	if (index > 0) {
-		stream.print(baselineName.substring(0, index));
-		stream.print(" (");
-		index = baselineName.lastIndexOf('-');
-		stream.print(baselineName.substring(index+1, baselineName.length()));
-		stream.print(')');
-	} else {
-		stream.print(baselineName);
-	}
-		stream.print("</h3>\n");
+	stream.print(baselineName);
+	stream.print("</h3>\n");
 
 	// Print reference to global results
 	if (!isGlobal) {
