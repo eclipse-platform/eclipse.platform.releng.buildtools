@@ -12,7 +12,6 @@ package org.eclipse.test.performance.ui;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -212,21 +211,12 @@ private void saveImage(File outputFile, Image image) {
 	ImageLoader imageLoader = new ImageLoader();
 	imageLoader.data = new ImageData[] { data };
 
-	OutputStream out = null;
-	try {
-		out = new BufferedOutputStream(new FileOutputStream(outputFile));
+	try (OutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile))){
 		imageLoader.save(out, SWT.IMAGE_GIF);
-	} catch (FileNotFoundException e) {
+	} catch (IOException e) {
 		e.printStackTrace();
 	} finally {
 		image.dispose();
-		if (out != null) {
-			try {
-				out.close();
-			} catch (IOException e1) {
-				// silently ignored
-			}
-		}
 	}
 }
 }

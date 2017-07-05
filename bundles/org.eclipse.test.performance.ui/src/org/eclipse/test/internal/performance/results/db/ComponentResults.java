@@ -270,10 +270,9 @@ String readLocalFile(File dir, List scenarios) throws FileNotFoundException {
 //	if (!dir.exists()) return null;
 	File dataFile = new File(dir, getName()+".dat");	//$NON-NLS-1$
 	if (!dataFile.exists()) throw new FileNotFoundException();
-	DataInputStream stream = null;
-	try {
+	try (DataInputStream stream = new DataInputStream(new BufferedInputStream(new FileInputStream(dataFile)));) {
 		// Read local file info
-		stream = new DataInputStream(new BufferedInputStream(new FileInputStream(dataFile)));
+
 		print(" - read local files info"); //$NON-NLS-1$
 		String lastBuildName = stream.readUTF(); // first string is the build name
 
@@ -309,14 +308,6 @@ String readLocalFile(File dir, List scenarios) throws FileNotFoundException {
 		return lastBuildName;
 	} catch (IOException ioe) {
 		println("	!!! "+dataFile+" should be deleted as it contained invalid data !!!"); //$NON-NLS-1$ //$NON-NLS-2$
-	} finally {
-		try {
-		    if (stream != null) {
-	        stream.close();
-		    }
-        } catch (IOException e) {
-	        // nothing else to do!
-        }
 	}
 	return null;
 }
@@ -428,9 +419,8 @@ void writeData(String buildName, File dir, boolean temp, boolean dirty) {
 		}
 		file = dataFile;
 	}
-	try {
-		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-		try {
+
+		try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)))){
 			int size = this.children.size();
 			stream.writeUTF(lastBuildName(0));
 			stream.writeInt(size);
@@ -438,16 +428,14 @@ void writeData(String buildName, File dir, boolean temp, boolean dirty) {
 				ScenarioResults scenarioResults = (ScenarioResults) this.children.get(i);
 				scenarioResults.write(stream);
 			}
-		}
-		finally {
-			stream.close();
-			println("	=> extracted data "+(temp?"temporarily ":"")+"written in file "+file); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-		}
+
 	} catch (FileNotFoundException e) {
 		System.err.println("can't create output file"+file); //$NON-NLS-1$
 	} catch (IOException e) {
 		e.printStackTrace();
-	}
+	} finally {
+    println(" => extracted data "+(temp?"temporarily ":"")+"written in file "+file); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+  }
 }
 
 }

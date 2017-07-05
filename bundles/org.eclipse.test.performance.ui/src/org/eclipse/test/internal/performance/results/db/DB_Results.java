@@ -708,7 +708,7 @@ public static String getLastCurrentBuild() {
  * @return The list of all scenarios matching the pattern for a given build.
  * @see #internalQueryBuildScenarios(String, String)
  */
-public static List getScenarios() {
+public static List<String> getScenarios() {
 	return Arrays.asList(SCENARII);
 }
 
@@ -973,10 +973,9 @@ private void internalQueryAllComments() {
 	if (COMMENTS != null) return;
 	long start = System.currentTimeMillis();
 	if (DEBUG) DEBUG_WRITER.print("		[DB query all comments..."); //$NON-NLS-1$
-	ResultSet result = null;
-	try {
-		String[] comments = null;
-		result = this.fSQL.queryAllComments();
+	String[] comments = null;
+	try (ResultSet result = this.fSQL.queryAllComments();){
+
 		while (result.next()) {
 			int commentID = result.getInt(1);
 			// Ignore kind as there's only one
@@ -994,13 +993,6 @@ private void internalQueryAllComments() {
 	} catch (SQLException e) {
 		PerformanceTestPlugin.log(e);
 	} finally {
-		if (result != null) {
-			try {
-				result.close();
-			} catch (SQLException e1) {
-				// ignored
-			}
-		}
 		if (DEBUG) DEBUG_WRITER.println("done in " + (System.currentTimeMillis() - start) + "ms]"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 }
@@ -1016,12 +1008,10 @@ private void internalQueryAllVariations(String configPattern) {
 		DEBUG_WRITER.print("	- DB query all variations for configuration pattern: "+configPattern); //$NON-NLS-1$
 		DEBUG_WRITER.print("..."); //$NON-NLS-1$
 	}
-	ResultSet result = null;
-	try {
-		CONFIGS = null;
-		BUILDS = null;
-		BUILDS_LENGTH = 0;
-		result = this.fSQL.queryAllVariations(configPattern);
+	CONFIGS = null;
+	BUILDS = null;
+	BUILDS_LENGTH = 0;
+	try (ResultSet result = this.fSQL.queryAllVariations(configPattern);){
 		while (result.next()) {
 			String variation = result.getString(1); //  something like "||build=I20070615-1200||config=eclipseperfwin2_R3.3||jvm=sun|"
 			StringTokenizer tokenizer = new StringTokenizer(variation, "=|"); //$NON-NLS-1$
@@ -1038,13 +1028,6 @@ private void internalQueryAllVariations(String configPattern) {
 	} catch (SQLException e) {
 		PerformanceTestPlugin.log(e);
 	} finally {
-		if (result != null) {
-			try {
-				result.close();
-			} catch (SQLException e1) {
-				// ignored
-			}
-		}
 		if (DEBUG) DEBUG_WRITER.println("done in " + (System.currentTimeMillis() - start) + "ms]"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 }
@@ -1067,7 +1050,7 @@ private Map internalQueryBuildScenarios(String scenarioPattern, String buildName
 		}
 		int previousId = -1;
 		List scenarios = null;
-		List scenariosNames = new ArrayList();
+		List<String> scenariosNames = new ArrayList();
 		while (result.next()) {
 			int id = result.getInt(1);
 			String name = result.getString(2);
@@ -1156,11 +1139,10 @@ private void internalQueryScenarioSummaries(ScenarioResults scenarioResults, Str
 		DEBUG_WRITER.print("	- DB query all summaries for scenario '"+scenarioResults.getShortName()+"' of '"+config+"' config"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 	internalQueryAllComments();
-	ResultSet result = null;
-	try {
-		int scenarioID = scenarioResults.getId();
+	int scenarioID = scenarioResults.getId();
+	try (ResultSet result = this.fSQL.queryScenarioSummaries(scenarioID, config, builds)){
 		// First try to get summaries of elapsed process dimension
-		result = this.fSQL.queryScenarioSummaries(scenarioID, config, builds);
+
 		while (result.next()) {
 			String variation = result.getString(1); //  something like "|build=I20070615-1200||config=eclipseperfwin2_R3.3||jvm=sun|"
 			int summaryKind = result.getShort(2);
@@ -1180,13 +1162,6 @@ private void internalQueryScenarioSummaries(ScenarioResults scenarioResults, Str
 	} catch (SQLException e) {
 		PerformanceTestPlugin.log(e);
 	} finally {
-		if (result != null) {
-			try {
-				result.close();
-			} catch (SQLException e1) {
-				// ignored
-			}
-		}
 		if (DEBUG) DEBUG_WRITER.println("done in " + (System.currentTimeMillis() - start) + "ms]"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 }

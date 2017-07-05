@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -504,56 +504,56 @@ private void parse(String[] args) {
 private void printComponent(/*PerformanceResults performanceResults, */String component) throws FileNotFoundException {
 	if (this.printStream != null) this.printStream.print(".");
 	File outputFile = new File(this.outputDir, component + ".php");
-	PrintStream stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
+  try (PrintStream stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)))) {
 
-	// Print header
-	boolean isGlobal = component.startsWith("global");
-	if (isGlobal) {
-		File globalFile = new File(this.outputDir, "global.php");
-		PrintStream gStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(globalFile)));
-		gStream.print(Utils.HTML_OPEN);
-		gStream.print("</head>\n");
-		gStream.print("<body>\n");
-		gStream.print("<?php\n");
-		gStream.print("	include(\"global_fp.php\");\n");
-		gStream.print("?>\n");
-		gStream.print("<table border=0 cellpadding=2 cellspacing=5 width=\"100%\">\n");
-		gStream.print("<tbody><tr> <td colspan=3 align=\"left\" bgcolor=\"#0080c0\" valign=\"top\"><b><font color=\"#ffffff\" face=\"Arial,Helvetica\">\n");
-		gStream.print("Detailed performance data grouped by scenario prefix</font></b></td></tr></tbody></table>\n");
-		gStream.print("<a href=\"org.eclipse.ant.php?\">org.eclipse.ant*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.compare.php?\">org.eclipse.compare*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.core.php?\">org.eclipse.core*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.jdt.core.php?\">org.eclipse.jdt.core*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.jdt.debug.php?\">org.eclipse.jdt.debug*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.jdt.text.php?\">org.eclipse.jdt.text*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.jdt.ui.php?\">org.eclipse.jdt.ui*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.jface.php?\">org.eclipse.jface*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.osgi.php?\">org.eclipse.osgi*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.pde.api.tools.php?\">org.eclipse.pde.api.tools*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.pde.ui.php?\">org.eclipse.pde.ui*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.swt.php?\">org.eclipse.swt*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.team.php?\">org.eclipse.team*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.ua.php?\">org.eclipse.ua*</a><br>\n");
-		gStream.print("<a href=\"org.eclipse.ui.php?\">org.eclipse.ui*</a><br><p><br><br>\n");
-		gStream.print("</body>\n");
-		gStream.print(Utils.HTML_CLOSE);
-		gStream.close();
-	} else {
-		stream.print(Utils.HTML_OPEN);
-	}
-	stream.print("<link href=\""+Utils.TOOLTIP_STYLE+"\" rel=\"stylesheet\" type=\"text/css\">\n");
-	stream.print("<script src=\""+Utils.TOOLTIP_SCRIPT+"\"></script>\n");
-	stream.print("<script src=\""+Utils.FINGERPRINT_SCRIPT+"\"></script>\n");
-	stream.print(Utils.HTML_DEFAULT_CSS);
+    // Print header
+    boolean isGlobal = component.startsWith("global");
+    if (isGlobal) {
+      File globalFile = new File(this.outputDir, "global.php");
+      try (PrintStream gStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(globalFile)))) {
+        gStream.print(Utils.HTML_OPEN);
+        gStream.print("</head>\n");
+        gStream.print("<body>\n");
+        gStream.print("<?php\n");
+        gStream.print("	include(\"global_fp.php\");\n");
+        gStream.print("?>\n");
+        gStream.print("<table border=0 cellpadding=2 cellspacing=5 width=\"100%\">\n");
+        gStream.print("<tbody><tr> <td colspan=3 align=\"left\" bgcolor=\"#0080c0\" valign=\"top\"><b><font color=\"#ffffff\" face=\"Arial,Helvetica\">\n");
+        gStream.print("Detailed performance data grouped by scenario prefix</font></b></td></tr></tbody></table>\n");
+        gStream.print("<a href=\"org.eclipse.ant.php?\">org.eclipse.ant*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.compare.php?\">org.eclipse.compare*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.core.php?\">org.eclipse.core*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.jdt.core.php?\">org.eclipse.jdt.core*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.jdt.debug.php?\">org.eclipse.jdt.debug*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.jdt.text.php?\">org.eclipse.jdt.text*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.jdt.ui.php?\">org.eclipse.jdt.ui*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.jface.php?\">org.eclipse.jface*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.osgi.php?\">org.eclipse.osgi*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.pde.api.tools.php?\">org.eclipse.pde.api.tools*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.pde.ui.php?\">org.eclipse.pde.ui*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.swt.php?\">org.eclipse.swt*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.team.php?\">org.eclipse.team*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.ua.php?\">org.eclipse.ua*</a><br>\n");
+        gStream.print("<a href=\"org.eclipse.ui.php?\">org.eclipse.ui*</a><br><p><br><br>\n");
+        gStream.print("</body>\n");
+        gStream.print(Utils.HTML_CLOSE);
+      }
+    } else {
+      stream.print(Utils.HTML_OPEN);
+    }
+    stream.print("<link href=\"" + Utils.TOOLTIP_STYLE + "\" rel=\"stylesheet\" type=\"text/css\">\n");
+    stream.print("<script src=\"" + Utils.TOOLTIP_SCRIPT + "\"></script>\n");
+    stream.print("<script src=\"" + Utils.FINGERPRINT_SCRIPT + "\"></script>\n");
+    stream.print(Utils.HTML_DEFAULT_CSS);
 
-	// Print title
-	stream.print("<body>");
-	printComponentTitle(/*performanceResults, */component, isGlobal, stream);
+    // Print title
+    stream.print("<body>");
+    printComponentTitle(/* performanceResults, */component, isGlobal, stream);
 
-	// print the html representation of fingerprint for each config
-	Display display = Display.getDefault();
-	if (this.genFingerPrints || this.genAll) {
-		final FingerPrint fingerprint = new FingerPrint(component, stream, this.outputDir);
+    // print the html representation of fingerprint for each config
+    Display display = Display.getDefault();
+    if (this.genFingerPrints || this.genAll) {
+      final FingerPrint fingerprint = new FingerPrint(component, stream, this.outputDir);
       display.syncExec(() -> {
         try {
           fingerprint.print(GenerateResults.this.performanceResults);
@@ -561,29 +561,27 @@ private void printComponent(/*PerformanceResults performanceResults, */String co
           ex.printStackTrace();
         }
       });
-	}
-//	FingerPrint fingerprint = new FingerPrint(component, stream, this.outputDir);
-//	fingerprint.print(performanceResults);
+    }
+    // FingerPrint fingerprint = new FingerPrint(component, stream, this.outputDir);
+    // fingerprint.print(performanceResults);
 
-	// print scenario status table
-	if (!isGlobal) {
-		// print the component scenario status table beneath the fingerprint
-		final ScenarioStatusTable sst = new ScenarioStatusTable(component, stream);
-		display.syncExec(
-			() -> {
-      	try {
-      		sst.print(GenerateResults.this.performanceResults);
-      	} catch (Exception ex) {
-      		ex.printStackTrace();
-      	}
-      }
-		);
-//		ScenarioStatusTable sst = new ScenarioStatusTable(component, stream);
-//		sst.print(performanceResults);
-	}
+    // print scenario status table
+    if (!isGlobal) {
+      // print the component scenario status table beneath the fingerprint
+      final ScenarioStatusTable sst = new ScenarioStatusTable(component, stream);
+      display.syncExec(() -> {
+        try {
+          sst.print(GenerateResults.this.performanceResults);
+        } catch (Exception ex) {
+          ex.printStackTrace();
+        }
+      });
+      // ScenarioStatusTable sst = new ScenarioStatusTable(component, stream);
+      // sst.print(performanceResults);
+    }
 
-	stream.print(Utils.HTML_CLOSE);
-	stream.close();
+    stream.print(Utils.HTML_CLOSE);
+  }
 }
 
 private void printComponentTitle(/*PerformanceResults performanceResults, */String component, boolean isGlobal, PrintStream stream) {

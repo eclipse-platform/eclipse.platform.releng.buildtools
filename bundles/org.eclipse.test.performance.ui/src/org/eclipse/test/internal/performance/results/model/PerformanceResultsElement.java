@@ -225,110 +225,104 @@ public StringBuffer writeFailures(File resultsFile, int kind) {
 	boolean values = (kind & IPerformancesConstants.STATUS_VALUES) != 0;
 	// Write status only for component with error
 	StringBuffer excluded = new StringBuffer();
-	try {
-		DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(resultsFile)));
-		try {
-			StringBuffer buffer = new StringBuffer();
-			// Print build name
-			buffer.append("Status for ");
-			buffer.append(getPerformanceResults().getName());
-			buffer.append(Util.LINE_SEPARATOR);
-			// Print status options
-			if ((kind & ~IPerformancesConstants.STATUS_VALUES) > 0) {
-				buffer.append("Options: ");
-				buffer.append(Util.LINE_SEPARATOR);
-				final int errorLevel = kind & IPerformancesConstants.STATUS_ERROR_LEVEL_MASK;
-				if (errorLevel != 0) {
-					buffer.append("	error level: ");
-					switch (errorLevel) {
-						case IPerformancesConstants.STATUS_ERROR_NONE:
-							buffer.append("include all failures whatever the error level is");
-							break;
-						case IPerformancesConstants.STATUS_ERROR_NOTICEABLE:
-							buffer.append("all failures with at least a noticeable error (> 3%) are excluded!");
-							break;
-						case IPerformancesConstants.STATUS_ERROR_SUSPICIOUS:
-							buffer.append("all failures with at least a suspicious error (> 25%) are excluded!");
-							break;
-						case IPerformancesConstants.STATUS_ERROR_WEIRD:
-							buffer.append("all failures with at least a weird error (> 50%) are excluded!");
-							break;
-						case IPerformancesConstants.STATUS_ERROR_INVALID:
-							buffer.append("all failures with an invalid error (> 100%) are excluded!");
-							break;
-					}
-					buffer.append(Util.LINE_SEPARATOR);
-				}
-				final int smallValue = kind & IPerformancesConstants.STATUS_SMALL_VALUE_MASK;
-				if (smallValue > 0) {
-					buffer.append("	small value: ");
-					switch (smallValue) {
-						case IPerformancesConstants.STATUS_SMALL_VALUE_BUILD:
-							buffer.append("all failures with a small build value (<100ms) are excluded!");
-							break;
-						case IPerformancesConstants.STATUS_SMALL_VALUE_DELTA:
-							buffer.append("all failures with a small delta value (<100ms) are excluded!");
-							break;
-						case IPerformancesConstants.STATUS_SMALL_VALUE_MASK:
-							buffer.append("all failures with a small build or delta value (<100ms) are excluded!");
-							break;
-					}
-					buffer.append(Util.LINE_SEPARATOR);
-				}
-				final int stats = kind & IPerformancesConstants.STATUS_STATISTICS_MASK;
-				if (stats > 0) {
-					buffer.append("	statistics: ");
-					switch (stats) {
-						case IPerformancesConstants.STATUS_STATISTICS_ERRATIC:
-							buffer.append("all failures with erratic baseline results (variation > 20%) are excluded!");
-							break;
-						case IPerformancesConstants.STATUS_STATISTICS_UNSTABLE:
-							buffer.append("all failures with unstable baseline results (10% < variation < 20%) are excluded!");
-							break;
-					}
-					buffer.append(Util.LINE_SEPARATOR);
-				}
-				int buildsNumber = kind & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
-				buffer.append("	builds to confirm a regression: ");
-				buffer.append(buildsNumber);
-				buffer.append(Util.LINE_SEPARATOR);
-			}
-			// Print columns title
-			buffer.append("Component");
-			buffer.append("	Scenario");
-			buffer.append("	Machine");
-			if (values) {
-				buffer.append("			Build		");
-				buffer.append("		History		");
-			}
-			buffer.append("	Comment");
-			buffer.append(Util.LINE_SEPARATOR);
-			if (values) {
-				buffer.append("			value");
-				buffer.append("	baseline");
-				buffer.append("	variation");
-				buffer.append("	delta");
-				buffer.append("	error");
-				buffer.append("	n");
-				buffer.append("	mean");
-				buffer.append("	deviation");
-				buffer.append("	coeff");
-				buffer.append(Util.LINE_SEPARATOR);
-			}
-			stream.write(buffer.toString().getBytes());
-			StringBuffer componentBuffer = getFailures(new StringBuffer(), kind, excluded);
-			if (componentBuffer.length() > 0) {
-				stream.write(componentBuffer.toString().getBytes());
-			}
-		}
-		finally {
-			stream.close();
-		}
-	} catch (FileNotFoundException e) {
-		System.err.println("Can't create output file"+resultsFile); //$NON-NLS-1$
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
+  try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(resultsFile)))) {
+    StringBuffer buffer = new StringBuffer();
+    // Print build name
+    buffer.append("Status for ");
+    buffer.append(getPerformanceResults().getName());
+    buffer.append(Util.LINE_SEPARATOR);
+    // Print status options
+    if ((kind & ~IPerformancesConstants.STATUS_VALUES) > 0) {
+      buffer.append("Options: ");
+      buffer.append(Util.LINE_SEPARATOR);
+      final int errorLevel = kind & IPerformancesConstants.STATUS_ERROR_LEVEL_MASK;
+      if (errorLevel != 0) {
+        buffer.append("	error level: ");
+        switch (errorLevel) {
+          case IPerformancesConstants.STATUS_ERROR_NONE:
+            buffer.append("include all failures whatever the error level is");
+            break;
+          case IPerformancesConstants.STATUS_ERROR_NOTICEABLE:
+            buffer.append("all failures with at least a noticeable error (> 3%) are excluded!");
+            break;
+          case IPerformancesConstants.STATUS_ERROR_SUSPICIOUS:
+            buffer.append("all failures with at least a suspicious error (> 25%) are excluded!");
+            break;
+          case IPerformancesConstants.STATUS_ERROR_WEIRD:
+            buffer.append("all failures with at least a weird error (> 50%) are excluded!");
+            break;
+          case IPerformancesConstants.STATUS_ERROR_INVALID:
+            buffer.append("all failures with an invalid error (> 100%) are excluded!");
+            break;
+        }
+        buffer.append(Util.LINE_SEPARATOR);
+      }
+      final int smallValue = kind & IPerformancesConstants.STATUS_SMALL_VALUE_MASK;
+      if (smallValue > 0) {
+        buffer.append("	small value: ");
+        switch (smallValue) {
+          case IPerformancesConstants.STATUS_SMALL_VALUE_BUILD:
+            buffer.append("all failures with a small build value (<100ms) are excluded!");
+            break;
+          case IPerformancesConstants.STATUS_SMALL_VALUE_DELTA:
+            buffer.append("all failures with a small delta value (<100ms) are excluded!");
+            break;
+          case IPerformancesConstants.STATUS_SMALL_VALUE_MASK:
+            buffer.append("all failures with a small build or delta value (<100ms) are excluded!");
+            break;
+        }
+        buffer.append(Util.LINE_SEPARATOR);
+      }
+      final int stats = kind & IPerformancesConstants.STATUS_STATISTICS_MASK;
+      if (stats > 0) {
+        buffer.append("	statistics: ");
+        switch (stats) {
+          case IPerformancesConstants.STATUS_STATISTICS_ERRATIC:
+            buffer.append("all failures with erratic baseline results (variation > 20%) are excluded!");
+            break;
+          case IPerformancesConstants.STATUS_STATISTICS_UNSTABLE:
+            buffer.append("all failures with unstable baseline results (10% < variation < 20%) are excluded!");
+            break;
+        }
+        buffer.append(Util.LINE_SEPARATOR);
+      }
+      int buildsNumber = kind & IPerformancesConstants.STATUS_BUILDS_NUMBER_MASK;
+      buffer.append("	builds to confirm a regression: ");
+      buffer.append(buildsNumber);
+      buffer.append(Util.LINE_SEPARATOR);
+    }
+    // Print columns title
+    buffer.append("Component");
+    buffer.append("	Scenario");
+    buffer.append("	Machine");
+    if (values) {
+      buffer.append("			Build		");
+      buffer.append("		History		");
+    }
+    buffer.append("	Comment");
+    buffer.append(Util.LINE_SEPARATOR);
+    if (values) {
+      buffer.append("			value");
+      buffer.append("	baseline");
+      buffer.append("	variation");
+      buffer.append("	delta");
+      buffer.append("	error");
+      buffer.append("	n");
+      buffer.append("	mean");
+      buffer.append("	deviation");
+      buffer.append("	coeff");
+      buffer.append(Util.LINE_SEPARATOR);
+    }
+    stream.write(buffer.toString().getBytes());
+    StringBuffer componentBuffer = getFailures(new StringBuffer(), kind, excluded);
+    if (componentBuffer.length() > 0) {
+      stream.write(componentBuffer.toString().getBytes());
+    }
+  } catch (FileNotFoundException e) {
+    System.err.println("Can't create output file" + resultsFile); //$NON-NLS-1$
+  } catch (IOException e) {
+    e.printStackTrace();
+  }
 	return excluded;
 }
 
