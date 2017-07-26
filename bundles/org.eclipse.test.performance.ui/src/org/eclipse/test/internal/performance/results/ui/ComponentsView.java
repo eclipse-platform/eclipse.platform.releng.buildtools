@@ -27,8 +27,8 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -94,7 +94,7 @@ public class ComponentsView extends PerformancesView {
 	ComponentResultsView componentResultsView = null;
 
 	// Internal
-	Set expandedComponents = new HashSet();
+	Set<ResultsElement> expandedComponents = new HashSet<>();
 
 	// Actions
 	Action filterAdvancedScenarios;
@@ -168,7 +168,7 @@ public void createPartControl(Composite parent) {
 	this.viewer.setLabelProvider(labelProvider);
 
 	// Set the children sorter
-	ViewerSorter nameSorter = new ViewerSorter() {
+	ViewerComparator nameSorter = new ViewerComparator() {
 
 		// Sort children using specific comparison (see the implementation
 		// of the #compareTo(Object) in the ResultsElement hierarchy
@@ -186,7 +186,7 @@ public void createPartControl(Composite parent) {
 			return super.compare(view, e1, e2);
 		}
 	};
-	this.viewer.setSorter(nameSorter);
+	this.viewer.setComparator(nameSorter);
 
 	// Add results view as listener to viewer selection changes
 	Display.getDefault().asyncExec(() -> {
@@ -350,7 +350,7 @@ public void select(ComponentResultsElement componentResults, String configName, 
 	// Collapse previous expanded components except the requested one
 	// TODO (frederic) also collapse expanded components children elements
 	this.expandedComponents.remove(componentResults);
-	Iterator iterator = this.expandedComponents.iterator();
+	Iterator<ResultsElement> iterator = this.expandedComponents.iterator();
 	while (iterator.hasNext()) {
 		this.viewer.collapseToLevel(iterator.next(), AbstractTreeViewer.ALL_LEVELS);
 	}

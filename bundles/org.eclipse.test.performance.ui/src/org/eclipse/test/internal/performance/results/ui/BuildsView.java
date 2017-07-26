@@ -38,7 +38,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -396,7 +396,7 @@ public void createPartControl(Composite parent) {
 	this.viewer.setLabelProvider(labelProvider);
 
 	// Set the children sorter
-	ViewerSorter nameSorter = new ViewerSorter() {
+	ViewerComparator nameSorter = new ViewerComparator() {
 
 		// Sort children using specific comparison (see the implementation
 		// of the #compareTo(Object) in the ResultsElement hierarchy
@@ -408,7 +408,7 @@ public void createPartControl(Composite parent) {
 			return super.compare(view, e1, e2);
 		}
 	};
-	this.viewer.setSorter(nameSorter);
+	this.viewer.setComparator(nameSorter);
 
 	// Add results view as listener to viewer selection changes
 	Display.getDefault().asyncExec(() -> {
