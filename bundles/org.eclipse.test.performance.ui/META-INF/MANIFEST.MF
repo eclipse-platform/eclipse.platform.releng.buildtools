@@ -23,3 +23,4 @@ Export-Package: org.eclipse.test.internal.performance.results.db;x-internal:=tru
  org.eclipse.test.internal.performance.results.utils;x-internal:=true,
  org.eclipse.test.performance.ui
 Import-Package: org.apache.derby.jdbc;resolution:=optional
+Automatic-Module-Name: org.eclipse.test.performance.ui

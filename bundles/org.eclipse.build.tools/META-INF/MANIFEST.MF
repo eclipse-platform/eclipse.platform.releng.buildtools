@@ -10,3 +10,4 @@ Require-Bundle: org.apache.ant,
  org.eclipse.osgi
 Bundle-ClassPath: buildTools.jar
 Bundle-Vendor: %Bundle-Vendor
+Automatic-Module-Name: org.eclipse.build.tools

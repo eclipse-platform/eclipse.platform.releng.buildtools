@@ -11,3 +11,4 @@ Require-Bundle: org.apache.ant,
  org.eclipse.equinox.app
 Export-Package: org.eclipse.releng.build.tools.convert.ant,
  org.eclipse.releng.build.tools.convert.dom
+Automatic-Module-Name: org.eclipse.releng.build.tools.convert

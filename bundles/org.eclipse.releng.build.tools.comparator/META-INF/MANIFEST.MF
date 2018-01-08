@@ -10,3 +10,4 @@ Require-Bundle: org.apache.ant,
 Bundle-ClassPath: comparatorSummary.jar
 Export-Package: org.eclipse.releng.build.tools.comparator,
  org.eclipse.releng.build.tools.comparator.ant
+Automatic-Module-Name: org.eclipse.releng.build.tools.comparator
