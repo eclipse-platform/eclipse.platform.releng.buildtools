@@ -1,10 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2017 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 which accompanies this distribution,
- * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2006, 2018 IBM Corporation and others. 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  * 
- * Contributors: IBM Corporation - initial API and implementation
+ * Contributors: 
+ *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.releng.build.tools.convert.dom;
@@ -117,7 +119,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                 final ChoiceFormat warningForm = new ChoiceFormat(warningsLimits, warningParts);
                 final String sourceFileName = extractRelativePath(problemsNode.sourceFileName, pluginName);
                 form.setFormatByArgumentIndex(1, warningForm);
-                final Object[] arguments = new Object[] { sourceFileName, new Integer(problemsNode.numberOfErrors), };
+                final Object[] arguments = new Object[] { sourceFileName, Integer.valueOf(problemsNode.numberOfErrors) };
                 writer.write(form.format(arguments));
                 for (int j = 0; j < length; j++) {
                     final ProblemNode problemNode = problemNodes[j];
@@ -160,7 +162,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                 final ChoiceFormat warningForm = new ChoiceFormat(warningsLimits, warningParts);
                 final String sourceFileName = extractRelativePath(problemsNode.sourceFileName, pluginName);
                 form.setFormatByArgumentIndex(1, warningForm);
-                final Object[] arguments = new Object[] { sourceFileName, new Integer(problemsNode.numberOfWarnings), };
+                final Object[] arguments = new Object[] { sourceFileName, Integer.valueOf(problemsNode.numberOfWarnings)};
                 writer.write(form.format(arguments));
                 for (int j = 0; j < length; j++) {
                     final ProblemNode problemNode = problemNodes[j];
@@ -203,7 +205,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                 final ChoiceFormat warningForm = new ChoiceFormat(warningsLimits, warningParts);
                 final String sourceFileName = extractRelativePath(problemsNode.sourceFileName, pluginName);
                 form.setFormatByArgumentIndex(1, warningForm);
-                final Object[] arguments = new Object[] { sourceFileName, new Integer(problemsNode.numberOfInfos), };
+                final Object[] arguments = new Object[] { sourceFileName, Integer.valueOf(problemsNode.numberOfInfos) };
                 writer.write(form.format(arguments));
                 for (int j = 0; j < length; j++) {
                     final ProblemNode problemNode = problemNodes[j];
@@ -246,7 +248,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                 final ChoiceFormat warningForm = new ChoiceFormat(warningsLimits, warningParts);
                 final String sourceFileName = extractRelativePath(problemsNode.sourceFileName, pluginName);
                 form.setFormatByArgumentIndex(1, warningForm);
-                final Object[] arguments = new Object[] { sourceFileName, new Integer(problemsNode.numberOfWarnings), };
+                final Object[] arguments = new Object[] { sourceFileName, Integer.valueOf(problemsNode.numberOfWarnings) };
                 writer.write(form.format(arguments));
                 for (int j = 0; j < length; j++) {
                     final ProblemNode problemNode = problemNodes[j];
@@ -289,7 +291,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                 final ChoiceFormat warningForm = new ChoiceFormat(warningsLimits, warningParts);
                 final String sourceFileName = extractRelativePath(problemsNode.sourceFileName, pluginName);
                 form.setFormatByArgumentIndex(1, warningForm);
-                final Object[] arguments = new Object[] { sourceFileName, new Integer(problemsNode.numberOfWarnings), };
+                final Object[] arguments = new Object[] { sourceFileName, Integer.valueOf(problemsNode.numberOfWarnings) };
                 writer.write(form.format(arguments));
                 for (int j = 0; j < length; j++) {
                     final ProblemNode problemNode = problemNodes[j];

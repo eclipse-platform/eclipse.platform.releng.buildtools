@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corporation and others.
+ * Copyright (c) 2000, 2018 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -313,12 +313,12 @@ public IPropertyDescriptor[] getPropertyDescriptors() {
 public Object getPropertyValue(Object propKey) {
 	if (propKey.equals(P_ID_STATUS_INFO)) {
 		if ((getStatus() & INFO_MASK) != 0) {
-			return new Integer(0);
+			return Integer.valueOf(0);
 		}
 	}
 	if (propKey.equals(P_ID_STATUS_WARNING)) {
 		if ((getStatus() & WARNING_MASK) != 0) {
-			return new Integer(0);
+			return Integer.valueOf(0);
 		}
 	}
 	if (propKey.equals(P_ID_STATUS_ERROR)) {

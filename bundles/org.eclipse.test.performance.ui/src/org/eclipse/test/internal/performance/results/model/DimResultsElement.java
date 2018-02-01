@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corporation and others.
+ * Copyright (c) 2000, 2018 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -118,16 +118,16 @@ public Object getPropertyValue(Object propKey) {
     }
     if (propKey.equals(P_ID_COUNT)) {
 	    long count = buildResults.getCount(this.dim.getId());
-	    return new Double(count);
+	    return Double.valueOf(count);
     }
     if (propKey.equals(P_ID_AVERAGE))
-        return new Double(buildResults.getValue(this.dim.getId()));
+        return Double.valueOf(buildResults.getValue(this.dim.getId()));
     if (propKey.equals(P_ID_STDDEV))
-        return new Double(buildResults.getDeviation(this.dim.getId()));
+        return Double.valueOf(buildResults.getDeviation(this.dim.getId()));
     if (propKey.equals(P_ID_ERROR))
-        return new Double(buildResults.getError(this.dim.getId()));
+        return Double.valueOf(buildResults.getError(this.dim.getId()));
     if (propKey.equals(P_ID_HAD_VALUES))
-        return new Boolean(buildResults.hadValues());
+        return Boolean.valueOf(buildResults.hadValues());
     return super.getPropertyValue(propKey);
 }
 

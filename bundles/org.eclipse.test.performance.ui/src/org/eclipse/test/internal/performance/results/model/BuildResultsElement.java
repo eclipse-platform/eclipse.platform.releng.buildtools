@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corporation and others.
+ * Copyright (c) 2000, 2018 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -226,7 +226,7 @@ public Object getPropertyValue(Object propKey) {
 	    	return "none";
 	    }
 	    if (propKey.equals(P_ID_BUILD_IS_BASELINE))
-	        return new Boolean(buildResults.isBaseline());
+	        return Boolean.valueOf(buildResults.isBaseline());
 	    if (propKey.equals(P_ID_BUILD_FAILURE))
 	        return buildResults.getFailure();
 	    if (baselineResults != null) {
@@ -238,10 +238,10 @@ public Object getPropertyValue(Object propKey) {
 			double delta = (baselineValue - buildValue) / baselineValue;
 			if (Double.isNaN(delta)) {
 			    if (propKey.equals(P_ID_BUILD_DELTA) || propKey.equals(P_ID_BUILD_ERROR)) {
-			        return new Double(Double.NaN);
+			        return Double.valueOf(Double.NaN);
 			    }
 			} else  if (propKey.equals(P_ID_BUILD_DELTA)) {
-				return new Double(delta);
+				return Double.valueOf(delta);
 		    } else {
 				long baselineCount = baselineResults.getCount();
 				long currentCount = buildResults.getCount();
@@ -250,7 +250,7 @@ public Object getPropertyValue(Object propKey) {
 						double ttestValue = Util.computeTTest(baselineResults, buildResults);
 						int degreeOfFreedom = (int) (baselineResults.getCount()+buildResults.getCount()-2);
 						if (ttestValue >= 0 && StatisticsUtil.getStudentsT(degreeOfFreedom, StatisticsUtil.T90) >= ttestValue) {
-							return new Double(ttestValue);
+							return Double.valueOf(ttestValue);
 						}
 					}
 				    if (propKey.equals(P_ID_BUILD_ERROR)) {
@@ -259,11 +259,11 @@ public Object getPropertyValue(Object propKey) {
 						double error = Double.isNaN(baselineError)
 								? currentError / baselineValue
 								: Math.sqrt(baselineError*baselineError + currentError*currentError) / baselineValue;
-				        return new Double(error);
+				        return Double.valueOf(error);
 				    }
 				} else {
 				    if (propKey.equals(P_ID_BUILD_ERROR))
-				        return new Double(-1);
+				        return Double.valueOf(-1);
 				}
 			}
 	    }

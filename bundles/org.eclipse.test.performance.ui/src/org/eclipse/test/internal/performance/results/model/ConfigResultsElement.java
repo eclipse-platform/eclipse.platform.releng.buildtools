@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corporation and others.
+ * Copyright (c) 2000, 2018 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -218,16 +218,16 @@ public Object getPropertyValue(Object propKey) {
 		return getBaselineBuild();
 	}
 	if (propKey.equals(P_ID_CONFIG_BASELINED)) {
-		return new Boolean(configResults.isBaselined());
+		return Boolean.valueOf(configResults.isBaselined());
 	}
 	if (propKey.equals(P_ID_CONFIG_VALID)) {
-		return new Boolean(configResults.isValid());
+		return Boolean.valueOf(configResults.isValid());
 	}
 	if (propKey.equals(P_ID_CONFIG_DELTA)) {
-		return new Double(configResults.getDelta());
+		return Double.valueOf(configResults.getDelta());
 	}
 	if (propKey.equals(P_ID_CONFIG_ERROR)) {
-		return new Double(configResults.getError());
+		return Double.valueOf(configResults.getError());
 	}
 	if (propKey.equals(P_ID_STATUS_ERROR)) {
 		if (getStatus() == MISSING) {
