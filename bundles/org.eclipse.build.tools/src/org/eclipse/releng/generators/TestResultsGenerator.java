@@ -458,11 +458,10 @@ public class TestResultsGenerator extends Task {
                         for (int i = 0; i < elementCount; i++) {
                             final Element element = (Element) elements.item(i);
                             final NamedNodeMap attributes = element.getAttributes();
-                            Node aNode = attributes.getNamedItem("aborted");
-                            if (aNode == null) {
-                                attributes.getNamedItem("errors");
+                            Node aNode = attributes.getNamedItem("errors");
+                            if (aNode != null) {
+                                errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
                             }
-                            errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
                             aNode = attributes.getNamedItem("failures");
                             errorCount = errorCount + Integer.parseInt(aNode.getNodeValue());
                         }
@@ -559,14 +558,14 @@ public class TestResultsGenerator extends Task {
         String shortName = computeShortName(relativeName);
 
         buffer.append("<tr>").append(EOL).append("<td class='namecell'>").append(EOL).append("<a href=").append("\"")
-                .append(relativeName).append("\">").append(shortName).append("</a>").append("</td>\n")
-                .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#FORBIDDEN_WARNINGS")
-                .append("\">").append(forbiddenAccessesWarningsCount).append("</a>").append("</td>").append(EOL)
-                .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#DISCOURAGED_WARNINGS")
-                .append("\">").append(discouragedAccessesWarningsCount).append("</a>").append("</td>").append(EOL)
-                .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#INFO_WARNINGS")
-                .append("\">").append(infoCount).append("</a>").append("</td>").append(EOL).append("</tr>")
-                .append(EOL);
+        .append(relativeName).append("\">").append(shortName).append("</a>").append("</td>\n")
+        .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#FORBIDDEN_WARNINGS")
+        .append("\">").append(forbiddenAccessesWarningsCount).append("</a>").append("</td>").append(EOL)
+        .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#DISCOURAGED_WARNINGS")
+        .append("\">").append(discouragedAccessesWarningsCount).append("</a>").append("</td>").append(EOL)
+        .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#INFO_WARNINGS")
+        .append("\">").append(infoCount).append("</a>").append("</td>").append(EOL).append("</tr>")
+        .append(EOL);
     }
 
     private String computeRelativeName(final String fileName) {
@@ -620,10 +619,10 @@ public class TestResultsGenerator extends Task {
         String shortName = computeShortName(relativeName);
 
         buffer.append("<tr>" + EOL + "<td class='cellname'>" + EOL).append("<a href=").append("\"").append(relativeName)
-                .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td class=\"cell\" >").append("<a href=")
-                .append("\"").append(relativeName).append("#ERRORS").append("\">").append(errorCount).append("</a>")
-                .append("</td>\n").append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName)
-                .append("#OTHER_WARNINGS").append("\">").append(warningCount).append("</a>").append("</td>\n").append("</tr>\n");
+        .append("\">").append(shortName).append("</a>").append("</td>\n").append("<td class=\"cell\" >").append("<a href=")
+        .append("\"").append(relativeName).append("#ERRORS").append("\">").append(errorCount).append("</a>")
+        .append("</td>\n").append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName)
+        .append("#OTHER_WARNINGS").append("\">").append(warningCount).append("</a>").append("</td>\n").append("</tr>\n");
     }
 
     public String getBuildType() {
@@ -1111,7 +1110,7 @@ public class TestResultsGenerator extends Task {
         try (Writer compilerSummaryPHP = new FileWriter(compilerSummaryFile)) {
             compilerSummaryPHP.write("<!--" + EOL);
             compilerSummaryPHP
-                    .write("  This file created by 'generateIndex' ant task, while parsing build and tests results" + EOL);
+            .write("  This file created by 'generateIndex' ant task, while parsing build and tests results" + EOL);
             compilerSummaryPHP.write("-->" + EOL);
             compilerSummaryPHP.write(compilerSummary);
         }
@@ -1392,7 +1391,7 @@ public class TestResultsGenerator extends Task {
         } else {
             if (outputIndexFile.exists()) {
                 log(EOL + "INFO: The drop index file, " + getDropHtmlFileName()
-                        + ", was found to exist already and is being regenerated.");
+                + ", was found to exist already and is being regenerated.");
             }
             log("DEBUG: Begin: Generating drop index page");
             final String[] types = anErrorTracker.getTypes();
@@ -1518,7 +1517,7 @@ public class TestResultsGenerator extends Task {
                 results = results + EOL + "</table>";
                 xmlFragment = xmlFragment + "</topLevel>";
                 try (FileWriter xmlOutput = new FileWriter(getDropDirectoryName() + "/addToTestManifest.xml")) {
-                xmlOutput.write(xmlFragment);
+                    xmlOutput.write(xmlFragment);
                 }
             }
         }
