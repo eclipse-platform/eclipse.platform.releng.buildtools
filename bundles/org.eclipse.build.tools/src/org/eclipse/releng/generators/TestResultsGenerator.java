@@ -948,8 +948,7 @@ public class TestResultsGenerator extends Task {
         htmlString = htmlString + EOL + "<h3 id=\"UnitTest\">Unit Test Results</h3>" + EOL;
 
         htmlString = htmlString
-                + "<p>The unit tests are run on the <a href=\"https://hudson.eclipse.org/shared/view/Eclipse%20and%20Equinox/\">shared Hudson instance</a>"
-                + " and the <a href=\"https://hudson.eclipse.org/platform/view/Unit%20Tests/\">platform Hudson instance</a>.</p>"
+                + "<p>The unit tests are run on the <a href=\"https://ci.eclipse.org/releng/view/Automated%20tests/\">releng ci instance</a>.</p>"
                 + EOL;
 
         htmlString = htmlString + "<p>The table shows the unit test results for this build on the platforms" + EOL;
