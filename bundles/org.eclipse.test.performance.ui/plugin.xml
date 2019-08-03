@@ -13,6 +13,15 @@
       </application>
    </extension>
    <extension
+         id="importPerformanceData"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="org.eclipse.test.performance.ui.ImportDataMain">
+         </run>
+      </application>
+   </extension>
+   <extension
          point="org.eclipse.ui.preferencePages">
       <page
             class="org.eclipse.test.internal.performance.results.ui.PerformanceResultsPreferencePage"

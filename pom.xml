@@ -23,9 +23,9 @@
   </prerequisites>
 
   <properties>
-    <tycho.version>1.2.0</tycho.version>
-    <tycho-extras.version>1.2.0</tycho-extras.version>
-    <cbi-plugins.version>1.1.5</cbi-plugins.version>
+    <tycho.version>1.4.0</tycho.version>
+    <tycho-extras.version>1.4.0</tycho-extras.version>
+    <cbi-plugins.version>1.1.7</cbi-plugins.version>
     <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
     <buildType>I</buildType>
@@ -36,18 +36,20 @@
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
     <buildType>I</buildType>
     <buildId>${buildType}${buildTimestamp}</buildId>
-    <comparator.repo>http://download.eclipse.org/eclipse/updates/4.9-I-builds</comparator.repo>
+    <comparator.repo>http://download.eclipse.org/eclipse/updates/4.13-I-builds</comparator.repo>
     <egit-repo.url>http://download.eclipse.org/egit/updates</egit-repo.url>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <cbi-jdt-repo.url>https://repo.eclipse.org/content/repositories/eclipse-staging/</cbi-jdt-repo.url>
     <cbi-jdt-version>3.12.0.v20160516-2131</cbi-jdt-version>
     <cbi-jdt-apt-version>1.2.100.v20160418-1457</cbi-jdt-apt-version>
+    <cbi-ecj-version>3.19.0.v20190730-0656</cbi-ecj-version>
+    
 
     <cbi-snapshots-repo.url>https://repo.eclipse.org/content/repositories/cbi-snapshots/</cbi-snapshots-repo.url>
     <eclipse-repo.url>https://repo.eclipse.org/content/repositories/cbi/</eclipse-repo.url>
 
     <!-- CBI provided common license feature. (bug 394793) -->
-    <license-repo.url>http://download.eclipse.org/cbi/updates/license/</license-repo.url>
+    <license-repo.url>https://download.eclipse.org/cbi/updates/license/2.0.1.v20180423-1114/</license-repo.url>
 
 
     <tycho.scmUrl>scm:git:git://git.eclipse.org/gitroot/platform/eclipse.platform.releng.buildtools</tycho.scmUrl>
@@ -96,7 +98,7 @@
       <id>eclipse-platform-repository</id>
       <layout>p2</layout>
       <!-- Normally should be "latest milestone" for stability, once we have one for 4.9. -->
-      <url>http://download.eclipse.org/eclipse/updates/4.9-I-builds/</url>
+      <url>http://download.eclipse.org/eclipse/updates/4.13-I-builds/</url>
     </repository>
     <repository>
       <id>eclipse-derby-buildtools-repository</id>
@@ -168,17 +170,12 @@
           <artifactId>tycho-compiler-plugin</artifactId>
           <version>${tycho.version}</version>
           <dependencies>
-            <dependency>
+           <dependency>
               <groupId>org.eclipse.jdt</groupId>
-              <artifactId>org.eclipse.jdt.core</artifactId>
-              <version>${cbi-jdt-version}</version>
+              <artifactId>ecj</artifactId>
+              <version>${cbi-ecj-version}</version>
             </dependency>
-            <dependency>
-              <groupId>org.eclipse.jdt</groupId>
-              <artifactId>org.eclipse.jdt.compiler.apt</artifactId>
-              <version>${cbi-jdt-apt-version}</version>
-            </dependency>
-          </dependencies>
+           </dependencies>
           <configuration>
             <compilerArgs>
               <args>-verbose</args>
