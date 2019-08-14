@@ -12,7 +12,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.swt,
  org.junit,
  org.eclipse.ui.views;bundle-version="3.4.0";resolution:=optional,
- org.eclipse.test.performance;bundle-version="3.12.100",
+ org.eclipse.test.performance;bundle-version="3.14.0",
  org.eclipse.ui;bundle-version="3.5.0";resolution:=optional,
  org.eclipse.ui.ide;bundle-version="3.5.0";resolution:=optional,
  org.eclipse.core.resources;bundle-version="3.5.0"
