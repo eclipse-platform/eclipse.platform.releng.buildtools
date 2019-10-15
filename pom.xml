@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (c) 2013 IBM Corporation and others.
+  Copyright (c) 2019 IBM Corporation and others.
   All rights reserved. This program and the accompanying materials
   are made available under the terms of the Eclipse Public License v1.0
   which accompanies this distribution, and is available at
@@ -19,7 +19,7 @@
   <version>1.0.101-SNAPSHOT</version>
   <packaging>pom</packaging>
   <prerequisites>
-    <maven>3.3.3</maven>
+    <maven>3.5.4</maven>
   </prerequisites>
 
   <properties>
@@ -36,21 +36,18 @@
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
     <buildType>I</buildType>
     <buildId>${buildType}${buildTimestamp}</buildId>
-    <comparator.repo>http://download.eclipse.org/eclipse/updates/4.13-I-builds</comparator.repo>
+    <comparator.repo>http://download.eclipse.org/eclipse/updates/4.14-I-builds</comparator.repo>
     <egit-repo.url>http://download.eclipse.org/egit/updates</egit-repo.url>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <cbi-jdt-repo.url>https://repo.eclipse.org/content/repositories/eclipse-staging/</cbi-jdt-repo.url>
-    <cbi-jdt-version>3.12.0.v20160516-2131</cbi-jdt-version>
-    <cbi-jdt-apt-version>1.2.100.v20160418-1457</cbi-jdt-apt-version>
-    <cbi-ecj-version>3.19.0.v20190730-0656</cbi-ecj-version>
+    <cbi-ecj-version>3.20.0.v20191009-1609</cbi-ecj-version>
     
 
     <cbi-snapshots-repo.url>https://repo.eclipse.org/content/repositories/cbi-snapshots/</cbi-snapshots-repo.url>
     <eclipse-repo.url>https://repo.eclipse.org/content/repositories/cbi/</eclipse-repo.url>
 
     <!-- CBI provided common license feature. (bug 394793) -->
-    <license-repo.url>https://download.eclipse.org/cbi/updates/license/2.0.1.v20180423-1114/</license-repo.url>
-
+    <license-repo.url>https://download.eclipse.org/cbi/updates/license/2.0.2.v20181016-2210/</license-repo.url>
 
     <tycho.scmUrl>scm:git:git://git.eclipse.org/gitroot/platform/eclipse.platform.releng.buildtools</tycho.scmUrl>
 
@@ -98,7 +95,7 @@
       <id>eclipse-platform-repository</id>
       <layout>p2</layout>
       <!-- Normally should be "latest milestone" for stability, once we have one for 4.9. -->
-      <url>http://download.eclipse.org/eclipse/updates/4.13-I-builds/</url>
+      <url>http://download.eclipse.org/eclipse/updates/4.14-I-builds/</url>
     </repository>
     <repository>
       <id>eclipse-derby-buildtools-repository</id>
