@@ -281,7 +281,7 @@ public class BuildResults extends AbstractResults {
  * Return the failure message which may happened on this scenario
  * while running the current build
      *
-     * @return The failure message or <code>null</null> if the scenario passed.
+     * @return The failure message or <code>null</code> if the scenario passed.
      */
     public String getFailure() {
         return this.failure;

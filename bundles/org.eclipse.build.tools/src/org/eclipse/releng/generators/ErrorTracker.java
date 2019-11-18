@@ -32,7 +32,6 @@ import org.xml.sax.SAXException;
 
 /**
  * @version 1.0
- * @author
  */
 public class ErrorTracker {
 

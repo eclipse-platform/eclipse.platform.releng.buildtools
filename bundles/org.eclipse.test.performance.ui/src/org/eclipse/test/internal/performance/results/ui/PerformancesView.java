@@ -150,7 +150,7 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
  * Get a view from its ID.
  *
  * @param viewId The ID of the view
- * @return The found view or <code>null</null> if not found.
+ * @return The found view or <code>null</code> if not found.
  */
 static IViewPart getWorkbenchView(String viewId) {
 	IWorkbench workbench = PlatformUI.getWorkbench();

@@ -164,13 +164,15 @@ public final class Util implements IPerformancesConstants {
      * </li>
      * </ul>
      * </ol>
- * E.g.
- * 	- org.eclipse.ui -> "Platform/UI"
- * 	- org.eclipse.swt -> "Platform/SWT"
- * 	- org.eclipse.team -> "Platform/Team"
- * 	- org.eclipse.jdt.ui -> "JDT/UI"
- * 	- org.eclipse.jdt.core -> "JDT/Core"
- * 	- org.eclipse.pde.api.tools -> "PDE/API Tools"
+     * E.g.
+     * <ul>
+     * 	<li>org.eclipse.ui -&gt; "Platform/UI"</li>
+     * 	<li>org.eclipse.swt -&gt; "Platform/SWT"</li>
+     * 	<li>org.eclipse.team -&gt; "Platform/Team"</li>
+     * 	<li>org.eclipse.jdt.ui -&gt; "JDT/UI"</li>
+     * 	<li>org.eclipse.jdt.core -&gt; "JDT/Core"</li>
+     * 	<li>org.eclipse.pde.api.tools -&gt; "PDE/API Tools"</li>
+     * </ul>
      */
     public static String componentDisplayName(String componentName) {
         String partName;

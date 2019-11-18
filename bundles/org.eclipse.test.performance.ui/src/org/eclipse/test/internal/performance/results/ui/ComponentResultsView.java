@@ -57,20 +57,20 @@ import org.eclipse.ui.part.ViewPart;
  * There's no real action available action from this view, only the possibility
  * to change how is displayed the line selection (full or only first column)
  * and also filter the results:
- * 	<ul>
+ * </p><ul>
  *	<li>Filter for builds:
  *		<ul>
  *		<li>Filter nightly:	hide the nightly builds (starting with 'N')</li>
  *		<li>Filter non-important builds:	hide all non-important builds, which means non-milestone builds and those after the last milestone</li>
  *		</ul>
  *	</li>
- *	</li>Filter for scenarios:
+ *	<li>Filter for scenarios:
  *		<ul>
  *		<li>Filter non-fingerprints: hide the scenarios which are not in the fingerprints</li>
  *		</ul>
  *	</li>
  *	</ul>
- * </p><p>
+ * <p>
  * Note that these filters are synchronized with the ones applied in the
  * {@link ComponentsView Components view}.
  * </p>
