@@ -23,7 +23,7 @@ import org.eclipse.test.internal.performance.results.utils.Util;
  *
  * Each results gives access to specific children depending on model.
  */
-public abstract class AbstractResults implements Comparable {
+public abstract class AbstractResults implements Comparable<AbstractResults> {
 
 	public static final double[] INVALID_RESULTS = new double[] {2};
 	public static final double[] NO_BUILD_RESULTS = new double[0];
@@ -36,24 +36,24 @@ public abstract class AbstractResults implements Comparable {
 	public static final int NUMBERS_LENGTH = 6;
 
 	public static final boolean DO_NOT_WRITE_DATA = false;
-	
+
 	AbstractResults parent;
 	int id = -1;
 	String name;
-	List children;
+	List<AbstractResults> children;
 	private static boolean NEW_LINE = true;
 	PrintStream printStream = null;
     protected String baselinePrefix;
 
 AbstractResults(AbstractResults parent, String name) {
 	this.parent = parent;
-	this.children = new ArrayList();
+	this.children = new ArrayList<>();
 	this.name = name;
 }
 
 AbstractResults(AbstractResults parent, int id) {
 	this.parent = parent;
-	this.children = new ArrayList();
+	this.children = new ArrayList<>();
 	this.id = id;
 }
 
@@ -61,11 +61,11 @@ AbstractResults(AbstractResults parent, int id) {
  * Add a child to current results, using specific sort
  * order if specified.
  */
-void addChild(Comparable child, boolean sort) {
+void addChild(AbstractResults child, boolean sort) {
 	if (sort) {
 		int size = this.children.size();
 		for (int i=0; i<size; i++) {
-			Object results = this.children.get(i);
+		  AbstractResults results = this.children.get(i);
 			if (child.compareTo(results) < 0) {
 				this.children.add(i, child);
 				return;
@@ -81,9 +81,9 @@ void addChild(Comparable child, boolean sort) {
  * @see java.lang.Comparable#compareTo(java.lang.Object)
  */
 @Override
-public int compareTo(Object obj) {
-	if (obj instanceof AbstractResults) {
-		AbstractResults res = (AbstractResults) obj;
+public int compareTo(AbstractResults obj) {
+	if (obj != null) {
+		AbstractResults res = obj;
 		return getName().compareTo(res.getName());
 	}
 	return -1;
@@ -163,14 +163,14 @@ String getPath() {
  *
  * @return An iterator on the children list
  */
-public Iterator getResults() {
+public Iterator<AbstractResults> getResults() {
 	return this.children.iterator();
 }
 
 AbstractResults getResults(String resultName) {
 	int size = this.children.size();
 	for (int i=0; i<size; i++) {
-		AbstractResults searchedResults = (AbstractResults) this.children.get(i);
+		AbstractResults searchedResults =  this.children.get(i);
 		if (searchedResults.getName().equals(resultName)) {
 			return searchedResults;
 		}
@@ -181,7 +181,7 @@ AbstractResults getResults(String resultName) {
 AbstractResults getResults(int searchedId) {
 	int size = this.children.size();
 	for (int i=0; i<size; i++) {
-		AbstractResults searchedResults = (AbstractResults) this.children.get(i);
+		AbstractResults searchedResults =  this.children.get(i);
 		if (searchedResults.id == searchedId) {
 			return searchedResults;
 		}

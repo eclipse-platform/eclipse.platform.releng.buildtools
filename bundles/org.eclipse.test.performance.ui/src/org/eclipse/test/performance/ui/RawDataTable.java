@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.test.internal.performance.data.Dim;
+import org.eclipse.test.internal.performance.results.db.AbstractResults;
 import org.eclipse.test.internal.performance.results.db.BuildResults;
 import org.eclipse.test.internal.performance.results.db.ConfigResults;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
@@ -28,7 +29,7 @@ import org.eclipse.test.internal.performance.results.utils.Util;
 public class RawDataTable {
 
 	private ConfigResults configResults;
-	private List buildPrefixes;
+	private List<String> buildPrefixes;
 	private PrintStream stream;
 	private Dim[] dimensions = DB_Results.getResultsDimensions();
 	private boolean debug = false;
@@ -44,7 +45,7 @@ public RawDataTable(ConfigResults results, List prefixes, PrintStream ps) {
 }
 public RawDataTable(ConfigResults results, String baselinePrefix, PrintStream ps) {
 	this(results, ps);
-	this.buildPrefixes = new ArrayList();
+	this.buildPrefixes = new ArrayList<>();
 	this.buildPrefixes.add(baselinePrefix);
 }
 
@@ -80,11 +81,11 @@ private void printDetails() {
 	printColumnHeaders();
 	this.stream.print("</tr>\n");
 
-	List<BuildResults> builds = this.configResults.getBuildsMatchingPrefixes(this.buildPrefixes);
+	List<AbstractResults> builds = this.configResults.getBuildsMatchingPrefixes(this.buildPrefixes);
 	Collections.reverse(builds);
 	int size = builds.size();
 	for (int i=0; i<size; i++) {
-		BuildResults buildResults = builds.get(i);
+		BuildResults buildResults = (BuildResults) builds.get(i);
 		this.stream.print("<tr><td>");
 		this.stream.print(buildResults.getName());
 		this.stream.print("</td>");

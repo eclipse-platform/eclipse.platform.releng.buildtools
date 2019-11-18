@@ -39,7 +39,7 @@ import org.osgi.service.prefs.BackingStoreException;
 /**
  * An Organization Element
  */
-public abstract class ResultsElement implements IAdaptable, IPropertySource, IWorkbenchAdapter, Comparable {
+public abstract class ResultsElement implements IAdaptable, IPropertySource, IWorkbenchAdapter, Comparable<ResultsElement> {
 
 	// Image descriptors
 	private static final ISharedImages WORKBENCH_SHARED_IMAGES = PlatformUI.getWorkbench().getSharedImages();
@@ -98,11 +98,11 @@ public abstract class ResultsElement implements IAdaptable, IPropertySource, IWo
 	static final String P_STR_STATUS_COMMENT = "comment"; //$NON-NLS-1$
 	static final String[] NO_VALUES = new String[0];
 
-	private static Vector DESCRIPTORS;
+	private static Vector<IPropertyDescriptor> DESCRIPTORS;
 	static final TextPropertyDescriptor COMMENT_DESCRIPTOR = new TextPropertyDescriptor(P_ID_STATUS_COMMENT, P_STR_STATUS_COMMENT);
 	static final TextPropertyDescriptor ERROR_DESCRIPTOR = new TextPropertyDescriptor(P_ID_STATUS_ERROR, P_STR_STATUS_ERROR);
-    static Vector initDescriptors(int status) {
-		DESCRIPTORS = new Vector();
+    static Vector<IPropertyDescriptor> initDescriptors(int status) {
+		DESCRIPTORS = new Vector<>();
 		// Status category
 		DESCRIPTORS.add(getInfosDescriptor(status));
 		DESCRIPTORS.add(getWarningsDescriptor(status));
@@ -113,11 +113,11 @@ public abstract class ResultsElement implements IAdaptable, IPropertySource, IWo
 		COMMENT_DESCRIPTOR.setCategory("Survey");
 		return DESCRIPTORS;
 	}
-    static Vector getDescriptors() {
+    static Vector<IPropertyDescriptor> getDescriptors() {
     	return DESCRIPTORS;
 	}
     static ComboBoxPropertyDescriptor getInfosDescriptor(int status) {
-		List list = new ArrayList();
+		List<String> list = new ArrayList<>();
 		if ((status & SMALL_VALUE) != 0) {
 			list.add("Some builds have tests with small values");
 		}
@@ -133,7 +133,7 @@ public abstract class ResultsElement implements IAdaptable, IPropertySource, IWo
 		return infoDescriptor;
 	}
     static PropertyDescriptor getWarningsDescriptor(int status) {
-		List list = new ArrayList();
+		List<String> list = new ArrayList<>();
 		if ((status & BIG_ERROR) != 0) {
 			list.add("Some builds have tests with error over 3%");
 		}
@@ -172,16 +172,16 @@ ResultsElement(String name, ResultsElement parent) {
 }
 
 @Override
-public int compareTo(Object o) {
+public int compareTo(ResultsElement o) {
 	if (this.results == null) {
-		if (o instanceof ResultsElement && this.name != null) {
-			ResultsElement element = (ResultsElement) o;
+		if (o != null && this.name != null) {
+			ResultsElement element = o;
 			return this.name.compareTo(element.getName());
 		}
 		return -1;
 	}
-	if (o instanceof ResultsElement) {
-		return this.results.compareTo(((ResultsElement)o).results);
+	if (o != null) {
+		return this.results.compareTo(o.results);
 	}
 	return -1;
 }
@@ -295,7 +295,7 @@ public Object getParent(Object o) {
 
 @Override
 public IPropertyDescriptor[] getPropertyDescriptors() {
-	Vector descriptors = getDescriptors();
+	Vector<IPropertyDescriptor> descriptors = getDescriptors();
 	if (descriptors == null) {
 		descriptors = initDescriptors(getStatus());
 	}
@@ -304,7 +304,7 @@ public IPropertyDescriptor[] getPropertyDescriptors() {
 	descriptorsArray[0] = getInfosDescriptor(getStatus());
 	descriptorsArray[1] = getWarningsDescriptor(getStatus());
 	for (int i=2; i<size; i++) {
-		descriptorsArray[i] = (IPropertyDescriptor) descriptors.get(i);
+		descriptorsArray[i] = descriptors.get(i);
 	}
 	return descriptorsArray;
 }

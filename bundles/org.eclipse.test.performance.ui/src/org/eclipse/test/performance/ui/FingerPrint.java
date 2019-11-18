@@ -106,7 +106,7 @@ public void print(final PerformanceResults performanceResults) {
 	int length = configNames.length;
 	for (int c=0; c<length; c++) {
 		String configName  = configNames[c];
-		List scenarios = performanceResults.getComponentSummaryScenarios(this.component, configName);
+		List<ScenarioResults> scenarios = performanceResults.getComponentSummaryScenarios(this.component, configName);
 		if (scenarios == null) continue;
 
 		// Create BarGraph
@@ -115,7 +115,7 @@ public void print(final PerformanceResults performanceResults) {
 		List<ConfigResults> allResults = new ArrayList<>();
 		String defaultDimName = DB_Results.getDefaultDimension().getName();
 		for (int i=0, size=scenarios.size(); i<size; i++) {
-			ScenarioResults scenarioResults = (ScenarioResults) scenarios.get(i);
+			ScenarioResults scenarioResults = scenarios.get(i);
 			ConfigResults configResults = scenarioResults.getConfigResults(configName);
 			if (configResults == null || !configResults.isValid()) continue;
 			double[] results = configResults.getCurrentBuildDeltaInfo();

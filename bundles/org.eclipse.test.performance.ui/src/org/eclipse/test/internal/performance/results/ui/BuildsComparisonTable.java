@@ -44,7 +44,7 @@ public BuildsComparisonTable(String name, PrintStream stream, String build, Stri
  */
 public void print(PerformanceResults performanceResults) {
 
-	List scenarios = performanceResults.getComponentScenarios(this.component);
+	List<AbstractResults> scenarios = performanceResults.getComponentScenarios(this.component);
 	int size = scenarios.size();
 
 	// Print titles
@@ -76,7 +76,7 @@ public void print(PerformanceResults performanceResults) {
 	this.stream.print("</table>\n");
 }
 
-private int computeSize(List scenarios) {
+private int computeSize(List<AbstractResults> scenarios) {
 	int size = scenarios.size();
 	int n = 0;
 	for (int i=0; i<size; i++) {

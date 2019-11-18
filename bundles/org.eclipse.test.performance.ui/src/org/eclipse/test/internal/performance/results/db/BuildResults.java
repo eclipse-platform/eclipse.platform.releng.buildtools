@@ -98,7 +98,7 @@ public class BuildResults extends AbstractResults {
      * @see Comparable#compareTo(Object)
      */
     @Override
-    public int compareTo(Object obj) {
+    public int compareTo(AbstractResults obj) {
         if (obj instanceof BuildResults) {
             BuildResults res = (BuildResults) obj;
             return getDate().compareTo(res.getDate());

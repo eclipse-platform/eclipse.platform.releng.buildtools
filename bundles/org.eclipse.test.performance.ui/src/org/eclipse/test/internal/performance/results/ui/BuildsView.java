@@ -402,8 +402,8 @@ public void createPartControl(Composite parent) {
 		// of the #compareTo(Object) in the ResultsElement hierarchy
 		@Override
     public int compare(Viewer view, Object e1, Object e2) {
-			if (e2 instanceof ResultsElement) {
-				return ((ResultsElement) e2).compareTo(e1);
+			if (e1 instanceof ResultsElement && e2 instanceof ResultsElement) {
+				return ((ResultsElement) e2).compareTo((ResultsElement) e1);
 			}
 			return super.compare(view, e1, e2);
 		}

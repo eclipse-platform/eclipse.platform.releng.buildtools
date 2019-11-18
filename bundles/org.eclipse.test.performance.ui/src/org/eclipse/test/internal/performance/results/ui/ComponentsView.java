@@ -176,11 +176,11 @@ public void createPartControl(Composite parent) {
 			// Config and Build results are sorted in reverse order
 			if (e1 instanceof BuildResultsElement) {
 				ResultsElement element = (ResultsElement) e2;
-				return element.compareTo(e1);
+				return element.compareTo((ResultsElement) e1);
 			}
 			if (e1 instanceof ResultsElement) {
 				ResultsElement element = (ResultsElement) e1;
-				return element.compareTo(e2);
+				return element.compareTo((ResultsElement) e2);
 			}
 			return super.compare(view, e1, e2);
 		}

@@ -54,23 +54,23 @@ public final class Util implements IPerformancesConstants {
     public static final String LINE_SEPARATOR     = System.getProperty("line.separator");
 
     // Build prefixes
-    public static final List   ALL_BUILD_PREFIXES = new ArrayList(3);
+    public static final List<String>   ALL_BUILD_PREFIXES = new ArrayList<>(3);
     static {
         ALL_BUILD_PREFIXES.add("I");
         ALL_BUILD_PREFIXES.add("N");
         ALL_BUILD_PREFIXES.add("M");
     }
-    public static final List BUILD_PREFIXES = new ArrayList(2);
+    public static final List<String> BUILD_PREFIXES = new ArrayList<>(2);
     static {
         BUILD_PREFIXES.add("I");
         BUILD_PREFIXES.add("N");
     }
-    public static final List MAINTENANCE_BUILD_PREFIXES = new ArrayList(2);
+    public static final List<String> MAINTENANCE_BUILD_PREFIXES = new ArrayList<>(2);
     static {
         MAINTENANCE_BUILD_PREFIXES.add("I");
         MAINTENANCE_BUILD_PREFIXES.add("M");
     }
-    public static final List BASELINE_BUILD_PREFIXES = new ArrayList(1);
+    public static final List<String> BASELINE_BUILD_PREFIXES = new ArrayList<>(1);
     static {
         BASELINE_BUILD_PREFIXES.add(DB_Results.getDbBaselinePrefix());
     }

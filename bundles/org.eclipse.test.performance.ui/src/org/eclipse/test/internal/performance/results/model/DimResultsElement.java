@@ -45,9 +45,9 @@ public class DimResultsElement extends ResultsElement {
 	private static final PropertyDescriptor DIM_ERROR_DESCRIPTOR = new PropertyDescriptor(P_ID_ERROR, P_STR_ERROR);
 	private static final PropertyDescriptor DIM_HAD_VALUES_DESCRIPTOR = new PropertyDescriptor(P_ID_HAD_VALUES, P_STR_HAD_VALUES);
 
-    private static Vector DESCRIPTORS;
-    static Vector initDescriptors(int status) {
-        DESCRIPTORS = new Vector();
+    private static Vector<IPropertyDescriptor> DESCRIPTORS;
+    static Vector<IPropertyDescriptor> initDescriptors(int status) {
+        DESCRIPTORS = new Vector<>();
 		// Status category
 		DESCRIPTORS.add(getInfosDescriptor(status));
 		DESCRIPTORS.add(getWarningsDescriptor(status));
@@ -71,7 +71,7 @@ public class DimResultsElement extends ResultsElement {
 		COMMENT_DESCRIPTOR.setCategory("Survey");
         return DESCRIPTORS;
    	}
-    static Vector getDescriptors() {
+    static Vector<IPropertyDescriptor> getDescriptors() {
     	return DESCRIPTORS;
 	}
 
@@ -96,7 +96,7 @@ public String getLabel(Object o) {
 
 @Override
 public IPropertyDescriptor[] getPropertyDescriptors() {
-	Vector descriptors = getDescriptors();
+	Vector<IPropertyDescriptor> descriptors = getDescriptors();
 	if (descriptors == null) {
 		descriptors = initDescriptors(getStatus());
 	}
@@ -105,7 +105,7 @@ public IPropertyDescriptor[] getPropertyDescriptors() {
 	descriptorsArray[0] = getInfosDescriptor(getStatus());
 	descriptorsArray[1] = getWarningsDescriptor(getStatus());
 	for (int i=2; i<size; i++) {
-		descriptorsArray[i] = (IPropertyDescriptor) descriptors.get(i);
+		descriptorsArray[i] = descriptors.get(i);
 	}
 	return descriptorsArray;
 }

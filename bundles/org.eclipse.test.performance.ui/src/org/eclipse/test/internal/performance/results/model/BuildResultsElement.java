@@ -58,8 +58,8 @@ public class BuildResultsElement extends ResultsElement {
 	private static final PropertyDescriptor BUILD_TEST_ERROR_DESCRIPTOR = new PropertyDescriptor(P_ID_BUILD_ERROR, P_STR_BUILD_ERROR);
 	private static final PropertyDescriptor BUILD_STUDENTS_TTEST_DESCRIPTOR = new PropertyDescriptor(P_ID_BUILD_TTEST, P_STR_BUILD_TTEST);
 
-    private static Vector<PropertyDescriptor> DESCRIPTORS;
-    static Vector initDescriptors(int status) {
+    private static Vector<IPropertyDescriptor> DESCRIPTORS;
+    static Vector<IPropertyDescriptor> initDescriptors(int status) {
 		DESCRIPTORS = new Vector<>();
 		// Status category
 		DESCRIPTORS.add(getInfosDescriptor(status));
@@ -131,7 +131,7 @@ public class BuildResultsElement extends ResultsElement {
 		warningDescriptor.setCategory("Status");
 		return warningDescriptor;
     }
-    static Vector getDescriptors() {
+    static Vector<IPropertyDescriptor> getDescriptors() {
     	return DESCRIPTORS;
 	}
 
@@ -150,9 +150,9 @@ public BuildResultsElement(String name, ResultsElement parent) {
 }
 
 @Override
-public int compareTo(Object o) {
+public int compareTo(ResultsElement o) {
 	if (o instanceof BuildResultsElement && getName() != null) {
-		BuildResultsElement element = (BuildResultsElement)o;
+		BuildResultsElement element = (BuildResultsElement) o;
 		if (element.getName() != null) {
 			String buildDate = Util.getBuildDate(element.name);
 			return Util.getBuildDate(this.name).compareTo(buildDate);
@@ -191,7 +191,7 @@ public Object getEditableValue() {
 
 @Override
 public IPropertyDescriptor[] getPropertyDescriptors() {
-	Vector<PropertyDescriptor> descriptors = getDescriptors();
+	Vector<IPropertyDescriptor> descriptors = getDescriptors();
 	if (descriptors == null) {
 		descriptors = initDescriptors(getStatus());
 	}

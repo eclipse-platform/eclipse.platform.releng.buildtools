@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.test.internal.performance.results.db.AbstractResults;
 import org.eclipse.test.internal.performance.results.db.ConfigResults;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.db.PerformanceResults;
@@ -118,7 +119,7 @@ String scenarioPattern;
  *
  * @see #baselinePrefix
  */
-List currentBuildPrefixes;
+List<String> currentBuildPrefixes;
 
 /**
  * A list of prefixes of builds to highlight in displayed data graphs.
@@ -127,7 +128,7 @@ List currentBuildPrefixes;
  * Example:
  * 	<pre>-higlight 3_2</pre>
  */
-List pointsOfInterest;
+List<String> pointsOfInterest;
 
 /**
  * Tells whether only fingerprints has to be generated.
@@ -253,7 +254,7 @@ private void parse(String[] args) {
 			}
 			buffer.append("	").append(arg).append(" = ");
 			String[] ids = idPrefixList.split(",");
-			this.currentBuildPrefixes = new ArrayList();
+			this.currentBuildPrefixes = new ArrayList<>();
 			for (int j = 0; j < ids.length; j++) {
 				this.currentBuildPrefixes.add(ids[j]);
 				buffer.append(ids[j]);
@@ -270,7 +271,7 @@ private void parse(String[] args) {
 			}
 			buffer.append("	").append(arg).append(" = ");
 			String[] ids = args[i + 1].split(",");
-			this.pointsOfInterest = new ArrayList();
+			this.pointsOfInterest = new ArrayList<>();
 			for (int j = 0; j < ids.length; j++) {
 				this.pointsOfInterest.add(ids[j]);
 				buffer.append(ids[j]);
@@ -640,10 +641,10 @@ private void printSummary(/*PerformanceResults performanceResults*/) {
 		int configsLength = configs.length;
 		for (int i=0; i<componentsLength; i++) {
 			String componentName = components[i];
-			List scenarioNames = this.performanceResults.getComponentScenarios(componentName);
+			List<AbstractResults> scenarioNames = this.performanceResults.getComponentScenarios(componentName);
 			int size = scenarioNames.size();
 			for (int s=0; s<size; s++) {
-				String scenarioName = ((ScenarioResults) scenarioNames.get(s)).getName();
+				String scenarioName = scenarioNames.get(s).getName();
 				if (scenarioName == null) continue;
 				ScenarioResults scenarioResults = this.performanceResults.getScenarioResults(scenarioName);
 				if (scenarioResults != null) {
@@ -736,11 +737,11 @@ private void printSummaryScenarioLine(int i, String config, ScenarioResults scen
 	String url = config + "/" + scenarioResults.getFileName()+".html";
 	double[] stats = null;
 	if (i==0) { // baseline results
-		List baselinePrefixes;
+		List<String> baselinePrefixes;
 		if (this.baselinePrefix == null) {
 			baselinePrefixes = Util.BASELINE_BUILD_PREFIXES;
 		} else {
-			baselinePrefixes = new ArrayList();
+			baselinePrefixes = new ArrayList<>();
 			baselinePrefixes.add(this.baselinePrefix);
 		}
 		stats = configResults.getStatistics(baselinePrefixes);
@@ -1044,7 +1045,7 @@ private void setDefaults(String buildName, String baseline) {
 
 	// Init current build prefixes if not set
 	if (this.currentBuildPrefixes == null) {
-		this.currentBuildPrefixes = new ArrayList();
+		this.currentBuildPrefixes = new ArrayList<>();
 		char buildType = buildName.charAt(0);
 		if (buildType == 'M') {
 			this.currentBuildPrefixes.add("M");

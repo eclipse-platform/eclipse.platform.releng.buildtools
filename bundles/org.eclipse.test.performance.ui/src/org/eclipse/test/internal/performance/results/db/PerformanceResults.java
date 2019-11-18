@@ -170,7 +170,7 @@ public String[] getComponents() {
  * @param componentName The component name. Should not be <code>null</code>
  * @return A list of {@link ScenarioResults scenario results}
  */
-public List getComponentScenarios(String componentName) {
+public List<AbstractResults> getComponentScenarios(String componentName) {
 	ComponentResults componentResults = (ComponentResults) getResults(componentName);
 	if (componentResults == null) return null;
 	return Collections.unmodifiableList(componentResults.children);
@@ -183,10 +183,10 @@ public List getComponentScenarios(String componentName) {
  * @param config Configuration name
  * @return A list of {@link ScenarioResults scenario results} which have a summary
  */
-public List getComponentSummaryScenarios(String componentName, String config) {
+public List<ScenarioResults> getComponentSummaryScenarios(String componentName, String config) {
 	if (componentName == null) {
 		int size = size();
-		List scenarios = new ArrayList();
+		List<ScenarioResults> scenarios = new ArrayList<>();
 		for (int i=0; i< size; i++) {
 			ComponentResults componentResults = (ComponentResults) this.children.get(i);
 			scenarios.addAll(componentResults.getSummaryScenarios(true, config));
@@ -597,7 +597,7 @@ void readLocalFile(File dir) {
 		length = stream.readInt();
 		println("		+ "+length+" components");
 		this.components = new String[length];
-		this.allScenarios = new HashMap();
+		this.allScenarios = new HashMap<>();
 		for (int i = 0; i < length; i++) {
 			this.components[i] = stream.readUTF();
 			int size = stream.readInt();
@@ -627,13 +627,13 @@ private int readScenarios(String buildName, SubMonitor subMonitor) throws Operat
 	this.allScenarios = DB_Results.queryAllScenarios(this.scenarioPattern, buildName);
 	if (this.allScenarios == null) return -1;
 	int allScenariosSize = 0;
-	List componentsSet = new ArrayList(this.allScenarios.keySet());
+	List<String> componentsSet = new ArrayList<>(this.allScenarios.keySet());
 	Collections.sort(componentsSet);
 	int componentsSize = componentsSet.size();
 	componentsSet.toArray(this.components = new String[componentsSize]);
 	for (int i=0; i<componentsSize; i++) {
 		String componentName = this.components[i];
-		List scenarios = this.allScenarios.get(componentName);
+		List<ScenarioResults> scenarios = this.allScenarios.get(componentName);
 		allScenariosSize += scenarios.size();
 	}
 	println(" -> "+allScenariosSize+" found in "+(System.currentTimeMillis()-start)+"ms"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -644,7 +644,7 @@ private int readScenarios(String buildName, SubMonitor subMonitor) throws Operat
 
 void reset(File dataDir) {
 	this.allBuildNames = null;
-	this.children = new ArrayList();
+	this.children = new ArrayList<>();
 //	this.name = null;
 	this.components = null;
 	this.allScenarios = null;
@@ -657,7 +657,7 @@ private void setAllBuildNames() {
 	if (size == 0) return;
 	for (int i=0; i<size; i++) {
 		ComponentResults componentResults = (ComponentResults) this.children.get(i);
-		Set names = componentResults.getAllBuildNames();
+		Set<String> names = componentResults.getAllBuildNames();
 		builds.addAll(names);
 	}
 	int buildsSize = builds.size();

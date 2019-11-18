@@ -263,7 +263,7 @@ public boolean knowsBuild(String buildName) {
 	String[] buildNames = buildName == null
 		? DB_Results.getBuilds()
 		: new String[] { buildName };
-	Set scenarioBuilds = getAllBuildNames();
+	Set<String> scenarioBuilds = getAllBuildNames();
 	int length = buildNames.length;
 	for (int i=0; i<length; i++) {
 		if (!scenarioBuilds.contains(buildNames[i])) {

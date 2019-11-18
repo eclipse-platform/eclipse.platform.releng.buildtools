@@ -36,9 +36,9 @@ public class ScenarioResultsElement extends ResultsElement {
 	private static final TextPropertyDescriptor SCENARIO_FILE_NAME_DESCRIPTOR = new TextPropertyDescriptor(P_ID_SCENARIO_FILE_NAME, P_STR_SCENARIO_FILE_NAME);
 	private static final TextPropertyDescriptor SCENARIO_SHORT_NAME_DESCRIPTOR = new TextPropertyDescriptor(P_ID_SCENARIO_SHORT_NAME, P_STR_SCENARIO_SHORT_NAME);
 
-    private static Vector DESCRIPTORS;
-    static Vector initDescriptors(int status) {
-        DESCRIPTORS = new Vector();
+    private static Vector<IPropertyDescriptor> DESCRIPTORS;
+    static Vector<IPropertyDescriptor> initDescriptors(int status) {
+        DESCRIPTORS = new Vector<>();
 		// Status category
 		DESCRIPTORS.add(getInfosDescriptor(status));
 		DESCRIPTORS.add(getWarningsDescriptor(status));
@@ -56,7 +56,7 @@ public class ScenarioResultsElement extends ResultsElement {
 		COMMENT_DESCRIPTOR.setCategory("Survey");
         return DESCRIPTORS;
 	}
-    static Vector getDescriptors() {
+    static Vector<IPropertyDescriptor> getDescriptors() {
     	return DESCRIPTORS;
 	}
 
@@ -76,7 +76,7 @@ public String getLabel(Object o) {
 
 @Override
 public IPropertyDescriptor[] getPropertyDescriptors() {
-	Vector descriptors = getDescriptors();
+	Vector<IPropertyDescriptor> descriptors = getDescriptors();
 	if (descriptors == null) {
 		descriptors = initDescriptors(getStatus());
 	}
@@ -85,7 +85,7 @@ public IPropertyDescriptor[] getPropertyDescriptors() {
 	descriptorsArray[0] = getInfosDescriptor(getStatus());
 	descriptorsArray[1] = getWarningsDescriptor(getStatus());
 	for (int i=2; i<size; i++) {
-		descriptorsArray[i] = (IPropertyDescriptor) descriptors.get(i);
+		descriptorsArray[i] = descriptors.get(i);
 	}
 	return descriptorsArray;
 }

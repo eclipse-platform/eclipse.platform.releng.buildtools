@@ -71,7 +71,7 @@ public class ConfigTab {
 	private Font boldFont;
 	private Font italicFont;
 	private Font boldItalicFont;
-	Map toolTips;
+	Map<Point, ToolTip> toolTips;
 
 	// Information
 	String configBox, configName;
@@ -82,7 +82,7 @@ public class ConfigTab {
 	// Cells management
 	Point tableOrigin, tableSize;
 	int columnsCount, rowsCount;
-	List firstLine;
+	List<Object> firstLine;
 
 	// Eclipse preferences
 	private IEclipsePreferences preferences;
@@ -142,7 +142,7 @@ Composite createTabFolderPage (ComponentResultsElement componentResultsElement, 
 	}
 
 	// Add lines to the table
-	this.toolTips = new HashMap();
+	this.toolTips = new HashMap<>();
 	fillTableLines(fingerprints);
 
 	// Updated columns
@@ -188,7 +188,7 @@ Composite createTabFolderPage (ComponentResultsElement componentResultsElement, 
 			}
 			Point cellPosition = currentCellPosition(e.x, e.y);
 			if (cellPosition != null) {
-				ToolTip tooltip = (ToolTip) ConfigTab.this.toolTips.get(cellPosition);
+				ToolTip tooltip = ConfigTab.this.toolTips.get(cellPosition);
 				if (tooltip != null) {
 					Point location = ConfigTab.this.table.toDisplay(new Point(e.x, e.y));
 					tooltip.setLocation(location);
@@ -299,9 +299,9 @@ public void dispose() {
  */
 private void disposeTable() {
 	if (this.toolTips != null) {
-		Iterator cells = this.toolTips.keySet().iterator();
+		Iterator<Point> cells = this.toolTips.keySet().iterator();
 		while (cells.hasNext()) {
-			ToolTip toolTip = (ToolTip) this.toolTips.get(cells.next());
+			ToolTip toolTip = this.toolTips.get(cells.next());
 			toolTip.dispose();
 		}
 	}
@@ -322,19 +322,19 @@ private void fillTableLines(boolean fingerprints) {
 
 	// Get model information
 	if (this.results == null) return;
-	List differences = this.results.getConfigNumbers(this.configName, fingerprints);
+	List<List<Object>> differences = this.results.getConfigNumbers(this.configName, fingerprints);
 	if (differences == null) return;
 
 	// Store first information line which are the scenarios full names
-	Iterator lines = differences.iterator();
-	this.firstLine = (List) lines.next();
+	Iterator<List<Object>> lines = differences.iterator();
+	this.firstLine = lines.next();
 
 	// Read each information line (one line per build results)
 	Object[] scenarios = this.results.getChildren(null);
 	ConfigResultsElement[] configs = new ConfigResultsElement[scenarios.length];
 	int row = 0;
 	while (lines.hasNext()) {
-		List line = (List) lines.next();
+		List<Object> line = lines.next();
 		int size = line.size();
 
 		// The first column is the build name

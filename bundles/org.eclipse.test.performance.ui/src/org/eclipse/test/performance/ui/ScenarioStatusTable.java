@@ -14,6 +14,7 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.eclipse.test.internal.performance.results.db.AbstractResults;
 import org.eclipse.test.internal.performance.results.db.BuildResults;
 import org.eclipse.test.internal.performance.results.db.ConfigResults;
 import org.eclipse.test.internal.performance.results.db.PerformanceResults;
@@ -43,7 +44,7 @@ public ScenarioStatusTable(String  name, PrintStream stream) {
 public void print(PerformanceResults performanceResults) {
 
 	String baselineName = performanceResults.getBaselineName();
-	List scenarios = performanceResults.getComponentScenarios(this.component);
+	List<AbstractResults> scenarios = performanceResults.getComponentScenarios(this.component);
 	int size = scenarios.size();
 
 	// Print titles
@@ -86,7 +87,7 @@ public void print(PerformanceResults performanceResults) {
 	this.stream.print("</table>\n");
 }
 
-private int computeSize(List scenarios) {
+private int computeSize(List<AbstractResults> scenarios) {
 	int size = scenarios.size();
 	int n = 0;
 	for (int i=0; i<size; i++) {

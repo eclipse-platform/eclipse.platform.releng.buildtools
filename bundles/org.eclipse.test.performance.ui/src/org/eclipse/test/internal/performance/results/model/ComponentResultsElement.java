@@ -43,9 +43,9 @@ public class ComponentResultsElement extends ResultsElement {
 	private static final PropertyDescriptor CURRENT_BUILD_DESCRIPTOR = new PropertyDescriptor(P_ID_CURRENT_BUILD, P_STR_CURRENT_BUILD);
 	private static final PropertyDescriptor BASELINE_BUILD_DESCRIPTOR = new PropertyDescriptor(P_ID_BASELINE_BUILD, P_STR_BASELINE_BUILD);
 
-    private static Vector DESCRIPTORS;
-    static Vector initDescriptors(int status) {
-        DESCRIPTORS = new Vector();
+    private static Vector<IPropertyDescriptor> DESCRIPTORS;
+    static Vector<IPropertyDescriptor> initDescriptors(int status) {
+        DESCRIPTORS = new Vector<>();
 		// Status category
 		DESCRIPTORS.add(getInfosDescriptor(status));
 		DESCRIPTORS.add(getWarningsDescriptor(status));
@@ -63,7 +63,7 @@ public class ComponentResultsElement extends ResultsElement {
 		COMMENT_DESCRIPTOR.setCategory("Survey");
         return DESCRIPTORS;
 	}
-    static Vector getDescriptors() {
+    static Vector<IPropertyDescriptor> getDescriptors() {
     	return DESCRIPTORS;
 	}
 
@@ -98,14 +98,14 @@ ResultsElement createChild(AbstractResults testResults) {
  * @param fingerprints Set whether only fingerprints scenario should be taken into account
  * @return A list of lines. Each line represent a build and is a list of either strings or values.
  */
-public List getConfigNumbers(String configName, boolean fingerprints) {
+public List<List<Object>> getConfigNumbers(String configName, boolean fingerprints) {
 	if (this.results == null) return null;
-	return ((ComponentResults)this.results).getConfigNumbers(configName, fingerprints, new ArrayList());
+	return ((ComponentResults)this.results).getConfigNumbers(configName, fingerprints, new ArrayList<>());
 }
 
 @Override
 public IPropertyDescriptor[] getPropertyDescriptors() {
-	Vector descriptors = getDescriptors();
+	Vector<IPropertyDescriptor> descriptors = getDescriptors();
 	if (descriptors == null) {
 		descriptors = initDescriptors(getStatus());
 	}
@@ -114,7 +114,7 @@ public IPropertyDescriptor[] getPropertyDescriptors() {
 	descriptorsArray[0] = getInfosDescriptor(getStatus());
 	descriptorsArray[1] = getWarningsDescriptor(getStatus());
 	for (int i=2; i<size; i++) {
-		descriptorsArray[i] = (IPropertyDescriptor) descriptors.get(i);
+		descriptorsArray[i] = descriptors.get(i);
 	}
 	return descriptorsArray;
 }
@@ -148,15 +148,15 @@ public Object getPropertyValue(Object propKey) {
  * @param fingerprint Tell whether only fingerprint scenarios are expected or not.
  * @return A list of {@link ScenarioResults}.
  */
-public List getScenarios(boolean fingerprint) {
+public List<AbstractResults> getScenarios(boolean fingerprint) {
 	if (!fingerprint) {
 		return Arrays.asList(this.results.getChildren());
 	}
-	List scenarios = new ArrayList();
+	List<AbstractResults> scenarios = new ArrayList<>();
 	if (this.results != null) {
-		Iterator<ScenarioResults> iterator = this.results.getResults();
+		Iterator<AbstractResults> iterator = this.results.getResults();
 		while (iterator.hasNext()) {
-			ScenarioResults scenarioResults = iterator.next();
+			ScenarioResults scenarioResults = (ScenarioResults) iterator.next();
 			if (scenarioResults.hasSummary()) {
 				scenarios.add(scenarioResults);
 			}

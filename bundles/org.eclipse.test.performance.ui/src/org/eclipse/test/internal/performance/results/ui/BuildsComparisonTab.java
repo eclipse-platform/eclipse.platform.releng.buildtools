@@ -71,7 +71,7 @@ public class BuildsComparisonTab {
 	private Font boldFont;
 	private Font italicFont;
 	private Font boldItalicFont;
-	Map toolTips;
+	Map<Point, ToolTip> toolTips;
 
 	// Information
 	String componentName;
@@ -81,7 +81,7 @@ public class BuildsComparisonTab {
 	// Cells management
 	Point tableOrigin, tableSize;
 	int columnsCount, rowsCount;
-	List firstLine;
+	List<List<Object>> firstLine;
 
 	// Eclipse preferences
 	private IEclipsePreferences preferences;
@@ -136,7 +136,7 @@ Composite createTabFolderPage (BuildsComparisonView view) {
 	}
 
 	// Add lines to the table
-	this.toolTips = new HashMap();
+	this.toolTips = new HashMap<>();
 	boolean fingerprints = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
 	fillTable(results, view.currentBuild, view.referenceBuild, fingerprints);
 
@@ -160,7 +160,7 @@ Composite createTabFolderPage (BuildsComparisonView view) {
 			}
 			Point cellPosition = currentCellPosition(e.x, e.y);
 			if (cellPosition != null) {
-				ToolTip tooltip = (ToolTip) BuildsComparisonTab.this.toolTips.get(cellPosition);
+				ToolTip tooltip = BuildsComparisonTab.this.toolTips.get(cellPosition);
 				if (tooltip != null) {
 					Point location = BuildsComparisonTab.this.table.toDisplay(new Point(e.x, e.y));
 					tooltip.setLocation(location);
@@ -271,9 +271,9 @@ public void dispose() {
  */
 private void disposeTable() {
 	if (this.toolTips != null) {
-		Iterator cells = this.toolTips.keySet().iterator();
+		Iterator<Point> cells = this.toolTips.keySet().iterator();
 		while (cells.hasNext()) {
-			ToolTip toolTip = (ToolTip) this.toolTips.get(cells.next());
+			ToolTip toolTip = this.toolTips.get(cells.next());
 			toolTip.dispose();
 		}
 	}
@@ -290,7 +290,7 @@ private void fillTable(PerformanceResultsElement results, String currentBuild, S
 
 	// Get all the scenario for the component
 	final PerformanceResults performanceResults = results.getPerformanceResults();
-	List scenarios = performanceResults.getComponentScenarios(this.componentName);
+	List<AbstractResults> scenarios = performanceResults.getComponentScenarios(this.componentName);
 	int size = scenarios.size();
 
 	// Get thresholds

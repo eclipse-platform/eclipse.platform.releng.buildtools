@@ -153,9 +153,9 @@ public List<BuildResults> getBuilds(String buildPattern) {
  * @param buildName Name of the last build (included)
  * @return The list of the builds which precedes the given build name.
  */
-public List getBuildsBefore(String buildName) {
+public List<BuildResults> getBuildsBefore(String buildName) {
 	String buildDate = Util.getBuildDate(buildName);
-	List builds = new ArrayList();
+	List<BuildResults> builds = new ArrayList<>();
 	int size = size();
 	for (int i=0; i<size; i++) {
 		BuildResults buildResults = (BuildResults) this.children.get(i);
@@ -177,7 +177,7 @@ public List<AbstractResults> getBuildsMatchingPrefixes(List<String> prefixes) {
 	int size = size();
 	int length = prefixes.size();
 	for (int i=0; i<size; i++) {
-		AbstractResults buildResults = (AbstractResults) this.children.get(i);
+		AbstractResults buildResults = this.children.get(i);
 		String buildName = buildResults.getName();
 		for (int j=0; j<length; j++) {
 			if (buildName.startsWith(prefixes.get(j))) {
@@ -402,7 +402,7 @@ public double[] getStatistics() {
  * <li>3:	coefficient of variation of these values</li>
  * </ul>
  */
-public double[] getStatistics(List prefixes) {
+public double[] getStatistics(List<String> prefixes) {
 	return getStatistics(prefixes, DB_Results.getDefaultDimension().getId());
 }
 
@@ -421,7 +421,7 @@ public double[] getStatistics(List prefixes) {
  * <li>3:	coefficient of variation of these values</li>
  * </ul>
  */
-public double[] getStatistics(List prefixes, int dim_id) {
+public double[] getStatistics(List<String> prefixes, int dim_id) {
 	int size = size();
 	int length = prefixes == null ? 0 : prefixes.size();
 	int count = 0;
@@ -440,7 +440,7 @@ public double[] getStatistics(List prefixes, int dim_id) {
 				count++;
 			} else {
 				for (int j=0; j<length; j++) {
-					if (buildName.startsWith((String)prefixes.get(j))) {
+					if (buildName.startsWith(prefixes.get(j))) {
 						double value = buildResults.getValue(dim_id);
 						values[count] = value;
 						mean += value;
@@ -581,8 +581,8 @@ public boolean isValid() {
  * @param n Number of last nightly builds to return
  * @return Last n nightly build names preceding current.
  */
-public List lastNightlyBuildNames(int n) {
-	List labels = new ArrayList();
+public List<String> lastNightlyBuildNames(int n) {
+	List<String> labels = new ArrayList<>();
 	for (int i=size()-2; i>=0; i--) {
 		BuildResults buildResults = (BuildResults) this.children.get(i);
 		if (isBuildConcerned(buildResults)) {

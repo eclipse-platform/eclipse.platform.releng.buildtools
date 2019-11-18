@@ -739,7 +739,7 @@ public static void initDbContants() {
  *
  * @return A list of all scenario names matching the default pattern
  */
-public static Map queryAllScenarios() {
+public static Map<String, List<ScenarioResults>> queryAllScenarios() {
 	return getDefault().internalQueryBuildScenarios("%", null); //$NON-NLS-1$
 }
 
@@ -752,7 +752,7 @@ public static Map queryAllScenarios() {
  * 	The map keys are component names and values are the scenarios list for
  * 	each component.
  */
-static Map queryAllScenarios(String scenarioPattern) {
+static Map<String, List<ScenarioResults>> queryAllScenarios(String scenarioPattern) {
 	String pattern = scenarioPattern==null ? "%" : scenarioPattern; //$NON-NLS-1$
 	return getDefault().internalQueryBuildScenarios(pattern, null);
 }
@@ -765,7 +765,7 @@ static Map queryAllScenarios(String scenarioPattern) {
  * @param buildName The build name
  * @return A list of scenario names matching the given pattern
  */
-static Map queryAllScenarios(String scenarioPattern, String buildName) {
+static Map<String, List<ScenarioResults>> queryAllScenarios(String scenarioPattern, String buildName) {
 	return getDefault().internalQueryBuildScenarios(scenarioPattern, buildName);
 }
 
@@ -1032,7 +1032,7 @@ private void internalQueryAllVariations(String configPattern) {
 	}
 }
 
-private Map internalQueryBuildScenarios(String scenarioPattern, String buildName) {
+private Map<String, List<ScenarioResults>> internalQueryBuildScenarios(String scenarioPattern, String buildName) {
 	if (this.fSQL == null) return null;
 	long start = System.currentTimeMillis();
 	if (DEBUG) {
@@ -1041,7 +1041,7 @@ private Map internalQueryBuildScenarios(String scenarioPattern, String buildName
 		if (buildName != null) DEBUG_WRITER.print(" for build: "+buildName); //$NON-NLS-1$
 	}
 	ResultSet result = null;
-	Map allScenarios = new HashMap();
+	Map<String, List<ScenarioResults>> allScenarios = new HashMap<>();
 	try {
 		if (buildName == null) {
 			result = this.fSQL.queryBuildAllScenarios(scenarioPattern);
@@ -1049,8 +1049,8 @@ private Map internalQueryBuildScenarios(String scenarioPattern, String buildName
 			result = this.fSQL.queryBuildScenarios(scenarioPattern, buildName);
 		}
 		int previousId = -1;
-		List scenarios = null;
-		List<String> scenariosNames = new ArrayList();
+		List<ScenarioResults> scenarios = null;
+		List<String> scenariosNames = new ArrayList<>();
 		while (result.next()) {
 			int id = result.getInt(1);
 			String name = result.getString(2);
@@ -1058,7 +1058,7 @@ private Map internalQueryBuildScenarios(String scenarioPattern, String buildName
 			String shortName = result.getString(3);
 			int component_id = storeComponent(getComponentNameFromScenario(name));
 			if (component_id != previousId) {
-				allScenarios.put(COMPONENTS[component_id], scenarios = new ArrayList());
+				allScenarios.put(COMPONENTS[component_id], scenarios = new ArrayList<>());
 				previousId = component_id;
 			}
 			if (scenarios == null) {
