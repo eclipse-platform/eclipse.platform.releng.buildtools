@@ -1040,14 +1040,8 @@ private Map<String, List<ScenarioResults>> internalQueryBuildScenarios(String sc
 		if (scenarioPattern != null) DEBUG_WRITER.print(" with pattern "+scenarioPattern); //$NON-NLS-1$
 		if (buildName != null) DEBUG_WRITER.print(" for build: "+buildName); //$NON-NLS-1$
 	}
-	ResultSet result = null;
 	Map<String, List<ScenarioResults>> allScenarios = new HashMap<>();
-	try {
-		if (buildName == null) {
-			result = this.fSQL.queryBuildAllScenarios(scenarioPattern);
-		} else {
-			result = this.fSQL.queryBuildScenarios(scenarioPattern, buildName);
-		}
+	try (ResultSet result = buildName == null ? this.fSQL.queryBuildAllScenarios(scenarioPattern) : this.fSQL.queryBuildScenarios(scenarioPattern, buildName)) {
 		int previousId = -1;
 		List<ScenarioResults> scenarios = null;
 		List<String> scenariosNames = new ArrayList<>();
@@ -1071,12 +1065,6 @@ private Map<String, List<ScenarioResults>> internalQueryBuildScenarios(String sc
 	} catch (SQLException e) {
 		PerformanceTestPlugin.log(e);
 	} finally {
-		if (result != null) {
-			try {
-				result.close();
-			} catch (SQLException e1) { // ignored
-			}
-		}
 		if (DEBUG) DEBUG_WRITER.println("done in " + (System.currentTimeMillis() - start) + "ms]"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	return allScenarios;
@@ -1090,13 +1078,11 @@ private void internalQueryScenarioValues(ScenarioResults scenarioResults, String
 	}
 	if (LOG) LOG_WRITER.starts("     -> configPattern: " + configPattern + "    buildName (if any): " + buildName);
 	internalQueryAllVariations(configPattern); // need to read all variations to have all build names
-	ResultSet result = null;
-	try {
+	try (ResultSet result = buildName == null
+      ? this.fSQL.queryScenarioDataPoints(configPattern, scenarioResults.getId())
+      : this.fSQL.queryScenarioBuildDataPoints(configPattern, scenarioResults.getId(), buildName)) {
 		int count = 0;
 
-		result = buildName == null
-			?	this.fSQL.queryScenarioDataPoints(configPattern, scenarioResults.getId())
-			:	this.fSQL.queryScenarioBuildDataPoints(configPattern, scenarioResults.getId(), buildName);
 		while (result.next()) {
 			int dp_id = result.getInt(1);
 			int step = result.getInt(2);
@@ -1121,14 +1107,6 @@ private void internalQueryScenarioValues(ScenarioResults scenarioResults, String
 		if (LOG) LOG_WRITER.ends("		-> " + count + " values read");  //$NON-NLS-1$ //$NON-NLS-2$
 	} catch (SQLException e) {
 		PerformanceTestPlugin.log(e);
-	} finally {
-		if (result != null) {
-			try {
-				result.close();
-			} catch (SQLException e1) {
-				// ignored
-			}
-		}
 	}
 }
 

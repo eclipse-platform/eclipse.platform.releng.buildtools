@@ -628,46 +628,42 @@ private void printSummary(/*PerformanceResults performanceResults*/) {
 	long start = System.currentTimeMillis();
 	if (this.printStream != null) this.printStream.print("Print scenarios variations summary...");
 	File outputFile = new File(this.outputDir, "cvsummary.html");
-	PrintStream stream = null;
-	try {
-		stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
-		printSummaryPresentation(stream);
-//		List scenarioNames = DB_Results.getScenarios();
-//		int size = scenarioNames.size();
-		String[] components = this.performanceResults.getComponents();
-		int componentsLength = components.length;
-		printSummaryColumnsTitle(stream/*, performanceResults*/);
-		String[] configs = this.performanceResults.getConfigNames(true/*sorted*/);
-		int configsLength = configs.length;
-		for (int i=0; i<componentsLength; i++) {
-			String componentName = components[i];
-			List<AbstractResults> scenarioNames = this.performanceResults.getComponentScenarios(componentName);
-			int size = scenarioNames.size();
-			for (int s=0; s<size; s++) {
-				String scenarioName = scenarioNames.get(s).getName();
-				if (scenarioName == null) continue;
-				ScenarioResults scenarioResults = this.performanceResults.getScenarioResults(scenarioName);
-				if (scenarioResults != null) {
-					stream.print("<tr>\n");
-					for (int j=0; j<2; j++) {
-						for (int c=0; c<configsLength; c++) {
-							printSummaryScenarioLine(j, configs[c], scenarioResults, stream);
-						}
-					}
-					stream.print("<td>");
-					stream.print(scenarioName);
-					stream.print("</td></tr>\n");
-				}
-			}
-		}
+	try (PrintStream stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)))) {
+	  try {
+  		printSummaryPresentation(stream);
+  //		List scenarioNames = DB_Results.getScenarios();
+  //		int size = scenarioNames.size();
+  		String[] components = this.performanceResults.getComponents();
+  		int componentsLength = components.length;
+  		printSummaryColumnsTitle(stream/*, performanceResults*/);
+  		String[] configs = this.performanceResults.getConfigNames(true/*sorted*/);
+  		int configsLength = configs.length;
+  		for (int i=0; i<componentsLength; i++) {
+  			String componentName = components[i];
+  			List<AbstractResults> scenarioNames = this.performanceResults.getComponentScenarios(componentName);
+  			int size = scenarioNames.size();
+  			for (int s=0; s<size; s++) {
+  				String scenarioName = scenarioNames.get(s).getName();
+  				if (scenarioName == null) continue;
+  				ScenarioResults scenarioResults = this.performanceResults.getScenarioResults(scenarioName);
+  				if (scenarioResults != null) {
+  					stream.print("<tr>\n");
+  					for (int j=0; j<2; j++) {
+  						for (int c=0; c<configsLength; c++) {
+  							printSummaryScenarioLine(j, configs[c], scenarioResults, stream);
+  						}
+  					}
+  					stream.print("<td>");
+  					stream.print(scenarioName);
+  					stream.print("</td></tr>\n");
+  				}
+  			}
+  		}
+	  } finally {
+	    stream.print("</table></body></html>\n");
+    }
 	} catch (Exception e) {
 		e.printStackTrace();
-	} finally {
-	    if (stream != null) {
-		stream.print("</table></body></html>\n");
-		stream.flush();
-		stream.close();
-	    }
 	}
 	if (this.printStream != null) this.printStream.println("done in "+(System.currentTimeMillis()-start)+"ms");
 }

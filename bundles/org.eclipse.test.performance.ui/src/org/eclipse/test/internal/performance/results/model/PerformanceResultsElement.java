@@ -333,10 +333,8 @@ public void writeComparison(File resultsFile, String build, String reference) {
 	if (this.results == null) {
 		return;
 	}
-	try {
-		// Create the stream
-		PrintStream stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(resultsFile)));
-
+  // Create the stream
+	try (PrintStream stream = new PrintStream(new BufferedOutputStream(new FileOutputStream(resultsFile)))) {
 		// Print main title
 		stream.print("<link href=\""+Utils.TOOLTIP_STYLE+"\" rel=\"stylesheet\" type=\"text/css\">\n");
 		stream.print("<script src=\""+Utils.TOOLTIP_SCRIPT+"\"></script>\n");
@@ -365,11 +363,9 @@ public void writeComparison(File resultsFile, String build, String reference) {
 				BuildsComparisonTable table = new BuildsComparisonTable(this.children[i].getName(), stream, build, reference);
 				table.print(getPerformanceResults());
 			}
-		}
-		finally {
-			stream.print("</body>");
-			stream.close();
-		}
+		} finally {
+      stream.print("</body>");
+    }
 	} catch (FileNotFoundException e) {
 		System.err.println("Can't create output file"+resultsFile); //$NON-NLS-1$
 	}
