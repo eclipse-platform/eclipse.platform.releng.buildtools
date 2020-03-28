@@ -23,8 +23,8 @@
   </prerequisites>
 
   <properties>
-    <tycho.version>1.4.0</tycho.version>
-    <tycho-extras.version>1.4.0</tycho-extras.version>
+    <tycho.version>1.6.0</tycho.version>
+    <tycho-extras.version>1.6.0</tycho-extras.version>
     <cbi-plugins.version>1.1.7</cbi-plugins.version>
     <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
@@ -36,7 +36,7 @@
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
     <buildType>I</buildType>
     <buildId>${buildType}${buildTimestamp}</buildId>
-    <comparator.repo>http://download.eclipse.org/eclipse/updates/4.14-I-builds</comparator.repo>
+    <comparator.repo>http://download.eclipse.org/eclipse/updates/4.16-I-builds</comparator.repo>
     <egit-repo.url>http://download.eclipse.org/egit/updates</egit-repo.url>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <cbi-jdt-repo.url>https://repo.eclipse.org/content/repositories/eclipse-staging/</cbi-jdt-repo.url>
@@ -95,7 +95,7 @@
       <id>eclipse-platform-repository</id>
       <layout>p2</layout>
       <!-- Normally should be "latest milestone" for stability, once we have one for 4.9. -->
-      <url>http://download.eclipse.org/eclipse/updates/4.14-I-builds/</url>
+      <url>http://download.eclipse.org/eclipse/updates/4.16-I-builds/</url>
     </repository>
     <repository>
       <id>eclipse-derby-buildtools-repository</id>
