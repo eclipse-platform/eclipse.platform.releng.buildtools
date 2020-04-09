@@ -6,7 +6,7 @@ Bundle-Version: 1.1.0.qualifier
 Bundle-ClassPath: convert.jar
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Localization: plugin
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.apache.ant,
  org.eclipse.equinox.app
 Export-Package: org.eclipse.releng.build.tools.convert.ant,

@@ -4,7 +4,7 @@ Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.eclipse.releng.build.tools.comparator;singleton:=true
 Bundle-Version: 1.1.0.qualifier
 Bundle-Vendor: %Bundle-Vendor
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.apache.ant,
  org.eclipse.equinox.app
 Bundle-ClassPath: comparatorSummary.jar
