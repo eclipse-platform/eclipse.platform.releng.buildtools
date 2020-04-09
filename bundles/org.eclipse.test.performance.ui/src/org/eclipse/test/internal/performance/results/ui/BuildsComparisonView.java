@@ -233,13 +233,14 @@ public void init(IViewSite site, IMemento memento) throws PartInitException {
 void makeActions() {
 
 	// Filter non-fingerprints action
-	this.filterAdvancedScenarios = new Action("Advanced &Scenarios", IAction.AS_CHECK_BOX) {
-		@Override
+  this.filterAdvancedScenarios = new Action("Advanced &Scenarios", IAction.AS_CHECK_BOX) {
+
+    @Override
     public void run() {
-			BuildsComparisonView.this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, isChecked());
-			resetTabFolders(false/*refresh*/);
-        }
-	};
+      BuildsComparisonView.this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, isChecked());
+      resetTabFolders();
+    }
+  };
 	this.filterAdvancedScenarios.setChecked(true);
 	this.filterAdvancedScenarios.setToolTipText("Filter advanced scenarios (i.e. not fingerprint ones)");
 
@@ -270,7 +271,7 @@ public void preferenceChange(PreferenceChangeEvent event) {
 	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS)) {
 		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS : "true".equals(newValue);
 		this.filterAdvancedScenarios.setChecked(checked);
-		resetTabFolders(false/*refresh*/);
+		resetTabFolders();
 	}
 }
 
@@ -279,7 +280,7 @@ public void preferenceChange(PreferenceChangeEvent event) {
  * Selections are set onto the first found error if this is the first tab creation (typically on a component change event from the ComponentsView)
  * or to the previous one if this is just a refresh.
  */
-void resetTabFolders(boolean init) {
+void resetTabFolders() {
 
 	// Store current indexes
 	int tabIndex = this.tabFolder.getSelectionIndex();
@@ -318,11 +319,6 @@ void restoreState() {
 }
 
 @Override
-public void saveState(IMemento memento) {
-	super.saveState(memento);
-}
-
-@Override
 public void selectionChanged(SelectionChangedEvent event) {
 	final Object[] selection = ((TreeSelection) event.getSelection()).toArray();
 	String firstBuildResults = null;
@@ -338,7 +334,7 @@ public void selectionChanged(SelectionChangedEvent event) {
 		if ((firstBuildResults != null && !firstBuildResults.equals(this.currentBuild)) || (secondBuildResults != null && !secondBuildResults.equals(this.referenceBuild))) {
 			this.currentBuild = firstBuildResults;
 			this.referenceBuild = secondBuildResults;
-			resetTabFolders(true);
+			resetTabFolders();
 		}
 		this.writeComparison.setEnabled(true);
 	} else {

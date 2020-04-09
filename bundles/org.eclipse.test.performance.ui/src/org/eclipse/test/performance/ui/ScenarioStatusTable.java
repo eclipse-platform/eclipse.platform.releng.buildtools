@@ -54,7 +54,7 @@ public void print(PerformanceResults performanceResults) {
 	this.stream.print("<td><h4>All ");
 	this.stream.print(computeSize(scenarios));
 	this.stream.print(" scenarios</h4></td>\n");
-	printColumnsTitle(size, performanceResults);
+	printColumnsTitle(performanceResults);
 
 	// Print one line per scenario results
 	this.jsIdCount = 0;
@@ -100,7 +100,7 @@ private int computeSize(List<AbstractResults> scenarios) {
 /*
  * Print the table columns title.
  */
-private void printColumnsTitle(int size, PerformanceResults performanceResults) {
+private void printColumnsTitle(PerformanceResults performanceResults) {
 	String[] configNames = performanceResults.getConfigNames(true/*sort*/);
 	String[] configBoxes = performanceResults.getConfigBoxes(true/*sort*/);
 	int length = configNames.length;

@@ -191,10 +191,10 @@ abstract ResultsElement createChild(AbstractResults testResults);
 @Override
 public <T> T getAdapter(Class<T> adapter) {
     if (adapter == IPropertySource.class) {
-        return (T) this;
+        return adapter.cast(this);
     }
     if (adapter == IWorkbenchAdapter.class) {
-        return (T) this;
+        return adapter.cast(this);
     }
     return null;
 }
@@ -553,13 +553,6 @@ public void setPropertyValue(Object name, Object value) {
 			// skip
 		}
 	}
-}
-
-/**
- * Sets the image descriptor
- */
-void setImageDescriptor(ImageDescriptor desc) {
-//    this.imageDescriptor = desc;
 }
 
 @Override

@@ -18,14 +18,12 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
@@ -259,7 +257,7 @@ public void createPartControl(Composite parent) {
 /*
  * Fill the context menu.
  */
-void fillContextMenu(IMenuManager manager) {
+void fillContextMenu(@SuppressWarnings("unused") IMenuManager manager) {
 	// no default contextual action
 }
 
@@ -297,14 +295,14 @@ void fillLocalPullDown(IMenuManager manager) {
 /*
  * Fill the local toolbar.
  */
-void fillLocalToolBar(IToolBarManager manager) {
+void fillLocalToolBar(@SuppressWarnings("unused") IToolBarManager manager) {
 	// no default toolbar action
 }
 
 /*
  * Filter non milestone builds action run.
  */
-void filterNightlyBuilds(boolean filter, boolean updatePreference) {
+void filterNightlyBuilds(boolean filter) {
 	if (filter) {
 		this.viewFilters.add(FILTER_NIGHTLY_BUILDS);
 	} else {
@@ -317,7 +315,7 @@ void filterNightlyBuilds(boolean filter, boolean updatePreference) {
 /*
  * Filter non milestone builds action run.
  */
-void filterOldBuilds(boolean filter, boolean updatePreference) {
+void filterOldBuilds(boolean filter) {
 	if (filter) {
 		this.viewFilters.add(FILTER_OLD_BUILDS);
 	} else {
@@ -343,7 +341,7 @@ void finalizeViewerCreation() {
 @Override
 public <T> T getAdapter(Class<T> adapter) {
     if (adapter.equals(IPropertySheetPage.class)) {
-        return (T) getPropertySheet();
+        return adapter.cast(getPropertySheet());
     }
     return super.getAdapter(adapter);
 }
@@ -369,12 +367,7 @@ abstract PerformancesView getSiblingView();
 void hookContextMenu() {
 	MenuManager menuMgr = new MenuManager("#PopupMenu");
 	menuMgr.setRemoveAllWhenShown(true);
-	menuMgr.addMenuListener(new IMenuListener() {
-		@Override
-    public void menuAboutToShow(IMenuManager manager) {
-			fillContextMenu(manager);
-		}
-	});
+	menuMgr.addMenuListener(manager -> fillContextMenu(manager));
 	Menu menu = menuMgr.createContextMenu(this.viewer.getControl());
 	this.viewer.getControl().setMenu(menu);
 	getSite().registerContextMenu(menuMgr, this.viewer);
@@ -442,7 +435,7 @@ void makeActions() {
 	this.filterNightlyBuilds = new Action("&Nightly", IAction.AS_CHECK_BOX) {
 		@Override
     public void run() {
-			filterNightlyBuilds(isChecked(), true/*update preference*/);
+			filterNightlyBuilds(isChecked());
 		}
 	};
 	this.filterNightlyBuilds.setToolTipText("Filter nightly builds");
@@ -451,7 +444,7 @@ void makeActions() {
 	this.filterOldBuilds = new Action("&Old Builds", IAction.AS_CHECK_BOX) {
 		@Override
     public void run() {
-			filterOldBuilds(isChecked(), true/*update preference*/);
+			filterOldBuilds(isChecked());
 		}
 	};
 	this.filterOldBuilds.setChecked(false);
@@ -472,18 +465,15 @@ public void preferenceChange(PreferenceChangeEvent event) {
 void readLocalFiles(final String lastBuild) {
 
 	// Create runnable to read local files
-	IRunnableWithProgress runnable = new IRunnableWithProgress() {
-		@Override
-    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-			try {
-				monitor.beginTask("Read local files", 1000);
-				PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor, lastBuild);
-				monitor.done();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	};
+	IRunnableWithProgress runnable = monitor -> {
+  	try {
+  		monitor.beginTask("Read local files", 1000);
+  		PerformancesView.this.results.readLocal(PerformancesView.this.dataDir, monitor, lastBuild);
+  		monitor.done();
+  	} catch (Exception e) {
+  		e.printStackTrace();
+  	}
+  };
 
 	// Execute the runnable with progress
 	ProgressMonitorDialog readProgress = new ProgressMonitorDialog(getSite().getShell());

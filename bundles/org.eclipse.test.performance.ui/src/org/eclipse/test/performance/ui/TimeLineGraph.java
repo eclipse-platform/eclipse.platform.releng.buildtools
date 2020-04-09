@@ -79,7 +79,7 @@ public class TimeLineGraph extends LineGraph{
         Color oldbg= g.getBackground();
         Color oldfg= g.getForeground();
 
-        setCoordinates(right-left,left,bottom-top,bottom,max-min);
+        setCoordinates(right-left,left,bottom-top,max-min);
 
         Enumeration<List<TimeLineGraphItem>> _enum=this.fItemGroups.elements();
         Comparator<TimeLineGraphItem> comparator=new TimeLineGraphItem.GraphItemComparator();
@@ -227,7 +227,7 @@ public class TimeLineGraph extends LineGraph{
 		return mostRecentItem;
 	}
 
-    private void setCoordinates(int width, int xOffset, int height, int yOffset, int yValueRange){
+    private void setCoordinates(int width, int xOffset, int height, int yValueRange){
 
         List<TimeLineGraphItem> mainGroup=this.fItemGroups.get("main");
         List<TimeLineGraphItem> referenceGroup=this.fItemGroups.get("reference");

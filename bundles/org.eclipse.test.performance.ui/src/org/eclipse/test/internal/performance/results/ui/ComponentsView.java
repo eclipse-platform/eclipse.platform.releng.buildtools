@@ -219,7 +219,7 @@ void fillFiltersDropDown(IMenuManager manager) {
 /*
  * Filter non fingerprints scenarios action run.
  */
-void filterAdvancedScenarios(boolean fingerprints, boolean updatePreference) {
+void filterAdvancedScenarios(boolean fingerprints) {
 	this.results.setFingerprints(fingerprints);
 	if (fingerprints) {
 		this.viewFilters.add(FILTER_ADVANCED_SCENARIOS);
@@ -285,7 +285,7 @@ void makeActions() {
 	this.filterAdvancedScenarios = new Action("Advanced &Scenarios", IAction.AS_CHECK_BOX) {
 		@Override
     public void run() {
-			filterAdvancedScenarios(isChecked(), true/*update preference*/);
+			filterAdvancedScenarios(isChecked());
         }
 	};
 	this.filterAdvancedScenarios.setChecked(true);
@@ -304,14 +304,14 @@ public void preferenceChange(PreferenceChangeEvent event) {
 	// Filter non-fingerprints change
 	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS)) {
 		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS : "true".equals(newValue);
-		filterAdvancedScenarios(checked, false/*do not update preference*/);
+		filterAdvancedScenarios(checked);
 		this.filterAdvancedScenarios.setChecked(checked);
 	}
 
 	// Filter non-milestone change
 	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_OLD_BUILDS)) {
 		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS : "true".equals(newValue);
-		filterOldBuilds(checked, false/*do not update preference*/);
+		filterOldBuilds(checked);
 		this.filterOldBuilds.setChecked(checked);
 	}
 

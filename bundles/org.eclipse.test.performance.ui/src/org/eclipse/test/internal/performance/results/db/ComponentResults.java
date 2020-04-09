@@ -366,7 +366,7 @@ void updateBuild(String buildName, List<ScenarioResults> scenarios, boolean forc
 				}
 			}
 			if (dataDir != null && dirty && (System.currentTimeMillis() - readTime) > 300000) { // save every 5mn
-				writeData(buildName, dataDir, true, true);
+				writeData(dataDir, true, true);
 				dirty = false;
 				readTime = System.currentTimeMillis();
 			}
@@ -379,7 +379,7 @@ void updateBuild(String buildName, List<ScenarioResults> scenarios, boolean forc
 
 	// Write local files
 	if (dataDir != null) {
-		writeData(buildName, dataDir, false, dirty);
+		writeData(dataDir, false, dirty);
 	}
 
 	// Print global time
@@ -390,7 +390,7 @@ void updateBuild(String buildName, List<ScenarioResults> scenarios, boolean forc
 /*
  * Write the component results data to the file '<component name>.dat' in the given directory.
  */
-void writeData(String buildName, File dir, boolean temp, boolean dirty) {
+void writeData(File dir, boolean temp, boolean dirty) {
     if (DO_NOT_WRITE_DATA) {
         return;
     }
