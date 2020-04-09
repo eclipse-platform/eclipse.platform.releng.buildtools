@@ -522,7 +522,7 @@ public class BuildResults extends AbstractResults {
 
     @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer(this.name);
+        StringBuilder buffer = new StringBuilder(this.name);
         buffer.append(": "); //$NON-NLS-1$
         int length = this.dimensions.length;
         for (int i = 0; i < length; i++) {

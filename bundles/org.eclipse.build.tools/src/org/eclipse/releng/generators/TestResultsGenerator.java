@@ -548,7 +548,7 @@ public class TestResultsGenerator extends Task {
     }
 
     private void formatAccessesErrorRow(final String fileName, final int forbiddenAccessesWarningsCount,
-            final int discouragedAccessesWarningsCount, final int infoCount, final StringBuffer buffer) {
+            final int discouragedAccessesWarningsCount, final int infoCount, final StringBuilder buffer) {
 
         if ((forbiddenAccessesWarningsCount == 0) && (discouragedAccessesWarningsCount == 0) && (infoCount == 0)) {
             return;
@@ -609,7 +609,7 @@ public class TestResultsGenerator extends Task {
     }
 
     private void formatCompileErrorRow(final String fileName, final int errorCount, final int warningCount,
-            final StringBuffer buffer) {
+            final StringBuilder buffer) {
 
         if ((errorCount == 0) && (warningCount == 0)) {
             return;
@@ -737,7 +737,7 @@ public class TestResultsGenerator extends Task {
         return isBuildTested;
     }
 
-    private void parseCompileLog(final String log, final StringBuffer compilerLog, final StringBuffer accessesLog) {
+    private void parseCompileLog(final String log, final StringBuilder compilerLog, final StringBuilder accessesLog) {
         int errorCount = 0;
         int warningCount = 0;
         int forbiddenWarningCount = 0;
@@ -803,7 +803,7 @@ public class TestResultsGenerator extends Task {
             // use wildcard in place of version number on directory names
             // log(log + "/n");
             String logName = log.substring(getCompileLogsDirectoryName().length() + 1);
-            final StringBuffer buffer = new StringBuffer(logName);
+            final StringBuilder buffer = new StringBuilder(logName);
             buffer.replace(logName.indexOf("_") + 1, logName.indexOf(File.separator, logName.indexOf("_") + 1), "*");
             logName = new String(buffer);
 
@@ -832,8 +832,8 @@ public class TestResultsGenerator extends Task {
             }
             log("DEBUG: BEGIN: Parsing compile logs and generating summary table.");
             String compileLogResults = "";
-            final StringBuffer compilerString = new StringBuffer();
-            final StringBuffer accessesString = new StringBuffer();
+            final StringBuilder compilerString = new StringBuilder();
+            final StringBuilder accessesString = new StringBuilder();
             processCompileLogsDirectory(getCompileLogsDirectoryName(), compilerString, accessesString);
             if (compilerString.length() == 0) {
                 compilerString.append(
@@ -1115,8 +1115,8 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    private void processCompileLogsDirectory(final String directoryName, final StringBuffer compilerLog,
-            final StringBuffer accessesLog) {
+    private void processCompileLogsDirectory(final String directoryName, final StringBuilder compilerLog,
+            final StringBuilder accessesLog) {
         final File sourceDirectory = new File(directoryName);
         if (sourceDirectory.isFile()) {
             if (sourceDirectory.getName().endsWith(".log")) {
@@ -1183,7 +1183,7 @@ public class TestResultsGenerator extends Task {
         return result;
     }
 
-    private void readCompileLog(final String log, final StringBuffer compilerLog, final StringBuffer accessesLog) {
+    private void readCompileLog(final String log, final StringBuilder compilerLog, final StringBuilder accessesLog) {
         final String fileContents = readFile(log);
 
         final int errorCount = countCompileErrors(fileContents);
@@ -1194,9 +1194,9 @@ public class TestResultsGenerator extends Task {
         if (errorCount != 0) {
             // use wildcard in place of version number on directory names
             String logName = log.substring(getCompileLogsDirectoryName().length() + 1);
-            final StringBuffer stringBuffer = new StringBuffer(logName);
-            stringBuffer.replace(logName.indexOf("_") + 1, logName.indexOf(File.separator, logName.indexOf("_") + 1), "*");
-            logName = new String(stringBuffer);
+            final StringBuilder stringBuilder = new StringBuilder(logName);
+            stringBuilder.replace(logName.indexOf("_") + 1, logName.indexOf(File.separator, logName.indexOf("_") + 1), "*");
+            logName = new String(stringBuilder);
 
             anErrorTracker.registerError(logName);
         }

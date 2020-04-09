@@ -142,7 +142,7 @@ ResultSet queryBuildScenarios(String scenarioPattern, String buildName) throws S
  */
 ResultSet queryDimScalars(int datapointId) throws SQLException {
 	if (this.queryDimScalars == null) {
-		StringBuffer buffer = new StringBuffer("select DIM_ID, VALUE from SCALAR where "); //$NON-NLS-1$
+		StringBuilder buffer = new StringBuilder("select DIM_ID, VALUE from SCALAR where "); //$NON-NLS-1$
 		buffer.append("DATAPOINT_ID = ? and "); //$NON-NLS-1$
 		Dim[] dimensions = DB_Results.getResultsDimensions();
 		int length = dimensions.length;
@@ -266,7 +266,7 @@ ResultSet queryScenarioSummaries(int scenarioID, String config, String[] builds)
 	        if (builds == null) {
 	           throw new RuntimeException("builds unexpectedly null at this point. Programming error?");
 	        }
-			StringBuffer buffer = new StringBuffer();
+			StringBuilder buffer = new StringBuilder();
 			loop: for (int idx=0; idx < builds[0].length(); idx++) {
 				char ch = builds[0].charAt(idx);
 				for (int i=1; i<length; i++) {

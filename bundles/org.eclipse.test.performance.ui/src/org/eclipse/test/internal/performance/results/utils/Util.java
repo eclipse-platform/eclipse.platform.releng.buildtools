@@ -176,7 +176,7 @@ public final class Util implements IPerformancesConstants {
      */
     public static String componentDisplayName(String componentName) {
         String partName;
-        StringBuffer buffer = null;
+        StringBuilder buffer = null;
         if (componentName.startsWith(ORG_ECLIPSE)) {
             partName = componentName.substring(ORG_ECLIPSE.length());
             StringTokenizer tokenizer = new StringTokenizer(partName, ".");
@@ -184,10 +184,10 @@ public final class Util implements IPerformancesConstants {
                 String token = tokenizer.nextToken();
                 if (buffer == null) {
                     if (tokenizer.hasMoreTokens()) {
-                        buffer = new StringBuffer("'" + token.toUpperCase());
+                        buffer = new StringBuilder("'" + token.toUpperCase());
                         buffer.append('/');
                     } else {
-                        buffer = new StringBuffer("'Platform/");
+                        buffer = new StringBuilder("'Platform/");
                         if (token.length() > 3) {
                             buffer.append(Character.toUpperCase(token.charAt(0)));
                             buffer.append(token.substring(1));
@@ -206,7 +206,7 @@ public final class Util implements IPerformancesConstants {
                 }
             }
         } else {
-            buffer = new StringBuffer("'");
+            buffer = new StringBuilder("'");
             buffer.append(componentName);
             buffer.append("'");
         }
@@ -531,7 +531,7 @@ public final class Util implements IPerformancesConstants {
         if (time < 1000) { // less than 1s
             return "00:00:00"; //$NON-NLS-1$
         }
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         int seconds = (int) (time / 1000);
         if (seconds < 60) {
             buffer.append("00:00:"); //$NON-NLS-1$
@@ -604,7 +604,7 @@ public final class Util implements IPerformancesConstants {
     public static String timeString(long time) {
         NumberFormat format = NumberFormat.getInstance();
         format.setMaximumFractionDigits(1);
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         if (time == 0) {
             // print nothing
         }

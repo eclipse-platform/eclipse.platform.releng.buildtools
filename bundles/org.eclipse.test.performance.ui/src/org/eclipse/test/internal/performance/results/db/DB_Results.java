@@ -292,7 +292,7 @@ public class DB_Results {
     static class LogWriter extends PrintWriter {
 		long[] starts = new long[10];
 		long[] times = new long[10];
-    	StringBuffer[] buffers = new StringBuffer[10];
+    	StringBuilder[] buffers = new StringBuilder[10];
     	int depth = -1, max = -1;
     	public LogWriter() {
 	        super(LOG_STR_WRITER);
@@ -300,10 +300,10 @@ public class DB_Results {
 		void starts(String log) {
     		if (++this.depth >= this.buffers.length) {
     			System.arraycopy(this.times, 0, this.times = new long[this.depth+10], 0, this.depth);
-    			System.arraycopy(this.buffers, 0, this.buffers= new StringBuffer[this.depth+10], 0, this.depth);
+    			System.arraycopy(this.buffers, 0, this.buffers= new StringBuilder[this.depth+10], 0, this.depth);
     		}
-    		StringBuffer buffer = this.buffers[this.depth];
-    		if (this.buffers[this.depth] == null) buffer = this.buffers[this.depth] = new StringBuffer();
+    		StringBuilder buffer = this.buffers[this.depth];
+    		if (this.buffers[this.depth] == null) buffer = this.buffers[this.depth] = new StringBuilder();
     		buffer.append(log);
     		this.starts[this.depth] = System.currentTimeMillis();
     		if (this.depth > this.max) this.max = this.depth;
@@ -326,7 +326,7 @@ public class DB_Results {
     		this.depth = this.max = -1;
 			this.starts = new long[10];
 			this.times = new long[10];
-    		this.buffers = new StringBuffer[10];
+    		this.buffers = new StringBuilder[10];
     	}
 		@Override
     public String toString() {
@@ -463,7 +463,7 @@ static String getComponentNameFromScenario(String scenarioName) {
 		}
 	}
 	StringTokenizer tokenizer = new StringTokenizer(scenarioName, ".");
-	StringBuffer buffer = new StringBuffer(tokenizer.nextToken());
+	StringBuilder buffer = new StringBuilder(tokenizer.nextToken());
 	if (tokenizer.hasMoreTokens()) {
 		buffer.append('.');
 		buffer.append(tokenizer.nextToken());

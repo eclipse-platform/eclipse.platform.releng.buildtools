@@ -215,11 +215,11 @@ void printGlobalTime(long start) {
 void printGlobalTime(long start, String end) {
 	long time = System.currentTimeMillis();
 	String resultsName = getName();
-	StringBuffer buffer;
+	StringBuilder buffer;
 	if (resultsName == null) {
-		buffer = new StringBuffer(" => time spent was "); //$NON-NLS-1$
+		buffer = new StringBuilder(" => time spent was "); //$NON-NLS-1$
 	} else {
-		buffer = new StringBuffer(" => time spent in '"); //$NON-NLS-1$
+		buffer = new StringBuilder(" => time spent in '"); //$NON-NLS-1$
 		buffer.append(resultsName);
 		buffer.append("' was "); //$NON-NLS-1$
 	}
@@ -246,7 +246,7 @@ void println(String text) {
 	}
 }
 
-void println(StringBuffer buffer) {
+void println(StringBuilder buffer) {
 	println(buffer.toString());
 }
 

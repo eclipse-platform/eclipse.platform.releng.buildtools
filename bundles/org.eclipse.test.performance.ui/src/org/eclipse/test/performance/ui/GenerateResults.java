@@ -199,7 +199,7 @@ public GenerateResults(boolean fingerprints, File data) {
  * results object.
  */
 private void parse(String[] args) {
-	StringBuffer buffer = new StringBuffer("Parameters used to generate performance results (");
+	StringBuilder buffer = new StringBuilder("Parameters used to generate performance results (");
 	buffer.append(new SimpleDateFormat().format(new Date(System.currentTimeMillis())));
 	buffer.append("):\n");
 	int i = 0;

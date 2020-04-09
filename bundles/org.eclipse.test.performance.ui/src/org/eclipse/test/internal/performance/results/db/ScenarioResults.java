@@ -78,7 +78,7 @@ void completeResults(String lastBuildName) {
  */
 public String getBaselineBuildName() {
 	int size = size();
-	StringBuffer buffer = new StringBuffer();
+	StringBuilder buffer = new StringBuilder();
 	for (int i=0; i<size; i++) {
 		ConfigResults configResults = (ConfigResults) this.children.get(i);
 		if (configResults.isValid()) {
@@ -173,7 +173,7 @@ public String getShortName() {
 
 		// Remove qualification from test name
 		StringTokenizer tokenizer = new StringTokenizer(testName, " :,", true); //$NON-NLS-1$
-		StringBuffer buffer = new StringBuffer(tokenizer.nextToken());
+		StringBuilder buffer = new StringBuilder(tokenizer.nextToken());
 		while (tokenizer.hasMoreTokens()) {
 			String token = tokenizer.nextToken();
 			char fc = token.charAt(0);

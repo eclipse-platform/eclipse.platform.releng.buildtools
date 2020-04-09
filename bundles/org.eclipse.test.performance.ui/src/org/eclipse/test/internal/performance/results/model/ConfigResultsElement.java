@@ -269,7 +269,7 @@ void initStatus() {
  * Write the element status in the given stream
  */
 @Override
-StringBuffer getFailures(StringBuffer buffer, int kind, StringBuffer excluded) {
+StringBuilder getFailures(StringBuilder buffer, int kind, StringBuilder excluded) {
 	if ((this.status & BIG_DELTA) != 0) { // there's a failure on this config
 
 		// Get numbers
@@ -311,7 +311,7 @@ StringBuffer getFailures(StringBuffer buffer, int kind, StringBuffer excluded) {
 		double baselineValue = values[AbstractResults.BASELINE_VALUE_INDEX];
 		double delta = values[AbstractResults.DELTA_VALUE_INDEX];
 		double error = values[AbstractResults.DELTA_ERROR_INDEX];
-		StringBuffer localBuffer = new StringBuffer("		");
+		StringBuilder localBuffer = new StringBuilder("		");
 		localBuffer.append(configResults.getName());
 		double[] stats = null;
 		boolean printValues = (kind & IPerformancesConstants.STATUS_VALUES) != 0;

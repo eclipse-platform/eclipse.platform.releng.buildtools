@@ -121,7 +121,7 @@ public class TimeLineGraph extends LineGraph{
 					g.drawRectangle(xposition -4, yposition - 4, 8, 8);
 
 				if (this.fAreaBuffer == null)
-					this.fAreaBuffer = new StringBuffer();
+					this.fAreaBuffer = new StringBuilder();
 
 				this.fAreaBuffer.append("\r<area shape=\"circle\" coords=\""
 						+ (xposition - 2) + ',' + (yposition - 2) + ',' + 5

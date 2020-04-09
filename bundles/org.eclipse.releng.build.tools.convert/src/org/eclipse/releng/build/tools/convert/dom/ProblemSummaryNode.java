@@ -18,7 +18,7 @@ public class ProblemSummaryNode {
 
     @Override
     public String toString() {
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         buffer.append("problems : ") //$NON-NLS-1$
                 .append(numberOfProblems).append(" errors : ") //$NON-NLS-1$
                 .append(numberOfErrors).append(" warnings : ") //$NON-NLS-1$

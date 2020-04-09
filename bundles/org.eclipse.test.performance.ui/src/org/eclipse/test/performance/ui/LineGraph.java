@@ -22,7 +22,7 @@ import org.eclipse.test.internal.performance.data.Dim;
 
 public class LineGraph {
 
-    StringBuffer fAreaBuffer;
+    StringBuilder fAreaBuffer;
 
     private static class GraphItem {
 
@@ -134,7 +134,7 @@ public class LineGraph {
             g.fillOval(xposition-2, yposition-2, 5, 5);
 
             if (this.fAreaBuffer == null)
-                this.fAreaBuffer= new StringBuffer();
+                this.fAreaBuffer= new StringBuilder();
 
             this.fAreaBuffer.append("\r<area shape=\"CIRCLE\" coords=\""+(xposition-2)+','+(yposition-2)+','+5+" alt=\""+ thisItem.title+": "+thisItem.description+"\""+ " title=\""+ thisItem.title+": "+thisItem.description+"\">");
 

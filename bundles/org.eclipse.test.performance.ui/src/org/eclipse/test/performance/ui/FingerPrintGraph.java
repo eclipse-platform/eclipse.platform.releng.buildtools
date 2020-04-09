@@ -263,7 +263,7 @@ void drawBars(int kind) {
 			this.gc.fillRectangle(recError);
 			Rectangle rec = new Rectangle(MARGIN, y + (GAP/2), baselineBarLength+baselineErrorLength, BAR_HEIGHT);
 			this.gc.drawRectangle(rec);
-			StringBuffer tooltip = new StringBuffer("Time for baseline build ");
+			StringBuilder tooltip = new StringBuilder("Time for baseline build ");
 			tooltip.append(baselineBuildResults.getName());
 			tooltip.append(": ");
 			tooltip.append(Util.timeString((long)baselineValue));
@@ -310,7 +310,7 @@ void drawBars(int kind) {
 			this.gc.fillRectangle(recError);
 			Rectangle rec = new Rectangle(MARGIN, y + (GAP/2) + BAR_HEIGHT, currentBarLength+currentErrorLength, BAR_HEIGHT);
 			this.gc.drawRectangle(rec);
-			StringBuffer tooltip = new StringBuffer("Time for current build ");
+			StringBuilder tooltip = new StringBuilder("Time for current build ");
 			tooltip.append(currentBuildResults.getName());
 			tooltip.append(": ");
 			tooltip.append(Util.timeString((long)currentValue));

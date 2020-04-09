@@ -63,7 +63,7 @@ public void print(){
  * Print table columns headers.
  */
 private void printColumnHeaders() {
-	StringBuffer buffer = new StringBuffer();
+	StringBuilder buffer = new StringBuilder();
 	int length = this.dimensions.length;
 	for (int i=0; i<length; i++) {
 		buffer.append("<td><b>");

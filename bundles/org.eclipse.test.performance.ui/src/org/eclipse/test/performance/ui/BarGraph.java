@@ -35,7 +35,7 @@ public class BarGraph {
 	private static final int SLANT= 8; // slant of break
 	private static final int GAP2= 5; // width of break
 
-	private StringBuffer fAreaBuffer;
+	private StringBuilder fAreaBuffer;
 
 	private static class BarItem {
 
@@ -273,7 +273,7 @@ public class BarGraph {
 
 			if (hasURL) {
 				if (this.fAreaBuffer == null)
-					this.fAreaBuffer= new StringBuffer();
+					this.fAreaBuffer= new StringBuilder();
 				this.fAreaBuffer.append("		echo '<area shape=\"RECT\" coords=\"0," + y0 + ',' + width + ',' + y + "\" href=\"" + bar.url + "\">';\n");
 			}
 		}

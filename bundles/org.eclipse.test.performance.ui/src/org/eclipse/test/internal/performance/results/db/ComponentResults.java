@@ -325,7 +325,7 @@ void updateBuild(String buildName, List<ScenarioResults> scenarios, boolean forc
 	// manage monitor
 	int size = scenarios.size();
 	subMonitor.setWorkRemaining(size+1);
-	StringBuffer buffer = new StringBuffer("Component "); //$NON-NLS-1$
+	StringBuilder buffer = new StringBuilder("Component "); //$NON-NLS-1$
 	buffer.append(this.name);
 	buffer.append("..."); //$NON-NLS-1$
 	String title = buffer.toString();

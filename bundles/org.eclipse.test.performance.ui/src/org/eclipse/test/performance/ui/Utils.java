@@ -334,7 +334,7 @@ public class Utils {
    * @return The failure message. May be empty if stats are good...
    */
   public static String failureMessage(double[] resultStats, boolean full) {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     int level = confidenceLevel(resultStats);
     // boolean isWarn = (level & WARN) != 0;
     boolean isErr = (level & ERR) != 0;

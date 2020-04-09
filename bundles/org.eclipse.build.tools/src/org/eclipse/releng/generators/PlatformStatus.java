@@ -82,7 +82,7 @@ public class PlatformStatus {
 
     @Override
     public String toString() {
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         buffer.append("PlatformStatus(");
         buffer.append("id=" + id);
         buffer.append(", name=" + name);

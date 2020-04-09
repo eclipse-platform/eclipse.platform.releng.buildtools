@@ -22,7 +22,7 @@ public class DOMTxtConverter extends AbstractDOMConverter {
 
     @Override
     public String getUnderLine(final String sourceBefore, final String sourceOfError) {
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         char[] chars = sourceBefore.toCharArray();
         for (int i = 0, max = chars.length; i < max; i++) {
             switch (chars[i]) {

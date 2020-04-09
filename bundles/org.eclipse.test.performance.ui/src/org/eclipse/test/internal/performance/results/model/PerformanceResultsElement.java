@@ -218,15 +218,15 @@ public void setLastBuildName(String lastBuildName) {
 /*
  * Write the component status in the given file
  */
-public StringBuffer writeFailures(File resultsFile, int kind) {
+public StringBuilder writeFailures(File resultsFile, int kind) {
 	if (this.results == null) {
 		return null;
 	}
 	boolean values = (kind & IPerformancesConstants.STATUS_VALUES) != 0;
 	// Write status only for component with error
-	StringBuffer excluded = new StringBuffer();
+	StringBuilder excluded = new StringBuilder();
   try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(resultsFile)))) {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     // Print build name
     buffer.append("Status for ");
     buffer.append(getPerformanceResults().getName());
@@ -314,7 +314,7 @@ public StringBuffer writeFailures(File resultsFile, int kind) {
       buffer.append(Util.LINE_SEPARATOR);
     }
     stream.write(buffer.toString().getBytes());
-    StringBuffer componentBuffer = getFailures(new StringBuffer(), kind, excluded);
+    StringBuilder componentBuffer = getFailures(new StringBuilder(), kind, excluded);
     if (componentBuffer.length() > 0) {
       stream.write(componentBuffer.toString().getBytes());
     }

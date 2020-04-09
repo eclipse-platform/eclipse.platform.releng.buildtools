@@ -57,7 +57,7 @@ public class ProblemNode {
 
     @Override
     public String toString() {
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         switch (severityType) {
           case ERROR : 
             buffer.append("ERROR ");//$NON-NLS-1$

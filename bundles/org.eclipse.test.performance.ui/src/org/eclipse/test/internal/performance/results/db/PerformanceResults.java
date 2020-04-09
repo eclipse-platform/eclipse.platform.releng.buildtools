@@ -74,7 +74,7 @@ public class PerformanceResults extends AbstractResults {
 			this.start = start;
 		}
 		String display() {
-			StringBuffer buffer = new StringBuffer(" [elapsed: "); //$NON-NLS-1$
+			StringBuilder buffer = new StringBuilder(" [elapsed: "); //$NON-NLS-1$
 			long elapsed = getElapsed();
 			buffer.append(Util.timeChrono(elapsed));
 			if (this.count > 0) {
@@ -233,13 +233,13 @@ String getConfigurationsPattern() {
 		int refLength = this.configPattern.length();
 		for (int i=1; i<length; i++) {
 			String config = this.sortedConfigNames[i];
-			StringBuffer newConfig = null;
+			StringBuilder newConfig = null;
 			if (refLength != config.length()) return null; // strings have not the same length => cannot find a pattern
 			for (int j=0; j<refLength; j++) {
 				char c = this.configPattern.charAt(j);
 				if (config.charAt(j) != c) {
 					if (newConfig == null) {
-						newConfig = new StringBuffer(refLength);
+						newConfig = new StringBuilder(refLength);
 						if (j == 0) return null; // first char is already different => cannot find a pattern
 						newConfig.append(this.configPattern.substring(0, j));
 					}
@@ -399,14 +399,14 @@ private String[] read(boolean local, String buildName, String[][] configs, boole
 
 		// Manage monitor
 		int percentage = (int) ((((double)(i+1)) / (componentsLength+1)) * 100);
-		StringBuffer tnBuffer= taskName==null ? new StringBuffer() : new StringBuffer(taskName);
+		StringBuilder tnBuffer= taskName==null ? new StringBuilder() : new StringBuilder(taskName);
 		tnBuffer.append(" ("); //$NON-NLS-1$
 		if (buildName != null) {
 			tnBuffer.append(buildName).append(": "); //$NON-NLS-1$
 		}
 		tnBuffer.append(percentage).append("%)"); //$NON-NLS-1$
 		subMonitor.setTaskName(tnBuffer.toString());
-		StringBuffer subTaskBuffer = new StringBuffer("Component "); //$NON-NLS-1$
+		StringBuilder subTaskBuffer = new StringBuilder("Component "); //$NON-NLS-1$
 		subTaskBuffer.append(componentName);
 		subTaskBuffer.append("..."); //$NON-NLS-1$
 		subMonitor.subTask(subTaskBuffer.toString());
@@ -850,7 +850,7 @@ public void setLastBuildName(String lastBuildName) {
 public String[] updateBuilds(String[] builds, boolean force, File dataDir, IProgressMonitor monitor) {
 
 	// Print title
-	StringBuffer buffer = new StringBuffer("Update data for "); //$NON-NLS-1$
+	StringBuilder buffer = new StringBuilder("Update data for "); //$NON-NLS-1$
 	int length = builds == null ? 0 : builds.length;
 	switch (length) {
 		case 0:
@@ -897,7 +897,7 @@ public String[] updateBuilds(String[] builds, boolean force, File dataDir, IProg
 public String[] updateBuild(String buildName, boolean force, File dataDir, IProgressMonitor monitor) {
 
 	// Print title
-	StringBuffer buffer = new StringBuffer("Update data for "); //$NON-NLS-1$
+	StringBuilder buffer = new StringBuilder("Update data for "); //$NON-NLS-1$
 	if (buildName == null) {
 		buffer.append("all builds"); //$NON-NLS-1$
 		reset(dataDir);

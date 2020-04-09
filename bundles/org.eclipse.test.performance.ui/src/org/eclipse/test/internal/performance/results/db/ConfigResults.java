@@ -526,7 +526,7 @@ private void initialize() {
 	// Set the failure on the current build if necessary
 	int failure_threshold = getPerformance().failure_threshold;
 	if (this.delta >= (failure_threshold/100.0)) {
-		StringBuffer buffer = new StringBuffer("Performance criteria not met when compared to '"); //$NON-NLS-1$
+		StringBuilder buffer = new StringBuilder("Performance criteria not met when compared to '"); //$NON-NLS-1$
 		buffer.append(this.baseline.getName());
 		buffer.append("': "); //$NON-NLS-1$
 		buffer.append(DB_Results.getDefaultDimension().getName());

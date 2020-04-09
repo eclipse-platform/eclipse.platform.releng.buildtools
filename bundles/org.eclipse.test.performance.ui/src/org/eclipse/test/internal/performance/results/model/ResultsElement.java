@@ -229,10 +229,10 @@ public Object getEditableValue() {
 }
 
 final String getId() {
-	return getId(new StringBuffer()).toString();
+	return getId(new StringBuilder()).toString();
 }
 
-private StringBuffer getId(StringBuffer buffer) {
+private StringBuilder getId(StringBuilder buffer) {
 	if (this.parent != null) {
 		return this.parent.getId(buffer).append('/').append(getName());
 	}
@@ -573,7 +573,7 @@ public String toString() {
 /*
  * Write the failures of the element in the given buffer
  */
-StringBuffer getFailures(StringBuffer buffer, int kind, StringBuffer excluded) {
+StringBuilder getFailures(StringBuilder buffer, int kind, StringBuilder excluded) {
 	int length = getChildren().length;
 	for (int i=0; i<length; i++) {
 		this.children[i].getFailures(buffer, kind, excluded);

@@ -102,7 +102,7 @@ private void printColumnsTitle(int size, PerformanceResults performanceResults) 
 		} else {
 			// first line
 			StringTokenizer tokenizer = new StringTokenizer(boxName.substring(0, idx).trim(), " ");
-			StringBuffer buffer = new StringBuffer(tokenizer.nextToken());
+			StringBuilder buffer = new StringBuilder(tokenizer.nextToken());
 			while (tokenizer.hasMoreTokens()) {
 				buffer.append("&nbsp;");
 				buffer.append(tokenizer.nextToken());

@@ -592,7 +592,7 @@ public void resetView() {
 			MessageDialog.openError(this.shell, getTitleToolTip(), "Error while updating database results constants!\nOpen error log to see more details on this error");
 		}
 	} else if (updated) {
-		StringBuffer message = new StringBuffer("Database connection has been correctly ");
+		StringBuilder message = new StringBuilder("Database connection has been correctly ");
 		message.append( connected ? "opened." : "closed.");
 		MessageDialog.openInformation(this.shell, getTitleToolTip(), message.toString());
 	} else {
@@ -794,7 +794,7 @@ protected void writeFailures(File writeDir, String buildName) {
 	}
 
 	// Write status
-	StringBuffer excluded = this.results.writeFailures(resultsFile, writeStatusValue);
+	StringBuilder excluded = this.results.writeFailures(resultsFile, writeStatusValue);
 	if (excluded == null) {
 		MessageDialog.openWarning(this.shell, getTitleToolTip(), "The component is not read, hence no results can be written!");
 	}

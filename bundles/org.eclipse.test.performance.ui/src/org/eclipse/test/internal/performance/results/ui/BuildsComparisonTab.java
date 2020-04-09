@@ -367,14 +367,14 @@ private void fillTable(PerformanceResultsElement results, String currentBuild, S
 				final double error = values[AbstractResults.DELTA_ERROR_INDEX];
 
 				// Set text with delta value
-				final StringBuffer address = new StringBuffer("http://fullmoon.ottawa.ibm.com/downloads/drops/");
+				final StringBuilder address = new StringBuilder("http://fullmoon.ottawa.ibm.com/downloads/drops/");
 				address.append(currentBuild);
 				address.append("/performance/");
 				address.append(configResults.getName());
 				address.append('/');
 				address.append(scenarioResults.getFileName());
 				address.append(".html");
-				StringBuffer buffer = new StringBuffer("<a href=\"");
+				StringBuilder buffer = new StringBuilder("<a href=\"");
 				buffer.append(address);
 				buffer.append("\">");
 				final String itemText = Util.PERCENTAGE_FORMAT.format(delta);

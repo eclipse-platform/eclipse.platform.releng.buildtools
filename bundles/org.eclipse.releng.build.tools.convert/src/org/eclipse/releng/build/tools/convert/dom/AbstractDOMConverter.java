@@ -39,7 +39,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
     protected Messages          messages;
 
     private String convertToHTML(final String s) {
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         for (int i = 0, max = s.length(); i < max; i++) {
             final char c = s.charAt(i);
             switch (c) {

@@ -60,7 +60,7 @@ public void print(final PerformanceResults performanceResults) {
 	if  (currentUnderscoreIndex != -1){
 		buildName = buildName.substring(0, currentUnderscoreIndex);
 	}
-	StringBuffer buffer = new StringBuffer("FP_");
+	StringBuilder buffer = new StringBuilder("FP_");
 	if (this.component != null) {
 		buffer.append(this.component);
 		buffer.append('_');

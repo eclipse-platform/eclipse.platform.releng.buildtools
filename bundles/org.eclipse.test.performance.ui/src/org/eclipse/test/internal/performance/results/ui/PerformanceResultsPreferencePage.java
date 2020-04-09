@@ -238,7 +238,7 @@ protected Control createContents(Composite parent) {
 		this.milestonesCombo.setToolTipText("Enter the date of the milestone as yyyymmddHHMM");
 
 		// Default dimension layout
-		StringBuffer tooltip = new StringBuffer("Select the default dimension which will be used for performance results\n");
+		StringBuilder tooltip = new StringBuilder("Select the default dimension which will be used for performance results\n");
 		tooltip.append("When changed, the new selected dimension is automatically added to the dimensions list below...");
 		String tooltipText = tooltip.toString();
 		Composite compositeDefaultDimension = createComposite(parent, 3, 1);
@@ -248,7 +248,7 @@ protected Control createContents(Composite parent) {
 		this.defaultDimensionCombo.setToolTipText(tooltipText);
 
 		// Results dimensions layout
-		tooltip = new StringBuffer("Select the dimensions which will be used while generating performance results\n");
+		tooltip = new StringBuilder("Select the dimensions which will be used while generating performance results\n");
 		tooltip.append("When changed, the default dimension above is automatically added to the new list...");
 		tooltipText = tooltip.toString();
 		Composite compositeResultsDimensions = createComposite(parent, 3, 1);
@@ -1032,7 +1032,7 @@ public void widgetSelected(SelectionEvent event) {
 			}
 			File dbDir = new File(path, "perfDb"+version);
 			if (!dbDir.exists() || !dbDir.isDirectory()) {
-				StringBuffer message = new StringBuffer("Invalid performance database directory\n");
+				StringBuilder message = new StringBuilder("Invalid performance database directory\n");
 				message.append(path+" should contain 'perfDb");
 				message.append(version);
 				message.append("' directory and none was found!");
