@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2018 IBM Corporation and others. 
+ * Copyright (c) 2006, 2020 IBM Corporation and others. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,24 +17,17 @@ import java.io.IOException;
 import java.io.Writer;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.releng.build.tools.convert.ant.Converter;
 import org.eclipse.releng.build.tools.convert.ant.Messages;
 
 public abstract class AbstractDOMConverter implements IDOMConverter {
 
-    public static final HashSet<String> FILTERED_WARNINGS_IDS;
-
     public static final String  FORBIDDEN_REFERENCE   = "ForbiddenReference";  //$NON-NLS-1$
     public static final String  DISCOURAGED_REFERENCE = "DiscouragedReference"; //$NON-NLS-1$
-
-    static {
-        FILTERED_WARNINGS_IDS = new HashSet<>();
-        FILTERED_WARNINGS_IDS.add(FORBIDDEN_REFERENCE);
-        FILTERED_WARNINGS_IDS.add(DISCOURAGED_REFERENCE);
-    }
+    public static final Set<String> FILTERED_WARNINGS_IDS = Set.of(FORBIDDEN_REFERENCE, FORBIDDEN_REFERENCE);
 
     protected Messages          messages;
 
@@ -85,15 +78,15 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                 writer.write(messages.getString("header")); //$NON-NLS-1$
             } else {
                 final String pattern = messages.getString("dom_header"); //$NON-NLS-1$
-                writer.write(MessageFormat.format(pattern,
-                        new Object[] { pluginName, extractXmlFileName(options.get(Converter.INPUT_SOURCE)) }));
+                writer.write(MessageFormat.format(pattern, pluginName, extractXmlFileName(options.get(Converter.INPUT_SOURCE))));
             }
             final ProblemSummaryNode problemSummaryNode = summaryNode;
             writeTopAnchor(writer);
             String pattern = messages.getString("problem.summary"); //$NON-NLS-1$
-            writer.write(MessageFormat.format(pattern, new Object[] { Integer.toString(problemSummaryNode.numberOfProblems),
-                    Integer.toString(problemSummaryNode.numberOfErrors), Integer.toString(problemSummaryNode.numberOfWarnings), 
-                    Integer.toString(problemSummaryNode.numberOfInfos)}));
+            writer.write(MessageFormat.format(pattern, Integer.toString(problemSummaryNode.numberOfProblems),
+					Integer.toString(problemSummaryNode.numberOfErrors),
+					Integer.toString(problemSummaryNode.numberOfWarnings),
+					Integer.toString(problemSummaryNode.numberOfInfos)));
 
             writeAnchorsReferences(writer);
             final ProblemsNode[] problemsNodes = documentNode.getProblems();
@@ -102,8 +95,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
             writeErrorAnchor(writer);
             writeAnchorsReferencesErrors(writer);
             // dump errors
-            for (int i = 0, max = problemsNodes.length; i < max; i++) {
-                final ProblemsNode problemsNode = problemsNodes[i];
+            for (final ProblemsNode problemsNode : problemsNodes) {
                 final ProblemNode[] problemNodes = problemsNode.getErrors();
                 final int length = problemNodes.length;
                 if (length == 0) {
@@ -129,14 +121,12 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                         pattern = messages.getString("errors.entry.even"); //$NON-NLS-1$
                     }
                     problemNode.setSources();
-                    writer.write(MessageFormat.format(
-                            pattern,
-                            new Object[] { sourceFileName, Integer.toString(globalErrorNumber), Integer.toString(j + 1),
-                                    problemNode.id, Integer.toString(problemNode.line), convertToHTML(problemNode.message),
-                                    convertToHTML(problemNode.sourceCodeBefore), convertToHTML(problemNode.sourceCode),
-                                    convertToHTML(problemNode.sourceCodeAfter),
-                                    getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
-                                    Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd), }));
+                    writer.write(MessageFormat.format(pattern, sourceFileName, Integer.toString(globalErrorNumber),
+							Integer.toString(j + 1), problemNode.id, Integer.toString(problemNode.line),
+							convertToHTML(problemNode.message), convertToHTML(problemNode.sourceCodeBefore),
+							convertToHTML(problemNode.sourceCode), convertToHTML(problemNode.sourceCodeAfter),
+							getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
+							Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd)));
                     globalErrorNumber++;
                 }
                 writer.write(messages.getString("errors.footer")); //$NON-NLS-1$
@@ -145,8 +135,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
             writeOtherWarningsAnchor(writer);
             writeAnchorsReferencesOtherWarnings(writer);
             // dump other warnings
-            for (int i = 0, max = problemsNodes.length; i < max; i++) {
-                final ProblemsNode problemsNode = problemsNodes[i];
+            for (final ProblemsNode problemsNode : problemsNodes) {
                 final ProblemNode[] problemNodes = problemsNode.getOtherWarnings();
                 final int length = problemNodes.length;
                 if (length == 0) {
@@ -172,14 +161,12 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                         pattern = messages.getString("warnings.entry.even"); //$NON-NLS-1$
                     }
                     problemNode.setSources();
-                    writer.write(MessageFormat.format(
-                            pattern,
-                            new Object[] { sourceFileName, Integer.toString(globalErrorNumber), Integer.toString(j + 1),
-                                    problemNode.id, Integer.toString(problemNode.line), convertToHTML(problemNode.message),
-                                    convertToHTML(problemNode.sourceCodeBefore), convertToHTML(problemNode.sourceCode),
-                                    convertToHTML(problemNode.sourceCodeAfter),
-                                    getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
-                                    Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd), }));
+                    writer.write(MessageFormat.format(pattern, sourceFileName, Integer.toString(globalErrorNumber),
+							Integer.toString(j + 1), problemNode.id, Integer.toString(problemNode.line),
+							convertToHTML(problemNode.message), convertToHTML(problemNode.sourceCodeBefore),
+							convertToHTML(problemNode.sourceCode), convertToHTML(problemNode.sourceCodeAfter),
+							getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
+							Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd)));
                     globalErrorNumber++;
                 }
                 writer.write(messages.getString("other_warnings.footer")); //$NON-NLS-1$
@@ -188,8 +175,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
             // dump infos
             writeInfosAnchor(writer);
             writeAnchorsReferencesInfos(writer);
-            for (int i = 0, max = problemsNodes.length; i < max; i++) {
-                final ProblemsNode problemsNode = problemsNodes[i];
+            for (final ProblemsNode problemsNode : problemsNodes) {
                 final ProblemNode[] problemNodes = problemsNode.getInfos();
                 final int length = problemNodes.length;
                 if (length == 0) {
@@ -215,14 +201,12 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                         pattern = messages.getString("infos.entry.even"); //$NON-NLS-1$
                     }
                     problemNode.setSources();
-                    writer.write(MessageFormat.format(
-                            pattern,
-                            new Object[] { sourceFileName, Integer.toString(globalErrorNumber), Integer.toString(j + 1),
-                                    problemNode.id, Integer.toString(problemNode.line), convertToHTML(problemNode.message),
-                                    convertToHTML(problemNode.sourceCodeBefore), convertToHTML(problemNode.sourceCode),
-                                    convertToHTML(problemNode.sourceCodeAfter),
-                                    getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
-                                    Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd), }));
+                    writer.write(MessageFormat.format(pattern, sourceFileName, Integer.toString(globalErrorNumber),
+							Integer.toString(j + 1), problemNode.id, Integer.toString(problemNode.line),
+							convertToHTML(problemNode.message), convertToHTML(problemNode.sourceCodeBefore),
+							convertToHTML(problemNode.sourceCode), convertToHTML(problemNode.sourceCodeAfter),
+							getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
+							Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd)));
                     globalErrorNumber++;
                 }
                 writer.write(messages.getString("infos.footer")); //$NON-NLS-1$
@@ -231,8 +215,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
             // dump forbidden accesses warnings
             writeForbiddenRulesWarningsAnchor(writer);
             writeAnchorsReferencesForbiddenRulesWarnings(writer);
-            for (int i = 0, max = problemsNodes.length; i < max; i++) {
-                final ProblemsNode problemsNode = problemsNodes[i];
+            for (final ProblemsNode problemsNode : problemsNodes) {
                 final ProblemNode[] problemNodes = problemsNode.getForbiddenWarnings();
                 final int length = problemNodes.length;
                 if (length == 0) {
@@ -258,14 +241,12 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                         pattern = messages.getString("warnings.entry.even"); //$NON-NLS-1$
                     }
                     problemNode.setSources();
-                    writer.write(MessageFormat.format(
-                            pattern,
-                            new Object[] { sourceFileName, Integer.toString(globalErrorNumber), Integer.toString(j + 1),
-                                    problemNode.id, Integer.toString(problemNode.line), convertToHTML(problemNode.message),
-                                    convertToHTML(problemNode.sourceCodeBefore), convertToHTML(problemNode.sourceCode),
-                                    convertToHTML(problemNode.sourceCodeAfter),
-                                    getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
-                                    Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd), }));
+                    writer.write(MessageFormat.format(pattern, sourceFileName, Integer.toString(globalErrorNumber),
+							Integer.toString(j + 1), problemNode.id, Integer.toString(problemNode.line),
+							convertToHTML(problemNode.message), convertToHTML(problemNode.sourceCodeBefore),
+							convertToHTML(problemNode.sourceCode), convertToHTML(problemNode.sourceCodeAfter),
+							getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
+							Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd)));
                     globalErrorNumber++;
                 }
                 writer.write(messages.getString("forbidden_warnings.footer")); //$NON-NLS-1$
@@ -274,8 +255,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
             // dump discouraged accesses warnings
             writeDiscouragedRulesWarningsAnchor(writer);
             writeAnchorsReferencesDiscouragedRulesWarnings(writer);
-            for (int i = 0, max = problemsNodes.length; i < max; i++) {
-                final ProblemsNode problemsNode = problemsNodes[i];
+            for (final ProblemsNode problemsNode : problemsNodes) {
                 final ProblemNode[] problemNodes = problemsNode.getDiscouragedWarnings();
                 final int length = problemNodes.length;
                 if (length == 0) {
@@ -301,14 +281,12 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
                         pattern = messages.getString("warnings.entry.even"); //$NON-NLS-1$
                     }
                     problemNode.setSources();
-                    writer.write(MessageFormat.format(
-                            pattern,
-                            new Object[] { sourceFileName, Integer.toString(globalErrorNumber), Integer.toString(j + 1),
-                                    problemNode.id, Integer.toString(problemNode.line), convertToHTML(problemNode.message),
-                                    convertToHTML(problemNode.sourceCodeBefore), convertToHTML(problemNode.sourceCode),
-                                    convertToHTML(problemNode.sourceCodeAfter),
-                                    getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
-                                    Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd), }));
+                    writer.write(MessageFormat.format(pattern, sourceFileName, Integer.toString(globalErrorNumber),
+							Integer.toString(j + 1), problemNode.id, Integer.toString(problemNode.line),
+							convertToHTML(problemNode.message), convertToHTML(problemNode.sourceCodeBefore),
+							convertToHTML(problemNode.sourceCode), convertToHTML(problemNode.sourceCodeAfter),
+							getUnderLine(problemNode.sourceCodeBefore, problemNode.sourceCodeAfter),
+							Integer.toString(problemNode.charStart), Integer.toString(problemNode.charEnd)));
                     globalErrorNumber++;
                 }
                 writer.write(messages.getString("discouraged_warnings.footer")); //$NON-NLS-1$
