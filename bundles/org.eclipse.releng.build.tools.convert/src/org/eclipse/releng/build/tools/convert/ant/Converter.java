@@ -3,7 +3,7 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors: IBM Corporation - initial API and implementation
  *******************************************************************************/
 
@@ -23,9 +23,9 @@ import org.eclipse.releng.build.tools.convert.dom.AbstractDOMConverter;
 import org.eclipse.releng.build.tools.convert.dom.IDOMConverter;
 import org.eclipse.releng.build.tools.convert.dom.LogDocumentNode;
 import org.eclipse.releng.build.tools.convert.dom.ProblemNode;
-import org.eclipse.releng.build.tools.convert.dom.SeverityType;
 import org.eclipse.releng.build.tools.convert.dom.ProblemSummaryNode;
 import org.eclipse.releng.build.tools.convert.dom.ProblemsNode;
+import org.eclipse.releng.build.tools.convert.dom.SeverityType;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -64,8 +64,7 @@ public class Converter {
 
     private static void collectAllFiles(final File root, final ArrayList<File> collector, final FileFilter fileFilter) {
         final File[] files = root.listFiles(fileFilter);
-        for (int i = 0; i < files.length; i++) {
-            final File currentFile = files[i];
+        for (final File currentFile : files) {
             if (currentFile.isDirectory()) {
                 collectAllFiles(currentFile, collector, fileFilter);
             } else {
@@ -94,7 +93,7 @@ public class Converter {
         }
     }
 
-    public static void run(final String[] args) throws ParserConfigurationException {
+	public static void run(final String... args) throws ParserConfigurationException {
         final Converter converter = new Converter();
         converter.configure(args);
         converter.parse2();
@@ -223,15 +222,14 @@ public class Converter {
                 throw new IllegalArgumentException(inputSourceOption + " must be a directory in recursive mode");//$NON-NLS-1$
             }
             final File[] xmlFiles = getAllFiles(sourceDir, XML_FILTER);
-            for (int i = 0, max = xmlFiles.length; i < max; i++) {
-                final String inputFileName = xmlFiles[i].getAbsolutePath();
+            for (File xmlFile : xmlFiles) {
+                final String inputFileName = xmlFile.getAbsolutePath();
                 final InputSource inputSource = new InputSource(inputFileName);
                 final String outputFileName = extractNameFrom(inputFileName);
                 options.put(INPUT_SOURCE, inputFileName);
                 options.put(OUTPUT_FILE_NAME, outputFileName);
                 try {
                     builder.setErrorHandler(new DefaultHandler() {
-
                         @Override
                         public void error(final SAXParseException e) throws SAXException {
                             reportError(inputFileName, e);
@@ -328,7 +326,7 @@ public class Converter {
                     problem.severityType = SeverityType.ERROR;
                     node.addError(problem);
                     break;
-                  case "INFO": 
+                  case "INFO":
                     problem.severityType = SeverityType.INFO;
                     node.addInfo(problem);
                     break;
@@ -344,7 +342,7 @@ public class Converter {
                       node.addOtherWarning(problem);
                     }
                     break;
-                }  
+                }
                 problem.charStart = Integer.parseInt(problemNodeMap.getNamedItem("charStart").getNodeValue());//$NON-NLS-1$
                 problem.charEnd = Integer.parseInt(problemNodeMap.getNamedItem("charEnd").getNodeValue());//$NON-NLS-1$
                 problem.line = Integer.parseInt(problemNodeMap.getNamedItem("line").getNodeValue());//$NON-NLS-1$

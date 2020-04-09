@@ -3,7 +3,7 @@
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors: IBM Corporation - initial API and implementation
  *******************************************************************************/
 
@@ -15,12 +15,12 @@ import org.apache.tools.ant.Task;
 /**
  * This ant task is used to convert all xml files inside the given
  * <code>logDirectory</code> and into html or txt files.
- * 
+ *
  * <p>
  * The resulting files are written in the same directory than the corresponding
  * xml file.
  * </p>
- * 
+ *
  * <p>
  * This is not intended to be subclassed by users.
  * </p>
@@ -38,12 +38,12 @@ public class LogConverterTask extends Task {
         }
         try {
             if (isValidation()) {
-                Converter.run(new String[] { "-v", "-r", "-i", input }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                Converter.run("-v", "-r", "-i", input); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             } else {
-                Converter.run(new String[] { "-r", "-i", input }); //$NON-NLS-1$ //$NON-NLS-2$
+                Converter.run("-r", "-i", input); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
-        catch (final Exception e) {
+		catch (final Exception e) {
             throw new BuildException("Exception during conversion", e);//$NON-NLS-1$
         }
     }
