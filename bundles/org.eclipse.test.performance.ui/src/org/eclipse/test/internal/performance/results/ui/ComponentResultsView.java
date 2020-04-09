@@ -163,11 +163,11 @@ void createTabs() {
 	for (int i=0; i<length; i++) {
 		this.tabs[i] = new ConfigTab(configNames[i], configDescriptions[i]);
 	}
-	for (int i=0; i<this.tabs.length; i++) {
+	for (ConfigTab tab : this.tabs) {
 		CTabItem item = new CTabItem (this.tabFolder, SWT.NONE);
-		item.setText (this.tabs[i].getTabText ());
-		item.setControl (this.tabs[i].createTabFolderPage(this.componentResultsElement, this.tabFolder, this.fullLineSelection.isChecked()));
-		item.setData (this.tabs[i]);
+		item.setText (tab.getTabText ());
+		item.setControl (tab.createTabFolderPage(this.componentResultsElement, this.tabFolder, this.fullLineSelection.isChecked()));
+		item.setData (tab);
 	}
 	this.tabFolder.setSelection(0);
 }
