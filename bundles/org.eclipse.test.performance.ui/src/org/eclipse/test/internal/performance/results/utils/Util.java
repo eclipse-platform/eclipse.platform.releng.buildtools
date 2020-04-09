@@ -51,7 +51,7 @@ public final class Util implements IPerformancesConstants {
     }
 
     // Strings
-    public static final String LINE_SEPARATOR     = System.getProperty("line.separator");
+    public static final String LINE_SEPARATOR     = System.lineSeparator();
 
     // Build prefixes
     public static final List<String>   ALL_BUILD_PREFIXES = new ArrayList<>(3);

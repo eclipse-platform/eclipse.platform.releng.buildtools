@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corporation and others.
+ * Copyright (c) 2000, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,13 +47,7 @@ public ScenarioResults(int id, String name, String shortName) {
  */
 void completeResults(String lastBuildName) {
 	String[] builds = DB_Results.getBuilds();
-	class BuildDateComparator implements Comparator<String> {
-		@Override
-    public int compare(String s1, String s2) {
-	        return Util.getBuildDate(s1).compareTo(Util.getBuildDate(s2));
-	    }
-	}
-	BuildDateComparator comparator = new BuildDateComparator();
+	Comparator<String> comparator = (s1, s2) -> Util.getBuildDate(s1).compareTo(Util.getBuildDate(s2));
 	Arrays.sort(builds, comparator);
 	int idx = Arrays.binarySearch(builds, lastBuildName, comparator);
 	if (idx < 0) {

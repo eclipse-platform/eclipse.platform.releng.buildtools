@@ -169,7 +169,7 @@ public class TestResultsGenerator extends Task {
     private static final String elementName                            = "testsuite";
 
     private ArrayList<String>   expectedConfigs                        = null;
-    private static final String EOL                                    = System.getProperty("line.separator");
+    private static final String EOL                                    = System.lineSeparator();
     private static boolean      DEBUG                                  = false;
     private static String       FOUND_TEST_CONFIGS_FILENAME_DEFAULT    = "testConfigsFound.php";
 
