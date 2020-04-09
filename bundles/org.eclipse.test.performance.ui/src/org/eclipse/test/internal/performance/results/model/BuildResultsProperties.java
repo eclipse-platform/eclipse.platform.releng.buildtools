@@ -63,17 +63,11 @@ public Object getEditableValue() {
 	return null;
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyDescriptors()
- */
 public IPropertyDescriptor[] getPropertyDescriptors() {
     return getDescriptors().toArray(
             new IPropertyDescriptor[getDescriptors().size()]);
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.views.properties.IPropertySource#getPropertyValue(java.lang.Object)
- */
 public Object getPropertyValue(Object propKey) {
 	if (propKey.equals(P_ID_SMALL_VALUE)) {
 		if ((this.status & ResultsElement.SMALL_VALUE) != 0) {

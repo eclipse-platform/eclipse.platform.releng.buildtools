@@ -1068,9 +1068,6 @@ private void setPerformanceResults(String buildName, String baselineName) {
 	this.performanceResults.readAll(buildName, this.configDescriptors, this.scenarioPattern, this.dataDir, this.failure_threshold, null);
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.equinox.app.IApplication#stop()
- */
 public void stop() {
 	// Do nothing
 }

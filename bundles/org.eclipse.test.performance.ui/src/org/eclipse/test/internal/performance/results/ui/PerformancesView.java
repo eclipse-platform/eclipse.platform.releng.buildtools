@@ -373,10 +373,6 @@ void hookContextMenu() {
 	getSite().registerContextMenu(menuMgr, this.viewer);
 }
 
-/*
- * (non-Javadoc)
- * @see org.eclipse.ui.part.ViewPart#init(org.eclipse.ui.IViewSite, org.eclipse.ui.IMemento)
- */
 @Override
 public void init(IViewSite site, IMemento memento) throws PartInitException {
 	super.init(site, memento);
@@ -451,9 +447,6 @@ void makeActions() {
 	this.filterOldBuilds.setToolTipText("Filter old builds (i.e. before last milestone) but keep all previous milestones)");
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener#preferenceChange(org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent)
- */
 @Override
 public void preferenceChange(PreferenceChangeEvent event) {
 	// do nothing

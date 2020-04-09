@@ -215,9 +215,6 @@ public boolean hasSummary() {
 	return false;
 }
 
-/* (non-Javadoc)
- * @see org.eclipse.test.internal.performance.results.AbstractResults#hashCode()
- */
 @Override
 public int hashCode() {
 	return this.id;
