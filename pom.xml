@@ -98,11 +98,6 @@
       <url>http://download.eclipse.org/eclipse/updates/4.16-I-builds/</url>
     </repository>
     <repository>
-      <id>eclipse-derby-buildtools-repository</id>
-      <layout>p2</layout>
-      <url>http://build.eclipse.org/eclipse/buildtools/derbyCore-10.11.1.1-B/</url>
-    </repository>
-    <repository>
       <id>cbi-common-license</id>
       <layout>p2</layout>
       <url>${license-repo.url}</url>
