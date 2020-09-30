@@ -108,7 +108,6 @@ public ComponentResultsView() {
 	this.fullSelectionImageDescriptor = ImageDescriptor.createFromFile(getClass(), "icallout_obj.gif");
 	this.preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 	this.preferences.addPreferenceChangeListener(this);
-	Util.initMilestones(this.preferences);
 }
 
 /*

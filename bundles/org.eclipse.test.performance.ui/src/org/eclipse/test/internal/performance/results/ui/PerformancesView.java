@@ -46,7 +46,6 @@ import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
 import org.eclipse.test.internal.performance.results.model.PerformanceResultsElement;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
-import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewPart;
@@ -187,8 +186,6 @@ public PerformancesView() {
 	// Init tool tip
 	setTitleToolTip();
 
-	// Init milestones
-	Util.initMilestones(this.preferences);
 }
 
 File changeDataDir(String lastBuild) {
@@ -367,7 +364,7 @@ abstract PerformancesView getSiblingView();
 void hookContextMenu() {
 	MenuManager menuMgr = new MenuManager("#PopupMenu");
 	menuMgr.setRemoveAllWhenShown(true);
-	menuMgr.addMenuListener(manager -> fillContextMenu(manager));
+	menuMgr.addMenuListener(this::fillContextMenu);
 	Menu menu = menuMgr.createContextMenu(this.viewer.getControl());
 	this.viewer.getControl().setMenu(menu);
 	getSite().registerContextMenu(menuMgr, this.viewer);

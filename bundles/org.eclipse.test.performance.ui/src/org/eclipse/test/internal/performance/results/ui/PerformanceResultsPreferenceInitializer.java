@@ -68,19 +68,6 @@ public void initializeDefaultPreferences() {
 	defaultPreferences.putBoolean(PRE_FILTER_OLD_BUILDS, IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS);
 	defaultPreferences.putBoolean(PRE_FILTER_NIGHTLY_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS);
 
-	// Milestones
-	String[] milestones = IPerformancesConstants.V36_MILESTONES;
-	String prefix = PRE_MILESTONE_BUILDS + "." + ECLIPSE_MAINTENANCE_VERSION;
-	length = milestones.length;
-	for (int i = 0; i < length; i++) {
-		defaultPreferences.put(prefix + i, milestones[i]);
-	}
-	milestones = IPerformancesConstants.V37_MILESTONES;
-	prefix = PRE_MILESTONE_BUILDS + "." + ECLIPSE_DEVELOPMENT_VERSION;
-	length = milestones.length;
-	for (int i = 0; i < length; i++) {
-		defaultPreferences.put(prefix + i, milestones[i]);
-	}
 }
 
 }

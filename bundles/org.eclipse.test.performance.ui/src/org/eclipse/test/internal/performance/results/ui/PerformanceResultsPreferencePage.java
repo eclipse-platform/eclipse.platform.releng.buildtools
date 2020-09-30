@@ -38,7 +38,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
-import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.test.performance.ui.UiPlugin;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -60,7 +59,6 @@ public class PerformanceResultsPreferencePage extends PreferencePage
 	private CCombo defaultDimensionCombo;
 //	private CCombo lastBuildCombo;
 	private List resultsDimensionsList;
-	private CCombo milestonesCombo;
 	private Label dbLocationLabel;
 
 	// Status SWT objects
@@ -230,12 +228,6 @@ protected Control createContents(Composite parent) {
 		createLabel(thresholdsGroup, "Improvement:", false);
 		this.comparisonThresholdImprovement = createTextField(thresholdsGroup);
 		this.comparisonThresholdImprovement.setToolTipText("The threshold in percentage to report an improvement");
-
-		// Milestones
-		Composite compositeMilestones = createComposite(parent, 3, 1);
-		createLabel(compositeMilestones, "Milestones", false);
-		this.milestonesCombo = createCombo(compositeMilestones);
-		this.milestonesCombo.setToolTipText("Enter the date of the milestone as yyyymmddHHMM");
 
 		// Default dimension layout
 		StringBuilder tooltip = new StringBuilder("Select the default dimension which will be used for performance results\n");
@@ -523,16 +515,6 @@ private void initializeDefaults() {
 	}
     updateBrowseButtonToolTip(version);
 
-	// Milestones
-	this.milestonesCombo.removeAll();
-	String prefix = PRE_MILESTONE_BUILDS + "." + version;
-	String milestone = store.getDefaultString(prefix + "0");
-	int index = 0;
-	while (milestone != null && milestone.length() > 0) {
-		this.milestonesCombo.add(milestone);
-		milestone = store.getDefaultString(prefix + ++index);
-	}
-
 	// Init default default dimension
 	String defaultDimension = store.getDefaultString(PRE_DEFAULT_DIMENSION);
 	this.defaultDimensionCombo.setText(defaultDimension);
@@ -585,15 +567,6 @@ private void initializeValues() {
 		this.dVersionRadionButton.setSelection(true);
 	}
     updateBrowseButtonToolTip(version);
-
-	// Milestones
-	String prefix = PRE_MILESTONE_BUILDS + "." + version;
-	int index = 0;
-	String milestone = store.getString(prefix + index);
-	while (milestone != null && milestone.length() > 0) {
-		this.milestonesCombo.add(milestone);
-		milestone = store.getString(prefix + ++index);
-	}
 
 	// Init composite lists
 	initDimensionsLists();
@@ -700,130 +673,6 @@ public void modifyText(ModifyEvent event) {
 		System.arraycopy(resultsDimensions, 0, resultsDimensions = new String[length + 1], 0, length);
 		resultsDimensions[length] = defaultDimension;
 		this.resultsDimensionsList.setSelection(resultsDimensions);
-	}
-
-	// Add default dimension to results if necessary
-	if (event.getSource() == this.milestonesCombo) {
-
-		// Verify the only digits are entered
-		String milestoneDate = this.milestonesCombo.getText();
-		final int mLength = milestoneDate.length();
-		if (mLength > 0) {
-			for (int i=0; i<mLength; i++) {
-				if (!Character.isDigit(milestoneDate.charAt(i))) {
-					String[] items = this.milestonesCombo.getItems();
-					int length = items.length;
-					for (int j=0; j<length; j++) {
-						if (items[j].equals(milestoneDate)) {
-							return;
-						}
-					}
-					openMilestoneErrorMessage(milestoneDate);
-					return;
-				}
-			}
-		}
-
-		// Do not verify further until a complete milestone date is entered
-		if (mLength < 12) return;
-
-		// Verify the digits
-		try {
-			String str = milestoneDate.substring(0, 4);
-			int year = Integer.parseInt(str);
-			if (year < 2009 || year > 2020) { // 2020 should be enough!
-				MessageDialog.openError(getShell(), getDialogTitle(), milestoneDate+": "+str+" is an invalid year, only value between 2009 and 2020 is accepted!");
-				return;
-			}
-			str = milestoneDate.substring(4, 6);
-			int month = Integer.parseInt(str);
-			if (month <= 0 || month > 12) {
-				MessageDialog.openError(getShell(), getDialogTitle(), milestoneDate+": "+str+" is an invalid month, it should be only from 01 to 12!");
-				return;
-			}
-			str = milestoneDate.substring(6, 8);
-			int day = Integer.parseInt(str);
-			if (day <= 0 || day > 31) {
-				// TODO improve this verification
-				MessageDialog.openError(getShell(), getDialogTitle(), milestoneDate+": "+str+" is an invalid day, it should be only from 01 to 31!");
-				return;
-			}
-			str = milestoneDate.substring(8, 10);
-			int hour = Integer.parseInt(str);
-			if (hour < 0 || hour > 23) {
-				MessageDialog.openError(getShell(), getDialogTitle(), milestoneDate+": "+str+" is an invalid hour, it should be only from 00 to 23!");
-				return;
-			}
-			str = milestoneDate.substring(10, 12);
-			int min = Integer.parseInt(str);
-			if (min < 0 || min > 59) {
-				MessageDialog.openError(getShell(), getDialogTitle(), milestoneDate+": "+str+" is invalid minutes, it should be only from 00 to 59!");
-				return;
-			}
-		}
-		catch (NumberFormatException nfe) {
-			openMilestoneErrorMessage(milestoneDate);
-		}
-
-		// Get combo info
-		String[] milestones = this.milestonesCombo.getItems();
-		int length = milestones.length;
-		String lastMilestone = length == 0 ? null : milestones[length-1];
-
-		// Verify that the added milestone is valid
-		char version = (char) ('0' + (this.mVersionRadioButton.getSelection()
-			? ECLIPSE_MAINTENANCE_VERSION
-			: ECLIPSE_DEVELOPMENT_VERSION) - 30);
-
-		// Verify that the milestone follow the last one
-		String milestoneName;
-		if (lastMilestone == null) {
-			// No previous last milestone
-			milestoneName = "M1";
-		} else {
-			// Compare with last milestone
-			if (lastMilestone.charAt(0) == 'M') {
-				char digit = lastMilestone.charAt(1);
-				if (digit == '6') {
-					// M6 is the last dvpt milestone
-					milestoneName = "RC1";
-				} else {
-					milestoneName = "M" +((char)(digit+1));
-				}
-			} else if (lastMilestone.startsWith("RC")) {
-				char digit = lastMilestone.charAt(2);
-				if (digit == '4') {
-					// RC4 is the last release candidate milestone
-					milestoneName = "R3_"+version;
-				} else {
-					milestoneName = "RC" +((char)(digit+1));
-				}
-			} else if (lastMilestone.startsWith("R3_"+version+"-")) {
-				milestoneName = "R3_" + version + "_1";
-			} else if (lastMilestone.startsWith("R3_"+version+"_")) {
-				char digit = lastMilestone.charAt(5);
-				milestoneName = "R3_" + version + "_" + ((char)(digit+1));
-			} else {
-				MessageDialog.openError(getShell(), getDialogTitle(), "Unexpected last milestone name: "+lastMilestone+"!");
-				return;
-			}
-
-			// Verify the date of the new milestone
-			int lastMilestoneDash = lastMilestone.indexOf('-');
-			final String lastMilestoneDate = lastMilestone.substring(lastMilestoneDash+1);
-			if (milestoneDate.compareTo(lastMilestoneDate) <= 0) {
-				// TODO improve this verification
-				MessageDialog.openError(getShell(), getDialogTitle(), "Milestone "+milestoneDate+" should be after the last milestone: "+lastMilestoneDate+"!");
-				return;
-			}
-		}
-
-		// Verification are ok, ask to add the milestone
-		final String milestone = milestoneName + "-" + milestoneDate;
-		if (MessageDialog.openConfirm(getShell(), getDialogTitle(), milestoneDate+" is a valid milestone date.\n\nDo you want to add the milestone '"+milestone+"' to the preferences?")) {
-			this.milestonesCombo.add(milestone);
-			this.milestonesCombo.setText("");
-		}
 	}
 
 	// Verify the 'builds to confirm' number
@@ -962,11 +811,6 @@ private void storeValues() {
 
 	// Set milestones
 	String prefix = PRE_MILESTONE_BUILDS + "." + version;
-	count  = this.milestonesCombo.getItemCount();
-	for (i=0; i<count; i++) {
-		store.putValue(prefix + i, this.milestonesCombo.getItem(i));
-	}
-	Util.setMilestones(this.milestonesCombo.getItems());
 
 	// Unset previous additional milestones
 	String milestone = store.getString(prefix + count);
@@ -998,16 +842,6 @@ private void storeValues() {
 	}
 	DB_Results.setResultsDimensions(dimensions);
 
-	// Set config descriptors
-	/* TODO See whether config descriptors need to be set as preferences or not...
-	TableItem[] items = this.configDescriptorsTable.getItems();
-	length = items.length;
-	for (int i = 0; i < length; i++) {
-		TableItem item = items[i];
-		store.putValue(PRE_CONFIG_DESCRIPTOR_NAME + "." + i, item.getText(0));
-		store.putValue(PRE_CONFIG_DESCRIPTOR_DESCRIPTION + "." + i, item.getText(1));
-	}
-	*/
 }
 
 @Override

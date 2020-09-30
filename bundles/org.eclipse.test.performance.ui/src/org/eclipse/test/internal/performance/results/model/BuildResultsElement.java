@@ -141,12 +141,10 @@ public class BuildResultsElement extends ResultsElement {
 
 public BuildResultsElement(AbstractResults results, ResultsElement parent) {
 	super(results, parent);
-	initInfo();
 }
 
 public BuildResultsElement(String name, ResultsElement parent) {
 	super(name, parent);
-	initInfo();
 }
 
 @Override
@@ -306,14 +304,6 @@ void initChildren() {
 	}
 }
 
-/*
- * Init information
- */
-void initInfo() {
-	this.milestone = Util.isMilestone(getName());
-	this.important = this.milestone || Util.getNextMilestone(this.name) == null;
-}
-
 @Override
 void initStatus() {
 	if (this.results == null) {
@@ -342,15 +332,6 @@ void initStatus() {
  */
 public boolean isImportant() {
 	return this.important;
-}
-
-/**
- * Returns whether the build is a milestone one or not.
- *
- * @return <code>true</code>  or <code>false</code> .
- */
-public boolean isMilestone() {
-	return this.milestone;
 }
 
 public boolean isRead() {

@@ -324,12 +324,6 @@ public class ConfigTab {
 	 */
 	private void fillTableLines(boolean fingerprints) {
 
-		// Get preferences information
-		boolean onlyMilestones = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_OLD_BUILDS,
-				IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS);
-		boolean skipNightlyBuilds = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS,
-				IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS);
-
 		// Get model information
 		if (this.results == null)
 			return;
@@ -351,28 +345,13 @@ public class ConfigTab {
 
 			// The first column is the build name
 			String buildName = (String) line.get(0);
-			String milestoneName = Util.getMilestoneName(buildName);
 			TableItem item = null;
 
 			// Set item if the line is not filtered
 			Font italic;
-			if (milestoneName != null) {
-				item = new TableItem(this.table, SWT.NONE);
-				item.setText(milestoneName + " - " + buildName);
-				item.setFont(0, this.boldFont);
-				if (!onlyMilestones)
-					item.setBackground(this.blueref);
-				italic = this.boldItalicFont;
-			} else {
-				if ((onlyMilestones && Util.getNextMilestone(buildName) != null)
-						|| (skipNightlyBuilds && buildName.charAt(0) == 'N')) {
-					// skip line
-					continue;
-				}
-				item = new TableItem(this.table, SWT.NONE);
-				item.setText(0, buildName);
-				italic = this.italicFont;
-			}
+			item = new TableItem(this.table, SWT.NONE);
+			item.setText(0, buildName);
+			italic = this.italicFont;
 
 			// Read each column value
 			String baselineName = null;
@@ -386,7 +365,7 @@ public class ConfigTab {
 				// Otherwise get values for a scenario
 				Font italic2 = italic;
 				ScenarioResultsElement scenarioResultsElement = (ScenarioResultsElement) scenarios[col - 1];
-				if (milestoneName != null || (!fingerprints && scenarioResultsElement.hasSummary())) {
+				if ((!fingerprints && scenarioResultsElement.hasSummary())) {
 					italic2 = this.boldItalicFont;
 					item.setFont(col, this.boldFont);
 				}

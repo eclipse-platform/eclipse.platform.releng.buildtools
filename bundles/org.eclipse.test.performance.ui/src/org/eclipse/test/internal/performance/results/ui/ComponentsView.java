@@ -40,7 +40,6 @@ import org.eclipse.test.internal.performance.results.model.ConfigResultsElement;
 import org.eclipse.test.internal.performance.results.model.ResultsElement;
 import org.eclipse.test.internal.performance.results.model.ScenarioResultsElement;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
-import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.model.WorkbenchContentProvider;
@@ -130,14 +129,7 @@ public void createPartControl(Composite parent) {
 
 		@Override
     protected String decorateText(String input, Object element) {
-			String text = super.decorateText(input, element);
-			if (element instanceof BuildResultsElement) {
-				BuildResultsElement buildElement = (BuildResultsElement) element;
-				if (buildElement.isMilestone()) {
-					text = Util.getMilestoneName(buildElement.getName()) + " - "+text;
-				}
-			}
-			return text;
+			return super.decorateText(input, element);
 		}
 
 		// When all scenarios are displayed, then set fingerprints one in bold.
@@ -151,12 +143,6 @@ public void createPartControl(Composite parent) {
 					if (scenarioElement.hasSummary()) {
 						return getBoldFont(font);
 					}
-				}
-			}
-			if (element instanceof BuildResultsElement) {
-				BuildResultsElement buildElement = (BuildResultsElement) element;
-				if (Util.isMilestone(buildElement.getName())) {
-					return getBoldFont(font);
 				}
 			}
 			return font;

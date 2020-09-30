@@ -40,14 +40,9 @@ public interface IPerformancesConstants {
     String PRE_FILTER_OLD_BUILDS = PREFIX + "filter.non.milestones.builds"; //$NON-NLS-1$
     String PRE_FILTER_NIGHTLY_BUILDS = PREFIX + "filter.nightly.builds"; //$NON-NLS-1$
 
-	// Other constants
-	int ECLIPSE_MAINTENANCE_VERSION = 44;
-	int ECLIPSE_DEVELOPMENT_VERSION = 45;
-
 	// Default values
 	String DATABASE_NAME_PREFIX = "perfDb";
 	String NETWORK_DATABASE_LOCATION = "//shared/eclipse/databases/eclipseDB45/perfDb45:1528";
-	int DEFAULT_ECLIPSE_VERSION = ECLIPSE_DEVELOPMENT_VERSION;
 	boolean DEFAULT_FILTER_ADVANCED_SCENARIOS = true;
 	boolean DEFAULT_FILTER_OLD_BUILDS = false;
 	boolean DEFAULT_FILTER_NIGHTLY_BUILDS = false;
@@ -81,64 +76,8 @@ public interface IPerformancesConstants {
     String PRE_COMPARISON_THRESHOLD_IMPROVEMENT = PREFIX + "comparison.threshold.imporvement"; //$NON-NLS-1$
 	int DEFAULT_COMPARISON_THRESHOLD_IMPROVEMENT = 10;
 
-	// Default milestones nowadays
-	String[] V37_MILESTONES = new String[] {
-	};
-	String[] V36_MILESTONES = new String[] {
-		"M1-200908060100",
-		"M2-200909170100",
-		"M3-200910301201",
-		"M4-200912101301",
-		"M5-201001291300",
-		"M6-201003121448",
-	};
-	/** @deprecated */
-	@Deprecated String[] V35_MILESTONES = new String[] {
-		        "M1-200808071402",
-		        "M2-200809180100",
-		        "M3-200810301917",
-		        "M4-200812111908",
-		        "M5-200902021535",
-		        "M6-200903130100",
-		        "M7-200904302300",
-		        "RC1-200905151143",
-		        "RC2-200905221710",
-		        "RC3-200905282000",
-		        "RC4-200906051444",
-		        "R3_5-200906111540"
-	};
-	/** @deprecated */
-	@Deprecated String[] V34_MILESTONES = new String[] {
-		        "M1-200708091105",
-		        "M2-200709210919",
-		        "M3-200711012000",
-		        "M4-200712131700",
-		        "M5-200802071530",
-		        "M6a-200804091425",
-		        "M7-200805020100",
-		        "RC1-200805161333",
-		        "RC2-200805230100",
-		        "RC3-200805301730",
-		        "RC4-200806091311",
-		        "R3_4-200806172000"
-	};
-	/** @deprecated */
-	@Deprecated String[] V33_MILESTONES = new String[] {
-		        "M1-200608101230",
-		        "M2-200609220010",
-		        "M3-200611021715",
-		        "M4-200612141445",
-		        "M5-200702091006",
-		        "M5eh-200702220951",
-		        "M6-200703231616",
-		        "M7-200705031400",
-		        "RC1-200705171700",
-		        "RC2-200705251350",
-		        "RC3-200706011539",
-		        "RC4-200706081718",
-		        "R3_3-200706251500",
-		        "R3_3_1-200709211145",
-		        "R3_3_2-200802211800"
-	};
+	int ECLIPSE_DEVELOPMENT_VERSION = 418;
+	int DEFAULT_ECLIPSE_VERSION = ECLIPSE_DEVELOPMENT_VERSION;
+	int ECLIPSE_MAINTENANCE_VERSION = 417;
 
 }

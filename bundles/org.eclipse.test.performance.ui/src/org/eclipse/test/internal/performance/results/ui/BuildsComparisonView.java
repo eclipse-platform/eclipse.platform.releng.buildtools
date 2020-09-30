@@ -34,7 +34,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.test.internal.performance.results.model.BuildResultsElement;
 import org.eclipse.test.internal.performance.results.model.PerformanceResultsElement;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
-import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
@@ -95,8 +94,6 @@ public class BuildsComparisonView extends ViewPart implements ISelectionChangedL
 public BuildsComparisonView() {
 	this.preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 	this.preferences.addPreferenceChangeListener(this);
-	// TODO should be done only once!
-	Util.initMilestones(this.preferences);
 }
 
 /*
@@ -151,11 +148,11 @@ void createTabs() {
 	for (int i=0; i<length; i++) {
 		this.tabs[i] = new BuildsComparisonTab(components[i]);
 	}
-	for (int i=0; i<this.tabs.length; i++) {
+	for (BuildsComparisonTab tab : this.tabs) {
 		CTabItem item = new CTabItem (this.tabFolder, SWT.NONE);
-		item.setText (this.tabs[i].getTabText ());
-		item.setControl (this.tabs[i].createTabFolderPage(this));
-		item.setData (this.tabs[i]);
+		item.setText (tab.getTabText ());
+		item.setControl (tab.createTabFolderPage(this));
+		item.setData (tab);
 	}
 	this.tabFolder.setSelection(0);
 }

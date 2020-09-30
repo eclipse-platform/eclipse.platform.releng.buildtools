@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.test.internal.performance.results.db.BuildResults;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
 
@@ -75,8 +74,6 @@ public final class Util implements IPerformancesConstants {
         BASELINE_BUILD_PREFIXES.add(DB_Results.getDbBaselinePrefix());
     }
 
-    // Milestones constants
-    private static String[]                 MILESTONES;
     public static final BuildDateComparator BUILD_DATE_COMPARATOR = new BuildDateComparator();
 
     // Components constants
@@ -98,34 +95,6 @@ public final class Util implements IPerformancesConstants {
                 throw new IllegalArgumentException("Buildname did not have a date, as expected: " + s2);
             }
             return buildDate1.compareTo(buildDate2);
-        }
-    }
-
-    private static void initMilestones() {
-        String version = DB_Results.getDbVersion();
-
-        // Initialize reference version and database directory
-        char mainVersion = version.charAt(1);
-        char minorVersion = version.charAt(2);
-
-        // Initialize milestones
-        if (mainVersion == '3') {
-            switch (minorVersion) {
-                case '3':
-                case '4':
-                case '5':
-                    throw new RuntimeException("Version " + mainVersion + '.' + minorVersion + " is no longer supported!");
-                case '6':
-                    MILESTONES = V36_MILESTONES;
-                    break;
-                case '7':
-                    MILESTONES = V37_MILESTONES;
-                    break;
-                default:
-                    throw new RuntimeException("Version " + mainVersion + '.' + minorVersion + " is not supported yet!");
-            }
-        } else {
-            throw new RuntimeException("Version " + mainVersion + '.' + minorVersion + " is not supported yet!");
         }
     }
 
@@ -359,103 +328,6 @@ public final class Util implements IPerformancesConstants {
     }
 
     /**
-     * Returns the date of the milestone corresponding at the given index.
-     *
- * @param index The index of the milestone
-     * @return The date as a YYYYMMDD-hhmm string.
-     */
-    public static String getMilestoneDate(int index) {
-        int length = getMilestonesLength();
-	if (index >= length) return null;
-        int dash = MILESTONES[index].indexOf('-');
-        return MILESTONES[index].substring(dash + 1);
-    }
-
-    /**
-     * Returns the milestone matching the given build name.
-     *
- * @param buildName The name of the build
-     * @return The milestone as a string (e.g. M1)
-     */
-    public static String getMilestone(String buildName) {
-        if (buildName != null && buildName.length() >= 12) {
-            int length = getMilestonesLength();
-            String buildDate = getBuildDate(buildName, DB_Results.getDbBaselinePrefix());
-            for (int i = 0; i < length; i++) {
-                int start = MILESTONES[i].indexOf(buildDate);
-                if (start > 0) {
-                    return MILESTONES[i];
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the name the milestone matching the given build name.
-     *
- * @param buildName The name of the build
-     * @return The milestone name as a string (e.g. M1)
-     */
-    public static String getMilestoneName(String buildName) {
-        if (buildName != null && buildName.length() >= 12) {
-            int length = getMilestonesLength();
-            String buildDate = getBuildDate(buildName, DB_Results.getDbBaselinePrefix());
-            for (int i = 0; i < length; i++) {
-                int start = MILESTONES[i].indexOf(buildDate);
-                if (start > 0) {
-                    return MILESTONES[i].substring(0, start - 1);
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns whether the given build name is a milestone or not.
-     *
- * @param buildName The build name
-     * @return <code>true</code> if the build name matches a milestone one,
-     *         <code>false</code> otherwise.
-     */
-    public static boolean isMilestone(String buildName) {
-        return getMilestoneName(buildName) != null;
-    }
-
-    /**
-     * Returns the name of the milestone which run after the given build name or
-     * <code>null</code> if there's no milestone since the build has run.
-     *
-     * @param buildName
-     *            The build name
-     * @return <code>true</code> if the build name matches a milestone one,
-     *         <code>false</code> otherwise.
-     */
-    public static String getNextMilestone(String buildName) {
-        int length = getMilestonesLength();
-        String buildDate = getBuildDate(buildName);
-        for (int i = 0; i < length; i++) {
-            String milestoneDate = MILESTONES[i].substring(MILESTONES[i].indexOf('-') + 1);
-            if (milestoneDate.compareTo(buildDate) > 0) {
-                return milestoneDate;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Return the number of milestones.
-     *
-     * @return The number as an int
-     */
-    public static int getMilestonesLength() {
-        if (MILESTONES == null)
-            initMilestones();
-        int length = MILESTONES.length;
-        return length;
-    }
-
-    /**
      * @deprecated
      */
     @Deprecated
@@ -645,39 +517,4 @@ public final class Util implements IPerformancesConstants {
         // don't instantiate
     }
 
-    /**
-     * Set the milestones.
-     *
-     * @param items
-     *            The milestones list (e.g.
-     *            {@link IPerformancesConstants#V37_MILESTONES}).
-     */
-    public static void setMilestones(String[] items) {
-        MILESTONES = items;
-    }
-
-    /**
-     * Init the milestones from preferences
-     *
-     * @param preferences
-     *            The preferences from which got milestones list
-     */
-    public static void initMilestones(IEclipsePreferences preferences) {
-        int eclipseVersion = preferences.getInt(IPerformancesConstants.PRE_ECLIPSE_VERSION,
-                IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
-        String prefix = IPerformancesConstants.PRE_MILESTONE_BUILDS + "." + eclipseVersion;
-        int index = 0;
-        String milestone = preferences.get(prefix + index, null);
-        String[] milestones = new String[20];
-        while (milestone != null) {
-            milestones[index] = milestone;
-            index++;
-            milestone = preferences.get(prefix + index, null);
-        }
-        int length = milestones.length;
-        if (index < length) {
-            System.arraycopy(milestones, 0, milestones = new String[index], 0, index);
-        }
-        MILESTONES = milestones;
-    }
 }
