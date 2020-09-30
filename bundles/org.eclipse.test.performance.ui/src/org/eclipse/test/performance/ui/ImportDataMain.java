@@ -82,7 +82,7 @@ public class ImportDataMain implements IApplication {
       System.out.println("INFO: Connecting to database...");
 
       // import data
-      IStatus exitStatus = new Status(IStatus.OK, UiPlugin.getDefault().toString(), "Nothing to import.");
+      IStatus exitStatus = new Status(IStatus.OK, ImportDataMain.class, "Nothing to import.");
       System.out.println("INFO: Start importing " + inputFiles.size() + " performance data files.");
       for (Path inputFile : inputFiles) {
         exitStatus = importData(inputFile);
@@ -92,7 +92,7 @@ public class ImportDataMain implements IApplication {
       }
       return exitStatus;
     } catch (Exception ex) {
-      return new Status(IStatus.ERROR, UiPlugin.getDefault().toString(), "Performance data import failed with exception!", ex);
+      return new Status(IStatus.ERROR, ImportDataMain.class, "Performance data import failed with exception!", ex);
     }
   }
 
@@ -141,7 +141,7 @@ public class ImportDataMain implements IApplication {
       }
     } catch (EOFException ex) {
       // EOFException is the intended way to end the loop
-      return new Status(IStatus.OK, UiPlugin.getDefault().toString(), "Everything is OK");
+      return new Status(IStatus.OK, ImportDataMain.class, "Everything is OK");
     }
   }
 }

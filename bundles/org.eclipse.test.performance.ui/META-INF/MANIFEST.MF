@@ -4,7 +4,6 @@ Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.eclipse.test.performance.ui; singleton:=true
 Bundle-Version: 3.10.0.qualifier
 Bundle-ClassPath: .
-Bundle-Activator: org.eclipse.test.performance.ui.UiPlugin
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Localization: plugin

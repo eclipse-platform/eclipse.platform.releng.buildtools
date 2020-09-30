@@ -35,6 +35,7 @@ import org.eclipse.test.internal.performance.results.db.PerformanceResults;
 import org.eclipse.test.internal.performance.results.db.ScenarioResults;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 /**
  * Main class to generate performance results of all scenarios matching a given pattern
@@ -255,9 +256,9 @@ private void parse(String[] args) {
 			buffer.append("	").append(arg).append(" = ");
 			String[] ids = idPrefixList.split(",");
 			this.currentBuildPrefixes = new ArrayList<>();
-			for (int j = 0; j < ids.length; j++) {
-				this.currentBuildPrefixes.add(ids[j]);
-				buffer.append(ids[j]);
+			for (String id : ids) {
+				this.currentBuildPrefixes.add(id);
+				buffer.append(id);
 			}
 			buffer.append('\n');
 			i++;
@@ -865,63 +866,13 @@ private IStatus generate(final IProgressMonitor monitor) {
 		printSummary(/*performanceResults*/);
 
 		// Copy images and scripts to output dir
-		Bundle bundle = UiPlugin.getDefault().getBundle();
-//		URL images = bundle.getEntry("images");
-//		if (images != null) {
-//			images = FileLocator.resolve(images);
-//			Utils.copyImages(new File(images.getPath()), this.outputDir);
-//		}
-		/* New way to get images
-		File content = FileLocator.getBundleFile(bundle);
-		BundleFile bundleFile;
-		if (content.isDirectory()) {
-			bundleFile = new DirBundleFile(content);
-			Utils.copyImages(bundleFile.getFile("images", true), this.outputDir);
-		} else {
-			bundleFile = new ZipBundleFile(content, null);
-			Enumeration imageFiles = bundle.findEntries("images", "*.gif", false);
-			while (imageFiles.hasMoreElements()) {
-				URL url = (URL) imageFiles.nextElement();
-				Utils.copyFile(bundleFile.getFile("images"+File.separator+, true), this.outputDir);
-			}
-		}
-		*/
+		Bundle bundle = FrameworkUtil.getBundle(GenerateResults.class);
 		// Copy bundle files
 		Utils.copyBundleFiles(bundle, "images", "*.gif", this.outputDir); // images
 		Utils.copyBundleFiles(bundle, "scripts", "*.js", this.outputDir); // java scripts
 		Utils.copyBundleFiles(bundle, "scripts", "*.css", this.outputDir); // styles
 		Utils.copyBundleFiles(bundle, "doc", "*.html", this.outputDir); // doc
 		Utils.copyBundleFiles(bundle, "doc/images", "*.png", this.outputDir); // images for doc
-		/*
-		URL doc = bundle.getEntry("doc");
-		if (doc != null) {
-			doc = FileLocator.resolve(doc);
-			File docDir = new File(doc.getPath());
-			FileFilter filter = new FileFilter() {
-				public boolean accept(File pathname) {
-		            return !pathname.getName().equals("CVS");
-	            }
-			};
-			File[] docFiles = docDir.listFiles(filter);
-			for (int i=0; i<docFiles.length; i++) {
-				File file = docFiles[i];
-				if (file.isDirectory()) {
-					File subdir = new File(this.outputDir, file.getName());
-					subdir.mkdir();
-					File[] subdirFiles = file.listFiles(filter);
-					for (int j=0; j<subdirFiles.length; j++) {
-						if (subdirFiles[i].isDirectory()) {
-							// expect only one sub-directory
-						} else {
-							Util.copyFile(subdirFiles[j], new File(subdir, subdirFiles[j].getName()));
-						}
-					}
-				} else {
-					Util.copyFile(file, new File(this.outputDir, file.getName()));
-				}
-			}
-		}
-		*/
 
 		// Print HTML pages and all linked files
 		if (this.printStream != null) {
@@ -929,8 +880,6 @@ private IStatus generate(final IProgressMonitor monitor) {
 			this.printStream.print("	- components main page");
 		}
 		long start = System.currentTimeMillis();
-//		subMonitor.setTaskName("Write fingerprints: 0%");
-//		subMonitor.subTask("Global...");
 		subMonitor.subTask("Write fingerprints: global (0%)...");
 		printComponent(/*performanceResults, */"global_fp");
 		subMonitor.worked(100);
@@ -941,8 +890,6 @@ private IStatus generate(final IProgressMonitor monitor) {
 		int progress = 0;
 		for (int i=0; i<length; i++) {
 			int percentage = (int) ((progress / ((double) length)) * 100);
-//			subMonitor.setTaskName("Write fingerprints: "+percentage+"%");
-//			subMonitor.subTask(components[i]+"...");
 			subMonitor.subTask("Write fingerprints: "+components[i]+" ("+percentage+"%)...");
 			printComponent(/*performanceResults, */components[i]);
 			subMonitor.worked(step);
@@ -975,13 +922,13 @@ private IStatus generate(final IProgressMonitor monitor) {
 			String duration = Util.timeString(System.currentTimeMillis()-begin);
 			this.printStream.println("=> done in "+duration);
 		}
-		return new Status(IStatus.OK, UiPlugin.getDefault().toString(), "Everything is OK");
+		return new Status(IStatus.OK, GenerateResults.class, "Everything is OK");
 	}
 	catch (OperationCanceledException oce) {
-		return new Status(IStatus.OK, UiPlugin.getDefault().toString(), "Generation was cancelled!");
+		return new Status(IStatus.OK, GenerateResults.class, "Generation was cancelled!");
 	}
 	catch (Exception ex) {
-		return new Status(IStatus.ERROR, UiPlugin.getDefault().toString(), "An unexpected exception occurred!", ex);
+		return new Status(IStatus.ERROR, GenerateResults.class, "An unexpected exception occurred!", ex);
 	}
 	finally {
 		if (this.printStream != null) {
