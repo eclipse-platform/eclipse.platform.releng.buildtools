@@ -218,7 +218,6 @@ public class BuildsView extends PerformancesView {
 		boolean force;
 
 		UpdateBuildAction(boolean force) {
-			super();
 			this.force = force;
 		}
 

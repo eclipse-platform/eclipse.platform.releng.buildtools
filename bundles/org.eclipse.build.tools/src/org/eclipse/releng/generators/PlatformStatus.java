@@ -36,7 +36,6 @@ public class PlatformStatus {
     private boolean      hasErrors = false;
 
     PlatformStatus(final Element anElement) {
-        super();
         final NamedNodeMap attributes = anElement.getAttributes();
         id = attributes.getNamedItem("id").getNodeValue();
         Node node = attributes.getNamedItem("name");

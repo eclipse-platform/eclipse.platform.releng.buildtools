@@ -105,8 +105,6 @@ public class ComponentsView extends PerformancesView {
  * Default constructor.
  */
 public ComponentsView() {
-	super();
-
 	// Get preferences
 	this.preferences = InstanceScope.INSTANCE.getNode(IPerformancesConstants.PLUGIN_ID);
 }

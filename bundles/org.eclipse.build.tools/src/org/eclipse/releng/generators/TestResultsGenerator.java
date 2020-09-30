@@ -62,7 +62,6 @@ public class TestResultsGenerator extends Task {
         private List<String>     columns = new ArrayList<>();
 
         public ResultsTable(ArrayList<String> columns) {
-            super();
             this.columns = columns;
         }
 
@@ -72,7 +71,6 @@ public class TestResultsGenerator extends Task {
             private File    resultsFile = null;
 
             public Cell(int errorCount, File resultsFile) {
-                super();
                 this.errorCount = errorCount;
                 this.resultsFile = resultsFile;
             }
@@ -91,7 +89,6 @@ public class TestResultsGenerator extends Task {
             Map<String, Cell> row = new TreeMap<>();
 
             public Row(List<String> columns) {
-                super();
                 for (String column : columns) {
                     row.put(column, null);
                 }

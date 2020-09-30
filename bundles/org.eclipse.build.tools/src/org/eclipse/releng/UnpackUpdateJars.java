@@ -78,7 +78,6 @@ public class UnpackUpdateJars extends Task {
     ArrayList<String> unpackedPlugins = new ArrayList<>();
 
     public UnpackUpdateJars() {
-        super();
     }
 
     // unpack features, then unpack plug-ins which are not set to unpack="false"

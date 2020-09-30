@@ -31,7 +31,6 @@ public class VersionNumberStripper extends Task {
     private String directory="/home/davidw/temp/4.4/R-4.4-201406061215/features";
 
     public VersionNumberStripper() {
-        super();
     }
 
     @Override

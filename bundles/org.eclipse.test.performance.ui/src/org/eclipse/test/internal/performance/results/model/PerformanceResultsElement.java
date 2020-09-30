@@ -38,7 +38,6 @@ public static PerformanceResultsElement PERF_RESULTS_MODEL = new PerformanceResu
 	boolean fingerprints = true;
 
 public PerformanceResultsElement() {
-	super();
 }
 
 @Override

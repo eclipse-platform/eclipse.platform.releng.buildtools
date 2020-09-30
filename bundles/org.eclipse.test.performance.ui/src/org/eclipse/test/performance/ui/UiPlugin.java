@@ -28,7 +28,6 @@ public class UiPlugin extends Plugin {
 	 * The constructor.
 	 */
 	public UiPlugin() {
-		super();
 		if (plugin == null) {
 			plugin = this;
 		}

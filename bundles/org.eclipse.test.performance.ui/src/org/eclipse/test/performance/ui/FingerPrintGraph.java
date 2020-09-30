@@ -119,7 +119,6 @@ public class FingerPrintGraph {
 			String title;
 
 			AreaZone(Rectangle zone, String tooltip) {
-	            super();
 	            this.zone = zone;
 	            this.title = tooltip;
             }
@@ -170,7 +169,6 @@ public class FingerPrintGraph {
 
 
 FingerPrintGraph(File dir, String fileName, int width, List<ConfigResults> results) {
-    super();
     this.imageWidth = width;
     this.count = results.size();
     this.results = new ConfigResults[this.count];
