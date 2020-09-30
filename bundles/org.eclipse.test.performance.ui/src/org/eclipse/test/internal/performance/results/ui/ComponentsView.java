@@ -61,7 +61,6 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
  *	<li>Filter for builds:
  *		<ul>
  *		<li>Filter baselines:	hide the baselines (starting with R-4.x)</li>
- *		<li>Filter nightly:	hide the nightly builds (starting with 'N')</li>
  *		<li>Filter non-important builds:	hide all non-important builds, which means non-milestone builds and those after the last milestone</li>
  *		</ul>
  *	</li>
@@ -277,7 +276,6 @@ void makeActions() {
 
 	// Set filters default
 	this.filterBaselineBuilds.setChecked(true);
-	this.filterNightlyBuilds.setChecked(false);
 }
 
 @Override

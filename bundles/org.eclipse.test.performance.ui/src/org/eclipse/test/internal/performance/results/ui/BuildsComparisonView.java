@@ -169,7 +169,6 @@ public void dispose() {
 
 /*
  * Fill the filters drop-down menu with:
- * 	- filter nightly builds
  * 	- filter non-milestone builds
  *	- filter non-fingerprint scenarios
  */
@@ -223,7 +222,6 @@ public void init(IViewSite site, IMemento memento) throws PartInitException {
 /*
  * Make the actions of the view:
  * 	- change table line selection display
- * 	- filter nightly builds
  * 	- filter non-milestone builds
  *	- filter non-fingerprint scenarios
  */

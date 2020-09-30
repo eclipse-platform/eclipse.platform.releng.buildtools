@@ -92,7 +92,6 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 	Display display = Display.getDefault();
 
 	Color black = display.getSystemColor(SWT.COLOR_BLACK);
-	Color yellow = display.getSystemColor(SWT.COLOR_DARK_YELLOW);
 	Color magenta = display.getSystemColor(SWT.COLOR_MAGENTA);
 
 	String scenarioName = scenarioResults.getName();
@@ -102,7 +101,6 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 
 	final String defaultBaselinePrefix = DB_Results.getDbBaselinePrefix();
 	Iterator<AbstractResults> builds = configResults.getResults();
-	List<String> lastSevenNightlyBuilds = configResults.lastNightlyBuildNames(7);
 	buildLoop: while (builds.hasNext()) {
 		BuildResults buildResults = (BuildResults) builds.next();
 		String buildID = buildResults.getName();
@@ -116,9 +114,6 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 
 		if (buildID.equals(current)) {
 			Color color = black;
-			if (buildID.startsWith("N"))
-				color = yellow;
-
 			graph.addItem("main", label, dim.getDisplayValue(value), value, color, true, Utils.getDateFromBuildID(buildID), true);
 			continue;
 		}
@@ -126,14 +121,8 @@ private TimeLineGraph getLineGraph(ScenarioResults scenarioResults, ConfigResult
 			graph.addItem("main", label, dim.getDisplayValue(value), value, black, false, Utils.getDateFromBuildID(buildID, false), true);
 			continue;
 		}
-		if (buildID.charAt(0) == 'N') {
-			if (lastSevenNightlyBuilds.contains(buildID)) {
-				graph.addItem("main", buildID, dim.getDisplayValue(value), value, yellow, false, Utils.getDateFromBuildID(buildID), false);
-			}
-			continue;
-		}
-		for (int i=0;i<currentBuildIdPrefixes.size();i++){
-			if (buildID.startsWith(currentBuildIdPrefixes.get(i).toString())) {
+		for (String element : currentBuildIdPrefixes) {
+			if (buildID.startsWith(element.toString())) {
 				graph.addItem("main", buildID, dim.getDisplayValue(value), value, black, false, Utils.getDateFromBuildID(buildID), false);
 				continue buildLoop;
 			}
@@ -294,7 +283,7 @@ void printSummary(String configName, String configBox, ComponentResults componen
 			stream.print("<br><hr>\n\n");
 
 			// print text legend.
-			stream.print("Black and yellow points plot values measured in integration and last seven nightly builds.<br>\n" + "Magenta points plot the repeated baseline measurement over time.<br>\n"
+			stream.print("Black points plot values measured in integration builds.<br>\n" + "Magenta points plot the repeated baseline measurement over time.<br>\n"
 					+ "Boxed points represent previous releases, milestone builds, current reference and current build.<br><br>\n"
 					+ "Hover over any point for build id and value.\n");
 

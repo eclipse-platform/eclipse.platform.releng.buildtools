@@ -60,7 +60,6 @@ import org.eclipse.ui.part.ViewPart;
  * </p><ul>
  *	<li>Filter for builds:
  *		<ul>
- *		<li>Filter nightly:	hide the nightly builds (starting with 'N')</li>
  *		<li>Filter non-important builds:	hide all non-important builds, which means non-milestone builds and those after the last milestone</li>
  *		</ul>
  *	</li>
@@ -90,7 +89,6 @@ public class ComponentResultsView extends ViewPart implements ISelectionChangedL
 	Action fullLineSelection;
 	Action filterAdvancedScenarios;
 	Action filterOldBuilds;
-	Action filterNightlyBuilds;
 	ImageDescriptor fullSelectionImageDescriptor;
 
 	// Views
@@ -184,12 +182,10 @@ public void dispose() {
 
 /*
  * Fill the filters drop-down menu with:
- * 	- filter nightly builds
  * 	- filter non-milestone builds
  *	- filter non-fingerprint scenarios
  */
 void fillFiltersDropDown(IMenuManager manager) {
-	manager.add(this.filterNightlyBuilds);
 	manager.add(this.filterOldBuilds);
 	manager.add(new Separator());
 	manager.add(this.filterAdvancedScenarios);
@@ -221,7 +217,6 @@ public void init(IViewSite site, IMemento memento) throws PartInitException {
 /*
  * Make the actions of the view:
  * 	- change table line selection display
- * 	- filter nightly builds
  * 	- filter non-milestone builds
  *	- filter non-fingerprint scenarios
  */
@@ -260,15 +255,6 @@ void makeActions() {
 	this.filterOldBuilds.setChecked(false);
 	this.filterOldBuilds.setToolTipText("Filter old builds (i.e. before last milestone) but keep all previous milestones)");
 
-	// Filter nightly action
-	this.filterNightlyBuilds = new Action("&Nightly", IAction.AS_CHECK_BOX) {
-		@Override
-    public void run() {
-			ComponentResultsView.this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS, isChecked());
-			resetTabFolders(false/*refresh*/);
-		}
-	};
-	this.filterNightlyBuilds.setToolTipText("Filter nightly builds");
 }
 
 @Override
@@ -290,12 +276,6 @@ public void preferenceChange(PreferenceChangeEvent event) {
 		resetTabFolders(false/*refresh*/);
 	}
 
-	// Filter nightly builds change
-	if (propertyName.equals(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS)) {
-		boolean checked = newValue == null ? IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS : "true".equals(newValue);
-		this.filterNightlyBuilds.setChecked(checked);
-		resetTabFolders(false/*refresh*/);
-	}
 }
 
 /*
@@ -372,10 +352,6 @@ void restoreState() {
 	// Filter non fingerprints action state
 	boolean checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
 	this.filterAdvancedScenarios.setChecked(checked);
-
-	// Filter nightly builds action
-	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS);
-	this.filterNightlyBuilds.setChecked(checked);
 
 	// Filter non important builds action state
 	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_OLD_BUILDS, IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS);

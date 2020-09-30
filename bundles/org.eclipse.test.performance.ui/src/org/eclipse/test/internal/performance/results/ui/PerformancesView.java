@@ -95,16 +95,6 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 			return true;
 		}
 	};
-	public final static ViewerFilter FILTER_NIGHTLY_BUILDS = new ViewerFilter() {
-		@Override
-    public boolean select(Viewer v, Object parentElement, Object element) {
-			if (element instanceof BuildResultsElement) {
-				BuildResultsElement buildElement = (BuildResultsElement) element;
-				return buildElement.getName().charAt(0) != 'N';
-			}
-			return true;
-		}
-	};
 	final static ViewerFilter FILTER_OLD_BUILDS = new ViewerFilter() {
 		@Override
     public boolean select(Viewer v, Object parentElement, Object element) {
@@ -136,7 +126,6 @@ public abstract class PerformancesView extends ViewPart implements ISelectionCha
 	// Actions
 	Action changeDataDir;
 	Action filterBaselineBuilds;
-	Action filterNightlyBuilds;
 	Action filterOldBuilds;
 //	Action dbConnection;
 
@@ -263,7 +252,6 @@ void fillContextMenu(@SuppressWarnings("unused") IMenuManager manager) {
  */
 void fillFiltersDropDown(IMenuManager manager) {
 	manager.add(this.filterBaselineBuilds);
-	manager.add(this.filterNightlyBuilds);
 }
 
 /*
@@ -294,19 +282,6 @@ void fillLocalPullDown(IMenuManager manager) {
  */
 void fillLocalToolBar(@SuppressWarnings("unused") IToolBarManager manager) {
 	// no default toolbar action
-}
-
-/*
- * Filter non milestone builds action run.
- */
-void filterNightlyBuilds(boolean filter) {
-	if (filter) {
-		this.viewFilters.add(FILTER_NIGHTLY_BUILDS);
-	} else {
-		this.viewFilters.remove(FILTER_NIGHTLY_BUILDS);
-	}
-	this.preferences.putBoolean(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS, filter);
-	updateFilters();
 }
 
 /*
@@ -424,15 +399,6 @@ void makeActions() {
 	};
 	this.filterBaselineBuilds.setToolTipText("Filter baseline builds");
 
-	// Filter baselines action
-	this.filterNightlyBuilds = new Action("&Nightly", IAction.AS_CHECK_BOX) {
-		@Override
-    public void run() {
-			filterNightlyBuilds(isChecked());
-		}
-	};
-	this.filterNightlyBuilds.setToolTipText("Filter nightly builds");
-
 	// Filter non-important builds action
 	this.filterOldBuilds = new Action("&Old Builds", IAction.AS_CHECK_BOX) {
 		@Override
@@ -525,15 +491,8 @@ void restoreState() {
 		}
 	}
 
-	// Filter nightly builds action
-	boolean checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_NIGHTLY_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS);
-	this.filterNightlyBuilds.setChecked(checked);
-	if (checked) {
-		this.viewFilters.add(FILTER_NIGHTLY_BUILDS);
-	}
-
 	// Filter non important builds action state
-	checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_OLD_BUILDS, IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS);
+	boolean checked = this.preferences.getBoolean(IPerformancesConstants.PRE_FILTER_OLD_BUILDS, IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS);
 	this.filterOldBuilds.setChecked(checked);
 	if (checked) {
 		this.viewFilters.add(FILTER_OLD_BUILDS);

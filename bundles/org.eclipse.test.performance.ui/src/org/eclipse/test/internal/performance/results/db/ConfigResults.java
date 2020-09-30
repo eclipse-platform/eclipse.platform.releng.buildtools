@@ -313,8 +313,7 @@ public String getCurrentBuildName() {
 /**
  * Returns the current build results.
  * <p>
- * This build is currently the last integration or nightly
- * build which has performance results in the database.
+ * This build is currently the last integration build which has performance results in the database.
  * It may differ from the {@link PerformanceResults#getName()}.
  *
  * @return The current build results.
@@ -573,29 +572,6 @@ public boolean isValid() {
 	    initialize();
     }
 	return this.valid;
-}
-
-/**
- * Returns the 'n' last nightly build names.
- *
- * @param n Number of last nightly builds to return
- * @return Last n nightly build names preceding current.
- */
-public List<String> lastNightlyBuildNames(int n) {
-	List<String> labels = new ArrayList<>();
-	for (int i=size()-2; i>=0; i--) {
-		BuildResults buildResults = (BuildResults) this.children.get(i);
-		if (isBuildConcerned(buildResults)) {
-			String buildName = buildResults.getName();
-			if (buildName.startsWith("N")) { //$NON-NLS-1$
-				labels.add(buildName);
-				if (labels.size() >= n) {
-	                break;
-                }
-			}
-		}
-	}
-	return labels;
 }
 
 /*

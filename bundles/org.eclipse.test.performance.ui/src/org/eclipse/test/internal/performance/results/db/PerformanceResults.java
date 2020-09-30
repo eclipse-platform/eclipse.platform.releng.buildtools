@@ -270,7 +270,7 @@ public String getLastBuildName() {
  * @param kind Decide what kind of build is taken into account
  * 	0: all kind of build
  * 	1: all except baseline builds
- * 	2: all except baseline and nightly builds
+ * 	2: all except baseline builds
  * 	3: only integration builds
  * @return the name of the last build of the selected kind
  */
@@ -282,9 +282,6 @@ public String getLastBuildName(int kind) {
 		if (kind > 0) {
 			loop: while (idx-- >= 0) {
 				switch (this.name.charAt(0)) {
-					case 'N':
-						if (kind < 2) break loop;
-						break;
 					case 'M':
 						if (kind < 3) break loop;
 						break;

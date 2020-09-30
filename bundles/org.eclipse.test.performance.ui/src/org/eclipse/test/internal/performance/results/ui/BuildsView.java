@@ -547,7 +547,6 @@ void makeActions() {
 
 	// Set filters default
 	this.filterBaselineBuilds.setChecked(false);
-	this.filterNightlyBuilds.setChecked(false);
 }
 
 /**

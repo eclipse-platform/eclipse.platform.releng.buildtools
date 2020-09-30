@@ -66,7 +66,6 @@ public void initializeDefaultPreferences() {
 	// Filters
 	defaultPreferences.putBoolean(PRE_FILTER_ADVANCED_SCENARIOS, IPerformancesConstants.DEFAULT_FILTER_ADVANCED_SCENARIOS);
 	defaultPreferences.putBoolean(PRE_FILTER_OLD_BUILDS, IPerformancesConstants.DEFAULT_FILTER_OLD_BUILDS);
-	defaultPreferences.putBoolean(PRE_FILTER_NIGHTLY_BUILDS, IPerformancesConstants.DEFAULT_FILTER_NIGHTLY_BUILDS);
 
 }
 

@@ -38,14 +38,12 @@ public interface IPerformancesConstants {
     String PRE_STATUS_COMMENT_PREFIX = PREFIX + "status.comment"; //$NON-NLS-1$
     String PRE_FILTER_ADVANCED_SCENARIOS = PREFIX + "filter.non.fingerprints.scenarios"; //$NON-NLS-1$
     String PRE_FILTER_OLD_BUILDS = PREFIX + "filter.non.milestones.builds"; //$NON-NLS-1$
-    String PRE_FILTER_NIGHTLY_BUILDS = PREFIX + "filter.nightly.builds"; //$NON-NLS-1$
 
 	// Default values
 	String DATABASE_NAME_PREFIX = "perfDb";
 	String NETWORK_DATABASE_LOCATION = "//shared/eclipse/databases/eclipseDB45/perfDb45:1528";
 	boolean DEFAULT_FILTER_ADVANCED_SCENARIOS = true;
 	boolean DEFAULT_FILTER_OLD_BUILDS = false;
-	boolean DEFAULT_FILTER_NIGHTLY_BUILDS = false;
 	boolean DEFAULT_DATABASE_CONNECTION = false;
 	boolean DEFAULT_DATABASE_LOCAL = false;
 
