@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.test.internal.performance.data.Sample;
-import org.eclipse.test.internal.performance.db.DB;
 import org.eclipse.test.internal.performance.db.Variations;
 
 /**
@@ -44,8 +43,8 @@ public class ImportDataMain implements IApplication {
     String[] args = (String[]) context.getArguments().get("application.args");
     if (args.length > 0) {
       System.out.println("\n\t= = Raw arguments ('application.args') passed to performance import application: = =");
-      for (int i = 0; i < args.length; i++) {
-        System.out.println("\t\t>" + args[i] + "<");
+      for (String arg : args) {
+        System.out.println("\t\t>" + arg + "<");
       }
     }
     IStatus result = run(args);
@@ -81,10 +80,6 @@ public class ImportDataMain implements IApplication {
 
       // check database
       System.out.println("INFO: Connecting to database...");
-      DB.getConnection();
-      if (!DB.isActive()) {
-        return new Status(IStatus.ERROR, UiPlugin.getDefault().toString(), "Cannot connect to performance database.");
-      }
 
       // import data
       IStatus exitStatus = new Status(IStatus.OK, UiPlugin.getDefault().toString(), "Nothing to import.");
@@ -98,9 +93,6 @@ public class ImportDataMain implements IApplication {
       return exitStatus;
     } catch (Exception ex) {
       return new Status(IStatus.ERROR, UiPlugin.getDefault().toString(), "Performance data import failed with exception!", ex);
-    }
-    finally {
-      DB.shutdown();
     }
   }
 
@@ -146,10 +138,6 @@ public class ImportDataMain implements IApplication {
         }
 
         System.out.println("DEBUG: Store data for scenario " + scenarioId);
-        boolean success = DB.store(variations, sample);
-        if (!success) {
-          System.err.println("ERROR: Failed to import scenario " + scenarioId);
-        }
       }
     } catch (EOFException ex) {
       // EOFException is the intended way to end the loop
