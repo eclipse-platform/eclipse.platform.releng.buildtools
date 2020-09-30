@@ -65,8 +65,6 @@ public void print(final PerformanceResults performanceResults) {
 		buffer.append(this.component);
 		buffer.append('_');
 	}
-	buffer.append(DB_Results.getDbBaselineRefVersion());
-	buffer.append('_');
 	buffer.append(buildName);
 	String filePrefix = buffer.toString();
 
@@ -114,8 +112,7 @@ public void print(final PerformanceResults performanceResults) {
 		BarGraph barGraph = null;
 		List<ConfigResults> allResults = new ArrayList<>();
 		String defaultDimName = DB_Results.getDefaultDimension().getName();
-		for (int i=0, size=scenarios.size(); i<size; i++) {
-			ScenarioResults scenarioResults = scenarios.get(i);
+		for (ScenarioResults scenarioResults : scenarios) {
 			ConfigResults configResults = scenarioResults.getConfigResults(configName);
 			if (configResults == null || !configResults.isValid()) continue;
 			double[] results = configResults.getCurrentBuildDeltaInfo();

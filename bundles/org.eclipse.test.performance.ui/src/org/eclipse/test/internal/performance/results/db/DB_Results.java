@@ -14,8 +14,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,14 +26,12 @@ import java.util.StringTokenizer;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.test.internal.performance.PerformanceTestPlugin;
 import org.eclipse.test.internal.performance.data.Dim;
-import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.test.performance.Dimension;
 
 /**
  * Specific and private implementation of {@link org.eclipse.test.internal.performance.db.DB} class
  * to get massive results from performance results database.
- * TODO (frederic) Should be at least a subclass of {@link DB}...
  */
 public class DB_Results {
 
@@ -48,65 +44,13 @@ public class DB_Results {
 	static final boolean DEBUG = true;
     static final boolean LOG = true;
 
-    // the two supported DB types
-    private static final String DERBY= "derby"; //$NON-NLS-1$
-    private static final String CLOUDSCAPE= "cloudscape"; //$NON-NLS-1$
-
     private static DB_Results fgDefault;
 
-    private Connection fConnection;
     private SQL_Results fSQL;
-//    private boolean fIsEmbedded;
-    private String fDBType;	// either "derby" or "cloudscape"
 
 	    // Preferences info
     public static boolean DB_CONNECTION = false;
-    private static String DB_NAME;
-    private static String DB_LOCATION;
 	private static String DB_BASELINE_PREFIX = DEFAULT_DB_BASELINE_PREFIX;
-	private static String DB_VERSION;
-	private static String DB_VERSION_REF;
-
-	/**
-	 * Get the name of the database.
-	 *
-	 * @return The name as a string.
-	 */
-    public static String getDbName() {
-    	if (DB_NAME == null) initDbContants();
-    	return DB_NAME;
-    }
-
-	/**
-	 * Set the name of the database.
-	 *
-	 * @param dbName The name as a string.
-	 */
-    public static void setDbName(String dbName) {
-    	Assert.isNotNull(dbName);
-    	DB_NAME = dbName;
-    }
-
-	/**
-	 * Get the location of the database.
-	 *
-	 * @return The location as a string.
-	 */
-    public static String getDbLocation() {
-    	if (!DB_CONNECTION) return null;
-    	if (DB_LOCATION == null) initDbContants();
-    	return DB_LOCATION;
-    }
-
-	/**
-	 * Set the location of the database.
-	 *
-	 * @param dbLocation The location as a string.
-	 */
-    public static void setDbLocation(String dbLocation) {
-    	Assert.isNotNull(dbLocation);
-    	DB_LOCATION = dbLocation;
-    }
 
 	/**
 	 * Get the default baseline prefix.
@@ -127,79 +71,6 @@ public class DB_Results {
     	Assert.isTrue(baselinePrefix.startsWith(DEFAULT_DB_BASELINE_PREFIX));
     	DB_BASELINE_PREFIX = baselinePrefix;
     }
-
-	/**
-	 * Get the baseline reference version of the database.
-	 *
-	 * @return The version as a string.
-	 */
-    public static String getDbBaselineRefVersion() {
-    	if (DB_VERSION_REF == null) initDbContants();
-    	return DB_VERSION_REF;
-    }
-
-	/**
-	 * Get the version of the database.
-	 *
-	 * @return The version as a string.
-	 */
-    public static String getDbVersion() {
-    	if (DB_VERSION == null) initDbContants();
-    	return DB_VERSION;
-    }
-
-	/**
-	 * Set the version of the database.
-	 *
-	 * @param version The version as a string.
-	 */
-    public static void setDbVersion(String version) {
-    	Assert.isNotNull(version);
-    	Assert.isTrue(version.startsWith("v3"));
-    	DB_VERSION = version;
-    }
-
-	/**
-	 * Update the database constants from a new database location.
-	 * @param connected Tells whether the database should be connected or not.
-	 * @param databaseLocation The database location.
-	 * 	May be a path to a local folder or a net address
-	 * 	(see {@link IPerformancesConstants#NETWORK_DATABASE_LOCATION}).
-	 */
-	public static boolean updateDbConstants(boolean connected, int eclipseVersion, String databaseLocation) {
-		if (DB_CONNECTION != connected || DB_LOCATION == null || DB_NAME == null ||
-			((databaseLocation == null && !DB_LOCATION.equals(IPerformancesConstants.NETWORK_DATABASE_LOCATION)) ||
-					!DB_LOCATION.equals(databaseLocation)) ||
-			!DB_NAME.equals(IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion)) {
-		    // TODO: rename shutdown to disconnect?
-			shutdown();
-			DB_CONNECTION = connected;
-			DB_LOCATION = databaseLocation == null ? IPerformancesConstants.NETWORK_DATABASE_LOCATION : databaseLocation;
-			DB_NAME = IPerformancesConstants.DATABASE_NAME_PREFIX + eclipseVersion;
-			DB_VERSION = "v46"; // + eclipseVersion;
-			DB_VERSION_REF = "R-4.6"; //" + (eclipseVersion % 10 - 1);
-			if (connected) {
-				return getDefault().fSQL != null;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Returns a title including DB version and name.
-	 *
-	 * @return A title as a string.
-	 */
-	public static String getDbTitle() {
-    	if (!DB_CONNECTION) return null;
-		String title = "Eclipse " + DB_VERSION + " - ";
-		if (DB_LOCATION.startsWith("net:")) {
-			title += " Network DB";
-		} else {
-			title += " Local DB";
-		}
-		return title;
-	}
 
 	/**
 	 * The list of all the configurations (i.e. machine) stored in the database.
@@ -351,7 +222,6 @@ public class DB_Results {
     synchronized static DB_Results getDefault() {
         if (fgDefault == null) {
             fgDefault= new DB_Results();
-            fgDefault.connect();
             if (PerformanceTestPlugin.getDefault() == null) {
             	// not started as plugin
 	            Runtime.getRuntime().addShutdownHook(
@@ -363,8 +233,6 @@ public class DB_Results {
 	                }
 	            );
             }
-        } else if (fgDefault.fSQL == null) {
-        	fgDefault.connect();
         }
         return fgDefault;
     }
@@ -381,8 +249,6 @@ public class DB_Results {
             COMPONENTS = null;
             SCENARII = null;
             COMMENTS = null;
-            DB_VERSION = null;
-            DB_VERSION_REF = null;
             DEFAULT_DIM =null;
             DEFAULT_DIM_INDEX = -1;
             RESULTS_DIMENSIONS = null;
@@ -665,20 +531,8 @@ public static String getLastBaselineBuild(String date) {
 		return LAST_BASELINE_BUILD;
 	}
 	String lastBaselineBuild = null;
-	for (int i=0; i<BUILDS_LENGTH; i++) {
-		String build = BUILDS[i];
-		if (build.startsWith(DB_VERSION_REF)) {
-			buildDate = build.substring(build.lastIndexOf('-')+1);
-			if (buildDate.compareTo(date) < 0) {
-				if (lastBaselineBuild == null || build.compareTo(lastBaselineBuild) > 0) {
-					lastBaselineBuild = build;
-				}
-			}
-		}
-	}
 	if (DEBUG) {
 	  DEBUG_WRITER.println("\n=== DEBUG getting lastBaselineBuild === ");
-	  DEBUG_WRITER.println("DB_VERSION_REF: " + DB_VERSION_REF);
 	  DEBUG_WRITER.println("buildDate: " + buildDate);
     DEBUG_WRITER.println("date: " + date);
     DEBUG_WRITER.println("lastBaselineBuild: " + lastBaselineBuild + "\n");
@@ -709,28 +563,6 @@ public static String getLastCurrentBuild() {
  */
 public static List<String> getScenarios() {
 	return Arrays.asList(SCENARII);
-}
-
-/**
- * Init the constants if necessary.
- */
-public static void initDbContants() {
-	if (DB_LOCATION == null) {
-		DB_LOCATION = PerformanceTestPlugin.getDBLocation();
-		if (DB_LOCATION == null) {
-			new RuntimeException("Cannot connect to the DB without a location!");
-		}
-	}
-	if (DB_NAME == null) {
-		DB_NAME = PerformanceTestPlugin.getDBName();
-		if (DB_NAME == null) {
-			new RuntimeException("Cannot connect to the DB without a name!");
-		}
-	}
-	if (DB_VERSION == null) {
-		DB_VERSION = "v46"; // + DB_NAME.substring(DB_NAME.length()-2);
-		DB_VERSION_REF = "R-4.6"; //+(Character.digit(DB_NAME.charAt(DB_NAME.length()-1), 10)-1);
-	}
 }
 
 /**
@@ -801,119 +633,6 @@ static void queryScenarioValues(ScenarioResults scenarioResults, String configPa
 	getDefault().internalQueryScenarioValues(scenarioResults, configPattern, buildName);
 }
 
-/**
- * dbloc=						embed in home directory
- * dbloc=/tmp/performance			embed given location
- * dbloc=net://localhost			connect to local server
- * dbloc=net://www.eclipse.org	connect to remove server
- */
-private void connect() {
-
-	if (this.fConnection != null || !DB_CONNECTION)
-		return;
-
-	if (DEBUG) DriverManager.setLogWriter(new PrintWriter(System.out));
-
-	// Init DB location and name if not already done
-	if (DB_LOCATION == null) {
-		initDbContants();
-	}
-
-	String url = null;
-	java.util.Properties info = new java.util.Properties();
-
-	if (DEBUG) {
-		DEBUG_WRITER.println();
-		DEBUG_WRITER.println("==========================================================="); //$NON-NLS-1$
-		DEBUG_WRITER.println("Database debug information stored while processing"); //$NON-NLS-1$
-	}
-	if (LOG) {
-		LOG_WRITER.println();
-		LOG_WRITER.println("==========================================================="); //$NON-NLS-1$
-		LOG_WRITER.println("Database log information stored while processing"); //$NON-NLS-1$
-	}
-
-	this.fDBType = DERBY; // assume we are using Derby
-	try {
-		if (DB_LOCATION.startsWith("net://")) { //$NON-NLS-1$
-			// remote
-//			fIsEmbedded = false;
-			// connect over network
-			if (DEBUG)
-				DEBUG_WRITER.println("Trying to connect over network..."); //$NON-NLS-1$
-			Class.forName("com.ibm.db2.jcc.DB2Driver"); //$NON-NLS-1$
-			info.put("user", PerformanceTestPlugin.getDBUser()); //$NON-NLS-1$
-			info.put("password", PerformanceTestPlugin.getDBPassword()); //$NON-NLS-1$
-			info.put("retrieveMessagesFromServerOnGetMessage", "true"); //$NON-NLS-1$ //$NON-NLS-2$
-			info.put("create", "true"); //$NON-NLS-1$ //$NON-NLS-2$
-			url = DB_LOCATION + '/' + DB_NAME;
-		} else if (DB_LOCATION.startsWith("//")) { //$NON-NLS-1$
-			// remote
-//			fIsEmbedded = false;
-			// connect over network
-			if (DEBUG)
-				DEBUG_WRITER.println("Trying to connect over network..."); //$NON-NLS-1$
-			Class.forName("org.apache.derby.jdbc.ClientDriver"); //$NON-NLS-1$
-			info.put("user", PerformanceTestPlugin.getDBUser()); //$NON-NLS-1$
-			info.put("password", PerformanceTestPlugin.getDBPassword()); //$NON-NLS-1$
-			info.put("create", "true"); //$NON-NLS-1$ //$NON-NLS-2$
-			url = DB_LOCATION + '/' + DB_NAME;
-		} else {
-			// workaround for Derby issue:
-			// http://nagoya.apache.org/jira/browse/DERBY-1
-			if ("Mac OS X".equals(System.getProperty("os.name"))) //$NON-NLS-1$//$NON-NLS-2$
-				System.setProperty("derby.storage.fileSyncTransactionLog", "true"); //$NON-NLS-1$ //$NON-NLS-2$
-
-			// embedded
-			try {
-				Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); //$NON-NLS-1$
-//				fIsEmbedded = true;
-			} catch (ClassNotFoundException e) {
-				Class.forName("com.ihost.cs.jdbc.CloudscapeDriver"); //$NON-NLS-1$
-				this.fDBType = CLOUDSCAPE;
-			}
-			if (DEBUG)
-				DEBUG_WRITER.println("Loaded embedded " + this.fDBType); //$NON-NLS-1$
-			File f;
-			if (DB_LOCATION.length() == 0) {
-				String user_home = System.getProperty("user.home"); //$NON-NLS-1$
-				if (user_home == null)
-					return;
-				f = new File(user_home, this.fDBType);
-			} else
-				f = new File(DB_LOCATION);
-			url = new File(f, DB_NAME).getAbsolutePath();
-			info.put("user", PerformanceTestPlugin.getDBUser()); //$NON-NLS-1$
-			info.put("password", PerformanceTestPlugin.getDBPassword()); //$NON-NLS-1$
-			info.put("create", "true"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-		try {
-			this.fConnection = DriverManager.getConnection("jdbc:" + this.fDBType + ":" + url, info); //$NON-NLS-1$ //$NON-NLS-2$
-		} catch (SQLException e) {
-			if ("08001".equals(e.getSQLState()) && DERBY.equals(this.fDBType)) { //$NON-NLS-1$
-				if (DEBUG)
-					DEBUG_WRITER.println("DriverManager.getConnection failed; retrying for cloudscape"); //$NON-NLS-1$
-				// try Cloudscape
-				this.fDBType = CLOUDSCAPE;
-				this.fConnection = DriverManager.getConnection("jdbc:" + this.fDBType + ":" + url, info); //$NON-NLS-1$ //$NON-NLS-2$
-			} else
-				throw e;
-		}
-		if (DEBUG)
-			DEBUG_WRITER.println("connect succeeded!"); //$NON-NLS-1$
-
-		this.fConnection.setAutoCommit(false);
-		this.fSQL = new SQL_Results(this.fConnection);
-		this.fConnection.commit();
-
-	} catch (SQLException ex) {
-		PerformanceTestPlugin.logError(ex.getMessage());
-
-	} catch (ClassNotFoundException e) {
-		PerformanceTestPlugin.log(e);
-	}
-}
-
 private void disconnect() {
 	if (DEBUG)
 		DEBUG_WRITER.println("disconnecting from DB"); //$NON-NLS-1$
@@ -925,31 +644,6 @@ private void disconnect() {
 		}
 		this.fSQL = null;
 	}
-	if (this.fConnection != null) {
-		try {
-			this.fConnection.commit();
-		} catch (SQLException e) {
-			PerformanceTestPlugin.log(e);
-		}
-		try {
-			this.fConnection.close();
-		} catch (SQLException e) {
-			PerformanceTestPlugin.log(e);
-		}
-		this.fConnection = null;
-	}
-
-	/*
-	if (fIsEmbedded) {
-		try {
-			DriverManager.getConnection("jdbc:" + fDBType + ":;shutdown=true"); //$NON-NLS-1$ //$NON-NLS-2$
-		} catch (SQLException e) {
-			String message = e.getMessage();
-			if (message.indexOf("system shutdown.") < 0) //$NON-NLS-1$
-				e.printStackTrace();
-		}
-	}
-	*/
 }
 
 /*

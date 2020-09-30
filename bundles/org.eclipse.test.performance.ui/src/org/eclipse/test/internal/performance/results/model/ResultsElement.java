@@ -23,7 +23,6 @@ import org.eclipse.test.internal.performance.eval.StatisticsUtil;
 import org.eclipse.test.internal.performance.results.db.AbstractResults;
 import org.eclipse.test.internal.performance.results.db.BuildResults;
 import org.eclipse.test.internal.performance.results.db.ConfigResults;
-import org.eclipse.test.internal.performance.results.db.DB_Results;
 import org.eclipse.test.internal.performance.results.utils.IPerformancesConstants;
 import org.eclipse.test.internal.performance.results.utils.Util;
 import org.eclipse.ui.ISharedImages;
@@ -236,7 +235,7 @@ private StringBuilder getId(StringBuilder buffer) {
 	if (this.parent != null) {
 		return this.parent.getId(buffer).append('/').append(getName());
 	}
-	return buffer.append(DB_Results.getDbName());
+	return buffer;
 }
 
 @Override
