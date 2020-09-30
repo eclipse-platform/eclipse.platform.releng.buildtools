@@ -94,8 +94,8 @@ public class BarGraph {
 		} else {
 			// we calculate the max width
 			int maxNameLength= 0;
-			for (int i= 0; i < bars.length; i++) {
-				Point es= gc.stringExtent(bars[i].title);
+			for (BarItem bar : bars) {
+				Point es= gc.stringExtent(bar.title);
 				maxNameLength= Math.max(maxNameLength, es.x);
 			}
 			w= width - maxNameLength - TGAP - 2 * MARGIN;
@@ -114,8 +114,8 @@ public class BarGraph {
 
 		// determine maximum of values
 		double max= 0.0;
-		for (int i= 0; i < bars.length; i++)
-			max= Math.max(max, Math.abs(bars[i].value));
+		for (BarItem bar2 : bars)
+			max= Math.max(max, Math.abs(bar2.value));
 
 		double d;
 		if (NO_SCALE) {
@@ -278,9 +278,6 @@ public class BarGraph {
 			}
 		}
 
-		lightblue.dispose();
-		red.dispose();
-		green.dispose();
 	}
 
 	public String getAreas() {
