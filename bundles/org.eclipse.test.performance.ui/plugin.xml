@@ -21,81 +21,11 @@
          </run>
       </application>
    </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.eclipse.test.internal.performance.results.ui.PerformanceResultsPreferencePage"
-            id="org.eclipse.test.performance.ui.prpp"
-            name="%page.name">
-      </page>
-   </extension>
 
-   <extension
-         point="org.eclipse.ui.views">
-      <category
-            name="%category.name"
-            id="Performances">
-      </category>
-      <view
-            category="Performances"
-            class="org.eclipse.test.internal.performance.results.ui.ComponentsView"
-            icon="$nl$/icons/components.gif"
-            id="org.eclipse.test.internal.performance.results.ui.ComponentsView"
-            name="%view.name">
-      </view>
-      <view
-            category="Performances"
-            class="org.eclipse.test.internal.performance.results.ui.BuildsView"
-            icon="$nl$/icons/builds.gif"
-            id="org.eclipse.test.internal.performance.results.ui.BuildsView"
-            name="%view.name.0">
-      </view>
-      <view
-            category="Performances"
-            class="org.eclipse.test.internal.performance.results.ui.ComponentResultsView"
-            icon="$nl$/icons/results.gif"
-            id="org.eclipse.test.internal.performance.results.ui.ComponentsResultsView"
-            name="%view.name.1"
-            restorable="true">
-      </view>
-      <view
-            category="Performances"
-            class="org.eclipse.test.internal.performance.results.ui.BuildsComparisonView"
-            icon="$nl$/icons/compare_view.gif"
-            id="org.eclipse.test.internal.performance.results.ui.BuildsComparisonView"
-            name="%view.name.2"
-            restorable="true">
-      </view>
-   </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
             class="org.eclipse.test.internal.performance.results.ui.PerformanceResultsPreferenceInitializer">
       </initializer>
-   </extension>
-   <extension
-         point="org.eclipse.ui.perspectives">
-      <perspective
-            class="org.eclipse.test.internal.performance.results.ui.PerformanceResultsPerspective"
-            icon="$nl$/icons/perfs.gif"
-            id="org.eclipse.test.performance.ui.perspectives.PerformanceResultsPerspective"
-            name="%perspective.name">
-         <description>
-            %perspective.description
-         </description>
-      </perspective>
-   </extension>
-   <extension
-         point="org.eclipse.help.contexts">
-      <contexts
-            file="contexts.xml">
-      </contexts>
-   </extension>
-   <extension
-         point="org.eclipse.help.toc">
-      <toc
-            file="toc.xml"
-            primary="true">
-      </toc>
    </extension>
 </plugin>
