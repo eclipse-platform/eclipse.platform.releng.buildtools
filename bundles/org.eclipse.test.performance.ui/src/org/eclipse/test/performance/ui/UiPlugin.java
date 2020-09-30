@@ -11,9 +11,6 @@
 package org.eclipse.test.performance.ui;
 
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -22,7 +19,6 @@ import org.osgi.framework.BundleContext;
 public class UiPlugin extends Plugin {
 	//The shared instance.
 	private static UiPlugin plugin;
-	private IPreferenceStore preferenceStore;
 
 	/**
 	 * The constructor.
@@ -57,12 +53,5 @@ public class UiPlugin extends Plugin {
 		return plugin;
 	}
 
-	public IPreferenceStore getPreferenceStore() {
-		if (this.preferenceStore == null) {
-			this.preferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE, getBundle().getSymbolicName());
-
-		}
-		return this.preferenceStore;
-	}
 
 }
