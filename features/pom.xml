@@ -11,6 +11,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>org.eclipse.releng.build.tools.feature</module>
+	<module>org.eclipse.releng.tools</module>
   </modules>
   <build>
     <plugins>

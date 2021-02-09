@@ -23,7 +23,7 @@
   </prerequisites>
 
   <properties>
-    <tycho.version>2.0.0</tycho.version>
+    <tycho.version>2.2.0</tycho.version>
     <cbi-plugins.version>1.1.7</cbi-plugins.version>
     <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
@@ -35,12 +35,10 @@
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
     <buildType>I</buildType>
     <buildId>${buildType}${buildTimestamp}</buildId>
-    <comparator.repo>http://download.eclipse.org/eclipse/updates/4.18-I-builds</comparator.repo>
+    <comparator.repo>http://download.eclipse.org/eclipse/updates/4.19-I-builds</comparator.repo>
     <egit-repo.url>http://download.eclipse.org/egit/updates</egit-repo.url>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <cbi-jdt-repo.url>https://repo.eclipse.org/content/repositories/eclipse-staging/</cbi-jdt-repo.url>
-    <cbi-ecj-version>3.21.0.v20200304-1404</cbi-ecj-version>
-    
 
     <cbi-snapshots-repo.url>https://repo.eclipse.org/content/repositories/cbi-snapshots/</cbi-snapshots-repo.url>
     <eclipse-repo.url>https://repo.eclipse.org/content/repositories/cbi/</eclipse-repo.url>
@@ -94,7 +92,12 @@
       <id>eclipse-platform-repository</id>
       <layout>p2</layout>
       <!-- Normally should be "latest milestone" for stability, once we have one for 4.9. -->
-      <url>http://download.eclipse.org/eclipse/updates/4.18-I-builds/</url>
+      <url>https://download.eclipse.org/eclipse/updates/I-builds/</url>
+    </repository>
+    <repository>
+      <id>git-repository</id>
+      <url>https://download.eclipse.org/egit/updates/</url>
+      <layout>p2</layout>
     </repository>
     <repository>
       <id>cbi-common-license</id>
@@ -160,13 +163,6 @@
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-compiler-plugin</artifactId>
           <version>${tycho.version}</version>
-          <dependencies>
-           <dependency>
-              <groupId>org.eclipse.jdt</groupId>
-              <artifactId>ecj</artifactId>
-              <version>${cbi-ecj-version}</version>
-            </dependency>
-           </dependencies>
           <configuration>
             <compilerArgs>
               <args>-verbose</args>
@@ -175,10 +171,6 @@
               <args>-encoding</args>
               <args>${project.build.sourceEncoding}</args>
               <args>-proceedOnError</args>
-              <!-- Use this form, for Tycho 22 or less.
-                <args>-log</args>
-                <args>${project.build.directory}/@dot.xml</args>
-              -->
             </compilerArgs>
             <!-- Use this form for Tycho 23 or greater -->
             <log>xml</log>
