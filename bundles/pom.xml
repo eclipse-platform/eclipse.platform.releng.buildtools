@@ -18,6 +18,7 @@
         <module>org.eclipse.releng.build.tools.comparator</module>
         <module>org.eclipse.test.performance.ui</module>
 	    <module>org.eclipse.releng.tools</module>
+	    <module>org.eclipse.releng.tools.tests</module>
     </modules>
     <build>
         <plugins>
