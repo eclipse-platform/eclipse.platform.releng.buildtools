@@ -13,7 +13,6 @@ package org.eclipse.test.internal.performance.results.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +20,6 @@ import java.io.OutputStream;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -53,26 +51,10 @@ public final class Util implements IPerformancesConstants {
     public static final String LINE_SEPARATOR     = System.lineSeparator();
 
     // Build prefixes
-    public static final List<String>   ALL_BUILD_PREFIXES = new ArrayList<>(3);
-    static {
-        ALL_BUILD_PREFIXES.add("I");
-        ALL_BUILD_PREFIXES.add("N");
-        ALL_BUILD_PREFIXES.add("M");
-    }
-    public static final List<String> BUILD_PREFIXES = new ArrayList<>(2);
-    static {
-        BUILD_PREFIXES.add("I");
-        BUILD_PREFIXES.add("N");
-    }
-    public static final List<String> MAINTENANCE_BUILD_PREFIXES = new ArrayList<>(2);
-    static {
-        MAINTENANCE_BUILD_PREFIXES.add("I");
-        MAINTENANCE_BUILD_PREFIXES.add("M");
-    }
-    public static final List<String> BASELINE_BUILD_PREFIXES = new ArrayList<>(1);
-    static {
-        BASELINE_BUILD_PREFIXES.add(DB_Results.getDbBaselinePrefix());
-    }
+    public static final List<String> ALL_BUILD_PREFIXES = List.of("I", "M");
+    public static final List<String> BUILD_PREFIXES = List.of("I");
+    public static final List<String> MAINTENANCE_BUILD_PREFIXES = List.of("I", "M");
+    public static final List<String> BASELINE_BUILD_PREFIXES = List.of(DB_Results.getDbBaselinePrefix());
 
     public static final BuildDateComparator BUILD_DATE_COMPARATOR = new BuildDateComparator();
 
@@ -238,9 +220,6 @@ public final class Util implements IPerformancesConstants {
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -266,9 +245,6 @@ public final class Util implements IPerformancesConstants {
                 out.write(buf, 0, len);
             }
             in.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
