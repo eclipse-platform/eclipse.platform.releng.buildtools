@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corporation and others.
+ * Copyright (c) 2000, 2021 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,6 @@
 package org.eclipse.test.internal.performance.results.utils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,9 +25,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
-import java.util.StringTokenizer;
 
-import org.eclipse.test.internal.performance.results.db.BuildResults;
 import org.eclipse.test.internal.performance.results.db.DB_Results;
 
 /**
@@ -84,148 +81,6 @@ public final class Util implements IPerformancesConstants {
     public static final int              ONE_MINUTE  = 60000;
     public static final long             ONE_HOUR    = 3600000L;
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmm"); //$NON-NLS-1$
-
-    /**
-     * Return the name to display for the given component.
-     * <p>
- * This name is built from the name of the component selected in the Components view.
- * The rules to build the name are:
-     * <ol>
- * <li>If the component name does not start with "org.eclipse" then the part name is just
- * 		"<b>component name</b>"</li>
-     * <li>Otherwise, remove "org.eclipse." form the component name and count
-     * the tokens separated by a dot ('.')
-     * <ul>
- * 		<li>If there's only one remaining token, then the part name is "<b>Platform/</b>"
- * 			followed by:
-     * <ul>
-     * <li>"<b><i>TOKEN</i></b>" if token is less than 3 characters,</li>
-     * <li>"<b><i>Token</i></b>" otherwise</li>
-     * </ul>
-     * </li>
- * 		<li>Otherwise then the part name is "<b><i>FIRST_TOKEN</i></b>" followed by:
-     * <ul>
-     * <li>for each followed additional token:
-     * <ul>
-     * <li>"<b><i>TOKEN</i></b>" if token is less than 3 characters,</li>
-     * <li>"<b><i>Token</i></b>" otherwise</li>
-     * </ul>
-     * </li>
-     * </ul>
-     * </li>
-     * </ul>
-     * </ol>
-     * E.g.
-     * <ul>
-     * 	<li>org.eclipse.ui -&gt; "Platform/UI"</li>
-     * 	<li>org.eclipse.swt -&gt; "Platform/SWT"</li>
-     * 	<li>org.eclipse.team -&gt; "Platform/Team"</li>
-     * 	<li>org.eclipse.jdt.ui -&gt; "JDT/UI"</li>
-     * 	<li>org.eclipse.jdt.core -&gt; "JDT/Core"</li>
-     * 	<li>org.eclipse.pde.api.tools -&gt; "PDE/API Tools"</li>
-     * </ul>
-     */
-    public static String componentDisplayName(String componentName) {
-        String partName;
-        StringBuilder buffer = null;
-        if (componentName.startsWith(ORG_ECLIPSE)) {
-            partName = componentName.substring(ORG_ECLIPSE.length());
-            StringTokenizer tokenizer = new StringTokenizer(partName, ".");
-            while (tokenizer.hasMoreTokens()) {
-                String token = tokenizer.nextToken();
-                if (buffer == null) {
-                    if (tokenizer.hasMoreTokens()) {
-                        buffer = new StringBuilder("'" + token.toUpperCase());
-                        buffer.append('/');
-                    } else {
-                        buffer = new StringBuilder("'Platform/");
-                        if (token.length() > 3) {
-                            buffer.append(Character.toUpperCase(token.charAt(0)));
-                            buffer.append(token.substring(1));
-                        } else {
-                            buffer.append(token.toUpperCase());
-                        }
-                    }
-                } else {
-                    if (token.length() > 3) {
-                        buffer.append(Character.toUpperCase(token.charAt(0)));
-                        buffer.append(token.substring(1));
-                    } else {
-                        buffer.append(token.toUpperCase());
-                    }
-				if (tokenizer.hasMoreTokens()) buffer.append(' ');
-                }
-            }
-        } else {
-            buffer = new StringBuilder("'");
-            buffer.append(componentName);
-            buffer.append("'");
-        }
-        if (buffer == null) {
-            throw new RuntimeException("buffer was unexpectedly null. Program error?");
-        }
-        buffer.append("' results");
-        return buffer.toString();
-    }
-
-    /**
-     * Compute the student t-test values.
-     *
-     * @see "http://en.wikipedia.org/wiki/Student's_t-test"
-     *
- * @param baselineResults The baseline build
- * @param buildResults The current build
-     * @return The student t-test value as a double.
-     */
-    public static double computeTTest(BuildResults baselineResults, BuildResults buildResults) {
-
-        double ref = baselineResults.getValue();
-        double val = buildResults.getValue();
-
-        double delta = ref - val;
-        long dfRef = baselineResults.getCount() - 1;
-        double sdRef = baselineResults.getDeviation();
-        long dfVal = buildResults.getCount() - 1;
-        double sdVal = buildResults.getDeviation();
-        // TODO if the stdev's are not sufficiently similar, we have to take a
-        // different approach
-
-        if (!Double.isNaN(sdRef) && !Double.isNaN(sdVal) && dfRef > 0 && dfVal > 0) {
-            long df = dfRef + dfVal;
-            double sp_square = (dfRef * sdRef * sdRef + dfVal * sdVal * sdVal) / df;
-
-            double se_diff = Math.sqrt(sp_square * (1.0 / (dfRef + 1) + 1.0 / (dfVal + 1)));
-            double t = Math.abs(delta / se_diff);
-            return t;
-        }
-
-        return -1;
-    }
-
-    /**
-     * Copy a file to another location.
-     *
- * @param src the source file.
- * @param dest the destination.
-     * @return <code>true</code> if the file was successfully copied,
-     *         <code>false</code> otherwise.
-     */
-    public static boolean copyFile(File src, File dest) {
-
-        try (InputStream in = new FileInputStream(src);
-            OutputStream out = new FileOutputStream(dest)){
-
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
 
     /**
      * Copy a file content to another location.
@@ -301,70 +156,6 @@ public final class Util implements IPerformancesConstants {
             }
         }
         return result;
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static boolean matchPattern(String name, String pattern) {
-        if (pattern.equals("*")) //$NON-NLS-1$
-            return true;
-        if (pattern.indexOf('*') < 0 && pattern.indexOf('?') < 0) {
-            pattern += "*"; //$NON-NLS-1$
-        }
-        StringTokenizer tokenizer = new StringTokenizer(pattern, "*?", true); //$NON-NLS-1$
-        int start = 0;
-        String previous = ""; //$NON-NLS-1$
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            if (!token.equals("*") && !token.equals("?")) { //$NON-NLS-1$ //$NON-NLS-2$
-                if (previous.equals("*")) { //$NON-NLS-1$
-                    int idx = name.substring(start).indexOf(token);
-                    if (idx < 0)
-                        return false;
-                    start += idx;
-                } else {
-                    if (previous.equals("?")) //$NON-NLS-1$
-                        start++;
-                    if (!name.substring(start).startsWith(token))
-                        return false;
-                }
-                start += token.length();
-            }
-            previous = token;
-        }
-        if (previous.equals("*")) { //$NON-NLS-1$
-            return true;
-        } else if (previous.equals("?")) { //$NON-NLS-1$
-            return name.length() == start;
-        }
-        return name.endsWith(previous);
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static double round(double value) {
-        return Math.round(value * 10000) / 10000.0;
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static double round(double value, int precision) {
-        if (precision < 0) {
-            throw new IllegalArgumentException("Should have a precision at least greater than 0!");
-        }
-        if (precision == 0)
-            return (long) Math.floor(value);
-        double factor = 10;
-        int n = 1;
-        while (n++ < precision)
-            factor *= 10;
-        return Math.round(value * factor) / factor;
     }
 
     /**
