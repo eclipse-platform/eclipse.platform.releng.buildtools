@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.eclipse.plaform.releng.buildtools</groupId>
 	<artifactId>org.eclipse.platform.jetty.repository</artifactId>
-	<version>10.0.2</version>
+	<version>10.0.4</version>
 	<packaging>eclipse-repository</packaging>
 
 	<name>Jetty p2 Update Site for Platform build neeeds</name>
