@@ -14,8 +14,6 @@
 	<iu id="org.eclipse.jetty.util.source" version="0.0.0" />
 	<iu id="org.eclipse.jetty.util.ajax" version="0.0.0" />
 	<iu id="org.eclipse.jetty.util.ajax.source" version="0.0.0" />
-	<iu id="slf4j.api" version="0.0.0" />
-	<iu id="slf4j.api.source" version="0.0.0" />
 	<iu id="jakarta.servlet-api" version="0.0.0" />
 	<iu id="jakarta.servlet-api.source" version="0.0.0" />
 </site>
