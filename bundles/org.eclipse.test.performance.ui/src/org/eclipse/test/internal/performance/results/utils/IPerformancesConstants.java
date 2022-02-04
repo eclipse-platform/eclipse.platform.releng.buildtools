@@ -25,9 +25,6 @@ public interface IPerformancesConstants {
 
 	// Preference constants
     String PRE_ECLIPSE_VERSION = PREFIX + "eclipse.version"; //$NON-NLS-1$
-    String PRE_DATABASE_CONNECTION = PREFIX + "database.connection"; //$NON-NLS-1$
-    String PRE_DATABASE_LOCAL = PREFIX + "local"; //$NON-NLS-1$
-    String PRE_DATABASE_LOCATION = PREFIX + "database.location"; //$NON-NLS-1$
     String PRE_LOCAL_DATA_DIR = PREFIX + "local.data.dir"; //$NON-NLS-1$
     String PRE_RESULTS_GENERATION_DIR = PREFIX + "results.generation.dir"; //$NON-NLS-1$
     String PRE_CONFIG_DESCRIPTOR_NAME = PREFIX + "config.descriptor.name"; //$NON-NLS-1$
@@ -40,8 +37,6 @@ public interface IPerformancesConstants {
     String PRE_FILTER_OLD_BUILDS = PREFIX + "filter.non.milestones.builds"; //$NON-NLS-1$
 
 	// Default values
-	String DATABASE_NAME_PREFIX = "perfDb";
-	String NETWORK_DATABASE_LOCATION = "//shared/eclipse/databases/eclipseDB45/perfDb45:1528";
 	boolean DEFAULT_FILTER_ADVANCED_SCENARIOS = true;
 	boolean DEFAULT_FILTER_OLD_BUILDS = false;
 	boolean DEFAULT_DATABASE_CONNECTION = false;

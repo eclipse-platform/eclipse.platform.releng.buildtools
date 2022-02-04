@@ -30,11 +30,6 @@ public void initializeDefaultPreferences() {
 	// Eclipse version
 	defaultPreferences.putInt(PRE_ECLIPSE_VERSION, IPerformancesConstants.DEFAULT_ECLIPSE_VERSION);
 
-	// Database
-	defaultPreferences.putBoolean(PRE_DATABASE_CONNECTION, IPerformancesConstants.DEFAULT_DATABASE_CONNECTION);
-	defaultPreferences.putBoolean(PRE_DATABASE_LOCAL, IPerformancesConstants.DEFAULT_DATABASE_LOCAL);
-	defaultPreferences.put(PRE_DATABASE_LOCATION, IPerformancesConstants.NETWORK_DATABASE_LOCATION);
-
 	// Status
 	defaultPreferences.putInt(PRE_WRITE_STATUS, IPerformancesConstants.DEFAULT_WRITE_STATUS);
 
