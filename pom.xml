@@ -45,7 +45,7 @@
     <!-- CBI provided common license feature. (bug 394793) -->
     <license-repo.url>https://download.eclipse.org/cbi/updates/license/2.0.2.v20181016-2210/</license-repo.url>
 
-    <tycho.scmUrl>scm:git:git://git.eclipse.org/gitroot/platform/eclipse.platform.releng.buildtools</tycho.scmUrl>
+    <tycho.scmUrl>scm:git:https://github.com/eclipse-platform/eclipse.platform.releng.buildtools/</tycho.scmUrl>
 
 
   </properties>
@@ -178,16 +178,6 @@
             <excludeResources>
               <exclude>**/package.html</exclude>
             </excludeResources>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.eclipse.tycho.extras</groupId>
-          <artifactId>tycho-source-feature-plugin</artifactId>
-          <version>${tycho.version}</version>
-          <configuration>
-            <archive>
-              <addMavenDescriptor>false</addMavenDescriptor>
-            </archive>
           </configuration>
         </plugin>
         <plugin>
