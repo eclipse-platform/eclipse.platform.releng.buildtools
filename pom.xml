@@ -23,7 +23,7 @@
   </prerequisites>
 
   <properties>
-    <tycho.version>2.7.3</tycho.version>
+    <tycho.version>2.7.4</tycho.version>
     <cbi-plugins.version>1.3.2</cbi-plugins.version>
     <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
