@@ -7,7 +7,6 @@ Eclipse-BundleShape: dir
 Bundle-Vendor: %Plugin.providerName
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.runtime,
- org.junit,
  junit-jupiter-api,
  org.eclipse.jgit;bundle-version="3.0.0";resolution:=optional,
  org.eclipse.core.resources,
