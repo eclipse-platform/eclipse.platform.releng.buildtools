@@ -267,7 +267,7 @@ public class Extractor {
 	private boolean jdtCore(final LogEntry newEntry) {
 		boolean result = false;
 		final String name = newEntry.getName();
-		if (name.equals("eclipse.jdt.core/org.eclipse.jdt.core")) {
+		if (name.equals("eclipse.jdt.core/org.eclipse.jdt.core/pom.xml")) {
 			result = true;
 		}
 		return result;
