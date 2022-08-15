@@ -61,7 +61,7 @@ public class Extractor {
 	private String outputFilenameOtherLog;
 	private String outputFilenameSignPlusInnerJarLog;
 	private String outputFilenamejdtCoreLog;
-	private final String mainregexPattern = "^\\[WARNING\\].*eclipse.platform.releng.aggregator/(.*)/pom.xml: baseline and build artifacts have same version but different contents";
+	private final String mainregexPattern = "^\\[WARNING\\].*eclipse.platform.releng.aggregator/(.*): baseline and build artifacts have same version but different contents";
 	private final Pattern mainPattern = Pattern.compile(mainregexPattern);
 	private final String noclassifierregexPattern = "^.*no-classifier:.*$";
 	private final Pattern noclassifierPattern = Pattern.compile(noclassifierregexPattern);
