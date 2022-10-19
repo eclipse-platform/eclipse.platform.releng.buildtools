@@ -22,8 +22,8 @@ import java.util.regex.Pattern;
  */
 public class Extractor {
 
-	public final static String BUILD_DIRECTORY_PROPERTY = "builddirectory";
-	public final static String COMPARATOR_REPO_PROPERTY = "comparatorRepo";
+	public static final String BUILD_DIRECTORY_PROPERTY = "builddirectory";
+	public static final String COMPARATOR_REPO_PROPERTY = "comparatorRepo";
 	private static final String EOL = System.lineSeparator();
 
 	public static void main(final String[] args) {
