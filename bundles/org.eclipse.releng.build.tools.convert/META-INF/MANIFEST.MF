@@ -7,8 +7,7 @@ Bundle-ClassPath: convert.jar
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: org.apache.ant,
- org.eclipse.equinox.app
+Require-Bundle: org.apache.ant
 Export-Package: org.eclipse.releng.build.tools.convert.ant,
  org.eclipse.releng.build.tools.convert.dom
 Automatic-Module-Name: org.eclipse.releng.build.tools.convert
