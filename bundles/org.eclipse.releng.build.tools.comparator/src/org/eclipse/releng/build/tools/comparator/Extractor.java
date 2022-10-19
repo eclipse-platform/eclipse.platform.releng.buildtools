@@ -86,10 +86,6 @@ public class Extractor {
 	private int countSignPlusInnerJar;
 	private int countJDTCore;
 
-	public Extractor() {
-
-	}
-
 	private boolean docItem(final LogEntry newEntry) {
 		boolean result = false;
 		final String name = newEntry.getName();

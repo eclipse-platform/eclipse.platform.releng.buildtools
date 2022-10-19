@@ -99,11 +99,7 @@ public class Converter {
         converter.parse2();
     }
 
-    private final HashMap<String, String> options;
-
-    public Converter() {
-        options = new HashMap<>();
-    }
+	private final HashMap<String, String> options = new HashMap<>();
 
     public void configure(final String[] args) {
         if ((args == null) || (args.length == 0)) {
