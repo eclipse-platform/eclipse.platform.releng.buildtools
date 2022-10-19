@@ -19,12 +19,12 @@
   <version>1.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <prerequisites>
-    <maven>3.6.3</maven>
+    <maven>3.8.6</maven>
   </prerequisites>
 
   <properties>
-    <tycho.version>3.0.0-SNAPSHOT</tycho.version>
-    <cbi-plugins.version>1.3.2</cbi-plugins.version>
+    <tycho.version>3.0.0</tycho.version>
+    <cbi-plugins.version>1.3.4</cbi-plugins.version>
     <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
     <buildType>I</buildType>
@@ -196,7 +196,7 @@
           <version>${tycho.version}</version>
           <dependencies>
             <dependency>
-              <groupId>org.eclipse.tycho.extras</groupId>
+              <groupId>org.eclipse.tycho</groupId>
               <artifactId>tycho-buildtimestamp-jgit</artifactId>
               <version>${tycho.version}</version>
             </dependency>
