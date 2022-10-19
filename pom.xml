@@ -233,9 +233,6 @@
             <groupId>org.eclipse.tycho</groupId>
             <artifactId>target-platform-configuration</artifactId>
             <version>${tycho.version}</version>
-            <configuration>
-              <includePackedArtifacts>false</includePackedArtifacts>
-            </configuration>
           </plugin>
           <plugin>
             <groupId>org.eclipse.cbi.maven.plugins</groupId>
