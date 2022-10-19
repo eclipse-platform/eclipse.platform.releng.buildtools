@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2022 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -166,7 +166,6 @@ public class Converter {
                     if (currentArg.equals("-r")) { //$NON-NLS-1$
                         options.put(RECURSIVE, "true"); //$NON-NLS-1$
                         mode = DEFAULT_MODE;
-                        continue loop;
                     }
             }
         }
@@ -202,7 +201,7 @@ public class Converter {
 
     public void parse2() throws ParserConfigurationException {
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        final boolean validation = Boolean.valueOf(options.get(ENABLE_VALIDATION)).booleanValue();
+		final boolean validation = Boolean.parseBoolean(options.get(ENABLE_VALIDATION));
         factory.setValidating(validation);
         factory.setIgnoringElementContentWhitespace(true);
         final DocumentBuilder builder = factory.newDocumentBuilder();
@@ -263,10 +262,7 @@ public class Converter {
                     final LogDocumentNode documentNode = process(document);
                     dump(documentNode);
                 }
-                catch (final SAXException e) {
-                    e.printStackTrace();
-                }
-                catch (final IOException e) {
+				catch (SAXException | IOException e) {
                     e.printStackTrace();
                 }
             }
