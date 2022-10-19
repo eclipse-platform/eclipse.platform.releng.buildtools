@@ -284,7 +284,6 @@ public class Extractor {
 
 			if (matcher1.matches() || matcher2.matches() || matcher3.matches() || matcher4.matches()
 					|| matcher5.matches()) {
-				continue;
 			} else {
 				result = false;
 				break;
@@ -311,7 +310,6 @@ public class Extractor {
 
 			if (matcher1.matches() || matcher2.matches() || matcher3.matches() || matcher4.matches()
 					|| matcher5.matches() || matcher6.matches()) {
-				continue;
 			} else {
 				result = false;
 				break;
