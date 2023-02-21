@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Plugin.name
 Bundle-SymbolicName: org.eclipse.releng.tools.tests;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.1.0.qualifier
 Eclipse-BundleShape: dir
 Bundle-Vendor: %Plugin.providerName
 Bundle-Localization: plugin
@@ -13,6 +13,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.egit.core;bundle-version="3.0.0";resolution:=optional,
  org.eclipse.releng.tools;bundle-version="3.6.100"
 Export-Package: org.eclipse.releng.tests.tools
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .
 Automatic-Module-Name: org.eclipse.releng.tools.tests
