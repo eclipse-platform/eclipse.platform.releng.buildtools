@@ -943,11 +943,16 @@ public class TestResultsGenerator extends Task {
         String htmlString = "";
         // first we right a bit of "static" part. That comes before the table.
         htmlString = htmlString + EOL + "<h3 id=\"UnitTest\">Unit Test Results</h3>" + EOL;
-
-        htmlString = htmlString
-                + "<p>The unit tests are run on the <a href=\"https://ci.eclipse.org/releng/view/Automated%20tests/\">releng ci instance</a>.</p>"
+        
+        if (getBuildType().equals("Y")) {
+            htmlString = htmlString
+                    + "<p>The unit tests are run on the <a href=\"https://ci.eclipse.org/releng/job/YPBuilds/\">releng ci instance</a>.</p>"
+                    + EOL;
+        } else {
+        	htmlString = htmlString
+                + "<p>The unit tests are run on the <a href=\"https://ci.eclipse.org/releng/job/AutomatedTests/\">releng ci instance</a>.</p>"
                 + EOL;
-
+        }
         htmlString = htmlString + "<p>The table shows the unit test results for this build on the platforms" + EOL;
         htmlString = htmlString + "tested. You may access the test results page specific to each" + EOL;
         htmlString = htmlString + "component on a specific platform by clicking the cell link." + EOL;
