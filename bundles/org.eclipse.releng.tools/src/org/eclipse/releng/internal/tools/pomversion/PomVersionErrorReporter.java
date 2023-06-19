@@ -40,7 +40,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.jface.text.BadLocationException;
@@ -291,12 +290,12 @@ public class PomVersionErrorReporter implements IResourceChangeListener, IEclips
 	/**
 	 * Project relative path to the pom.xml file.
 	 */
-	public static final IPath POM_PATH = new Path("pom.xml"); //$NON-NLS-1$
+	public static final IPath POM_PATH = IPath.fromOSString("pom.xml"); //$NON-NLS-1$
 
 	/**
 	 * Project relative path to the manifest file.
 	 */
-	public static final IPath MANIFEST_PATH = new Path(JarFile.MANIFEST_NAME);
+	public static final IPath MANIFEST_PATH = IPath.fromOSString(JarFile.MANIFEST_NAME);
 
 	/**
 	 * Version of the PomVersionErrorReporter. Needs to be incremented when the version check algorithm changes
@@ -307,7 +306,7 @@ public class PomVersionErrorReporter implements IResourceChangeListener, IEclips
 	/**
 	 * Project relative path to the feature.xml file.
 	 */
-	public static final IPath FEATURE_PATH = new Path("feature.xml"); //$NON-NLS-1$
+	public static final IPath FEATURE_PATH = IPath.fromOSString("feature.xml"); //$NON-NLS-1$
 
 	private static final String ELEMENT_PROJECT = "project"; //$NON-NLS-1$
 	private static final String ELEMENT_VERSION = "version"; //$NON-NLS-1$
