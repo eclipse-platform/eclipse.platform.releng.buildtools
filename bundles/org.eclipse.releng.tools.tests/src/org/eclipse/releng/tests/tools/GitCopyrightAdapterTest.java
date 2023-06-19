@@ -27,9 +27,9 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.egit.core.op.ConnectProviderOperation;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
@@ -126,7 +126,7 @@ public class GitCopyrightAdapterTest extends LocalGitRepositoryTestData {
 			project.delete(true, null);
 		final IProjectDescription desc = ResourcesPlugin.getWorkspace()
 				.newProjectDescription(name);
-		desc.setLocation(new Path(new File(db.getWorkTree(), name).getPath()));
+		desc.setLocation(IPath.fromOSString(new File(db.getWorkTree(), name).getPath()));
 		project.create(desc, null);
 		project.open(null);
 
