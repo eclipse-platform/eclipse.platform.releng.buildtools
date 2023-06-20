@@ -172,7 +172,7 @@ public class UnpackUpdateJars extends Task {
                 continue;
             }
 
-            if (unpackNode.getNodeValue().toString().trim().toLowerCase().equals("true")) {
+            if (Boolean.parseBoolean(unpackNode.getNodeValue().toString().trim())) {
                 if (!unpackedPlugins.contains(pluginDirName)) {
                     System.out.println(pluginDirName);
                     unpackedPlugins.add(pluginDirName);
