@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Leo Ufimtsev and others.
+ * Copyright (c) 2014, 2023 Leo Ufimtsev and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -28,35 +28,37 @@ import org.junit.jupiter.api.Test;
  * <p> Test that year is updated correctly by the comment parser. <br>
  * This can be ran as a standard Junit4 test or as a Plugin Test </p>
  */
-public class AdvancedCopyrightCommentTests {
+class AdvancedCopyrightCommentTests {
 
 	/**
 	 * verify that standard comment will have the new year appended to it
 	 */
 	@Test
-	public void singleYearComment() {
-		String original = "<!--\n" +
-				"    Copyright (c) 2000 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+	void singleYearComment() {
+		String original = """
+				<!--
+				    Copyright (c) 2000 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		//Last year updated to 2015
-		String expectedOut = "<!--\n" +
-				"    Copyright (c) 2000, 2015 IBM Corporation and others.  \n" +  //<<<< Note appended 2015
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+		String expectedOut = """
+				<!--
+				    Copyright (c) 2000, 2015 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
@@ -66,29 +68,31 @@ public class AdvancedCopyrightCommentTests {
 	 * verify standard two year comments work correctly 2000, 2014
 	 */
 	@Test
-	public void twoYearCommentCommaSeperated() {
-		String original = "<!--\n" +
-				"    Copyright (c) 2000, 2014 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+	void twoYearCommentCommaSeperated() {
+		String original = """
+				<!--
+				    Copyright (c) 2000, 2014 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		//Last year updated to 2015
-		String expectedOut = "<!--\n" +
-				"    Copyright (c) 2000, 2015 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+		String expectedOut = """
+				<!--
+				    Copyright (c) 2000, 2015 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
@@ -98,29 +102,31 @@ public class AdvancedCopyrightCommentTests {
 	 * It should also handle dashes as well as commas.
 	 */
 	@Test
-	public void twoYearCommentDashSeperated() {
-		String original = "<!--\n" +
-				"    Copyright (c) 2000 - 2014 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+	void twoYearCommentDashSeperated() {
+		String original = """
+				<!--
+				    Copyright (c) 2000 - 2014 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		//Last year updated to 2015
-		String expectedOut = "<!--\n" +
-				"    Copyright (c) 2000 - 2015 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+		String expectedOut = """
+				<!--
+				    Copyright (c) 2000 - 2015 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
@@ -131,29 +137,31 @@ public class AdvancedCopyrightCommentTests {
 	 * Verify that comments with multiple years are handled correctly.
 	 */
 	@Test
-	public void multiYearComment() {
-		String original = "<!--\n" +
-				"    Copyright (c) 2000, 2011-2012, 2014 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+	void multiYearComment() {
+		String original = """
+				<!--
+				    Copyright (c) 2000, 2011-2012, 2014 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		//Last year updated to 2015
-		String expectedOut = "<!--\n" +
-				"    Copyright (c) 2000, 2011-2012, 2015 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+		String expectedOut = """
+				<!--
+				    Copyright (c) 2000, 2011-2012, 2015 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
@@ -163,29 +171,33 @@ public class AdvancedCopyrightCommentTests {
 	 * Verify that newline at the end is copied across to the new comment correctly.
 	 */
 	@Test
-	public void multiYearCommentNewlinePost() {
-		String original = "<!--\n" +
-				"    Copyright (c) 2000, 2011-2012, 2014 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->\n"; // NOTE new line char here.
+	void multiYearCommentNewlinePost() {
+		String original = """
+				<!--
+				    Copyright (c) 2000, 2011-2012, 2014 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->
+				"""; // NOTE new line char here.
 
 		//
-		String expectedOut = "<!--\n" +
-				"    Copyright (c) 2000, 2011-2012, 2015 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->\n";
+		String expectedOut = """
+				<!--
+				    Copyright (c) 2000, 2011-2012, 2015 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->
+				""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
@@ -194,29 +206,33 @@ public class AdvancedCopyrightCommentTests {
 	 * Verify that newline at the beginning is copied across to the new comment correctly.
 	 */
 	@Test
-	public void multiYearCommentNewlinePre() {
-		String original = "\n<!--\n" + // NOTE new line char here.
-				"    Copyright (c) 2000, 2011-2012, 2014 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+	void multiYearCommentNewlinePre() {
+		String original = """
+
+				<!--
+				    Copyright (c) 2000, 2011-2012, 2014 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		//
-		String expectedOut = "\n<!--\n" +
-				"    Copyright (c) 2000, 2011-2012, 2015 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+		String expectedOut = """
+
+				<!--
+				    Copyright (c) 2000, 2011-2012, 2015 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
@@ -226,29 +242,31 @@ public class AdvancedCopyrightCommentTests {
 	 * Check with Unix delimiters.
 	 */
 	@Test
-	public void unixDelimiters() {
-		String original = "<!--\n" +
-				"    Copyright (c) 2000, 2014 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+	void unixDelimiters() {
+		String original = """
+				<!--
+				    Copyright (c) 2000, 2014 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		//Last year updated to 2015
-		String expectedOut = "<!--\n" +
-				"    Copyright (c) 2000, 2015 IBM Corporation and others.  \n" +
-				"    All rights reserved. This program and the accompanying materials\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\n" +
-				"    which accompanies this distribution, and is available at\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\n" +
-				"   \n" +
-				"    Contributors:\n" +
-				"        IBM Corporation - initial API and implementation\n" +
-				" -->";
+		String expectedOut = """
+				<!--
+				    Copyright (c) 2000, 2015 IBM Corporation and others.\s\s
+				    All rights reserved. This program and the accompanying materials
+				    are made available under the terms of the Eclipse Public License v1.0
+				    which accompanies this distribution, and is available at
+				    http://www.eclipse.org/legal/epl-v10.html
+				 \s\s
+				    Contributors:
+				        IBM Corporation - initial API and implementation
+				 -->""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
@@ -257,28 +275,30 @@ public class AdvancedCopyrightCommentTests {
 	 * Check with windows delimiters. {@code \r\n}
 	 */
 	@Test
-	public void windowsDelimiters() {
-		String original = "<!--\r\n" + // NOTE new line char here.
-				"    Copyright (c) 2000, 2014 IBM Corporation and others.  \r\n" +
-				"    All rights reserved. This program and the accompanying materials \r\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\r\n" +
-				"    which accompanies this distribution, and is available at\r\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\r\n" +
-				"   \r\n" +
-				"    Contributors:\r\n" +
-				"        IBM Corporation - initial API and implementation\r\n" +
-				" -->";
+	void windowsDelimiters() {
+		String original = """
+				<!--\r
+				    Copyright (c) 2000, 2014 IBM Corporation and others.  \r
+				    All rights reserved. This program and the accompanying materials \r
+				    are made available under the terms of the Eclipse Public License v1.0\r
+				    which accompanies this distribution, and is available at\r
+				    http://www.eclipse.org/legal/epl-v10.html\r
+				   \r
+				    Contributors:\r
+				        IBM Corporation - initial API and implementation\r
+				 -->""";
 
-		String expectedOut = "<!--\r\n" + // NOTE new line char here.
-				"    Copyright (c) 2000, 2015 IBM Corporation and others.  \r\n" +
-				"    All rights reserved. This program and the accompanying materials \r\n" +
-				"    are made available under the terms of the Eclipse Public License v1.0\r\n" +
-				"    which accompanies this distribution, and is available at\r\n" +
-				"    http://www.eclipse.org/legal/epl-v10.html\r\n" +
-				"   \r\n" +
-				"    Contributors:\r\n" +
-				"        IBM Corporation - initial API and implementation\r\n" +
-				" -->";
+		String expectedOut = """
+				<!--\r
+				    Copyright (c) 2000, 2015 IBM Corporation and others.  \r
+				    All rights reserved. This program and the accompanying materials \r
+				    are made available under the terms of the Eclipse Public License v1.0\r
+				    which accompanies this distribution, and is available at\r
+				    http://www.eclipse.org/legal/epl-v10.html\r
+				   \r
+				    Contributors:\r
+				        IBM Corporation - initial API and implementation\r
+				 -->""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
@@ -288,30 +308,32 @@ public class AdvancedCopyrightCommentTests {
 	 * https://www.eclipse.org/legal/copyrightandlicensenotice.php
 	 */
 	@Test
-	public void eclipseCopyrightComment() {
+	void eclipseCopyrightComment() {
 		String original =
-				"    /*******************************************************************************\n" +
-				"     * Copyright (c) 2000 {INITIAL COPYRIGHT OWNER} {OTHER COPYRIGHT OWNERS}.\n" +
-				"     * All rights reserved. This program and the accompanying materials\n" +
-				"     * are made available under the terms of the Eclipse Public License v1.0\n" +
-				"     * which accompanies this distribution, and is available at\n" +
-				"     * http://www.eclipse.org/legal/epl-v10.html\n" +
-				"     *\n" +
-				"     * Contributors:\n" +
-				"     *    {INITIAL AUTHOR} - initial API and implementation and/or initial documentation\n" +
-				"     *******************************************************************************/";
+				"""
+						/*******************************************************************************
+						 * Copyright (c) 2000 {INITIAL COPYRIGHT OWNER} {OTHER COPYRIGHT OWNERS}.
+						 * All rights reserved. This program and the accompanying materials
+						 * are made available under the terms of the Eclipse Public License v1.0
+						 * which accompanies this distribution, and is available at
+						 * http://www.eclipse.org/legal/epl-v10.html
+						 *
+						 * Contributors:
+						 *    {INITIAL AUTHOR} - initial API and implementation and/or initial documentation
+						 *******************************************************************************/""";
 
 		String expectedOut =
-				"    /*******************************************************************************\n" +
-				"     * Copyright (c) 2000, 2015 {INITIAL COPYRIGHT OWNER} {OTHER COPYRIGHT OWNERS}.\n" +
-				"     * All rights reserved. This program and the accompanying materials\n" +
-				"     * are made available under the terms of the Eclipse Public License v1.0\n" +
-				"     * which accompanies this distribution, and is available at\n" +
-				"     * http://www.eclipse.org/legal/epl-v10.html\n" +
-				"     *\n" +
-				"     * Contributors:\n" +
-				"     *    {INITIAL AUTHOR} - initial API and implementation and/or initial documentation\n" +
-				"     *******************************************************************************/";
+				"""
+						/*******************************************************************************
+						 * Copyright (c) 2000, 2015 {INITIAL COPYRIGHT OWNER} {OTHER COPYRIGHT OWNERS}.
+						 * All rights reserved. This program and the accompanying materials
+						 * are made available under the terms of the Eclipse Public License v1.0
+						 * which accompanies this distribution, and is available at
+						 * http://www.eclipse.org/legal/epl-v10.html
+						 *
+						 * Contributors:
+						 *    {INITIAL AUTHOR} - initial API and implementation and/or initial documentation
+						 *******************************************************************************/""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
@@ -321,26 +343,28 @@ public class AdvancedCopyrightCommentTests {
 	 * https://www.eclipse.org/legal/copyrightandlicensenotice.php
 	 */
 	@Test
-	public void ibmCopyrightComment() {
+	void ibmCopyrightComment() {
 		String original =
-				"Copyright (c) 2000, 2010 IBM Corporation. \n" +
-				"All rights reserved. This program and the accompanying materials \n" +
-				"are made available under the terms of the Eclipse Public License v1.0 \n" +
-				"which accompanies this distribution, and is available at \n" +
-				"http://www.eclipse.org/legal/epl-v10.html  \n" +
-				"\n" +
-				"Contributors: \n" +
-				"   IBM Corporation - initial API and implementation";
+				"""
+						Copyright (c) 2000, 2010 IBM Corporation.\s
+						All rights reserved. This program and the accompanying materials\s
+						are made available under the terms of the Eclipse Public License v1.0\s
+						which accompanies this distribution, and is available at\s
+						http://www.eclipse.org/legal/epl-v10.html\s\s
+
+						Contributors:\s
+						   IBM Corporation - initial API and implementation""";
 
 		String expectedOut =
-				"Copyright (c) 2000, 2015 IBM Corporation. \n" +
-				"All rights reserved. This program and the accompanying materials \n" +
-				"are made available under the terms of the Eclipse Public License v1.0 \n" +
-				"which accompanies this distribution, and is available at \n" +
-				"http://www.eclipse.org/legal/epl-v10.html  \n" +
-				"\n" +
-				"Contributors: \n" +
-				"   IBM Corporation - initial API and implementation";
+				"""
+						Copyright (c) 2000, 2015 IBM Corporation.\s
+						All rights reserved. This program and the accompanying materials\s
+						are made available under the terms of the Eclipse Public License v1.0\s
+						which accompanies this distribution, and is available at\s
+						http://www.eclipse.org/legal/epl-v10.html\s\s
+
+						Contributors:\s
+						   IBM Corporation - initial API and implementation""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
@@ -352,44 +376,46 @@ public class AdvancedCopyrightCommentTests {
 	 * for the purpose, a random realistic comment was extracted.
 	 */
 	@Test
-	public void redHatCopyrightComment() {
+	void redHatCopyrightComment() {
 		String original =
-				"    /*******************************************************************************\n" +
-				"     * Copyright (c) 2004, 2008, 2009, 2012 Red Hat, Inc. and others\n" +
-				"     * All rights reserved. This program and the accompanying materials\n" +
-				"     * are made available under the terms of the Eclipse Public License v1.0\n" +
-				"     * which accompanies this distribution, and is available at\n" +
-				"     * http://www.eclipse.org/legal/epl-v10.html\n" +
-				"     *\n" +
-				"     * Contributors:\n" +
-				"     *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation\n" +
-				"     *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially\n" +
-				"     *        written in the now-defunct OprofileSession class\n" +
-				"     *    QNX Software Systems and others - the section of code marked in the launch\n" +
-				"     *        method, and the exec method\n" +
-				"     *    Lev Ufimtsev <lufimtse@redhat.com> --Added automatical enablement of options\n" +
-				"     *                                         if thery are not set.\n" +
-				"     *    Red Hat Inc. - modification of OProfileLaunchConfigurationDelegate to here\n" +
-				"     *******************************************************************************/";
+				"""
+						/*******************************************************************************
+						 * Copyright (c) 2004, 2008, 2009, 2012 Red Hat, Inc. and others
+						 * All rights reserved. This program and the accompanying materials
+						 * are made available under the terms of the Eclipse Public License v1.0
+						 * which accompanies this distribution, and is available at
+						 * http://www.eclipse.org/legal/epl-v10.html
+						 *
+						 * Contributors:
+						 *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
+						 *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially
+						 *        written in the now-defunct OprofileSession class
+						 *    QNX Software Systems and others - the section of code marked in the launch
+						 *        method, and the exec method
+						 *    Lev Ufimtsev <lufimtse@redhat.com> --Added automatical enablement of options
+						 *                                         if thery are not set.
+						 *    Red Hat Inc. - modification of OProfileLaunchConfigurationDelegate to here
+						 *******************************************************************************/""";
 
 		String expectedOut =
-				"    /*******************************************************************************\n" +
-				"     * Copyright (c) 2004, 2008, 2009, 2015 Red Hat, Inc. and others\n" +
-				"     * All rights reserved. This program and the accompanying materials\n" +
-				"     * are made available under the terms of the Eclipse Public License v1.0\n" +
-				"     * which accompanies this distribution, and is available at\n" +
-				"     * http://www.eclipse.org/legal/epl-v10.html\n" +
-				"     *\n" +
-				"     * Contributors:\n" +
-				"     *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation\n" +
-				"     *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially\n" +
-				"     *        written in the now-defunct OprofileSession class\n" +
-				"     *    QNX Software Systems and others - the section of code marked in the launch\n" +
-				"     *        method, and the exec method\n" +
-				"     *    Lev Ufimtsev <lufimtse@redhat.com> --Added automatical enablement of options\n" +
-				"     *                                         if thery are not set.\n" +
-				"     *    Red Hat Inc. - modification of OProfileLaunchConfigurationDelegate to here\n" +
-				"     *******************************************************************************/";
+				"""
+						/*******************************************************************************
+						 * Copyright (c) 2004, 2008, 2009, 2015 Red Hat, Inc. and others
+						 * All rights reserved. This program and the accompanying materials
+						 * are made available under the terms of the Eclipse Public License v1.0
+						 * which accompanies this distribution, and is available at
+						 * http://www.eclipse.org/legal/epl-v10.html
+						 *
+						 * Contributors:
+						 *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
+						 *    Keith Seitz <keiths@redhat.com> - setup code in launch the method, initially
+						 *        written in the now-defunct OprofileSession class
+						 *    QNX Software Systems and others - the section of code marked in the launch
+						 *        method, and the exec method
+						 *    Lev Ufimtsev <lufimtse@redhat.com> --Added automatical enablement of options
+						 *                                         if thery are not set.
+						 *    Red Hat Inc. - modification of OProfileLaunchConfigurationDelegate to here
+						 *******************************************************************************/""";
 
 		proccessAndCompare(original, 2015, expectedOut);
 	}
