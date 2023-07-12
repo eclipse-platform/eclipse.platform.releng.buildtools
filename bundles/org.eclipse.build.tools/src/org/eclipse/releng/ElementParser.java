@@ -19,7 +19,6 @@ import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.tools.ant.BuildException;
 import org.xml.sax.Attributes;
@@ -35,15 +34,12 @@ public class ElementParser extends DefaultHandler {
 
     public ElementParser() {
         // Create a Xerces SAX Parser
-        final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-
         try {
-            parser = saxParserFactory.newSAXParser();
+            @SuppressWarnings("restriction")
+            SAXParser p = org.eclipse.core.internal.runtime.XmlProcessorFactory.createSAXParserWithErrorOnDOCTYPE();
+            parser = p;
         }
-        catch (final ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-        catch (final SAXException e) {
+        catch (final SAXException | ParserConfigurationException e) {
             e.printStackTrace();
         }
 

@@ -7,7 +7,8 @@ Bundle-ClassPath: convert.jar
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Require-Bundle: org.apache.ant
+Require-Bundle: org.apache.ant,
+ org.eclipse.core.runtime;bundle-version="3.29.0"
 Export-Package: org.eclipse.releng.build.tools.convert.ant,
  org.eclipse.releng.build.tools.convert.dom
 Automatic-Module-Name: org.eclipse.releng.build.tools.convert

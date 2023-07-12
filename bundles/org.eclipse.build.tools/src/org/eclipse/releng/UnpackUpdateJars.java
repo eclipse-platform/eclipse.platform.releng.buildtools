@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.tools.ant.Task;
@@ -122,23 +121,13 @@ public class UnpackUpdateJars extends Task {
         }
 
         final InputSource inputSource = new InputSource(reader);
-        final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = null;
-
         try {
-            builder = factory.newDocumentBuilder();
-        }
-        catch (final ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-
-        try {
+            @SuppressWarnings("restriction")
+            DocumentBuilder builder = org.eclipse.core.internal.runtime.XmlProcessorFactory
+                    .createDocumentBuilderWithErrorOnDOCTYPE();
             aDocument = builder.parse(inputSource);
         }
-        catch (final SAXException e) {
-            e.printStackTrace();
-        }
-        catch (final IOException e) {
+        catch (final ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();
         }
         // Get feature attributes

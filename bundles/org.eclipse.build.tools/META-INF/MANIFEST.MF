@@ -7,7 +7,8 @@ Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.apache.ant,
- org.eclipse.osgi
+ org.eclipse.osgi,
+ org.eclipse.core.runtime;bundle-version="3.29.0"
 Bundle-ClassPath: buildTools.jar
 Bundle-Vendor: %Bundle-Vendor
 Automatic-Module-Name: org.eclipse.build.tools

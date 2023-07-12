@@ -6,7 +6,7 @@ Bundle-Version: 1.1.0.qualifier
 Eclipse-BundleShape: dir
 Bundle-Vendor: %Plugin.providerName
 Bundle-Localization: plugin
-Require-Bundle: org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.29.0",
  junit-jupiter-api,
  org.eclipse.jgit;bundle-version="3.0.0";resolution:=optional,
  org.eclipse.core.resources,

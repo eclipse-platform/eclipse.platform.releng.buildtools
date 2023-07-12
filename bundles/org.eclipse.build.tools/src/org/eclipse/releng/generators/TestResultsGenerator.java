@@ -31,7 +31,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.tools.ant.BuildException;
@@ -172,7 +171,6 @@ public class TestResultsGenerator extends Task {
     private String              testResultsWithProblems                = EOL;
     private String              testResultsXmlUrls                     = EOL;
 
-    private DocumentBuilder     parser                                 = null;
     private ErrorTracker        anErrorTracker;
 
     private String              dropTemplateString                     = "";
@@ -334,9 +332,9 @@ public class TestResultsGenerator extends Task {
             } else {
 
                 try {
-                    final DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-                    parser = docBuilderFactory.newDocumentBuilder();
-
+                    @SuppressWarnings("restriction")
+                    DocumentBuilder parser = org.eclipse.core.internal.runtime.XmlProcessorFactory
+                            .createDocumentBuilderWithErrorOnDOCTYPE();
                     final Document document = parser.parse(fileName);
                     final NodeList elements = document.getElementsByTagName(elementName);
 
@@ -641,17 +639,13 @@ public class TestResultsGenerator extends Task {
         Document aDocument = null;
         try (BufferedReader reader = new BufferedReader(new FileReader(file))){
             final InputSource inputSource = new InputSource(reader);
-            final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            final DocumentBuilder builder = factory.newDocumentBuilder();
+            @SuppressWarnings("restriction")
+            final DocumentBuilder builder = org.eclipse.core.internal.runtime.XmlProcessorFactory
+                    .createDocumentBuilderWithErrorOnDOCTYPE();
+
             aDocument = builder.parse(inputSource);
         }
-        catch (final SAXException e) {
-            logException(e);
-        }
-        catch (final IOException e) {
-            logException(e);
-        }
-        catch (final ParserConfigurationException e) {
+        catch (final ParserConfigurationException |IOException |SAXException e) {
             logException(e);
         }
 

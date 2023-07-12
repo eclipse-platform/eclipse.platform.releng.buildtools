@@ -21,7 +21,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
@@ -80,17 +79,10 @@ public class ErrorTracker {
 
     // Answer an array of PlatformStatus objects for a given type.
 
+    @SuppressWarnings("restriction")
     public void loadFile(final String fileName) {
-        final DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder parser = null;
         try {
-            parser = docBuilderFactory.newDocumentBuilder();
-        }
-        catch (final ParserConfigurationException e1) {
-            e1.printStackTrace();
-        }
-        try {
-
+            DocumentBuilder parser = org.eclipse.core.internal.runtime.XmlProcessorFactory.createDocumentBuilderWithErrorOnDOCTYPE();
             final Document document = parser.parse(fileName);
             final NodeList elements = document.getElementsByTagName("platform");
             final int elementCount = elements.getLength();
@@ -176,6 +168,9 @@ public class ErrorTracker {
             System.out.println("SAXException: " + fileName);
             e.printStackTrace();
 
+        }
+        catch (final ParserConfigurationException e1) {
+            e1.printStackTrace();
         }
     }
 

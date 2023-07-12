@@ -27,6 +27,7 @@ import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
+import org.eclipse.core.internal.runtime.XmlProcessorFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -376,7 +377,7 @@ public class PomVersionErrorReporter implements IResourceChangeListener, IEclips
 			}
 			// Compare it to the POM file version
 			try {
-				SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+				SAXParserFactory parserFactory = XmlProcessorFactory.createSAXFactoryWithErrorOnDOCTYPE();
 				SAXParser parser = parserFactory.newSAXParser();
 				PomVersionHandler handler = new PomVersionHandler(pom, bundleVersion, severity);
 				parser.parse(pom.getContents(), handler);
@@ -390,8 +391,8 @@ public class PomVersionErrorReporter implements IResourceChangeListener, IEclips
 			if (feature.exists()){
 				try {
 					// Get the feature version
-					Version featureVersion = Version.emptyVersion;
-					SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+					Version featureVersion;
+					SAXParserFactory parserFactory = XmlProcessorFactory.createSAXFactoryWithErrorOnDOCTYPE();
 					SAXParser parser = parserFactory.newSAXParser();
 					FeatureVersionHandler handler = new FeatureVersionHandler();
 					try {

@@ -105,7 +105,8 @@ public class VersionTrackerTask extends Task {
         elements = new Hashtable<>();
         allElements = new Vector<>();
 
-        final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+        @SuppressWarnings("restriction")
+        final SAXParserFactory saxParserFactory = org.eclipse.core.internal.runtime.XmlProcessorFactory.createSAXFactoryWithErrorOnDOCTYPE();
         try {
             parser = saxParserFactory.newSAXParser();
         }
