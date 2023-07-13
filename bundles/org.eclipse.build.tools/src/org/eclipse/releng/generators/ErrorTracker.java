@@ -80,10 +80,6 @@ public class ErrorTracker {
 
     // Answer an array of PlatformStatus objects for a given type.
 
-    public boolean hasErrors(final String id) {
-        return platforms.get(id).hasErrors();
-    }
-
     public void loadFile(final String fileName) {
         final DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder parser = null;
