@@ -9,20 +9,18 @@
 
 package org.eclipse.releng.generators;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -161,8 +159,6 @@ public class TestResultsGenerator extends Task {
     private static final String ForbiddenReferenceID                   = "ForbiddenReference";
     private static final String DiscouragedReferenceID                 = "DiscouragedReference";
 
-    private static final int    DEFAULT_READING_SIZE                   = 8192;
-
     private static final String elementName                            = "testsuite";
 
     private ArrayList<String>   expectedConfigs                        = null;
@@ -273,62 +269,7 @@ public class TestResultsGenerator extends Task {
 
     private static byte[] getFileByteContent(final String fileName) throws IOException {
         final File file = new File(fileName);
-        try (InputStream stream = new BufferedInputStream(new FileInputStream(file))) {
-            return getInputStreamAsByteArray(stream, (int) file.length());
-        }
-    }
-
-    /**
-     * Returns the given input stream's contents as a byte array. If a length is
-     * specified (ie. if length != -1), only length bytes are returned.
-     * Otherwise all bytes in the stream are returned. Note this doesn't close
-     * the stream.
-     *
-     * @throws IOException
-     *             if a problem occurred reading the stream.
-     */
-    private static byte[] getInputStreamAsByteArray(final InputStream stream, final int length) throws IOException {
-        byte[] contents;
-        if (length == -1) {
-            contents = new byte[0];
-            int contentsLength = 0;
-            int amountRead = -1;
-            do {
-                final int amountRequested = Math.max(stream.available(), DEFAULT_READING_SIZE);
-
-                // resize contents if needed
-                if ((contentsLength + amountRequested) > contents.length) {
-                    System.arraycopy(contents, 0, contents = new byte[contentsLength + amountRequested], 0, contentsLength);
-                }
-
-                // read as many bytes as possible
-                amountRead = stream.read(contents, contentsLength, amountRequested);
-
-                if (amountRead > 0) {
-                    // remember length of contents
-                    contentsLength += amountRead;
-                }
-            }
-            while (amountRead != -1);
-
-            // resize contents if necessary
-            if (contentsLength < contents.length) {
-                System.arraycopy(contents, 0, contents = new byte[contentsLength], 0, contentsLength);
-            }
-        } else {
-            contents = new byte[length];
-            int len = 0;
-            int readSize = 0;
-            while ((readSize != -1) && (len != length)) {
-                // See PR 1FMS89U
-                // We record first the read size. In this case len is the actual
-                // read size.
-                len += readSize;
-                readSize = stream.read(contents, len, length - len);
-            }
-        }
-
-        return contents;
+        return Files.readAllBytes(file.toPath());
     }
 
     // Configuration of test machines.
