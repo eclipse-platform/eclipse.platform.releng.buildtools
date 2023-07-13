@@ -9,16 +9,13 @@
 
 package org.eclipse.releng.generators;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -1306,8 +1303,8 @@ public class TestResultsGenerator extends Task {
     }
 
     private void writeFile(File outputFile, final String contents) {
-        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile))){
-            outputStream.write(contents.getBytes());
+        try {
+            Files.writeString(outputFile.toPath(), contents);
         }
         catch (final FileNotFoundException e) {
             log(EOL + "ERROR: File not found exception while writing: " + outputFile.getPath());
