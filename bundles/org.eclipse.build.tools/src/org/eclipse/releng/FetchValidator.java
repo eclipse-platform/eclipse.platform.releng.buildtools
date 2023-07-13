@@ -24,16 +24,6 @@ import org.apache.tools.ant.Task;
 
 public class FetchValidator extends Task {
 
-    // test
-    public static void main(final String args[]) {
-        final FetchValidator validator = new FetchValidator();
-        validator.install = "l:/vabase/team/sonia";
-        validator.list = "org.eclipse.platform-feature,org.eclipse.platform.win32-feature,org.eclipse.platform.linux.motif-feature";
-        validator.getListOfFeatures(validator.list);
-
-        validator.execute();
-    }
-
     // directory containing of build source, parent of features and plugins
     private String       install = "";
 

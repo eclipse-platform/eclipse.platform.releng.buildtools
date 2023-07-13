@@ -28,37 +28,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class ElementParser extends DefaultHandler {
 
-    // Test
-    public static void main(final String[] args) {
-        final ElementParser xmlParser = new ElementParser();
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.win32-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.linux.motif-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.linux.gtk-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.solaris.motif-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.aix.motif-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.qnx.photon-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.jdt-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.pde-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.sdk.examples-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.sdk.tests-feature");
-
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.source-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.win32.source-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.linux.motif.source-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.linux.gtk.source-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.solaris.motif.source-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.aix.motif.source-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.platform.qnx.photon.source-feature");
-        xmlParser.parse("l:/vabase/team/sonia", "feature", "org.eclipse.jdt.source-feature");
-
-        System.out.println(xmlParser.plugins);
-        System.out.println(xmlParser.features);
-
-        System.out.println(xmlParser.plugins.size() + " plugins expected");
-        System.out.println(xmlParser.features.size() + " features expected");
-    }
-
     private SAXParser    parser;
     private final Vector<String> plugins;
 

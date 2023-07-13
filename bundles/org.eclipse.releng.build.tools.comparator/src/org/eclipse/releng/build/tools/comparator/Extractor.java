@@ -26,23 +26,6 @@ public class Extractor {
 	public static final String COMPARATOR_REPO_PROPERTY = "comparatorRepo";
 	private static final String EOL = System.lineSeparator();
 
-	public static void main(final String[] args) {
-		final Extractor extractor = new Extractor();
-		if (args.length > 0) {
-			extractor.setBuildDirectory(args[0]);
-		} else {
-			// can set explicitly for local test
-			// does not have to be a full "download", only
-			// I20130910-0800/buildlogs/mb060_run-maven-build_output.txt
-			extractor.setBuildDirectory("/home/davidw/temp/I20130910-0800");
-		}
-		try {
-			extractor.processBuildfile();
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	private final String debugFilename = "mb060_run-maven-build_output.txt";
 	private final String outputFilenameFull = "buildtimeComparatorFull.log.txt";
 	private final String outputFilenameSign = "buildtimeComparatorSignatureOnly.log.txt";
