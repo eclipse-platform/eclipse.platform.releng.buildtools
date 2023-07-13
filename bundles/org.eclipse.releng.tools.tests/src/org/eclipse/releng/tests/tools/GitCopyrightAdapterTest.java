@@ -41,7 +41,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class GitCopyrightAdapterTest extends LocalGitRepositoryTestData {
+class GitCopyrightAdapterTest extends LocalGitRepositoryTestData {
 
 	private static final IProgressMonitor NULL_MONITOR = new NullProgressMonitor();
 
@@ -79,12 +79,12 @@ public class GitCopyrightAdapterTest extends LocalGitRepositoryTestData {
 		if (project.exists())
 			project.delete(true, true, NULL_MONITOR);
 		if (gitDir.exists())
-			FileUtils.delete(gitDir, FileUtils.RECURSIVE | FileUtils.RETRY);
+			FileUtils.delete(gitDir, FileUtils.RECURSIVE | FileUtils.RETRY | FileUtils.IGNORE_ERRORS);
 		super.tearDown();
 	}
 
 	@Test
-	public void testLastModifiedYear() throws Exception {
+	void testLastModifiedYear() throws Exception {
 
 		try (final Git git = new Git(db)) {
 			git.add().addFilepattern(PROJECT_NAME + "/" + FILE1_NAME).call();
@@ -104,7 +104,7 @@ public class GitCopyrightAdapterTest extends LocalGitRepositoryTestData {
 	}
 
 	@Test
-	public void testCopyrightUpdateComment() throws Exception {
+	void testCopyrightUpdateComment() throws Exception {
 
 		try (final Git git = new Git(db)) {
 			git.add().addFilepattern(PROJECT_NAME + "/" + FILE1_NAME).call();
