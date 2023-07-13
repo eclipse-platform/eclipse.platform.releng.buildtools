@@ -59,17 +59,6 @@ public class UnpackUpdateJars extends Task {
         }
     }
 
-    public static void main(final String[] args) {
-        // TODO Auto-generated method stub
-        final UnpackUpdateJars up = new UnpackUpdateJars();
-        up.site = "/home/davidw/builds/workspaces/davidwrepos2/compare/4.4";
-        up.output = "/home/davidw/builds/workspaces/davidwrepos2/compare/4.4";
-        up.execute();
-    }
-
-    /**
-     * @param args
-     */
     // parent to plugins and features directory which contains update jars
     private String site;
 

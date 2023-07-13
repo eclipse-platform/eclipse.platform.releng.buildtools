@@ -331,48 +331,6 @@ public class TestResultsGenerator extends Task {
         return contents;
     }
 
-    public static void main(final String[] args) {
-        final TestResultsGenerator test = new TestResultsGenerator();
-        if (Boolean.FALSE) {
-            test.setTestsConfigExpected(
-                    "ep46I-unit-cen64-gtk2_linux.gtk.x86_64_8.0, ep46I-unit-cen64-gtk3_linux.gtk.x86_64_8.0 ,ep46I-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46I-unit-win32_win32.win32.x86_8.0");
-            DEBUG = true;
-            try {
-                test.getTestsConfig();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        } else {
-            test.setTestsConfigExpected(
-                    "ep46I-unit-cen64-gtk2_linux.gtk.x86_64_8.0 ,ep46I-unit-mac64_macosx.cocoa.x86_64_8.0 ,ep46I-unit-win32_win32.win32.x86_8.0, ep46I-unit-cen64-gtk3_linux.gtk.x86_64_8.0");
-            // "%equinox%,%framework%,%extrabundles%,%other%,%incubator%,%provisioning%,%launchers%,%osgistarterkits%");
-            test.setDropTokenList(
-                    "%sdk%,%tests%,%example%,%rcpruntime%,%rcpsdk%,%runtime%,%jdt%,%jdtsdk%,%jdtc%,%pde%,%pdesdk%,%cvs%,%cvssdk%,%swt%,%relengtools%");
-            test.getDropTokensFromList(test.dropTokenList);
-            test.setIsBuildTested(false);
-            test.setXmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4I/siteDir/eclipse/downloads/drops4/N20160614-2120/testresults/xml");
-            test.setHtmlDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4I/siteDir/eclipse/downloads/drops4/N20160614-2120/testresults/html");
-            test.setDropDirectoryName("/shared/eclipse/buildsmirror/4N/siteDir/eclipse/downloads/drops4/N20160614-2120");
-
-            test.setDropTemplateFileName(
-                    "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/templateFiles/index.template.php");
-            test.setTestResultsHtmlFileName("testResultsTables.html");
-            test.setDropHtmlFileName("index.php");
-
-            test.setHrefTestResultsTargetPath("testresults");
-            test.setCompileLogsDirectoryName(
-                    "/data/shared/eclipse/buildsmirror/4I/siteDir/eclipse/downloads/drops4/N20160614-2120/compilelogs/plugins");
-            test.setHrefCompileLogsTargetPath("compilelogs/plugins/");
-            test.setTestManifestFileName(
-                    "/home/davidw/gitNeon/eclipse.platform.releng.aggregator/eclipse.platform.releng.tychoeclipsebuilder/eclipse/publishingFiles/testManifest.xml");
-            test.execute();
-        }
-    }
-
     // Configuration of test machines.
     // Add or change new configurations here
     // and update titles in testResults.template.php.

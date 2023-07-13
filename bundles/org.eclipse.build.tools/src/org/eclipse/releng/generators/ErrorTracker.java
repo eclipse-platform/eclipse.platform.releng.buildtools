@@ -35,23 +35,6 @@ import org.xml.sax.SAXException;
  */
 public class ErrorTracker {
 
-    public static void main(final String[] args) {
-
-        // For testing only. Should not be invoked
-
-        final ErrorTracker anInstance = new ErrorTracker();
-        anInstance.loadFile("C:\\junk\\testManifest.xml");
-        final String[] theTypes = anInstance.getTypes();
-        for (int i = 0; i < theTypes.length; i++) {
-            // System.out.println("Type: " + theTypes[i]);
-            final PlatformStatus[] thePlatforms = anInstance.getPlatforms(theTypes[i]);
-            for (int j = 0; j < thePlatforms.length; j++) {
-                // System.out.println("Out ID: " + thePlatforms[j].getId());
-            }
-        }
-    }
-
-
     private Set<String> testLogsSet = Collections.checkedSortedSet(new TreeSet<>(),String.class);
     // Platforms keyed on
     private final Hashtable<String, PlatformStatus> platforms = new Hashtable<>();
