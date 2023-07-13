@@ -151,8 +151,7 @@ public abstract class SourceFile {
 							commentEnd = lineNumber;
 							String commentEndString = aLine.trim();
 							commentEndString = commentEndString.substring(commentEndString.length() - 2);
-							BlockComment aComment = new BlockComment(commentStart, commentEnd, comment.toString(),
-									commentStartString, commentEndString);
+							BlockComment aComment = new BlockComment(commentStart, commentEnd, comment.toString());
 							comments.add(aComment);
 							comment = ""; //$NON-NLS-1$
 							commentStart = 0;
