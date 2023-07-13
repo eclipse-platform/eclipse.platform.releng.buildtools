@@ -26,19 +26,14 @@ public class IBMCopyrightComment extends CopyrightComment {
 	private static final int DEFAULT_CREATION_YEAR = 2005;
 
 	private List<String> contributors;
-	private int yearRangeStart, yearRangeEnd;
-	private String originalText;
 
-	private IBMCopyrightComment(int commentStyle, int creationYear, int revisionYear, List<String> contributors, int yearRangeStart, int yearRangeEnd, String originalText) {
+	private IBMCopyrightComment(int commentStyle, int creationYear, int revisionYear, List<String> contributors) {
 		super(commentStyle, creationYear == -1 ? DEFAULT_CREATION_YEAR : creationYear, revisionYear);
 		this.contributors = contributors;
-		this.yearRangeStart = yearRangeStart;
-		this.yearRangeEnd = yearRangeEnd;
-		this.originalText = originalText;
 	}
 
 	public static IBMCopyrightComment defaultComment(int commentStyle) {
-		return new IBMCopyrightComment(commentStyle, DEFAULT_CREATION_YEAR, -1, null, 0, 0, null);
+		return new IBMCopyrightComment(commentStyle, DEFAULT_CREATION_YEAR, -1, null);
 	}
 
 	/**
@@ -114,7 +109,7 @@ public class IBMCopyrightComment extends CopyrightComment {
 			}
 		}
 
-		return new IBMCopyrightComment(commentStyle, startYear, endYear, contributors, rangeStart, rangeEnd, body);
+		return new IBMCopyrightComment(commentStyle, startYear, endYear, contributors);
 	}
 
 	/**
@@ -137,22 +132,6 @@ public class IBMCopyrightComment extends CopyrightComment {
 		}
 	}
 
-	/**
-	 * Return the body of the original copyright comment with new dates.
-	 */
-	public String getOriginalCopyrightComment() {
-		StringWriter out = new StringWriter();
-
-		try (PrintWriter writer = new PrintWriter(out)) {
-			writer.print(originalText.substring(0, yearRangeStart));
-			writer.print(getCreationYear());
-			if (hasRevisionYear() && getRevisionYear() != getCreationYear())
-				writer.print(", " + getRevisionYear()); //$NON-NLS-1$
-			writer.print(originalText.substring(yearRangeEnd));
-			return out.toString();
-		}
-	}
-
 	private void writeLegal(PrintWriter writer, String linePrefix) {
 		writer.print(linePrefix + " Copyright (c) " + getCreationYear()); //$NON-NLS-1$
 		if (hasRevisionYear() && getRevisionYear() != getCreationYear())
@@ -169,7 +148,7 @@ public class IBMCopyrightComment extends CopyrightComment {
 		println(writer, linePrefix);
 		println(writer, linePrefix + " Contributors:"); //$NON-NLS-1$
 
-		if (contributors == null || contributors.size() <= 0)
+		if (contributors == null || contributors.isEmpty())
 			println(writer, linePrefix + "     IBM Corporation - initial API and implementation"); //$NON-NLS-1$
 		else {
 			Iterator<String> i = contributors.iterator();

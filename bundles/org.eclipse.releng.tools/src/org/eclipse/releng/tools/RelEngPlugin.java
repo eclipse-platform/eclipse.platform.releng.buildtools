@@ -16,11 +16,9 @@ package org.eclipse.releng.tools;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -29,7 +27,6 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.releng.internal.tools.pomversion.IPomVersionConstants;
 import org.eclipse.releng.internal.tools.pomversion.PomVersionErrorReporter;
-import org.eclipse.team.core.RepositoryProvider;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -47,7 +44,6 @@ public class RelEngPlugin extends AbstractUIPlugin {
 	public static final String ID = "org.eclipse.releng.tools"; //$NON-NLS-1$
 	public static final String MAP_PROJECT_NAME = Messages.getString("RelEngPlugin.1"); //$NON-NLS-1$
 	public static final String MAP_FOLDER = Messages.getString("RelEngPlugin.2"); //$NON-NLS-1$
-	private static final String BINARY_REPOSITORY_PROVIDER_CLASS_NAME= "org.eclipse.pde.internal.core.BinaryRepositoryProvider"; //$NON-NLS-1$
 
 	private PomVersionErrorReporter fPomReporter = new PomVersionErrorReporter();
 
@@ -175,23 +171,6 @@ public class RelEngPlugin extends AbstractUIPlugin {
 			}
 		}
 		return plugin;
-	}
-
-	/**
-	 * Tells whether the given project is shared.
-	 *
-	 * @param project the project
-	 * @return <code>true</code> if the project is shared
-	 * @since 3.7
-	 */
-	static boolean isShared(IProject project) {
-		Assert.isLegal(project != null);
-		if (!RepositoryProvider.isShared(project))
-			return false;
-
-		// Check for PDE's binary projects that also connect a provider to the project
-		RepositoryProvider provider= RepositoryProvider.getProvider(project);
-		return provider != null && !BINARY_REPOSITORY_PROVIDER_CLASS_NAME.equals(provider.getClass().getName());
 	}
 
 }

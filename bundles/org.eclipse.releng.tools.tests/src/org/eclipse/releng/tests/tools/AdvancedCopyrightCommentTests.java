@@ -431,7 +431,7 @@ class AdvancedCopyrightCommentTests {
 	private void proccessAndCompare(String original, int reviseTo, String expected) {
 
 		//For our purposes, start/end line & start/end comment don't matter.
-		BlockComment commentBlock = new BlockComment(0, 0, original, null, null);
+		BlockComment commentBlock = new BlockComment(0, 0, original);
 
 		//Proccess input string.
 		AdvancedCopyrightComment advComment = AdvancedCopyrightComment.parse(commentBlock,CopyrightComment.XML_COMMENT);
