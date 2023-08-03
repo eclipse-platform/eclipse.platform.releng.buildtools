@@ -202,7 +202,7 @@ public class Converter {
     public void parse2() throws ParserConfigurationException {
 		@SuppressWarnings("restriction")
 		final DocumentBuilderFactory factory = org.eclipse.core.internal.runtime.XmlProcessorFactory
-				.createDocumentBuilderFactoryWithErrorOnDOCTYPE();
+				.createDocumentBuilderFactoryIgnoringDOCTYPE();
 		final boolean validation = Boolean.parseBoolean(options.get(ENABLE_VALIDATION));
         factory.setValidating(validation);
         factory.setIgnoringElementContentWhitespace(true);
