@@ -641,7 +641,7 @@ public class TestResultsGenerator extends Task {
             final InputSource inputSource = new InputSource(reader);
             @SuppressWarnings("restriction")
             final DocumentBuilder builder = org.eclipse.core.internal.runtime.XmlProcessorFactory
-                    .createDocumentBuilderWithErrorOnDOCTYPE();
+                    .createDocumentBuilderIgnoringDOCTYPE();
 
             aDocument = builder.parse(inputSource);
         }
