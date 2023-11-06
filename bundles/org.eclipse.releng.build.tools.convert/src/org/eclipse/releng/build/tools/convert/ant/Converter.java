@@ -9,6 +9,7 @@
 
 package org.eclipse.releng.build.tools.convert.ant;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -204,9 +205,10 @@ public class Converter {
 		final DocumentBuilderFactory factory = org.eclipse.core.internal.runtime.XmlProcessorFactory
 				.createDocumentBuilderFactoryIgnoringDOCTYPE();
 		final boolean validation = Boolean.parseBoolean(options.get(ENABLE_VALIDATION));
-        factory.setValidating(validation);
-        factory.setIgnoringElementContentWhitespace(true);
-        final DocumentBuilder builder = factory.newDocumentBuilder();
+		factory.setValidating(validation);
+		factory.setIgnoringElementContentWhitespace(true);
+		final DocumentBuilder builder = factory.newDocumentBuilder();
+		builder.setEntityResolver((publicId, systemId) -> new InputSource(new ByteArrayInputStream(new byte[0])));
 
         final String inputSourceOption = options.get(INPUT_SOURCE);
         if (options.get(RECURSIVE) != null) {

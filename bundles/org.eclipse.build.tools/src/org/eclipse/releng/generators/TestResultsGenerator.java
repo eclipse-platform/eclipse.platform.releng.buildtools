@@ -10,6 +10,7 @@
 package org.eclipse.releng.generators;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -642,6 +643,7 @@ public class TestResultsGenerator extends Task {
             @SuppressWarnings("restriction")
             final DocumentBuilder builder = org.eclipse.core.internal.runtime.XmlProcessorFactory
                     .createDocumentBuilderIgnoringDOCTYPE();
+            builder.setEntityResolver((publicId, systemId) -> new InputSource(new ByteArrayInputStream(new byte[0])));
 
             aDocument = builder.parse(inputSource);
         }
