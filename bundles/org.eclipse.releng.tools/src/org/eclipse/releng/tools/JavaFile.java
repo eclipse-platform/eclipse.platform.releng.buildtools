@@ -18,9 +18,6 @@ import org.eclipse.core.resources.IFile;
 
 public class JavaFile extends SourceFile {
 
-	/**
-	 * @param file
-	 */
 	public JavaFile(IFile file) {
 		super(file);
 	}

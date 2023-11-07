@@ -61,7 +61,6 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Validates the content of the pom.xml.  Currently the only check is that the
  * version specified in pom.xml matches the bundle version.
- *
  */
 public class PomVersionErrorReporter implements IResourceChangeListener, IEclipsePreferences.IPreferenceChangeListener {
 
@@ -316,8 +315,6 @@ public class PomVersionErrorReporter implements IResourceChangeListener, IEclips
 
 	/**
 	 * Clean up all markers
-	 *
-	 * @param project
 	 */
 	void cleanMarkers(IResource resource) {
 		try {
@@ -330,9 +327,6 @@ public class PomVersionErrorReporter implements IResourceChangeListener, IEclips
 
 	/**
 	 * Validates the manifest or feature version against the version in the <code>pom.xml</code> file
-	 *
-	 * @param project
-	 * @param severity
 	 */
 	public void validate(IProject project) {
 		if(project == null || !project.isAccessible()) {
@@ -456,7 +450,6 @@ public class PomVersionErrorReporter implements IResourceChangeListener, IEclips
 	 * is returned if the {@link IFile} does not exist or the {@link ITextFileBufferManager}
 	 * cannot be acquired or there was an exception trying to create the {@link IDocument}.
 	 *
-	 * @param file
 	 * @return a new {@link IDocument} or <code>null</code>
 	 */
 	protected IDocument createDocument(IFile file) {

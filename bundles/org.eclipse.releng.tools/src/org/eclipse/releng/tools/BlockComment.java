@@ -24,11 +24,6 @@ public class BlockComment {
 	private String copyrightHolder;
 
 
-	/**
-	 * @param commentStart
-	 * @param commentEnd
-	 * @param comment
-	 */
 	public BlockComment(int commentStartLine, int commentEndLine, String comment) {
 		start = commentStartLine;
 		end = commentEndLine;

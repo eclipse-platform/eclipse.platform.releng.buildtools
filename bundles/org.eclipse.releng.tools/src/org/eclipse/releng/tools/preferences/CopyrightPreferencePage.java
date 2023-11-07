@@ -297,8 +297,6 @@ public class CopyrightPreferencePage extends PreferencePage implements IWorkbenc
 
 	/**
 	 * Fix up line delimiters in doc to use only \n
-	 * @param doc
-	 * @return
 	 */
 	private String fixupLineDelimiters(IDocument doc) {
 		String docContents = doc.get();

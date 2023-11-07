@@ -42,7 +42,6 @@ import org.osgi.service.prefs.BackingStoreException;
 
 /**
  * This block is used to add error/warning combos to the {@link PomVersionPreferencePage}
- *
  */
 public class PomErrorLevelBlock extends ConfigurationBlock {
 	/**
@@ -54,8 +53,6 @@ public class PomErrorLevelBlock extends ConfigurationBlock {
 
 		/**
 		 * Constructor
-		 * @param key
-		 * @param values
 		 */
 		public ControlData(Key key, String[] values) {
 			this.key = key;
@@ -97,8 +94,6 @@ public class PomErrorLevelBlock extends ConfigurationBlock {
 
 		/**
 		 * Constructor
-		 * @param qualifier
-		 * @param key
 		 */
 		public Key(String qualifier, String key) {
 			this.qualifier= qualifier;
@@ -107,8 +102,6 @@ public class PomErrorLevelBlock extends ConfigurationBlock {
 
 		/**
 		 * Returns the {@link IEclipsePreferences} node for the given context and {@link IWorkingCopyManager}
-		 * @param context
-		 * @param manager
 		 * @return the {@link IEclipsePreferences} node or <code>null</code>
 		 */
 		private IEclipsePreferences getNode(IScopeContext context, IWorkingCopyManager manager) {
@@ -121,8 +114,6 @@ public class PomErrorLevelBlock extends ConfigurationBlock {
 
 		/**
 		 * Returns the value stored in the {@link IEclipsePreferences} node from the given context and working copy manager
-		 * @param context
-		 * @param manager
 		 * @return the value from the {@link IEclipsePreferences} node or <code>null</code>
 		 */
 		public String getStoredValue(IScopeContext context, IWorkingCopyManager manager) {
@@ -136,9 +127,6 @@ public class PomErrorLevelBlock extends ConfigurationBlock {
 		/**
 		 * Returns the stored value of this {@link IEclipsePreferences} node using a given lookup order, and allowing the
 		 * top scope to be ignored
-		 * @param lookupOrder
-		 * @param ignoreTopScope
-		 * @param manager
 		 * @return the value from the {@link IEclipsePreferences} node or <code>null</code>
 		 */
 		public String getStoredValue(IScopeContext[] lookupOrder, boolean ignoreTopScope, IWorkingCopyManager manager) {
@@ -153,9 +141,6 @@ public class PomErrorLevelBlock extends ConfigurationBlock {
 
 		/**
 		 * Sets the value of this key
-		 * @param context
-		 * @param value
-		 * @param manager
 		 */
 		public void setStoredValue(IScopeContext context, String value, IWorkingCopyManager manager) {
 			IEclipsePreferences node = getNode(context, manager);
@@ -242,7 +227,6 @@ public class PomErrorLevelBlock extends ConfigurationBlock {
 
 	/**
 	 * Constructor
-	 * @param project
 	 */
 	public PomErrorLevelBlock(IWorkbenchPreferenceContainer container) {
 		fLookupOrder = new IScopeContext[] {
@@ -347,9 +331,6 @@ public class PomErrorLevelBlock extends ConfigurationBlock {
 
 	/**
 	 * Creates a {@link Label} | {@link Combo} control. The combo is initialised from the given {@link Key}
-	 * @param parent
-	 * @param label
-	 * @param key
 	 */
 	protected Combo createComboControl(Composite parent, String label, Key key) {
 		Label lbl = new Label(parent, SWT.NONE);

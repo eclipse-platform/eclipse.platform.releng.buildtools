@@ -40,7 +40,6 @@ import org.eclipse.jface.text.IDocument;
  * [x] Document with XML header, copyright on 2nd line, stuff.
  * [x] test with non-IBM header.
  * 2014.07.15 tested.
- *
  */
 
 /**
@@ -150,9 +149,6 @@ public class XmlFile extends SourceFile {
 
 	/**
 	 * Given the document, find the place after the xml header to insert the comment.
-	 * @param document
-	 * @return
-	 * @throws BadLocationException
 	 */
 	private int findInsertOffset(IDocument document) throws BadLocationException {
 		boolean inInstruction = false;
@@ -212,9 +208,7 @@ public class XmlFile extends SourceFile {
 	 * {@literal<?xml version="1.0" encoding="UTF-8" standalone="no"?> } <br>
 	 * {@literal <?xml version="1.0" ?> } </p>
 	 *
-	 * @param xmlDoc
 	 * @return             True if it contains a header.
-	 * @throws BadLocationException
 	 */
 	public boolean containsXmlEncoding(IDocument xmlDoc) throws BadLocationException {
 

@@ -119,7 +119,6 @@ public abstract class CopyrightComment {
 	}
 
 	/**
-	 * @param lineDelimiter
 	 * @since 3.7
 	 */
 	public void setLineDelimiter(String lineDelimiter) {

@@ -296,9 +296,6 @@ public class AdvancedFixCopyrightAction implements IObjectActionDelegate {
 		return factory.createAdapater(results);
 	}
 
-	/**
-	 *
-	 */
 	private void writeLogs() {
 
 		FileOutputStream aStream;
@@ -360,8 +357,6 @@ public class AdvancedFixCopyrightAction implements IObjectActionDelegate {
 	 *
 	 * @param file
 	 *            - file to be proccessed (.java, .bat, .xml etc...)
-	 * @param adapter
-	 * @param monitor
 	 */
 	private void processFile(IFile file, RepositoryProviderCopyrightAdapter adapter, IProgressMonitor monitor) {
 
@@ -543,8 +538,6 @@ public class AdvancedFixCopyrightAction implements IObjectActionDelegate {
 	/**
 	 * Check if the file has multiple copyright notices. Skip such files.
 	 *
-	 * @param file
-	 * @param aSourceFile
 	 * @return true if it has a single notice.
 	 */
 	private boolean checkMultipleCopyright(IFile file, SourceFile aSourceFile) {

@@ -18,9 +18,6 @@ import org.eclipse.core.resources.IFile;
 
 public class PropertiesFile extends SourceFile {
 
-	/**
-	 * @param file
-	 */
 	public PropertiesFile(IFile file) {
 		super(file);
 	}
