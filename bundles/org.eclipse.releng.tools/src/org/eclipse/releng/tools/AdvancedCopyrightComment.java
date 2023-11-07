@@ -35,7 +35,6 @@ import org.eclipse.releng.tools.preferences.RelEngCopyrightConstants;
  * Tested in {@link org.eclipse.releng.tests.AdvancedCopyrightCommentTestsJunit4}<br>
  * Please verify that tests run after modifications.
  * </p>
- *
  */
 public class AdvancedCopyrightComment extends CopyrightComment {
 
@@ -125,7 +124,6 @@ public class AdvancedCopyrightComment extends CopyrightComment {
 	 * @param commentStyle
 	 *            the comment style. {@link CopyrightComment}
 	 * @return {@link AdvancedCopyrightComment} an copyright comment with the year updated.
-	 *
 	 */
 	public static AdvancedCopyrightComment parse(BlockComment commentBock, int commentStyle) {
 		// If the given comment is empty, return the default comment.
@@ -266,9 +264,6 @@ public class AdvancedCopyrightComment extends CopyrightComment {
 	/**
 	 * Write out the copyright statement, line by line, adding in the created/revision
 	 * year as well as comment line prefixes.
-	 *
-	 * @param writer
-	 * @param linePrefix
 	 */
 	private void writeLegal(PrintWriter writer, String linePrefix) {
 		String[] legalLines = getLegalLines();
@@ -334,10 +329,6 @@ public class AdvancedCopyrightComment extends CopyrightComment {
 	 * <p>
 	 * This should <b>only</b> be used for lines that have a single year.
 	 * </p>
-	 *
-	 * @param line
-	 * @param year
-	 * @return
 	 */
 	private static String insertRevisedYear(String line, int year) {
 		Matcher matcher = Pattern.compile(YEAR_REGEX).matcher(line);
@@ -355,9 +346,6 @@ public class AdvancedCopyrightComment extends CopyrightComment {
 
 	/**
 	 * Given a line with one or multiple years on it, count how many years occur on it.
-	 *
-	 * @param line
-	 * @return
 	 */
 	private static int countYearsOnLine(String line) {
 		Matcher yearMatcher = Pattern.compile(YEAR_REGEX).matcher(line);
@@ -391,7 +379,6 @@ public class AdvancedCopyrightComment extends CopyrightComment {
 	 * in the range YEAR_REGEX
 	 *
 	 * @see #YEAR_REGEX
-	 * @param line
 	 * @return e.g 2011
 	 */
 	private static int getLastYear(String line) {

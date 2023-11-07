@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
  * the huge maven debug log.
  * 
  * @author davidw
- * 
  */
 public class Extractor {
 

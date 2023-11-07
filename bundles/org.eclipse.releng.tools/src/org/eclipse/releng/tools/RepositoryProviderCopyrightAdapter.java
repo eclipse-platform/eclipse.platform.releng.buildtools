@@ -43,7 +43,6 @@ public abstract class RepositoryProviderCopyrightAdapter {
 	 * @param file the file
 	 * @param monitor a progress monitor
 	 * @return the last modified year or -1
-	 * @throws CoreException
 	 */
 	public abstract int getLastModifiedYear(IFile file, IProgressMonitor monitor) throws CoreException;
 

@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IAdapterManager;
  * that can be used by the {@link AdvancedFixCopyrightAction} to determine the last modified year
  * for a set of files. It should be obtained by adapting the repository provider type to an instance
  * of this interface using the {@link IAdapterManager}.
- *
  */
 public interface IRepositoryProviderCopyrightAdapterFactory {
 

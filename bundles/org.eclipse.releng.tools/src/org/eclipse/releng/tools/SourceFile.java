@@ -185,7 +185,6 @@ public abstract class SourceFile {
 	 * If this method is called, <b>ensure</b> that you close the file buffer after usage. <br>
 	 * Otherwise you leave a memory leak. {@link #closeFileBuffer()}
 	 * {@code textFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, null); }
-	 * @return
 	 */
 	private ITextFileBuffer openFileBuffer() {
 		try {
@@ -261,7 +260,6 @@ public abstract class SourceFile {
 	}
 
 	/**
-	 * @param aCommet
 	 * @param newCopyrightComment          Comment to be inserted.
 	 */
 	public void replace(BlockComment aComment, String newCopyrightComment) {

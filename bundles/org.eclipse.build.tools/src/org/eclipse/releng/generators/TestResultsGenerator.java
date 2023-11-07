@@ -556,9 +556,6 @@ public class TestResultsGenerator extends Task {
         return dropTokenList;
     }
 
-    /**
-     * @return
-     */
     public Vector<String> getDropTokens() {
         return dropTokens;
     }
@@ -607,16 +604,10 @@ public class TestResultsGenerator extends Task {
         return testResultsHtmlFileName;
     }
 
-    /**
-     * @return
-     */
     public String getTestResultsWithProblems() {
         return testResultsWithProblems;
     }
 
-    /**
-     * @return
-     */
     public String getTestResultsXmlUrls() {
         return testResultsXmlUrls;
     }
@@ -1169,9 +1160,6 @@ public class TestResultsGenerator extends Task {
         this.dropTokenList = dropTokenList;
     }
 
-    /**
-     * @param vector
-     */
     public void setDropTokens(final Vector<String> vector) {
         dropTokens = vector;
     }
@@ -1218,9 +1206,6 @@ public class TestResultsGenerator extends Task {
         testResultsHtmlFileName = aString;
     }
 
-    /**
-     * @param string
-     */
     public void setTestResultsWithProblems(final String string) {
         testResultsWithProblems = string;
     }
@@ -1314,8 +1299,6 @@ public class TestResultsGenerator extends Task {
      * This method writes the computed HTML to the file specified by caller in
      * testResultsHtmlFileName. There must be an appropriate file on Download
      * site that "includes" the file.
-     *
-     * @param contents
      */
     private void writeTestResultsFile(String contents) {
         final String outputFileName = dropDirectoryName + File.separator + testResultsHtmlFileName;

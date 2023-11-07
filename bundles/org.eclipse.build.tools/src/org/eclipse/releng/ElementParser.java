@@ -8,7 +8,6 @@
  *******************************************************************************/
 /**
  * Parses feature.xml, plugin.xml, and fragment.xml files
- * 
  */
 
 package org.eclipse.releng;
