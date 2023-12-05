@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.egit.core.op.ConnectProviderOperation;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -142,8 +141,9 @@ class GitCopyrightAdapterTest extends LocalGitRepositoryTestData {
 		return project;
 	}
 
+	@SuppressWarnings("restriction")
 	private void connect() throws CoreException {
-		new ConnectProviderOperation(project, gitDir).execute(null);
+		new org.eclipse.egit.core.op.ConnectProviderOperation(project, gitDir).execute(null);
 	}
 
 	private Date getDateForYear(int year) throws ParseException {
