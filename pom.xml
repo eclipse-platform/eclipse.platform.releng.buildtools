@@ -37,9 +37,7 @@
     <comparator.repo>https://download.eclipse.org/eclipse/updates/I-builds/</comparator.repo>
     <egit-repo.url>http://download.eclipse.org/egit/updates</egit-repo.url>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <cbi-jdt-repo.url>https://repo.eclipse.org/content/repositories/eclipse-staging/</cbi-jdt-repo.url>
 
-    <cbi-snapshots-repo.url>https://repo.eclipse.org/content/repositories/cbi-snapshots/</cbi-snapshots-repo.url>
     <eclipse-repo.url>https://repo.eclipse.org/content/repositories/cbi/</eclipse-repo.url>
 
     <!-- CBI provided common license feature. (bug 394793) -->
@@ -56,38 +54,8 @@
   </modules>
   <pluginRepositories>
     <pluginRepository>
-      <id>cbi-jdt</id>
-      <url>${cbi-jdt-repo.url}</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-    <pluginRepository>
       <id>eclipse</id>
       <url>${eclipse-repo.url}</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-    <pluginRepository>
-      <id>cbi-snapshots</id>
-      <url>${cbi-snapshots-repo.url}</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-    <pluginRepository>
-      <id>tycho-snapshots</id>
-      <url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
       <releases>
         <enabled>true</enabled>
       </releases>
