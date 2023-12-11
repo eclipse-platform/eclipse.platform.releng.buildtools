@@ -24,7 +24,7 @@
 
   <properties>
     <tycho.version>4.0.4</tycho.version>
-    <cbi-plugins.version>1.4.2</cbi-plugins.version>
+    <cbi-plugins.version>1.4.3</cbi-plugins.version>
     <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
     <buildType>I</buildType>
