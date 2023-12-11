@@ -59,9 +59,6 @@
       <releases>
         <enabled>true</enabled>
       </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
     </pluginRepository>
   </pluginRepositories>
   <repositories>
