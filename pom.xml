@@ -26,11 +26,6 @@
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
     <buildType>I</buildType>
     <buildId>${buildType}${buildTimestamp}</buildId>
-
-    <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
-    <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
-    <buildType>I</buildType>
-    <buildId>${buildType}${buildTimestamp}</buildId>
     <comparator.repo>https://download.eclipse.org/eclipse/updates/I-builds/</comparator.repo>
     <egit-repo.url>http://download.eclipse.org/egit/updates</egit-repo.url>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
