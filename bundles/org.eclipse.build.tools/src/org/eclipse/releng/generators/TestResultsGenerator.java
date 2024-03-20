@@ -662,7 +662,7 @@ public class TestResultsGenerator extends Task {
                 if (WARNING_SEVERITY.equals(severityNodeValue)) {
                     // this is a warning
                     // need to check the id
-                    final String nodeValue = idNode.getNodeValue();
+                    final String nodeValue = idNode == null ? "" : idNode.getNodeValue();
                     if (ForbiddenReferenceID.equals(nodeValue)) {
                         forbiddenWarningCount++;
                     } else if (DiscouragedReferenceID.equals(nodeValue)) {
