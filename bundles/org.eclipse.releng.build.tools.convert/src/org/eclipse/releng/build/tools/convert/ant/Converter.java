@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2024 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -279,12 +279,12 @@ public class Converter {
         if (nodeList.getLength() == 1) {
             final Node problemSummaryNode = nodeList.item(0);
             final NamedNodeMap problemSummaryMap = problemSummaryNode.getAttributes();
-            final ProblemSummaryNode summaryNode = new ProblemSummaryNode();
+			final ProblemSummaryNode summaryNode = new ProblemSummaryNode(
+					Integer.parseInt(problemSummaryMap.getNamedItem("problems").getNodeValue()),
+					Integer.parseInt(problemSummaryMap.getNamedItem("errors").getNodeValue()),
+					Integer.parseInt(problemSummaryMap.getNamedItem("warnings").getNodeValue()),
+					Integer.parseInt(problemSummaryMap.getNamedItem("infos").getNodeValue()));
             documentNode.setProblemSummary(summaryNode);
-            summaryNode.numberOfProblems = Integer.parseInt(problemSummaryMap.getNamedItem("problems").getNodeValue()); //$NON-NLS-1$
-            summaryNode.numberOfErrors = Integer.parseInt(problemSummaryMap.getNamedItem("errors").getNodeValue()); //$NON-NLS-1$
-            summaryNode.numberOfWarnings = Integer.parseInt(problemSummaryMap.getNamedItem("warnings").getNodeValue()); //$NON-NLS-1$
-            summaryNode.numberOfInfos = Integer.parseInt(problemSummaryMap.getNamedItem("infos").getNodeValue()); //$NON-NLS-1$
         }
 
         nodeList = document.getElementsByTagName("problems"); //$NON-NLS-1$
