@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2007 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2006, 2024 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -20,12 +20,8 @@ import org.apache.tools.ant.Task;
  * The resulting files are written in the same directory than the corresponding
  * xml file.
  * </p>
- *
- * <p>
- * This is not intended to be subclassed by users.
- * </p>
  */
-public class LogConverterTask extends Task {
+public final class LogConverterTask extends Task {
 
     private String  input;
 
