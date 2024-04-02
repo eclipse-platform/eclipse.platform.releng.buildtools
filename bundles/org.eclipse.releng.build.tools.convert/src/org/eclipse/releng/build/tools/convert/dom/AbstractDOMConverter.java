@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2020 IBM Corporation and others.
+ * Copyright (c) 2006, 2024 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -69,7 +69,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
     private void dumpVersion2(final Map<String, String> options, final LogDocumentNode documentNode) {
         final String fileName = options.get(Converter.OUTPUT_FILE_NAME);
         final ProblemSummaryNode summaryNode = documentNode.getSummaryNode();
-        if ((summaryNode == null) || (summaryNode.numberOfProblems == 0)) {
+		if ((summaryNode == null) || (summaryNode.numberOfProblems() == 0)) {
             return;
         }
         try (final Writer writer = new BufferedWriter(new FileWriter(fileName))){
@@ -83,10 +83,10 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
             final ProblemSummaryNode problemSummaryNode = summaryNode;
             writeTopAnchor(writer);
             String pattern = messages.getString("problem.summary"); //$NON-NLS-1$
-            writer.write(MessageFormat.format(pattern, Integer.toString(problemSummaryNode.numberOfProblems),
-					Integer.toString(problemSummaryNode.numberOfErrors),
-					Integer.toString(problemSummaryNode.numberOfWarnings),
-					Integer.toString(problemSummaryNode.numberOfInfos)));
+			writer.write(MessageFormat.format(pattern, Integer.toString(problemSummaryNode.numberOfProblems()),
+					Integer.toString(problemSummaryNode.numberOfErrors()),
+					Integer.toString(problemSummaryNode.numberOfWarnings()),
+					Integer.toString(problemSummaryNode.numberOfInfos())));
 
             writeAnchorsReferences(writer);
             final ProblemsNode[] problemsNodes = documentNode.getProblems();
