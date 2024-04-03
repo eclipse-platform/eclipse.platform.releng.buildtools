@@ -9,7 +9,6 @@
 
 package org.eclipse.releng.build.tools.convert.ant;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -208,7 +207,10 @@ public class Converter {
 		factory.setValidating(validation);
 		factory.setIgnoringElementContentWhitespace(true);
 		final DocumentBuilder builder = factory.newDocumentBuilder();
-		builder.setEntityResolver((publicId, systemId) -> new InputSource(new ByteArrayInputStream(new byte[0])));
+		// Commented due to
+		// https://github.com/eclipse-platform/eclipse.platform.releng.aggregator/issues/1943
+		// builder.setEntityResolver((publicId, systemId) -> new InputSource(new
+		// ByteArrayInputStream(new byte[0])));
 
         final String inputSourceOption = options.get(INPUT_SOURCE);
         if (options.get(RECURSIVE) != null) {
