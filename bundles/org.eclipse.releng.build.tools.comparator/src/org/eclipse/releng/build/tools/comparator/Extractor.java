@@ -52,9 +52,9 @@ public class Extractor {
 	private final String classifier_sourcesfeatureregexPattern = "^.*classifier-sources-feature:.*$";
 	private final Pattern classifier_sourcesfeaturePattern = Pattern.compile(classifier_sourcesfeatureregexPattern);
 
-	private final String sign1regexPattern = "^.*META-INF/ECLIPSE_.RSA.*$";
+	private final String sign1regexPattern = "^.*META-INF/(ECLIPSE_|CODESIGN).RSA.*$";
 	private final Pattern sign1Pattern = Pattern.compile(sign1regexPattern);
-	private final String sign2regexPattern = "^.*META-INF/ECLIPSE_.SF.*$";
+	private final String sign2regexPattern = "^.*META-INF/(ECLIPSE_|CODESIGN).SF.*$";
 	private final Pattern sign2Pattern = Pattern.compile(sign2regexPattern);
 	private final String docNameregexPattern = "^.*eclipse\\.platform\\.common.*\\.doc\\..*$";
 	private final Pattern docNamePattern = Pattern.compile(docNameregexPattern);
