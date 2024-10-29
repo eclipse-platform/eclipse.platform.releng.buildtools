@@ -895,7 +895,7 @@ public class TestResultsGenerator extends Task {
      */
     private String computeDisplayConfig(String config) {
         int lastUnderscore = config.lastIndexOf("_");
-        int firstUnderscore = config.indexOf('_');
+        int firstUnderscore = config.indexOf('_', config.indexOf("x86_64") + 6);
         // echo "<br/>DEBUG: config: config firstUnderscore: firstUnderscore
         // lastUnderscore: lastUnderscore lastMinusFirst: platformLength"
         String jobname = config.substring(0, firstUnderscore);
