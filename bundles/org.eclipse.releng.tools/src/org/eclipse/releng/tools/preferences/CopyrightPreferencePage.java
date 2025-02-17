@@ -13,7 +13,8 @@
  *******************************************************************************/
 package org.eclipse.releng.tools.preferences;
 
-import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
@@ -289,7 +290,7 @@ public class CopyrightPreferencePage extends PreferencePage implements IWorkbenc
 		try {
 			InstanceScope.INSTANCE.getNode(RelEngPlugin.ID).flush();
 		} catch (BackingStoreException e) {
-			RelEngPlugin.log(IStatus.ERROR, "could not save preferences", e); //$NON-NLS-1$
+			ILog.get().log(Status.error("could not save preferences", e)); //$NON-NLS-1$
 		}
 
 		return super.performOk();

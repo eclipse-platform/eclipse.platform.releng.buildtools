@@ -34,6 +34,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
@@ -199,8 +200,7 @@ public class AdvancedFixCopyrightAction implements IObjectActionDelegate {
 					if (adapter == null) {
 						if (!RelEngPlugin.getDefault().getPreferenceStore()
 								.getBoolean(RelEngCopyrightConstants.USE_DEFAULT_REVISION_YEAR_KEY)) {
-							throw new CoreException(new Status(IStatus.ERROR, RelEngPlugin.ID, 0,
-									Messages.getString("AdvancedFixCopyrightAction.5"), null)); //$NON-NLS-1$
+							throw new CoreException(Status.error(Messages.getString("AdvancedFixCopyrightAction.5"))); //$NON-NLS-1$
 						}
 					} else {
 						adapter.initialize(subMonitor);
@@ -275,8 +275,7 @@ public class AdvancedFixCopyrightAction implements IObjectActionDelegate {
 				if (providerType == null) {
 					providerType = RepositoryProviderType.getProviderType(p.getID());
 				} else if (!providerType.getID().equals(p.getID())) {
-					throw new CoreException(new Status(IStatus.ERROR, RelEngPlugin.ID, 0,
-							Messages.getString("AdvancedFixCopyrightAction.11"), null)); //$NON-NLS-1$
+					throw new CoreException(Status.error(Messages.getString("AdvancedFixCopyrightAction.11"))); //$NON-NLS-1$
 				}
 			}
 		}
@@ -289,8 +288,8 @@ public class AdvancedFixCopyrightAction implements IObjectActionDelegate {
 			factory = (IRepositoryProviderCopyrightAdapterFactory) Platform.getAdapterManager()
 					.loadAdapter(providerType, IRepositoryProviderCopyrightAdapterFactory.class.getName());
 			if (factory == null) {
-				throw new CoreException(new Status(IStatus.ERROR, RelEngPlugin.ID, 0,
-						NLS.bind(Messages.getString("AdvancedFixCopyrightAction.12"), providerType.getID()), null)); //$NON-NLS-1$
+				throw new CoreException(Status
+						.error(NLS.bind(Messages.getString("AdvancedFixCopyrightAction.12"), providerType.getID()))); //$NON-NLS-1$
 			}
 		}
 		return factory.createAdapater(results);
@@ -443,8 +442,8 @@ public class AdvancedFixCopyrightAction implements IObjectActionDelegate {
 					lastMod = adapter.getLastModifiedYear(file, monitor);
 				} catch (CoreException e) {
 					// Let's log the exception and continue
-					RelEngPlugin.log(IStatus.ERROR,
-							NLS.bind(Messages.getString("AdvancedFixCopyrightAction.17"), file.getFullPath()), e); //$NON-NLS-1$
+					ILog.get().log(Status.error(
+							NLS.bind(Messages.getString("AdvancedFixCopyrightAction.17"), file.getFullPath()), e)); //$NON-NLS-1$
 				}
 				if (lastMod > currentYear) {
 					// Don't allow future years to be used in the copyright
