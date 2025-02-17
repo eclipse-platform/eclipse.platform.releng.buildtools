@@ -22,7 +22,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.egit.core.project.RepositoryMapping;
 import org.eclipse.jgit.lib.Constants;
@@ -34,7 +33,6 @@ import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.releng.tools.RelEngPlugin;
 import org.eclipse.releng.tools.RepositoryProviderCopyrightAdapter;
 
 public class GitCopyrightAdapter extends RepositoryProviderCopyrightAdapter {
@@ -110,8 +108,8 @@ public class GitCopyrightAdapter extends RepositoryProviderCopyrightAdapter {
 							return calendar.get(Calendar.YEAR);
 						}
 					} catch (final IOException e) {
-						throw new CoreException(new Status(IStatus.ERROR, RelEngPlugin.ID, 0,
-								NLS.bind("An error occured when processing {0}", file.getName()), e)); //$NON-NLS-1$
+						throw new CoreException(
+								Status.error(NLS.bind("An error occured when processing {0}", file.getName()), e)); //$NON-NLS-1$
 					}
 				}
 			}

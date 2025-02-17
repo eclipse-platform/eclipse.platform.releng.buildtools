@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -128,14 +129,7 @@ public class RelEngPlugin extends AbstractUIPlugin {
 	 * Convenience method for logging CoreExceptions to the plugin log
 	 */
 	public static void log(CoreException e) {
-		log(e.getStatus().getSeverity(), e.getMessage(), e);
-	}
-
-	/**
-	 * Log the given exception along with the provided message and severity indicator
-	 */
-	public static void log(int severity, String message, Throwable e) {
-		log(new Status(severity, ID, 0, message, e));
+		ILog.get().log(new Status(e.getStatus().getSeverity(), ID, e.getMessage(), e));
 	}
 
 	/**
@@ -144,16 +138,9 @@ public class RelEngPlugin extends AbstractUIPlugin {
 	 * @param e exception to log
 	 */
 	public static void log(Throwable e){
-		log(new Status(IStatus.ERROR, ID, 0, e.getMessage(), e));
+		ILog.get().log(Status.error(e.getMessage(), e));
 	}
 
-	/**
-	 * Log the given status. Do not use this method for the IStatus from a CoreException.
-	 * Use<code>log(CoreException)</code> instead so the stack trace is not lost.
-	 */
-	public static void log(IStatus status) {
-		getPlugin().getLog().log(status);
-	}
 	/**
 	 * Returns the singleton plug-in instance.
 	 *

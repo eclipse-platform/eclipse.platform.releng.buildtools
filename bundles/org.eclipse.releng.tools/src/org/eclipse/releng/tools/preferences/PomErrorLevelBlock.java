@@ -16,7 +16,7 @@ package org.eclipse.releng.tools.preferences;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -287,7 +287,7 @@ public class PomErrorLevelBlock extends ConfigurationBlock {
 				fDirty = false;
 			}
 			catch(BackingStoreException bse) {
-				RelEngPlugin.log(new Status(IStatus.ERROR, RelEngPlugin.ID, bse.getMessage(), bse));
+				ILog.get().log(Status.error(bse.getMessage(), bse));
 			}
 		}
 	}
