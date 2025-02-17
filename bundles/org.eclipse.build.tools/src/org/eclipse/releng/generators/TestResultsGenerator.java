@@ -785,8 +785,7 @@ public class TestResultsGenerator extends Task {
             // files MUST be alphabetical, for now?
             Arrays.sort(xmlFileNames);
             String sourceDirectoryCanonicalPath = getDropDirectoryName();
-            for (int i = 0; i < xmlFileNames.length; i++) {
-                File junitResultsFile = xmlFileNames[i];
+            for (File junitResultsFile : xmlFileNames) {
                 checkIfMissingFromTestManifestFile(junitResultsFile, foundConfigs);
                 String fullName = junitResultsFile.getPath();
                 int errorCount = countErrors(fullName);
@@ -1014,8 +1013,8 @@ public class TestResultsGenerator extends Task {
         if (sourceDirectory.isDirectory()) {
             final File[] logFiles = sourceDirectory.listFiles();
             Arrays.sort(logFiles);
-            for (int j = 0; j < logFiles.length; j++) {
-                processCompileLogsDirectory(logFiles[j].getAbsolutePath(), compilerLog, accessesLog);
+            for (File logFile : logFiles) {
+                processCompileLogsDirectory(logFile.getAbsolutePath(), compilerLog, accessesLog);
             }
         }
     }
@@ -1039,8 +1038,8 @@ public class TestResultsGenerator extends Task {
 
     private String processDropRows(final PlatformStatus[] platforms) {
         String result = "";
-        for (int i = 0; i < platforms.length; i++) {
-            result = result + processDropRow(platforms[i]);
+        for (PlatformStatus platform : platforms) {
+            result = result + processDropRow(platform);
         }
         return result;
     }
@@ -1057,8 +1056,8 @@ public class TestResultsGenerator extends Task {
         // the file
         final List<String> images = aPlatform.getImages();
         if ((images != null) && !images.isEmpty()) {
-            for (final Iterator<String> iter = images.iterator(); iter.hasNext();) {
-                result = result + "<img src=\"" + iter.next() + "\"/>&nbsp;";
+            for (String image : images) {
+                result = result + "<img src=\"" + image + "\"/>&nbsp;";
             }
         }
         result = result + "<a href=\"download.php?dropFile=" + filename + "\">" + filename + "</a></td>\n";

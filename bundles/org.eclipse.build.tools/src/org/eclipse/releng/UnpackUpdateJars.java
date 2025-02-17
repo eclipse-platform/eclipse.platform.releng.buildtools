@@ -81,8 +81,7 @@ public class UnpackUpdateJars extends Task {
             return;
         }
         final File[] features = featureDir.listFiles();
-        for (int i = 0; i < features.length; i++) {
-            final File feature = features[i];
+        for (final File feature : features) {
             if (feature.getName().endsWith(".jar")) {
                 final String fileName = feature.getName();
                 final String unpackedFeatureName = fileName.substring(0, fileName.length() - 4);
@@ -93,9 +92,9 @@ public class UnpackUpdateJars extends Task {
         }
 
         // unpack plug-ins
-        for (int i = 0; i < unpackedPlugins.size(); i++) {
-            final File unpackedPluginDirName = new File(output + "/plugins/" + unpackedPlugins.get(i));
-            final File jardPlugin = new File(site, "plugins/" + unpackedPlugins.get(i) + ".jar");
+        for (String unpackedPlugin : unpackedPlugins) {
+            final File unpackedPluginDirName = new File(output + "/plugins/" + unpackedPlugin);
+            final File jardPlugin = new File(site, "plugins/" + unpackedPlugin + ".jar");
             if (jardPlugin.exists()) {
                 unzip(jardPlugin, unpackedPluginDirName);
             }
