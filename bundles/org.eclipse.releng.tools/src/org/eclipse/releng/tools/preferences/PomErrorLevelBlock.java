@@ -190,8 +190,7 @@ public class PomErrorLevelBlock extends ConfigurationBlock {
 	private SelectionListener selectionlistener = new SelectionAdapter() {
 		@Override
 		public void widgetSelected(SelectionEvent e) {
-			if(e.widget instanceof Combo) {
-				Combo combo = (Combo) e.widget;
+			if(e.widget instanceof Combo combo) {
 				ControlData data = (ControlData) combo.getData();
 				data.key.setStoredValue(fLookupOrder[0], combo.getText(), fManager);
 				fDirty = true;
