@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 Tomasz Zarna and others.
+ * Copyright (c) 2013, 2025 Tomasz Zarna and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -15,7 +15,6 @@ package org.eclipse.releng.tests.tools;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -130,14 +129,10 @@ class GitCopyrightAdapterTest extends LocalGitRepositoryTestData {
 		project.open(null);
 
 		final IFile file1 = project.getFile(FILE1_NAME);
-		file1.create(
-				new ByteArrayInputStream("Hello, world".getBytes(project
-						.getDefaultCharset())), false, null);
+		file1.create("Hello, world".getBytes(project.getDefaultCharset()), false, false, null);
 
 		final IFile file2 = project.getFile(FILE2_NAME);
-		file2.create(
-				new ByteArrayInputStream("Hi there".getBytes(project
-						.getDefaultCharset())), false, null);
+		file2.create("Hi there".getBytes(project.getDefaultCharset()), false, false, null);
 		return project;
 	}
 
