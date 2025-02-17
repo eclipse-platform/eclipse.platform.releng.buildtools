@@ -506,8 +506,8 @@ public class PomVersionErrorReporter implements IResourceChangeListener, IEclips
 	public void validateWorkspace() {
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		IProject[] projects = root.getProjects();
-		for (int i = 0; i < projects.length; i++) {
-			validate(projects[i]);
+		for (IProject project : projects) {
+			validate(project);
 		}
 		RelEngPlugin.getPlugin().getPreferenceStore().setValue(IPomVersionConstants.WORKSPACE_VALIDATED, VERSION);
 	}

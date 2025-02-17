@@ -150,10 +150,8 @@ public class AdvancedCopyrightComment extends CopyrightComment {
 
 		// Break down the comment into the three sections.
 		boolean yearFound = false;
-		String line;
 		for (int i = 0; i < commentLines.length; i++) {
-
-			line = commentLines[i]; // for clarity.
+			String line = commentLines[i]; // for clarity.
 
 			if (yearFound) {
 				// We have already found the year line and are just appending the last lines.
