@@ -19,7 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -146,9 +146,9 @@ class GitCopyrightAdapterTest extends LocalGitRepositoryTestData {
 		new org.eclipse.egit.core.op.ConnectProviderOperation(project, gitDir).execute(null);
 	}
 
-	private Date getDateForYear(int year) throws ParseException {
+	private Instant getDateForYear(int year) throws ParseException {
 		final SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
-		return formatter.parse(Integer.toString(year) + "/6/30");
+		return formatter.parse(Integer.toString(year) + "/6/30").toInstant();
 	}
 
 }
