@@ -145,15 +145,13 @@ public class AdvancedFixCopyrightAction implements IObjectActionDelegate {
 	}
 
 	private void addResource(Object element, ArrayList<IResource> resources) {
-		if (element instanceof IResource) {
-			resources.add((IResource) element);
-		} else if (element instanceof IWorkingSet) {
-			IWorkingSet ws = (IWorkingSet) element;
+		if (element instanceof IResource r) {
+			resources.add(r);
+		} else if (element instanceof IWorkingSet ws) {
 			IAdaptable[] elements = ws.getElements();
 			for (int i = 0; i < elements.length; i++)
 				addResource(elements[i], resources);
-		} else if (element instanceof IAdaptable) {
-			IAdaptable a = (IAdaptable) element;
+		} else if (element instanceof IAdaptable a) {
 			addResource(a.getAdapter(IResource.class), resources);
 		}
 	}
@@ -562,8 +560,8 @@ public class AdvancedFixCopyrightAction implements IObjectActionDelegate {
 	 */
 	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
-		if (selection instanceof IStructuredSelection) {
-			this.selection = (IStructuredSelection) selection;
+		if (selection instanceof IStructuredSelection ss) {
+			this.selection = ss;
 		}
 	}
 
