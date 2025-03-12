@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2000, 2025 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -287,7 +287,6 @@ public class TestResultsGenerator extends Task {
     // "ep4" + getTestedBuildType() + "-unit-win32_win32.win32.x86_8.0.xml",
     // "ep4" + getTestedBuildType() + "-unit-cen64-gtk3_linux.gtk.x86_64_8.0.xml" };
     private String  testsConfigExpected;
-    private boolean testRan;
     private String  compilerSummaryFilename = "compilerSummary.html";
     /*
      * Default for "regenerate" is FALSE, but during development, is handy to
@@ -804,11 +803,9 @@ public class TestResultsGenerator extends Task {
         // above is all "compute data". Now it is time to "display" it.
         if (foundConfigs.size() > 0) {
             log("DEBUG: Begin: Generating test results index tables in " + getTestResultsHtmlFileName());
-            setTestsRan(true);
             writeHTMLResultsTable(foundConfigs, resultsTable);
             log("DEBUG: End: Generating test results index tables");
         } else {
-            setTestsRan(false);
             log(EOL + "WARNING: Test results not found in " + xmlResultsDirectory.getAbsolutePath());
         }
 
@@ -905,10 +902,6 @@ public class TestResultsGenerator extends Task {
         // echo "DEBUG: vmused: ".vmused."<br/>";
         return jobname + "<br/>" + platformconfig + "<br/>" + vmused;
 
-    }
-
-    private void setTestsRan(boolean b) {
-        testRan = b;
     }
 
     /*
@@ -1473,90 +1466,12 @@ public class TestResultsGenerator extends Task {
         return result + "</td>";
     }
 
-    // Totally non-functional method. restored from history for investigation.
-    // I restored this 'mailResults' method from history. It was removed about
-    // 3.8 M3. It was commented out
-    // at that time. Not sure for how long. I am not sure where "Mailer" class
-    // was coming from.
-    // Needs more research or re-invention. (Compare with CBI aggregator
-    // method?)
-
-    void mailResults() {
-        Mailer mailer = null;
-        // send a different message for the following cases:
-        // build is not tested at all // build is tested, tests have not run
-        // build is tested, tests have run with error and or failures
-        // build is tested, tests have run with no errors or failures
-        try {
-            mailer = new Mailer();
-        }
-        catch (NoClassDefFoundError e) {
-            return;
-        }
-        String buildLabel = mailer.getBuildLabel();
-        String httpUrl = mailer.getHttpUrl() + "/" + buildLabel; //
-
-        String subject = "Build is complete.  ";
-
-        String downloadLinks = "\n\nHTTP Download:\n\n\t" + httpUrl + " \n\n"; //
-
-        // provide http links
-        String message = "The build is complete." + downloadLinks;
-
-        if (testsRan()) {
-            subject = "Automated JUnit testing complete.  ";
-            message = "Automated JUnit testing is complete.  ";
-            subject = subject
-                    .concat((getTestResultsWithProblems().endsWith("\n")) ? "All tests pass." : "Test failures/errors occurred.");
-            message = message.concat((getTestResultsWithProblems().endsWith("\n")) ? "All tests pass."
-                    : "Test failures/errors occurred in the following:  " + getTestResultsWithProblems()) + downloadLinks;
-        } else if (isBuildTested() && (!getBuildType().equals("N"))) {
-            subject = subject.concat("Automated JUnit testing is starting.");
-            message = "The " + subject + downloadLinks;
-        }
-
-        if (subject.endsWith("Test failures/errors occurred.")) {
-            mailer.sendMessage(subject, message);
-        } else if (!getBuildType().equals("N")) {
-            mailer.sendMessage(subject, message);
-        }
-    }
-
-    private boolean testsRan() {
-        return testRan;
-    }
-
     public boolean isRegenerate() {
         return regenerate;
     }
 
     public void setRegenerate(boolean regenerate) {
         this.regenerate = regenerate;
-    }
-
-    /* purely a place holder */
-    class Mailer {
-
-        public Object getBuildProperties() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        public String getBuildLabel() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        public String getHttpUrl() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        public void sendMessage(String subject, String message) {
-            // TODO Auto-generated method stub
-
-        }
-
     }
 
     public String getExpectedConfigFilename() {
