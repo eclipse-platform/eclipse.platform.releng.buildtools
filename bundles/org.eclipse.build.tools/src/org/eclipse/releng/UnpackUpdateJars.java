@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2016 IBM Corporation and others. All rights reserved.
+ * Copyright (c) 2005, 2025 IBM Corporation and others. All rights reserved.
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -11,11 +11,10 @@ package org.eclipse.releng;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -113,9 +112,9 @@ public class UnpackUpdateJars extends Task {
         Document aDocument = null;
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new FileReader(featureXml));
+            reader = Files.newBufferedReader(featureXml.toPath());
         }
-        catch (final FileNotFoundException e) {
+        catch (final IOException e) {
             e.printStackTrace();
         }
 
