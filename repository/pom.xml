@@ -23,13 +23,4 @@
     <groupId>eclipse.platform.repository</groupId>
     <artifactId>repository</artifactId>
     <packaging>eclipse-repository</packaging>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>target-platform-configuration</artifactId>
-                <version>${tycho.version}</version>
-            </plugin>
-        </plugins>
-    </build>
 </project>
