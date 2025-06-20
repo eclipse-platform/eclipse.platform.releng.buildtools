@@ -3,9 +3,6 @@
    <feature url="features/org.eclipse.releng.build.tools.feature_0.0.0.qualifier.jar" id="org.eclipse.releng.build.tools.feature" version="0.0.0">
       <category name="org.eclipse.releng.build.repository"/>
    </feature>
-   <feature url="features/org.eclipse.releng.build.tools.feature.source_0.0.0.qualifier.jar" id="org.eclipse.releng.build.tools.feature.source" version="0.0.0">
-      <category name="org.eclipse.releng.build.repository"/>
-   </feature>
    <feature url="features/org.eclipse.releng.tools_0.0.0.qualifier.jar" id="org.eclipse.releng.tools" version="0.0.0">
       <category name="org.eclipse.releng.build.repository"/>
    </feature>
