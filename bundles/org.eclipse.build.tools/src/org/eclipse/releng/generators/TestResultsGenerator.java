@@ -18,7 +18,9 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -109,22 +111,17 @@ public class TestResultsGenerator extends Task {
         }
 
         public Cell getCell(String rowName, String columnName) {
-            Cell result = getRow(rowName).getCell(columnName);
-            return result;
+            return getRow(rowName).getCell(columnName);
         }
 
         public int getCellErrorCount(String rowName, String columnName) {
-            int result = -1;
             Cell cell = getRow(rowName).getCell(columnName);
-            result = cell.getErrorCount();
-            return result;
+            return cell.getErrorCount();
         }
 
         public File getCellResultsFile(String rowName, String columnName) {
-            File result = null;
             Cell cell = getRow(rowName).getCell(columnName);
-            result = cell.getResultsFile();
-            return result;
+            return cell.getResultsFile();
         }
 
         public void putCell(String rowName, String columnName, Integer cellValue, File file) {
@@ -263,11 +260,6 @@ public class TestResultsGenerator extends Task {
         }
     }
 
-    private static byte[] getFileByteContent(final String fileName) throws IOException {
-        final File file = new File(fileName);
-        return Files.readAllBytes(file.toPath());
-    }
-
     // Configuration of test machines.
     // Add or change new configurations here
     // and update titles in testResults.template.php.
@@ -296,7 +288,7 @@ public class TestResultsGenerator extends Task {
      * 'isTested" is set) since the purpose is usually to include an additional
      * tested platform.
      */
-    private boolean regenerate              = Boolean.FALSE;
+    private boolean regenerate              = false;
 
     private int countCompileErrors(final String aString) {
         return extractNumber(aString, "error");
@@ -710,7 +702,6 @@ public class TestResultsGenerator extends Task {
                         + ", was found to exist already and is being regenerated.");
             }
             log("DEBUG: BEGIN: Parsing compile logs and generating summary table.");
-            String compileLogResults = "";
             final StringBuilder compilerString = new StringBuilder();
             final StringBuilder accessesString = new StringBuilder();
             processCompileLogsDirectory(getCompileLogsDirectoryName(), compilerString, accessesString);
@@ -722,7 +713,7 @@ public class TestResultsGenerator extends Task {
                 accessesString.append(
                         "<tr><td class='namecell'>None</td><td class='cell'>&nbsp;</td><td class='cell'>&nbsp;</td></tr>" + EOL);
             }
-
+            String compileLogResults;
             compileLogResults = EOL + EOL + "<h3 id=\"PluginsErrors\">Plugins containing compile errors or warnings</h3>" + EOL
                     + EOL
                     + "<p>The table below shows the plugins in which errors or warnings were encountered. Click on the jar file link to view its"
@@ -774,9 +765,7 @@ public class TestResultsGenerator extends Task {
                     foundConfigs.add(expectedConfig);
                     // sort by name, for each 'config' found.
                     Arrays.sort(xmlFileNamesForConfig);
-                    for (File file : xmlFileNamesForConfig) {
-                        allFileNames.add(file);
-                    }
+                    Collections.addAll(allFileNames, xmlFileNamesForConfig);
                 }
             }
             File[] xmlFileNames = new File[allFileNames.size()];
@@ -1082,17 +1071,13 @@ public class TestResultsGenerator extends Task {
     }
 
     private String readFile(final String fileName) {
-        byte[] aByteArray = null;
         try {
-            aByteArray = getFileByteContent(fileName);
+            return Files.readString(Path.of(fileName), Charset.defaultCharset());
         }
         catch (final IOException e) {
             logException(e);
-        }
-        if (aByteArray == null) {
             return "";
         }
-        return new String(aByteArray);
     }
 
     private String replace(final String source, final String original, final String replacement) {
@@ -1457,13 +1442,10 @@ public class TestResultsGenerator extends Task {
     }
 
     private String addLinks(String startCell, String displayName, String rawfilename) {
-        String result = startCell;
-        result = result + "<a style=\"color:inherit\" title=\"Detailed Unit Test Results Table\" href=" + "\""
-                + getHrefTestResultsTargetPath() + "/html/" + rawfilename + HTML_EXTENSION + "\">" + displayName + "</a>";
-        result = result
+        return startCell + "<a style=\"color:inherit\" title=\"Detailed Unit Test Results Table\" href=\""
+                + getHrefTestResultsTargetPath() + "/html/" + rawfilename + HTML_EXTENSION + "\">" + displayName + "</a>"
                 + "<a style=\"color:#555555\" title=\"XML Test Result (e.g. for importing into the Eclipse JUnit view)\" href=\""
-                + getHrefTestResultsTargetPath() + "/xml/" + rawfilename + XML_EXTENSION + "\">&nbsp;(XML)</a>";
-        return result + "</td>";
+                + getHrefTestResultsTargetPath() + "/xml/" + rawfilename + XML_EXTENSION + "\">&nbsp;(XML)</a></td>";
     }
 
     public boolean isRegenerate() {
