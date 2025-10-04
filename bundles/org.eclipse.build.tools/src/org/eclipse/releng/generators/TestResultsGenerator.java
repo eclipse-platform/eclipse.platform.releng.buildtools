@@ -171,8 +171,6 @@ public class TestResultsGenerator extends Task {
 
     private ErrorTracker        anErrorTracker;
 
-    private String              dropTemplateString                     = "";
-
     // Parameters
     // build runs JUnit automated tests
     private boolean             isBuildTested;
@@ -185,9 +183,6 @@ public class TestResultsGenerator extends Task {
 
     // Location of the xml files
     private String              xmlDirectoryName;
-
-    // Location of the html files
-    private String              htmlDirectoryName;
 
     // Location of the resulting index.php file.
     private String              dropDirectoryName;
@@ -382,7 +377,6 @@ public class TestResultsGenerator extends Task {
         anErrorTracker = new ErrorTracker();
         anErrorTracker.loadFile(getTestManifestFileName());
         getDropTokensFromList(getDropTokenList());
-        dropTemplateString = readFile(getDropTemplateFileName());
 
         writeDropIndexFile();
 
@@ -578,10 +572,6 @@ public class TestResultsGenerator extends Task {
         return hrefTestResultsTargetPath;
     }
 
-    public String getHtmlDirectoryName() {
-        return htmlDirectoryName;
-    }
-
     /**
      * Gets the testManifestFileName.
      *
@@ -687,7 +677,12 @@ public class TestResultsGenerator extends Task {
     }
 
     private void parseCompileLogs() throws IOException {
-        File sourceDirectory = new File(getCompileLogsDirectoryName());
+        String compileLogsDirectory = getCompileLogsDirectoryName();
+        if (compileLogsDirectory == null || compileLogsDirectory.isBlank()) {
+            log(EOL + "INFO: Skip generating the compile logs summary page.");
+            return;
+        }
+        File sourceDirectory = new File(compileLogsDirectory);
         File mainDir = new File(getDropDirectoryName());
         File compilerSummaryFile = new File(mainDir, compilerSummaryFilename);
         // we do not recompute compiler summary each time, since it is
@@ -704,7 +699,7 @@ public class TestResultsGenerator extends Task {
             log("DEBUG: BEGIN: Parsing compile logs and generating summary table.");
             final StringBuilder compilerString = new StringBuilder();
             final StringBuilder accessesString = new StringBuilder();
-            processCompileLogsDirectory(getCompileLogsDirectoryName(), compilerString, accessesString);
+            processCompileLogsDirectory(compileLogsDirectory, compilerString, accessesString);
             if (compilerString.length() == 0) {
                 compilerString.append(
                         "<tr><td class='namecell'>None</td><td class='cell'>&nbsp;</td><td class='cell'>&nbsp;</td></tr>" + EOL);
@@ -1161,10 +1156,6 @@ public class TestResultsGenerator extends Task {
         hrefTestResultsTargetPath = htmlTargetPath;
     }
 
-    public void setHtmlDirectoryName(final String aString) {
-        htmlDirectoryName = aString;
-    }
-
     public void setIsBuildTested(final boolean isBuildTested) {
         this.isBuildTested = isBuildTested;
     }
@@ -1237,16 +1228,22 @@ public class TestResultsGenerator extends Task {
     }
 
     private void writeDropIndexFile() {
-        final String outputFileName = getDropDirectoryName() + File.separator + getDropHtmlFileName();
+        String dropHtmlFile = getDropHtmlFileName();
+        if (dropHtmlFile == null || dropHtmlFile.isBlank()) {
+            log(EOL + "INFO: Skip generating the drop index file.");
+            return;
+        }
+        final String outputFileName = getDropDirectoryName() + File.separator + dropHtmlFile;
         File outputIndexFile = new File(outputFileName);
         // we assume if "eclipse" has been done, then "equinox" has been as
         // well.
         if (outputIndexFile.exists() && !isRegenerate()) {
-            log(EOL + "INFO: The drop index file, " + getDropHtmlFileName() + ", was found to exist already and not regenerated.");
+            log(EOL + "INFO: The drop index file, " + dropHtmlFile + ", was found to exist already and not regenerated.");
         } else {
+            String dropTemplateString = readFile(getDropTemplateFileName());
             if (outputIndexFile.exists()) {
-                log(EOL + "INFO: The drop index file, " + getDropHtmlFileName()
-                + ", was found to exist already and is being regenerated.");
+                log(EOL + "INFO: The drop index file, " + dropHtmlFile
+                        + ", was found to exist already and is being regenerated.");
             }
             log("DEBUG: Begin: Generating drop index page");
             final String[] types = anErrorTracker.getTypes();
