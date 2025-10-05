@@ -14,13 +14,9 @@ pipeline {
 	stages {
 		stage('Build') {
 			steps {
-				wrap([$class: 'Xvnc', useXauthority: true]) {
+				xvnc(useXauthority: true) {
 					sh """
-					mvn clean verify --batch-mode --fail-at-end -Dmaven.repo.local=$WORKSPACE/.m2/repository \
-						-DskipTests=false -Dcompare-version-with-baselines.skip=false \
-						-Dmaven.test.error.ignore=true -Dmaven.test.failure.ignore=true \
-						-Dproject.build.sourceEncoding=UTF-8  \
-						-Dbuild.sysclasspath=ignore -Dincludeantruntime=false -Dslf4j=false
+						mvn clean verify --update-snapshots --fail-at-end
 					"""
 				}
 			}
