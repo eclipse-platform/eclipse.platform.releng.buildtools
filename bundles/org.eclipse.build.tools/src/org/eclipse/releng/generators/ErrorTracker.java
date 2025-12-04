@@ -1,10 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 which accompanies this distribution,
- * and is available at http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors: IBM Corporation - initial API and implementation
+ *  Copyright (c) 2000, 2025 IBM Corporation and others.
+ *
+ *  This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License 2.0
+ *  which accompanies this distribution, and is available at
+ *  https://www.eclipse.org/legal/epl-2.0/
+ *
+ *  SPDX-License-Identifier: EPL-2.0
+ *
+ *  Contributors:
+ *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.releng.generators;
@@ -13,12 +18,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,22 +38,23 @@ import org.xml.sax.SAXException;
  */
 public class ErrorTracker {
 
-    private Set<String> testLogsSet = Collections.checkedSortedSet(new TreeSet<>(),String.class);
+    private final Set<String>                       testLogsSet = Collections.checkedSortedSet(new TreeSet<>(), String.class);
     // Platforms keyed on
-    private final Hashtable<String, PlatformStatus> platforms = new Hashtable<>();
-    private final Hashtable<String, Vector<PlatformStatus>> logFiles  = new Hashtable<>();
-    private final Hashtable<String, Vector<String>> typesMap  = new Hashtable<>();
+    private final Map<String, PlatformStatus>       platforms   = new HashMap<>();
+    private final Map<String, List<PlatformStatus>> logFiles    = new HashMap<>();
+    private final Map<String, List<String>>         typesMap    = new HashMap<>();
 
-    private final Vector<String> typesList = new Vector<>();
+    private final List<String>                      typesList   = new ArrayList<>();
+
     private String convertPathDelimiters(final String path) {
         return new File(path).getPath();
     }
 
     public PlatformStatus[] getPlatforms(final String type) {
-        final Vector<String> platformIDs = typesMap.get(type);
+        final List<String> platformIDs = typesMap.get(type);
         final PlatformStatus[] result = new PlatformStatus[platformIDs.size()];
         for (int i = 0; i < platformIDs.size(); i++) {
-            result[i] = platforms.get(platformIDs.elementAt(i));
+            result[i] = platforms.get(platformIDs.get(i));
         }
         return result;
     }
@@ -59,10 +64,10 @@ public class ErrorTracker {
      * 
      * @return Vector
      */
-    public List<String> getTestLogs(ArrayList<String> foundConfigs) {
+    public List<String> getTestLogs(List<String> foundConfigs) {
         // List of test logs expected at end of build
         // We depend on both test logs and configs being sorted
-        ArrayList<String> testLogs  = new ArrayList<>();
+        ArrayList<String> testLogs = new ArrayList<>();
         for (String initialLogName : testLogsSet) {
             for (String config : foundConfigs) {
                 testLogs.add(initialLogName + "_" + config + ".xml");
@@ -82,25 +87,26 @@ public class ErrorTracker {
     @SuppressWarnings("restriction")
     public void loadFile(final String fileName) {
         try {
-            DocumentBuilder parser = org.eclipse.core.internal.runtime.XmlProcessorFactory.createDocumentBuilderWithErrorOnDOCTYPE();
+            DocumentBuilder parser = org.eclipse.core.internal.runtime.XmlProcessorFactory
+                    .createDocumentBuilderWithErrorOnDOCTYPE();
             final Document document = parser.parse(fileName);
             final NodeList elements = document.getElementsByTagName("platform");
             final int elementCount = elements.getLength();
             for (int i = 0; i < elementCount; i++) {
-                final PlatformStatus aPlatform = new PlatformStatus((Element) elements.item(i));
+                final PlatformStatus aPlatform = PlatformStatus.create((Element) elements.item(i));
                 // System.out.println("ID: " + aPlatform.getId());
-                platforms.put(aPlatform.getId(), aPlatform);
+                platforms.put(aPlatform.id(), aPlatform);
 
                 final Node zipType = elements.item(i).getParentNode();
                 final String zipTypeName = zipType.getAttributes().getNamedItem("name").getNodeValue();
 
-                Vector<String> aVector = typesMap.get(zipTypeName);
+                List<String> aVector = typesMap.get(zipTypeName);
                 if (aVector == null) {
                     typesList.add(zipTypeName);
-                    aVector = new Vector<>();
+                    aVector = new ArrayList<>();
                     typesMap.put(zipTypeName, aVector);
                 }
-                aVector.add(aPlatform.getId());
+                aVector.add(aPlatform.id());
 
             }
 
@@ -113,15 +119,15 @@ public class ErrorTracker {
                 logFileName = convertPathDelimiters(logFileName);
                 final String effectedFileID = anEffectedFile.getAttributes().getNamedItem("id").getNodeValue();
                 // System.out.println(logFileName);
-                Vector<PlatformStatus> aVector = logFiles.get(logFileName);
+                List<PlatformStatus> aVector = logFiles.get(logFileName);
                 if (aVector == null) {
-                    aVector = new Vector<>();
+                    aVector = new ArrayList<>();
                     logFiles.put(logFileName, aVector);
 
                 }
                 final PlatformStatus ps = platforms.get(effectedFileID);
                 if (ps != null) {
-                    aVector.addElement(ps);
+                    aVector.add(ps);
                 }
             }
             
@@ -177,19 +183,17 @@ public class ErrorTracker {
     public void registerError(final String fileName) {
         // System.out.println("Found an error in: " + fileName);
         if (logFiles.containsKey(fileName)) {
-            final Vector<PlatformStatus> aVector = logFiles.get(fileName);
-            for (int i = 0; i < aVector.size(); i++) {
-                aVector.elementAt(i).registerError();
+            List<PlatformStatus> aVector = logFiles.get(fileName);
+            for (PlatformStatus element : aVector) {
+                element.registerError();
             }
         } else {
 
             // If a log file is not specified explicitly it effects
             // all "platforms" except JDT
 
-            final Enumeration<PlatformStatus> values = platforms.elements();
-            while (values.hasMoreElements()) {
-                final PlatformStatus aValue = values.nextElement();
-                if (!aValue.getId().equals("JA") && !aValue.getId().equals("EW") && !aValue.getId().equals("EA")) {
+            for (PlatformStatus aValue : platforms.values()) {
+                if (!aValue.id().equals("JA") && !aValue.id().equals("EW") && !aValue.id().equals("EA")) {
                     aValue.registerError();
                 }
             }

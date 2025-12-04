@@ -1,17 +1,24 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2017 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 which accompanies this distribution,
- * and is available at http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors: IBM Corporation - initial API and implementation
+ *  Copyright (c) 2006, 2025 IBM Corporation and others.
+ *
+ *  This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License 2.0
+ *  which accompanies this distribution, and is available at
+ *  https://www.eclipse.org/legal/epl-2.0/
+ *
+ *  SPDX-License-Identifier: EPL-2.0
+ *
+ *  Contributors:
+ *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.releng.build.tools.convert.dom;
 
 public class ProblemNode {
 
-    protected static final String EMPTY = "";         //$NON-NLS-1$
+    public enum SeverityType {
+        ERROR, WARNING, INFO;
+    }
 
     public SeverityType           severityType;
     public int                    charStart;
@@ -32,9 +39,9 @@ public class ProblemNode {
 
     public void setSources() {
         if ((sourceStart == -1) || (sourceEnd == -1)) {
-            sourceCodeBefore = EMPTY;
+            sourceCodeBefore = "";
             sourceCode = contextValue;
-            sourceCodeAfter = EMPTY;
+            sourceCodeAfter = "";
         } else {
             final int length = contextValue.length();
             if (sourceStart < length) {
@@ -45,12 +52,12 @@ public class ProblemNode {
                     sourceCodeAfter = contextValue.substring(end, length);
                 } else {
                     sourceCode = contextValue.substring(sourceStart, length);
-                    sourceCodeAfter = EMPTY;
+                    sourceCodeAfter = "";
                 }
             } else {
-                sourceCodeBefore = EMPTY;
-                sourceCode = EMPTY;
-                sourceCodeAfter = EMPTY;
+                sourceCodeBefore = "";
+                sourceCode = "";
+                sourceCodeAfter = "";
             }
         }
     }
@@ -59,13 +66,13 @@ public class ProblemNode {
     public String toString() {
         final StringBuilder buffer = new StringBuilder();
         switch (severityType) {
-          case ERROR : 
+          case ERROR :
             buffer.append("ERROR ");//$NON-NLS-1$
             break;
-          case WARNING : 
+          case WARNING :
             buffer.append("WARNING ");//$NON-NLS-1$
             break;
-          case INFO : 
+          case INFO :
             buffer.append("INFO ");//$NON-NLS-1$
             break;
         }

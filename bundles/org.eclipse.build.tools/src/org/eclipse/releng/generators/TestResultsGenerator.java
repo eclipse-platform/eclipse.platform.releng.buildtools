@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -60,30 +59,14 @@ public class TestResultsGenerator extends Task {
 
     public class ResultsTable implements Iterable<String> {
 
-        private Map<String, Row> rows    = new TreeMap<>();
-        private List<String>     columns = new ArrayList<>();
+        private final Map<String, Row> rows    = new TreeMap<>();
+        private final List<String>     columns;
 
-        public ResultsTable(ArrayList<String> columns) {
+        public ResultsTable(List<String> columns) {
             this.columns = columns;
         }
 
-        public class Cell {
-
-            private Integer errorCount  = null;
-            private File    resultsFile = null;
-
-            public Cell(int errorCount, File resultsFile) {
-                this.errorCount = errorCount;
-                this.resultsFile = resultsFile;
-            }
-
-            public Integer getErrorCount() {
-                return errorCount;
-            }
-
-            public File getResultsFile() {
-                return resultsFile;
-            }
+        public record Cell(int errorCount, File resultsFile) {
         }
 
         private class Row {
@@ -97,8 +80,7 @@ public class TestResultsGenerator extends Task {
             }
 
             public Cell getCell(String column) {
-                Cell cell = row.get(column);
-                return cell;
+                return row.get(column);
             }
 
             public void putCell(String columnName, Integer cellValue, File file) {
@@ -119,29 +101,8 @@ public class TestResultsGenerator extends Task {
             return getRow(rowName).getCell(columnName);
         }
 
-        public int getCellErrorCount(String rowName, String columnName) {
-            Cell cell = getRow(rowName).getCell(columnName);
-            return cell.getErrorCount();
-        }
-
-        public File getCellResultsFile(String rowName, String columnName) {
-            Cell cell = getRow(rowName).getCell(columnName);
-            return cell.getResultsFile();
-        }
-
         public void putCell(String rowName, String columnName, Integer cellValue, File file) {
             getRow(rowName).putCell(columnName, cellValue, file);
-        }
-
-        List<String> getColumns() {
-            return columns;
-        }
-
-        public void setColumns(List<String> columns) {
-            if (this.columns != null) {
-                throw new RuntimeException("The columns for the table were already defined");
-            }
-            this.columns = columns;
         }
 
         @Override
@@ -160,16 +121,16 @@ public class TestResultsGenerator extends Task {
 
     private static final String elementName                            = "testsuite";
 
-    private ArrayList<String>   expectedConfigs                        = null;
+    private List<String>        expectedConfigs                        = null;
     private static final String EOL                                    = System.lineSeparator();
     private static boolean      DEBUG                                  = false;
     private static String       FOUND_TEST_CONFIGS_FILENAME_DEFAULT    = "testConfigsFound.php";
 
     private static String       EXPECTED_TEST_CONFIGS_FILENAME_DEFAULT = "testConfigs.php";
-    private String              expected_config_type                   = "expected";
+    private final String        expected_config_type                   = "expected";
     private String              expectedConfigFilename;
     private String              foundConfigFilename;
-    private Vector<String>              dropTokens;
+    private List<String>        dropTokens;
 
     private String              testResultsWithProblems                = EOL;
     private String              testResultsXmlUrls                     = EOL;
@@ -545,13 +506,13 @@ public class TestResultsGenerator extends Task {
         return dropTokenList;
     }
 
-    public Vector<String> getDropTokens() {
+    public List<String> getDropTokens() {
         return dropTokens;
     }
 
     private void getDropTokensFromList(final String list) {
         final StringTokenizer tokenizer = new StringTokenizer(list, ",");
-        dropTokens = new Vector<>();
+        dropTokens = new ArrayList<>();
 
         while (tokenizer.hasMoreTokens()) {
             dropTokens.add(tokenizer.nextToken());
@@ -749,7 +710,7 @@ public class TestResultsGenerator extends Task {
 
     private void parseJUnitTestsXml() throws IOException {
         log("DEBUG: Begin: Parsing XML JUnit results files");
-        ArrayList<String> foundConfigs = new ArrayList<>();
+        List<String> foundConfigs = new ArrayList<>();
         final File xmlResultsDirectory = new File(getXmlDirectoryName());
         ResultsTable resultsTable = new ResultsTable(getTestsConfig());
         if (xmlResultsDirectory.exists()) {
@@ -760,7 +721,7 @@ public class TestResultsGenerator extends Task {
             // tests completed).
             foundConfigs.clear();
 
-            ArrayList<File> allFileNames = new ArrayList<>();
+            List<File> allFileNames = new ArrayList<>();
 
             for (String expectedConfig : getTestsConfig()) {
 
@@ -810,7 +771,7 @@ public class TestResultsGenerator extends Task {
 
     }
 
-    private void writeHTMLResultsTable(ArrayList<String> foundConfigs, ResultsTable resultsTable) throws IOException {
+    private void writeHTMLResultsTable(List<String> foundConfigs, ResultsTable resultsTable) throws IOException {
         // These first files reflect what we expected, and what we found.
         String found_config_type = "found";
         writePhpConfigFile(found_config_type, foundConfigs, getFoundConfigFilename());
@@ -924,7 +885,7 @@ public class TestResultsGenerator extends Task {
      * the testManifest.xml file. We only do this check if we also are checking
      * for missing logs which depends on an accurate testManifest.xml file.
      */
-    private void checkIfMissingFromTestManifestFile(File junitResultsFile, ArrayList<String> foundConfigs) {
+    private void checkIfMissingFromTestManifestFile(File junitResultsFile, List<String> foundConfigs) {
         if (getDoMissingList()) {
             if (!verifyLogInManifest(junitResultsFile.getName(), foundConfigs)) {
                 String corename = computeCoreName(junitResultsFile);
@@ -966,7 +927,7 @@ public class TestResultsGenerator extends Task {
         return configName;
     }
 
-    private void writePhpConfigFile(String config_type, ArrayList<String> configs, String phpfilename) throws IOException {
+    private void writePhpConfigFile(String config_type, List<String> configs, String phpfilename) throws IOException {
         File mainDir = new File(getDropDirectoryName());
         File testConfigsFile = new File(mainDir, phpfilename);
         try (Writer testconfigsPHP = new FileWriter(testConfigsFile)) {
@@ -1014,7 +975,7 @@ public class TestResultsGenerator extends Task {
     }
 
     private String processDropRow(final PlatformStatus aPlatform) {
-        if ("equinox".equalsIgnoreCase(aPlatform.getFormat())) {
+        if ("equinox".equalsIgnoreCase(aPlatform.format())) {
             return processEquinoxDropRow(aPlatform);
         } else {
             return processEclipseDropRow(aPlatform);
@@ -1023,9 +984,9 @@ public class TestResultsGenerator extends Task {
     }
 
     private String processEclipseDropRow(PlatformStatus aPlatform) {
-        StringBuilder result = new StringBuilder("<tr>\n<td>").append(aPlatform.getName()).append("</td>\n");
+        StringBuilder result = new StringBuilder("<tr>\n<td>").append(aPlatform.name()).append("</td>\n");
         // generate file link, size and checksums in the php template
-        result.append("<?php genLinks(\"").append(aPlatform.getFileName()).append("\"); ?>\n");
+        result.append("<?php genLinks(\"").append(aPlatform.fileName()).append("\"); ?>\n");
         result.append("</tr>\n");
         return result.toString();
     }
@@ -1045,10 +1006,10 @@ public class TestResultsGenerator extends Task {
     private String processEquinoxDropRow(final PlatformStatus aPlatform) {
         StringBuilder result = new StringBuilder("<tr>");
         result.append("<td>");
-        final String filename = aPlatform.getFileName();
+        final String filename = aPlatform.fileName();
         // if there are images, put them in the same table column as the name of
         // the file
-        final List<String> images = aPlatform.getImages();
+        final List<String> images = aPlatform.images();
         if ((images != null) && !images.isEmpty()) {
             for (String image : images) {
                 result.append("<img src=\"").append(image).append("\"/>&nbsp;");
@@ -1149,7 +1110,7 @@ public class TestResultsGenerator extends Task {
         this.dropTokenList = dropTokenList;
     }
 
-    public void setDropTokens(final Vector<String> vector) {
+    public void setDropTokens(final List<String> vector) {
         dropTokens = vector;
     }
 
@@ -1199,9 +1160,9 @@ public class TestResultsGenerator extends Task {
         xmlDirectoryName = aString;
     }
 
-    private String verifyAllTestsRan(final String directory, ArrayList<String> foundConfigs) {
+    private String verifyAllTestsRan(final String directory, List<String> foundConfigs) {
         StringBuilder replaceString = new StringBuilder();
-        ArrayList<String> missingFiles = new ArrayList<>();
+        List<String> missingFiles = new ArrayList<>();
         if (getDoMissingList()) {
             for (String testLogName : anErrorTracker.getTestLogs(foundConfigs)) {
 
@@ -1311,7 +1272,7 @@ public class TestResultsGenerator extends Task {
         // log("DEBUG: testsConfigExpected: " + testsConfigExpected);
     }
 
-    private ArrayList<String> getTestsConfig() throws IOException {
+    private List<String> getTestsConfig() throws IOException {
         if (expectedConfigs == null) {
             expectedConfigs = new ArrayList<>();
             String expectedConfigParam = getTestsConfigExpected();
@@ -1352,7 +1313,7 @@ public class TestResultsGenerator extends Task {
      * allows them to be detected as missing, in future. We only do this check
      * if "doMissingList" is true.
      */
-    private boolean verifyLogInManifest(String filename, ArrayList<String> foundConfigs) {
+    private boolean verifyLogInManifest(String filename, List<String> foundConfigs) {
         boolean result = false;
         if (getDoMissingList()) {
             for (String testLogName : anErrorTracker.getTestLogs(foundConfigs)) {
@@ -1396,7 +1357,7 @@ public class TestResultsGenerator extends Task {
     }
 
     // Specific to the RelEng test results page
-    private String formatJUnitRow(String corename, ResultsTable resultsTable, ArrayList<String> foundConfigs) throws IOException {
+    private String formatJUnitRow(String corename, ResultsTable resultsTable, List<String> foundConfigs) throws IOException {
 
         StringBuilder results = new StringBuilder();
         int orgEclipseLength = "org.eclipse.".length();
@@ -1408,7 +1369,7 @@ public class TestResultsGenerator extends Task {
         for (String config : getTestsConfig()) {
             Cell cell = resultsTable.getCell(corename, config);
             if (cell == null && foundConfigs.contains(config)) {
-                cell = resultsTable.new Cell(-1, null);
+                cell = new Cell(-1, null);
             }
             results.append(printCell(cell));
         }
@@ -1423,8 +1384,8 @@ public class TestResultsGenerator extends Task {
             displayName = "<td class=\"cell\">&nbsp;</td>";
             result = displayName;
         } else {
-            int cellErrorCount = cell.getErrorCount();
-            File cellResultsFile = cell.getResultsFile();
+            int cellErrorCount = cell.errorCount();
+            File cellResultsFile = cell.resultsFile();
             String filename = null;
             int beginFilename = 0;
             String rawfilename = null;

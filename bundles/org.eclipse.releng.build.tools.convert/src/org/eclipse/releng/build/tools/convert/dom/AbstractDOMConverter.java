@@ -1,11 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2024 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ *  Copyright (c) 2006, 2025 IBM Corporation and others.
  *
- * Contributors:
+ *  This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License 2.0
+ *  which accompanies this distribution, and is available at
+ *  https://www.eclipse.org/legal/epl-2.0/
+ *
+ *  SPDX-License-Identifier: EPL-2.0
+ *
+ *  Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
@@ -18,10 +21,11 @@ import java.io.Writer;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.eclipse.releng.build.tools.convert.ant.Converter;
-import org.eclipse.releng.build.tools.convert.ant.Messages;
+import org.eclipse.releng.build.tools.convert.dom.LogDocumentNode.ProblemSummaryNode;
 
 public abstract class AbstractDOMConverter implements IDOMConverter {
 
@@ -29,7 +33,7 @@ public abstract class AbstractDOMConverter implements IDOMConverter {
     public static final String  DISCOURAGED_REFERENCE = "DiscouragedReference"; //$NON-NLS-1$
 	public static final Set<String> FILTERED_WARNINGS_IDS = Set.of(FORBIDDEN_REFERENCE, DISCOURAGED_REFERENCE);
 
-    protected Messages          messages;
+    protected ResourceBundle messages;
 
     private String convertToHTML(final String s) {
         final StringBuilder buffer = new StringBuilder();
