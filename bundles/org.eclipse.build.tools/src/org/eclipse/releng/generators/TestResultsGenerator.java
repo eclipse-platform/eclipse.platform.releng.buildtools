@@ -1,10 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2025 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 which accompanies this distribution,
- * and is available at http://www.eclipse.org/legal/epl-v10.html
+ *  Copyright (c) 2000, 2025 IBM Corporation and others.
  *
- * Contributors: IBM Corporation - initial API and implementation
+ *  This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License 2.0
+ *  which accompanies this distribution, and is available at
+ *  https://www.eclipse.org/legal/epl-2.0/
+ *
+ *  SPDX-License-Identifier: EPL-2.0
+ *
+ *  Contributors:
+ *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.releng.generators;
@@ -441,8 +446,7 @@ public class TestResultsGenerator extends Task {
         .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#DISCOURAGED_WARNINGS")
         .append("\">").append(discouragedAccessesWarningsCount).append("</a>").append("</td>").append(EOL)
         .append("<td class=\"cell\" >").append("<a href=").append("\"").append(relativeName).append("#INFO_WARNINGS")
-        .append("\">").append(infoCount).append("</a>").append("</td>").append(EOL).append("</tr>")
-        .append(EOL);
+        .append("\">").append(infoCount).append("</a>").append("</td>").append(EOL).append("</tr>").append(EOL);
     }
 
     private String computeRelativeName(final String fileName) {
@@ -708,26 +712,37 @@ public class TestResultsGenerator extends Task {
                 accessesString.append(
                         "<tr><td class='namecell'>None</td><td class='cell'>&nbsp;</td><td class='cell'>&nbsp;</td></tr>" + EOL);
             }
-            String compileLogResults;
-            compileLogResults = EOL + EOL + "<h3 id=\"PluginsErrors\">Plugins containing compile errors or warnings</h3>" + EOL
-                    + EOL
-                    + "<p>The table below shows the plugins in which errors or warnings were encountered. Click on the jar file link to view its"
-                    + EOL + "detailed report.</p>" + EOL + EOL + "<table>" + EOL + "  <tr>" + EOL
-                    + "    <th class='cell'>Compile Logs (Jar Files)</th>" + EOL + "    <th class='cell'>Errors</th>" + EOL
-                    + "<th class='cell'>Warnings</th>" + EOL + "  </tr>" + EOL;
+            String prefix = """
+                    <h3 id="PluginsErrors">Plugins containing compile errors or warnings</h3>
 
-            compileLogResults = compileLogResults + compilerString.toString();
+                    <p>The table below shows the plugins in which errors or warnings were encountered. Click on the jar file link to view its
+                    detailed report.</p>
 
-            compileLogResults = compileLogResults + "          </table>" + EOL + EOL
-                    + "<h3 id=\"AcessErrors\">Plugins containing access errors or warnings</h3>" + EOL + "<table>" + EOL + " <tr>"
-                    + EOL + "<th class='cell'>Compile Logs (Jar Files)</th>" + EOL + "   <th class='cell'>Forbidden Access</th>"
-                    + EOL + "   <th class='cell'>Discouraged Access</th>" + EOL + "   <th class='cell'>Info Warnings</th>" + EOL + "</tr>" + EOL;
+                    <table>
+                      <tr>
+                        <th class='cell'>Compile Logs (Jar Files)</th>
+                        <th class='cell'>Errors</th>
+                    <th class='cell'>Warnings</th>
+                      </tr>
+                    """;
+            String suffix = """
+                              </table>
 
-            compileLogResults = compileLogResults + accessesString.toString();
-            compileLogResults = compileLogResults + "</table>" + EOL;
+                    <h3 id="AcessErrors">Plugins containing access errors or warnings</h3>
+                    <table>
+                     <tr>
+                       <th class='cell'>Compile Logs (Jar Files)</th>
+                       <th class='cell'>Forbidden Access</th>
+                       <th class='cell'>Discouraged Access</th>
+                       <th class='cell'>Info Warnings</th>
+                    </tr>
+                    """;
+            StringBuilder compileLogResults = new StringBuilder(prefix).append(compilerString).append(suffix);
+            compileLogResults.append(accessesString.toString());
+            compileLogResults.append("</table>").append(EOL);
             // write the include file. The name of this file must match what is
             // in testResults.template.php
-            writePhpIncludeCompilerResultsFile(sourceDirectory, compileLogResults);
+            writePhpIncludeCompilerResultsFile(sourceDirectory, compileLogResults.toString());
             log("DEBUG: End: Parsing compile logs and generating summary table.");
         }
     }
@@ -803,67 +818,69 @@ public class TestResultsGenerator extends Task {
         // which
         // in turn is included by the testResults.php file.
 
-        String htmlString = "";
+        StringBuilder htmlString = new StringBuilder();
         // first we right a bit of "static" part. That comes before the table.
-        htmlString = htmlString + EOL + "<h3 id=\"UnitTest\">Unit Test Results</h3>" + EOL;
-        
-        if (getBuildType().equals("Y")) {
-            htmlString = htmlString
-                    + "<p>The unit tests are run on the <a href=\"https://ci.eclipse.org/releng/job/YPBuilds/\">releng ci instance</a>.</p>"
-                    + EOL;
-        } else {
-        	htmlString = htmlString
-                + "<p>The unit tests are run on the <a href=\"https://ci.eclipse.org/releng/job/AutomatedTests/\">releng ci instance</a>.</p>"
-                + EOL;
-        }
-        htmlString = htmlString + "<p>The table shows the unit test results for this build on the platforms" + EOL;
-        htmlString = htmlString + "tested. You may access the test results page specific to each" + EOL;
-        htmlString = htmlString + "component on a specific platform by clicking the cell link." + EOL;
-        htmlString = htmlString + "Normally, the number of errors is indicated in the cell.</p>" + EOL;
-        htmlString = htmlString + "<p>A negative number or \"DNF\" means the test \"Did Not Finish\" for unknown reasons" + EOL;
-        htmlString = htmlString + "and hence no results page is available. In that case," + EOL;
-        htmlString = htmlString + "more information can sometimes be found in" + EOL;
-        htmlString = htmlString + "the <a href=\"logs.php#console\">console logs</a>.</p>" + EOL;
-        htmlString = htmlString + "<?php" + EOL;
-        htmlString = htmlString + "if (file_exists(\"testNotes.html\")) {" + EOL;
-        htmlString = htmlString + "  $my_file = file_get_contents(\"testNotes.html\");" + EOL;
-        htmlString = htmlString + "  echo $my_file;" + EOL;
-        htmlString = htmlString + "}" + EOL;
-        htmlString = htmlString + "?>" + EOL;
+        htmlString.append(EOL).append("<h3 id=\"UnitTest\">Unit Test Results</h3>").append(EOL);
 
-        htmlString = htmlString + startTableOfUnitResults();
+        if (getBuildType().equals("Y")) {
+            htmlString.append(
+                    "<p>The unit tests are run on the <a href=\"https://ci.eclipse.org/releng/job/YPBuilds/\">releng ci instance</a>.</p>");
+        } else {
+            htmlString.append(
+                    "<p>The unit tests are run on the <a href=\"https://ci.eclipse.org/releng/job/AutomatedTests/\">releng ci instance</a>.</p>");
+        }
+        String tableDescription = """
+                <p>The table shows the unit test results for this build on the platforms
+                tested. You may access the test results page specific to each
+                component on a specific platform by clicking the cell link.
+                Normally, the number of errors is indicated in the cell.</p>
+                <p>A negative number or \"DNF\" means the test \"Did Not Finish\" for unknown reasons
+                and hence no results page is available. In that case,
+                more information can sometimes be found in
+                the <a href=\"logs.php#console\">console logs</a>.</p>
+                <?php
+                if (file_exists(\"testNotes.html\")) {
+                  $my_file = file_get_contents(\"testNotes.html\");
+                  echo $my_file;
+                }
+                ?>
+                """;
+        htmlString.append(EOL).append(tableDescription);
+
+        htmlString.append(startTableOfUnitResults());
         for (String row : resultsTable) {
-            htmlString = htmlString + formatJUnitRow(row, resultsTable, foundConfigs);
+            htmlString.append(formatJUnitRow(row, resultsTable, foundConfigs));
         }
         // Once we are done with the Unit tests rows, we must add end table
         // tag, since the following methods may or may not add a table of
         // their own.
-        htmlString = htmlString + EOL + "</table>" + EOL;
+        htmlString.append(EOL).append("</table>").append(EOL);
         // check for missing test logs
         // TODO put styling on these tables
-        htmlString = htmlString + verifyAllTestsRan(xmlDirectoryName, foundConfigs);
-        htmlString = htmlString + listMissingManifestFiles();
-        writeTestResultsFile(htmlString);
+        htmlString.append(verifyAllTestsRan(xmlDirectoryName, foundConfigs));
+        htmlString.append(listMissingManifestFiles());
+        writeTestResultsFile(htmlString.toString());
     }
 
     private String startTableOfUnitResults() throws IOException {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         int ncolumns = getTestsConfig().size();
-        result = result + "<table>" + EOL;
+        result.append("<table>").append(EOL);
         // table header
-        result = result + "<tr>" + EOL;
-        result = result + "<th class='cell' " + " rowspan='2' > org.eclipse <br /> Test Bundles </th>" + EOL;
-        result = result + "<th class='cell' colspan='" + ncolumns + "'> Test Configurations (Hudson Job/os.ws.arch/VM) </th>" + EOL;
-        result = result + "</tr>\n";
+        result.append("<tr>").append(EOL);
+        result.append("<th class='cell' ").append(" rowspan='2' > org.eclipse <br /> Test Bundles </th>").append(EOL);
+        result.append("<th class='cell' colspan='").append(ncolumns)
+        .append("'> Test Configurations (Hudson Job/os.ws.arch/VM) </th>").append(EOL);
+        result.append("</tr>\n");
 
-        result = result + "<tr>" + EOL;
+        result.append("<tr>").append(EOL);
 
         for (String column : getTestsConfig()) {
-            result = result + "<th class='cell'>" + computeDisplayConfig(column) + "</th>\n";
+            result.append("<th class='cell'>").append(computeDisplayConfig(column)).append("</th>\n");
         }
-        result = result + "</tr>" + EOL;
+        result.append("</tr>").append(EOL);
         // end table header
-        return result;
+        return result.toString();
     }
 
     /*
@@ -1006,19 +1023,19 @@ public class TestResultsGenerator extends Task {
     }
 
     private String processEclipseDropRow(PlatformStatus aPlatform) {
-        String result = "<tr>\n<td>" + aPlatform.getName() + "</td>\n";
+        StringBuilder result = new StringBuilder("<tr>\n<td>").append(aPlatform.getName()).append("</td>\n");
         // generate file link, size and checksums in the php template
-        result = result + "<?php genLinks(\"" + aPlatform.getFileName() + "\"); ?>\n";
-        result = result + "</tr>\n";
-        return result;
+        result.append("<?php genLinks(\"").append(aPlatform.getFileName()).append("\"); ?>\n");
+        result.append("</tr>\n");
+        return result.toString();
     }
 
     private String processDropRows(final PlatformStatus[] platforms) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         for (PlatformStatus platform : platforms) {
-            result = result + processDropRow(platform);
+            result.append(processDropRow(platform));
         }
-        return result;
+        return result.toString();
     }
 
     /*
@@ -1026,22 +1043,22 @@ public class TestResultsGenerator extends Task {
      * on the downloads page.
      */
     private String processEquinoxDropRow(final PlatformStatus aPlatform) {
-        String result = "<tr>";
-        result = result + "<td>";
+        StringBuilder result = new StringBuilder("<tr>");
+        result.append("<td>");
         final String filename = aPlatform.getFileName();
         // if there are images, put them in the same table column as the name of
         // the file
         final List<String> images = aPlatform.getImages();
         if ((images != null) && !images.isEmpty()) {
             for (String image : images) {
-                result = result + "<img src=\"" + image + "\"/>&nbsp;";
+                result.append("<img src=\"").append(image).append("\"/>&nbsp;");
             }
         }
-        result = result + "<a href=\"download.php?dropFile=" + filename + "\">" + filename + "</a></td>\n";
-        result = result + "{$generateDropSize(\"" + filename + "\")}\n";
-        result = result + "{$generateChecksumLinks(\"" + filename + "\", $buildlabel)}\n";
-        result = result + "</tr>\n";
-        return result;
+        result.append("<a href=\"download.php?dropFile=").append(filename).append("\">").append(filename).append("</a></td>\n");
+        result.append("{$generateDropSize(\"").append(filename).append("\")}\n");
+        result.append("{$generateChecksumLinks(\"").append(filename).append("\", $buildlabel)}\n");
+        result.append("</tr>\n");
+        return result.toString();
     }
 
     private void readCompileLog(final String log, final StringBuilder compilerLog, final StringBuilder accessesLog) {
@@ -1079,10 +1096,10 @@ public class TestResultsGenerator extends Task {
 
         final int replaceIndex = source.indexOf(original);
         if (replaceIndex > -1) {
-            String resultString = source.substring(0, replaceIndex);
-            resultString = resultString + replacement;
-            resultString = resultString + source.substring(replaceIndex + original.length());
-            return resultString;
+            StringBuilder resultString = new StringBuilder().append(source.substring(0, replaceIndex));
+            resultString.append(replacement);
+            resultString.append(source.substring(replaceIndex + original.length()));
+            return resultString.toString();
         } else {
             log(EOL + "WARNING: Could not find token: " + original);
             return source;
@@ -1183,7 +1200,7 @@ public class TestResultsGenerator extends Task {
     }
 
     private String verifyAllTestsRan(final String directory, ArrayList<String> foundConfigs) {
-        String replaceString = "";
+        StringBuilder replaceString = new StringBuilder();
         ArrayList<String> missingFiles = new ArrayList<>();
         if (getDoMissingList()) {
             for (String testLogName : anErrorTracker.getTestLogs(foundConfigs)) {
@@ -1204,11 +1221,15 @@ public class TestResultsGenerator extends Task {
             // Note: we intentionally do not deal with missing file for perf.
             // tests yet.
             // (though, probably could, once fixed with "expected configs").
-            replaceString = replaceString + "<tbody>\n" + "<tr><td colspan=\"0\"><p><span class=\"footnote\">NOTE: </span>\n"
-                    + "Remember that for performance unit test tables, there are never any \"missing files\" listed, if there are any. \n"
-                    + "This is expected to be a temporary solution, until an exact fix can be implemented. For more details, see \n"
-                    + "<a href=\"https://bugs.eclipse.org/bugs/show_bug.cgi?id=451890\">bug 451890</a>.</p>\n" + "</td></tr>\n"
-                    + "</tbody>\n";
+            replaceString.append("""
+                    <tbody>
+                    <tr><td colspan=\"0\"><p><span class=\"footnote\">NOTE: </span>
+                    Remember that for performance unit test tables, there are never any \"missing files\" listed, if there are any.
+                    This is expected to be a temporary solution, until an exact fix can be implemented. For more details, see
+                    <a href=\"https://bugs.eclipse.org/bugs/show_bug.cgi?id=451890\">bug 451890</a>.</p>
+                    </td></tr>
+                    </tbody>
+                    """);
         }
         // TODO: we need lots more of separating "data" from "formating"
         if (getDoMissingList() && missingFiles.size() > 0) {
@@ -1217,14 +1238,14 @@ public class TestResultsGenerator extends Task {
                 ordinalWord = "Files";
             }
 
-            replaceString = replaceString + "</table>" + EOL + "<table>" + "<tr> <th class='cell'>Missing " + ordinalWord
-                    + "</th></tr>";
+            replaceString.append("</table>").append(EOL).append("<table>").append("<tr> <th class='cell'>Missing ")
+            .append(ordinalWord).append("</th></tr>");
             for (String testLogName : missingFiles) {
-                replaceString = replaceString + EOL + "<tr><td class='namecell'>" + testLogName + "</td></tr>";
+                replaceString.append(EOL).append("<tr><td class='namecell'>").append(testLogName).append("</td></tr>");
             }
-            replaceString = replaceString + EOL + "</table>";
+            replaceString.append(EOL).append("</table>");
         }
-        return replaceString;
+        return replaceString.toString();
     }
 
     private void writeDropIndexFile() {
@@ -1242,8 +1263,7 @@ public class TestResultsGenerator extends Task {
         } else {
             String dropTemplateString = readFile(getDropTemplateFileName());
             if (outputIndexFile.exists()) {
-                log(EOL + "INFO: The drop index file, " + dropHtmlFile
-                        + ", was found to exist already and is being regenerated.");
+                log(EOL + "INFO: The drop index file, " + dropHtmlFile + ", was found to exist already and is being regenerated.");
             }
             log("DEBUG: Begin: Generating drop index page");
             final String[] types = anErrorTracker.getTypes();
@@ -1346,9 +1366,10 @@ public class TestResultsGenerator extends Task {
     }
 
     private String listMissingManifestFiles() throws IOException {
-        String results = "";
+        StringBuilder results = new StringBuilder();
         if (getDoMissingList()) {
-            String xmlFragment = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " + EOL + "<topLevel>" + EOL;
+            StringBuilder xmlFragment = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?> ").append(EOL)
+                    .append("<topLevel>").append(EOL);
 
             if (getDoMissingList() && missingManifestFiles.size() > 0) {
                 String ordinalWord = "File";
@@ -1356,43 +1377,43 @@ public class TestResultsGenerator extends Task {
                     ordinalWord = "Files";
                 }
 
-                results = results + EOL + "<table>"
-                        + "<tr> <th class='cell'>Releng: <a href=\"addToTestManifest.xml\">Missing testManifest.xml " + ordinalWord
-                        + "</a></th></tr>";
+                results.append(EOL).append("<table>")
+                .append("<tr> <th class='cell'>Releng: <a href=\"addToTestManifest.xml\">Missing testManifest.xml ")
+                .append(ordinalWord).append("</a></th></tr>");
                 for (String testLogName : missingManifestFiles) {
-                    results = results + EOL + "<tr><td class='namecell'>" + testLogName + "</td></tr>";
-                    xmlFragment = xmlFragment + "<logFile " + EOL + "  name=\"" + testLogName + "\"" + EOL + "  type=\"test\" />"
-                            + EOL;
+                    results.append(EOL).append("<tr><td class='namecell'>").append(testLogName).append("</td></tr>");
+                    xmlFragment.append("<logFile ").append(EOL).append("  name=\"").append(testLogName).append("\"").append(EOL)
+                    .append("  type=\"test\" />").append(EOL);
                 }
-                results = results + EOL + "</table>";
-                xmlFragment = xmlFragment + "</topLevel>";
+                results.append(EOL).append("</table>");
+                xmlFragment.append("</topLevel>");
                 try (FileWriter xmlOutput = new FileWriter(getDropDirectoryName() + "/addToTestManifest.xml")) {
-                    xmlOutput.write(xmlFragment);
+                    xmlOutput.write(xmlFragment.toString());
                 }
             }
         }
-        return results;
+        return results.toString();
     }
 
     // Specific to the RelEng test results page
     private String formatJUnitRow(String corename, ResultsTable resultsTable, ArrayList<String> foundConfigs) throws IOException {
 
-        String results = "";
+        StringBuilder results = new StringBuilder();
         int orgEclipseLength = "org.eclipse.".length();
         // indexOf('_') assumes never part of file name?
         final String displayName = corename.substring(orgEclipseLength);
 
-        results = results + EOL + "<tr><td class=\"namecell\">" + displayName + "</td>";
+        results.append(EOL).append("<tr><td class=\"namecell\">").append(displayName).append("</td>");
 
         for (String config : getTestsConfig()) {
             Cell cell = resultsTable.getCell(corename, config);
             if (cell == null && foundConfigs.contains(config)) {
                 cell = resultsTable.new Cell(-1, null);
             }
-            results = results + printCell(cell);
+            results.append(printCell(cell));
         }
-        results = results + "</tr>" + EOL;
-        return results;
+        results.append("</tr>").append(EOL);
+        return results.toString();
     }
 
     private String printCell(Cell cell) {
