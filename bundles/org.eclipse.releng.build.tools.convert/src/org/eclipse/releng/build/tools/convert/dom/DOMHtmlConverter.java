@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ResourceBundle;
 
-import org.eclipse.releng.build.tools.convert.ant.ConverterFactory;
-
 public class DOMHtmlConverter extends AbstractDOMConverter {
 
     public DOMHtmlConverter() {
@@ -29,7 +27,7 @@ public class DOMHtmlConverter extends AbstractDOMConverter {
 
     @Override
     public String getUnderLine(final String sourceBefore, final String sourceOfError) {
-        return ConverterFactory.EMPTY;
+        return "";
     }
 
     @Override

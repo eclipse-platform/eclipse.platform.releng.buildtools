@@ -1,10 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2024 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 which accompanies this distribution,
- * and is available at http://www.eclipse.org/legal/epl-v10.html
+ *  Copyright (c) 2000, 2025 IBM Corporation and others.
  *
- * Contributors: IBM Corporation - initial API and implementation
+ *  This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License 2.0
+ *  which accompanies this distribution, and is available at
+ *  https://www.eclipse.org/legal/epl-2.0/
+ *
+ *  SPDX-License-Identifier: EPL-2.0
+ *
+ *  Contributors:
+ *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.releng.build.tools.convert.ant;
@@ -20,6 +25,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.releng.build.tools.convert.dom.AbstractDOMConverter;
+import org.eclipse.releng.build.tools.convert.dom.DOMHtmlConverter;
+import org.eclipse.releng.build.tools.convert.dom.DOMTxtConverter;
 import org.eclipse.releng.build.tools.convert.dom.IDOMConverter;
 import org.eclipse.releng.build.tools.convert.dom.LogDocumentNode;
 import org.eclipse.releng.build.tools.convert.dom.LogDocumentNode.ProblemSummaryNode;
@@ -108,7 +115,7 @@ public class Converter {
 
         // set default options
         options.put(ENABLE_VALIDATION, "false"); //$NON-NLS-1$
-        int converterID = ConverterFactory.HTML;
+        int converterID = Converter.HTML;
 
         final int argCount = args.length;
         int index = 0;
@@ -132,7 +139,7 @@ public class Converter {
                     break;
                 case OUTPUT_FILE_MODE:
                     if (currentArg.toLowerCase().endsWith(TXT_EXTENSION)) {
-                        converterID = ConverterFactory.TXT;
+                        converterID = Converter.TXT;
                     }
                     options.put(OUTPUT_FILE_NAME, currentArg);
                     mode = DEFAULT_MODE;
@@ -182,21 +189,28 @@ public class Converter {
     }
 
     private void dump(final LogDocumentNode documentNode) {
-        final IDOMConverter converter = ConverterFactory.createDOMConverter(Integer.parseInt(options
-                .get(Converter.CONVERTER_ID)));
+        IDOMConverter converter = createDOMConverter(Integer.parseInt(options.get(Converter.CONVERTER_ID)));
         converter.dump(CURRENT_FORMAT_VERSION, options, documentNode);
+    }
+
+    public static final int TXT = 0;
+    public static final int HTML = 1;
+
+    public static IDOMConverter createDOMConverter(final int id) {
+        return switch (id) {
+        case TXT -> new DOMTxtConverter();
+        case HTML -> new DOMHtmlConverter();
+        default -> new DOMHtmlConverter();
+        };
     }
 
     private String extractNameFrom(final String inputFileName) {
         final int index = inputFileName.lastIndexOf('.');
-        switch (Integer.parseInt(options.get(Converter.CONVERTER_ID))) {
-            case ConverterFactory.TXT:
-                return inputFileName.substring(0, index) + TXT_EXTENSION;
-            case ConverterFactory.HTML:
-                return inputFileName.substring(0, index) + HTML_EXTENSION;
-            default:
-                return inputFileName.substring(0, index) + HTML_EXTENSION;
-        }
+        return switch (Integer.parseInt(options.get(Converter.CONVERTER_ID))) {
+        case Converter.TXT -> inputFileName.substring(0, index) + TXT_EXTENSION;
+        case Converter.HTML -> inputFileName.substring(0, index) + HTML_EXTENSION;
+        default -> inputFileName.substring(0, index) + HTML_EXTENSION;
+        };
     }
 
     public void parse2() throws ParserConfigurationException {

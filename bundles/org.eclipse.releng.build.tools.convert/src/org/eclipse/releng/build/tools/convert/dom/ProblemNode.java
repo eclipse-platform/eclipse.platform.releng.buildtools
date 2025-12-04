@@ -66,15 +66,9 @@ public class ProblemNode {
     public String toString() {
         final StringBuilder buffer = new StringBuilder();
         switch (severityType) {
-          case ERROR :
-            buffer.append("ERROR ");//$NON-NLS-1$
-            break;
-          case WARNING :
-            buffer.append("WARNING ");//$NON-NLS-1$
-            break;
-          case INFO :
-            buffer.append("INFO ");//$NON-NLS-1$
-            break;
+        case ERROR -> buffer.append("ERROR ");//$NON-NLS-1$
+        case WARNING -> buffer.append("WARNING ");//$NON-NLS-1$
+        case INFO -> buffer.append("INFO ");//$NON-NLS-1$
         }
         buffer.append("line : ").append(line).append(" message = ").append(message);//$NON-NLS-1$//$NON-NLS-2$
         return buffer.toString();
