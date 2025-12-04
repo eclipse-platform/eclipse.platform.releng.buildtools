@@ -15,6 +15,8 @@
 package org.eclipse.releng.build.tools.convert.dom;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class LogDocumentNode {
 
@@ -29,28 +31,15 @@ public class LogDocumentNode {
         }
     }
 
-    private static final ProblemsNode[] NO_PROBLEM_NODES = new ProblemsNode[0];
-    private ArrayList<ProblemsNode>                   problems;
+    private final List<ProblemsNode> problems = new ArrayList<>();
     private ProblemSummaryNode          summaryNode;
-    private ProblemsNode[]              problemsNodes;
 
     public void addProblemsNode(final ProblemsNode node) {
-        if (problems == null) {
-            problems = new ArrayList<>();
-        }
         problems.add(node);
     }
 
-    public ProblemsNode[] getProblems() {
-        if (problemsNodes != null) {
-            return problemsNodes;
-        }
-        if (problems == null) {
-            return problemsNodes = NO_PROBLEM_NODES;
-        }
-        problemsNodes = new ProblemsNode[problems.size()];
-        problems.toArray(problemsNodes);
-        return problemsNodes;
+    public List<ProblemsNode> getProblems() {
+        return Collections.unmodifiableList(problems);
     }
 
     public ProblemSummaryNode getSummaryNode() {
