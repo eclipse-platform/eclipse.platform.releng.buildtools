@@ -1,25 +1,30 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2017 IBM Corporation and others. All rights reserved.
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 which accompanies this distribution,
- * and is available at http://www.eclipse.org/legal/epl-v10.html
- * 
- * Contributors: IBM Corporation - initial API and implementation
+ *  Copyright (c) 2006, 2025 IBM Corporation and others.
+ *
+ *  This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License 2.0
+ *  which accompanies this distribution, and is available at
+ *  https://www.eclipse.org/legal/epl-2.0/
+ *
+ *  SPDX-License-Identifier: EPL-2.0
+ *
+ *  Contributors:
+ *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.releng.build.tools.convert.dom;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ResourceBundle;
 
 import org.eclipse.releng.build.tools.convert.ant.ConverterFactory;
-import org.eclipse.releng.build.tools.convert.ant.Messages;
 
 public class DOMHtmlConverter extends AbstractDOMConverter {
 
     public DOMHtmlConverter() {
         //this.messages = new Messages("org.eclipse.releng.build.tools.convert.ant.html_messages"); //$NON-NLS-1$
-        messages = new Messages("org.eclipse.releng.build.tools.convert.ant.html_messages"); //$NON-NLS-1$
+        messages = ResourceBundle.getBundle("org.eclipse.releng.build.tools.convert.ant.html_messages"); //$NON-NLS-1$
     }
 
     @Override
@@ -56,7 +61,7 @@ public class DOMHtmlConverter extends AbstractDOMConverter {
     public void writeAnchorsReferencesInfos(final Writer writer) throws IOException {
         writer.write(messages.getString("anchors.references.no_infos"));//$NON-NLS-1$
     }
-    
+
     @Override
     public void writeDiscouragedRulesWarningsAnchor(final Writer writer) throws IOException {
         writer.write(messages.getString("discouraged_warnings.title_anchor"));//$NON-NLS-1$

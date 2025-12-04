@@ -1,3 +1,16 @@
+/*******************************************************************************
+ *  Copyright (c) 2013, 2025 IBM Corporation and others.
+ *
+ *  This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License 2.0
+ *  which accompanies this distribution, and is available at
+ *  https://www.eclipse.org/legal/epl-2.0/
+ *
+ *  SPDX-License-Identifier: EPL-2.0
+ *
+ *  Contributors:
+ *     IBM Corporation - initial API and implementation
+ *******************************************************************************/
 
 package org.eclipse.releng.build.tools.comparator;
 
@@ -8,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,7 +29,7 @@ import java.util.regex.Pattern;
 /**
  * This class is responsible for extracting the relevent "Debug" messages from
  * the huge maven debug log.
- * 
+ *
  * @author davidw
  */
 public class Extractor {
@@ -23,6 +37,21 @@ public class Extractor {
 	public static final String BUILD_DIRECTORY_PROPERTY = "builddirectory";
 	public static final String COMPARATOR_REPO_PROPERTY = "comparatorRepo";
 	private static final String EOL = System.lineSeparator();
+
+	private record LogEntry(String name, List<String> reasons, List<String> info) {
+
+		static LogEntry create(String name) {
+			return new LogEntry(name, new ArrayList<>(), new ArrayList<>());
+		}
+
+		public void addInfo(final String infoline) {
+			info.add(infoline);
+		}
+
+		public void addReason(final String reason) {
+			reasons.add(reason);
+		}
+	}
 
 	private final String debugFilename = "mb060_run-maven-build_output.txt";
 	private final String outputFilenameFull = "buildtimeComparatorFull.log.txt";
@@ -69,7 +98,7 @@ public class Extractor {
 
 	private boolean docItem(final LogEntry newEntry) {
 		boolean result = false;
-		final String name = newEntry.getName();
+		final String name = newEntry.name();
 		final Matcher matcher = docNamePattern.matcher(name);
 		if (matcher.matches()) {
 			result = true;
@@ -189,8 +218,7 @@ public class Extractor {
 					final Matcher matcher = mainPattern.matcher(inputLine);
 					if (matcher.matches()) {
 
-						final LogEntry newEntry = new LogEntry();
-						newEntry.setName(matcher.group(1));
+						final LogEntry newEntry = LogEntry.create(matcher.group(1));
 						// read and write differences, until next blank line
 						do {
 							inputLine = input.readLine();
@@ -242,7 +270,7 @@ public class Extractor {
 
 	private boolean jdtCore(final LogEntry newEntry) {
 		boolean result = false;
-		final String name = newEntry.getName();
+		final String name = newEntry.name();
 		if (name.equals("eclipse.jdt.core/org.eclipse.jdt.core/pom.xml")) {
 			result = true;
 		}
@@ -254,7 +282,7 @@ public class Extractor {
 		// then assume "signature only" difference. If even
 		// one of them does not match, assume not.
 		boolean result = true;
-		final List<String> reasons = newEntry.getReasons();
+		final List<String> reasons = newEntry.reasons();
 		for (final String reason : reasons) {
 			final Matcher matcher1 = noclassifierPattern.matcher(reason);
 			final Matcher matcher2 = classifier_sourcesPattern.matcher(reason);
@@ -279,7 +307,7 @@ public class Extractor {
 		// one of them does not match, assume not.
 		// TODO: refactor so less copy/paste of pureSignature method.
 		boolean result = true;
-		final List<String> reasons = newEntry.getReasons();
+		final List<String> reasons = newEntry.reasons();
 		for (final String reason : reasons) {
 			final Matcher matcher1 = noclassifierPattern.matcher(reason);
 			final Matcher matcher2 = classifier_sourcesPattern.matcher(reason);
@@ -305,12 +333,12 @@ public class Extractor {
 
 	private void writeEntry(int thistypeCount, final Writer output, final LogEntry newEntry) throws IOException {
 
-		output.write(thistypeCount + ".  " + newEntry.getName() + EOL);
-		final List<String> reasons = newEntry.getReasons();
+		output.write(thistypeCount + ".  " + newEntry.name() + EOL);
+		final List<String> reasons = newEntry.reasons();
 		for (final String reason : reasons) {
 			output.write(reason + EOL);
 		}
-		final List<String> infolist = newEntry.getInfo();
+		final List<String> infolist = newEntry.info();
 		for (final String info : infolist) {
 			output.write(info + EOL);
 		}
